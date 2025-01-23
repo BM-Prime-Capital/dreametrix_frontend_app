@@ -1,0 +1,46 @@
+/* src/styles/globals.css */
+
+/* Reset de base pour les styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Fontes et couleurs globales */
+  body {
+    font-family: 'Helvetica', Arial, sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+    line-height: 1.6;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    margin-bottom: 1rem;
+    font-weight: bold;
+  }
+  
+  a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s ease-in-out;
+  }
+  
+  a:hover {
+    color: #0070f3;
+  }
+  
+  button {
+    cursor: pointer;
+  }
+  
+  input, button, textarea {
+    font-family: inherit;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+  
