@@ -125,7 +125,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#25AAE1] text-white py-2 rounded-full hover:bg-blue-600 
+            className="w-full bg-[#25AAE1] text-white py-2 rounded-full  
                      transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 
                      focus:ring-offset-2 disabled:opacity-50"
           >
@@ -134,7 +134,7 @@ export default function RegisterPage() {
 
           <p className="text-center text-sm text-gray-500">
             Already registered? Login{" "}
-            <Link href="/auth/login" className="text-[#25AAE1] hover:text-[#25AAE1]">
+            <Link href="/school/auth/login" className="text-[#25AAE1] hover:text-[#25AAE1]">
               here
             </Link>
           </p>

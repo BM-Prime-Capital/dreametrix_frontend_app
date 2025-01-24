@@ -49,7 +49,7 @@ export default function LoginPage() {
     setTimeout(() => {
       setIsLoading(false)
       if (email === "test@example.com" && password === "1234") {
-        router.push("/home")
+        router.push("/school/")
       } else {
         setErrors({
           email: email !== "test@example.com",
@@ -132,7 +132,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#25AAE1] text-white py-2 rounded-full hover:bg-blue-600 
+              className="w-full bg-[#25AAE1] text-white py-2 rounded-full  
                        transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 
                        focus:ring-offset-2 disabled:opacity-50"
             >
