@@ -1,5 +1,5 @@
 import React from 'react';
-import PortalSelectionPage from '@/components/school/login/portal-selection/PortalSelection';
+import PortalSelectionPage from '@/components/PortalSelection';
 
 export default function PortalSelection() {
   return <PortalSelectionPage />;

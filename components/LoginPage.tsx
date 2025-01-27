@@ -1,63 +1,75 @@
-"use client"
+"use client";
 
-import { useState, type ChangeEvent, type FormEvent } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Mail, Lock } from "lucide-react"
+import { useState, type ChangeEvent, type FormEvent } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Mail, Lock } from "lucide-react";
 
 export interface LoginFormData {
-  email: string
-  password: string
+  email: string;
+  password: string;
 }
 
 export interface LoginErrors {
-  email: boolean
-  password: boolean
+  email: boolean;
+  password: boolean;
 }
 
-export default function LoginPage() {
-  const router = useRouter()
-  const [formData, setFormData] = useState<LoginFormData>({ email: "", password: "" })
-  const [formSubmitted, setFormSubmitted] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [errors, setErrors] = useState<LoginErrors>({ email: false, password: false })
+export default function LoginPage({
+  userType,
+  userBasePath,
+}: {
+  userType: string;
+  userBasePath: string;
+}) {
+  const router = useRouter();
+  const [formData, setFormData] = useState<LoginFormData>({
+    email: "",
+    password: "",
+  });
+  const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errors, setErrors] = useState<LoginErrors>({
+    email: false,
+    password: false,
+  });
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-    setErrors((prev) => ({ ...prev, [name]: false }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: false }));
+  };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
-    e.preventDefault()
-    setFormSubmitted(true)
-    setIsLoading(true)
+    e.preventDefault();
+    setFormSubmitted(true);
+    setIsLoading(true);
 
-    const { email, password } = formData
+    const { email, password } = formData;
 
     if (!email || !password) {
       setErrors({
         email: !email,
         password: !password,
-      })
-      setIsLoading(false)
-      return
+      });
+      setIsLoading(false);
+      return;
     }
 
     // Simulation d'un appel API
     setTimeout(() => {
-      setIsLoading(false)
+      setIsLoading(false);
       if (email === "test@example.com" && password === "1234") {
-        router.push("/school/")
+        router.push("/school/");
       } else {
         setErrors({
           email: email !== "test@example.com",
           password: password !== "1234",
-        })
+        });
       }
-    }, 1000)
-  }
+    }, 1000);
+  };
 
   return (
     <div
@@ -66,7 +78,13 @@ export default function LoginPage() {
     >
       <div className="bg-[#f1f1f1e6] p-6 sm:p-8 rounded-[15px] shadow-[0px_4px_20px_rgba(0,0,0,0.1)] w-full max-w-[450px] mx-4 text-center">
         <div className="flex justify-center mb-6">
-          <Image src="/assets/images/logo.png" alt="Dreametrix Logo" width={194} height={69} priority />
+          <Image
+            src="/assets/images/logo.png"
+            alt="Dreametrix Logo"
+            width={194}
+            height={69}
+            priority
+          />
         </div>
 
         {isLoading && (
@@ -77,7 +95,7 @@ export default function LoginPage() {
 
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="text-left">
-            <h3 className="text-2xl font-bold text-[#25AAE1]">Login</h3>
+            <h3 className="text-2xl font-bold text-[#25AAE1]">{`Login as ${userType}`}</h3>
           </div>
 
           <div className="space-y-2">
@@ -98,7 +116,9 @@ export default function LoginPage() {
                 className="flex-1 bg-white focus:outline-none text-sm text-black"
               />
             </label>
-            {formSubmitted && errors.email && <span className="text-red-500 text-sm">Incorrect username</span>}
+            {formSubmitted && errors.email && (
+              <span className="text-red-500 text-sm">Incorrect username</span>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -119,11 +139,16 @@ export default function LoginPage() {
                 className="flex-1 bg-white focus:outline-none text-sm text-black"
               />
             </label>
-            {formSubmitted && errors.password && <span className="text-red-500 text-sm">Incorrect password</span>}
+            {formSubmitted && errors.password && (
+              <span className="text-red-500 text-sm">Incorrect password</span>
+            )}
           </div>
 
           <div className="text-right">
-            <Link href="/school/auth/forgot-password" className="text-sm text-[#25AAE1] hover:text-[#25AAE1]">
+            <Link
+              href={`/${userBasePath}/forgot-password`}
+              className="text-sm text-[#25AAE1] hover:text-[#25AAE1]"
+            >
               Forgot Password?
             </Link>
           </div>
@@ -138,23 +163,19 @@ export default function LoginPage() {
             >
               {isLoading ? "LOGGING IN..." : "LOGIN"}
             </button>
-            <p className="text-center text-sm text-gray-500">
-              Register your School?{" "}
-              <Link href="/school/auth/register" className="text-[#25AAE1] hover:text-[#25AAE1]">
-                here
-              </Link>
-            </p>
 
             <p className="text-center text-sm text-gray-500">
               Not registered yet?{" "}
-              <Link href="/school/auth/register" className="text-[#25AAE1] hover:text-[#25AAE1]">
-                Sign up here
+              <Link
+                href={`/${userBasePath}/register`}
+                className="text-[#25AAE1] hover:text-[#25AAE1]"
+              >
+                {`Sign up as ${userType} here`}
               </Link>
             </p>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }
-

@@ -1,54 +1,62 @@
-"use client"
+"use client";
 
-import { useState, type ChangeEvent, type FormEvent } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Mail, Building2, MapPin, Lock } from "lucide-react"
+import { useState, type ChangeEvent, type FormEvent } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Mail, Building2, MapPin, Lock } from "lucide-react";
 
 export interface RegisterFormData {
-  schoolEmail: string
-  schoolName: string
-  address: string
-  password: string
+  schoolEmail: string;
+  schoolName: string;
+  address: string;
+  password: string;
 }
 
 export interface RegisterErrors {
-  schoolEmail: boolean
-  schoolName: boolean
-  address: boolean
-  password: boolean
+  schoolEmail: boolean;
+  schoolName: boolean;
+  address: boolean;
+  password: boolean;
 }
 
-export default function RegisterPage() {
-  const router = useRouter()
+export default function RegisterPage({
+  userType,
+  userBasePath,
+}: {
+  userType: string;
+  userBasePath: string;
+}) {
+  const router = useRouter();
   const [formData, setFormData] = useState<RegisterFormData>({
     schoolEmail: "",
     schoolName: "",
     address: "",
     password: "",
-  })
-  const [formSubmitted, setFormSubmitted] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  });
+  const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errors, setErrors] = useState<RegisterErrors>({
     schoolEmail: false,
     schoolName: false,
     address: false,
     password: false,
-  })
+  });
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-    setErrors((prev) => ({ ...prev, [name]: false }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: false }));
+  };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
-    e.preventDefault()
-    setFormSubmitted(true)
-    setIsLoading(true)
+    e.preventDefault();
+    setFormSubmitted(true);
+    setIsLoading(true);
 
-    const hasEmptyFields = Object.entries(formData).some(([key, value]) => !value)
+    const hasEmptyFields = Object.entries(formData).some(
+      ([key, value]) => !value
+    );
 
     if (hasEmptyFields) {
       setErrors({
@@ -56,17 +64,17 @@ export default function RegisterPage() {
         schoolName: !formData.schoolName,
         address: !formData.address,
         password: !formData.password,
-      })
-      setIsLoading(false)
-      return
+      });
+      setIsLoading(false);
+      return;
     }
 
     // Simulation d'un appel API
     setTimeout(() => {
-      setIsLoading(false)
-      router.push("/school/auth/login")
-    }, 1000)
-  }
+      setIsLoading(false);
+      router.push("/school/auth/login");
+    }, 1000);
+  };
 
   return (
     <div
@@ -75,7 +83,13 @@ export default function RegisterPage() {
     >
       <div className="bg-[#f1f1f1e6] p-6 sm:p-8 rounded-[15px] shadow-[0px_4px_20px_rgba(0,0,0,0.1)] w-full max-w-[450px] mx-4 text-center">
         <div className="flex justify-center mb-6">
-          <Image src="/assets/images/logo.png" alt="Dreametrix Logo" width={194} height={69} priority />
+          <Image
+            src="/assets/images/logo.png"
+            alt="Dreametrix Logo"
+            width={194}
+            height={69}
+            priority
+          />
         </div>
 
         {isLoading && (
@@ -86,15 +100,35 @@ export default function RegisterPage() {
 
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="text-left">
-            <h2 className="text-2xl font-bold text-[#25AAE1]">School Sign up</h2>
+            <h2 className="text-2xl font-bold text-[#25AAE1]">{`Sign up as ${userType}`}</h2>
           </div>
 
           <div className="space-y-4">
             {[
-              { name: "schoolEmail", icon: Mail, placeholder: "School Email", type: "email" },
-              { name: "schoolName", icon: Building2, placeholder: "School Name", type: "text" },
-              { name: "address", icon: MapPin, placeholder: "Address", type: "text" },
-              { name: "password", icon: Lock, placeholder: "Password", type: "password" },
+              {
+                name: "schoolEmail",
+                icon: Mail,
+                placeholder: "School Email",
+                type: "email",
+              },
+              {
+                name: "schoolName",
+                icon: Building2,
+                placeholder: "School Name",
+                type: "text",
+              },
+              {
+                name: "address",
+                icon: MapPin,
+                placeholder: "Address",
+                type: "text",
+              },
+              {
+                name: "password",
+                icon: Lock,
+                placeholder: "Password",
+                type: "password",
+              },
             ].map((field) => (
               <div key={field.name} className="space-y-2">
                 <label
@@ -115,9 +149,12 @@ export default function RegisterPage() {
                     required
                   />
                 </label>
-                {formSubmitted && errors[field.name as keyof RegisterErrors] && (
-                  <span className="text-red-500 text-sm">{field.placeholder} is required</span>
-                )}
+                {formSubmitted &&
+                  errors[field.name as keyof RegisterErrors] && (
+                    <span className="text-red-500 text-sm">
+                      {field.placeholder} is required
+                    </span>
+                  )}
               </div>
             ))}
           </div>
@@ -133,14 +170,16 @@ export default function RegisterPage() {
           </button>
 
           <p className="text-center text-sm text-gray-500">
-            Already registered? Login{" "}
-            <Link href="/school/auth/login" className="text-[#25AAE1] hover:text-[#25AAE1]">
-              here
+            Already registered?
+            <Link
+              href={`/${userBasePath}/login`}
+              className="text-[#25AAE1] hover:text-[#25AAE1]"
+            >
+              {` Login as ${userType} here`}
             </Link>
           </p>
         </form>
       </div>
     </div>
-  )
+  );
 }
-

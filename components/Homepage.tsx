@@ -1,16 +1,27 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu } from "lucide-react"
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
 
-const schools = [{ id: "35948177", name: "Nehemie School" }]
+const schools = [{ id: "35948177", name: "Nehemie School" }];
 
 function MobileNav() {
   return (
@@ -25,41 +36,58 @@ function MobileNav() {
           <Link href="/" className="text-lg font-medium hover:text-gray-900">
             Home
           </Link>
-          <Link href="/administrators" className="text-lg font-medium hover:text-gray-900">
+          <Link
+            href="/administrators"
+            className="text-lg font-medium hover:text-gray-900"
+          >
             Administrators
           </Link>
-          <Link href="/teachers" className="text-lg font-medium hover:text-gray-900">
+          <Link
+            href="/teachers"
+            className="text-lg font-medium hover:text-gray-900"
+          >
             Teachers
           </Link>
-          <Link href="/families" className="text-lg font-medium hover:text-gray-900">
+          <Link
+            href="/families"
+            className="text-lg font-medium hover:text-gray-900"
+          >
             Families
           </Link>
-          <Link href="/about" className="text-lg font-medium hover:text-gray-900">
+          <Link
+            href="/about"
+            className="text-lg font-medium hover:text-gray-900"
+          >
             About Us
           </Link>
-          <Link href="/contact" className="text-lg font-medium hover:text-gray-900">
+          <Link
+            href="/contact"
+            className="text-lg font-medium hover:text-gray-900"
+          >
             Contact
           </Link>
         </nav>
       </SheetContent>
     </Sheet>
-  )
+  );
 }
 
 function SchoolSelector() {
-  const router = useRouter()
-  const [open, setOpen] = useState(false)
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
 
   const handleSchoolSelect = (schoolId: string) => {
-    setOpen(false)
-    router.push('/school/portal-selection')
-  }
+    setOpen(false);
+    router.push("/login_as");
+  };
 
   return (
     <div className="relative w-full sm:w-auto">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button className="bg-[#25AAE1] hover:bg-[#1E8BB3] px-8 w-full sm:w-auto">Select Your School here</Button>
+          <Button className="bg-[#25AAE1] hover:bg-[#1E8BB3] px-8 w-full sm:w-auto">
+            Select Your School here
+          </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0" align="start">
           <Command>
@@ -68,7 +96,10 @@ function SchoolSelector() {
               <CommandEmpty>No school found.</CommandEmpty>
               <CommandGroup>
                 {schools.map((school) => (
-                  <CommandItem key={school.id} onSelect={() => handleSchoolSelect(school.id)}>
+                  <CommandItem
+                    key={school.id}
+                    onSelect={() => handleSchoolSelect(school.id)}
+                  >
                     {school.name} - {school.id}
                   </CommandItem>
                 ))}
@@ -78,7 +109,7 @@ function SchoolSelector() {
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }
 
 export default function HomePage() {
@@ -110,7 +141,10 @@ export default function HomePage() {
           <Link href="/" className="text-gray-600 hover:text-gray-900">
             Home
           </Link>
-          <Link href="/administrators" className="text-gray-600 hover:text-gray-900">
+          <Link
+            href="/administrators"
+            className="text-gray-600 hover:text-gray-900"
+          >
             Administrators
           </Link>
           <Link href="/teachers" className="text-gray-600 hover:text-gray-900">
@@ -128,7 +162,10 @@ export default function HomePage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild className="bg-[#25AAE1] hover:bg-[#1E8BB3] hidden sm:inline-flex">
+          <Button
+            asChild
+            className="bg-[#25AAE1] hover:bg-[#1E8BB3] hidden sm:inline-flex"
+          >
             <Link href="/school/auth/register">Register your School here</Link>
           </Button>
           <MobileNav />
@@ -143,30 +180,41 @@ export default function HomePage() {
             <span className="text-[#1E8BB3] block mt-2">Classrooms</span>
           </h1>
           <p className="text-base sm:text-lg text-white max-w-md mx-auto md:mx-0">
-            Take control of your teaching with Dreametrix's online class management system. Built for educators, loved
-            by students.
+            Take control of your teaching with Dreametrix's online class
+            management system. Built for educators, loved by students.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mt-4">
             <SchoolSelector />
-            <Button asChild className="bg-[#25AAE1] hover:bg-[#1E8BB3] w-full sm:hidden">
-              <Link href="/school/auth/register">Register your School here</Link>
+            <Button
+              asChild
+              className="bg-[#25AAE1] hover:bg-[#1E8BB3] w-full sm:hidden"
+            >
+              <Link href="/school/auth/register">
+                Register your School here
+              </Link>
             </Button>
           </div>
         </div>
 
         <div className="relative hidden md:block">
           <div className="absolute right-0 top-0 w-full max-w-[24rem] aspect-[3/2] bg-[#25AAE1] rounded-lg overflow-hidden shadow-xl">
-            <Image src="/assets/img/school_class2.jpg" alt="Classroom" fill className="object-cover" />
+            <Image
+              src="/assets/img/school_class2.jpg"
+              alt="Classroom"
+              fill
+              className="object-cover"
+            />
           </div>
         </div>
       </main>
 
       {/* Footer */}
       <footer className="py-4 px-4 sm:px-6 text-center text-white border-t mt-auto">
-        <p className="text-sm sm:text-base">© 2025 Dreametrix. All rights reserved.</p>
+        <p className="text-sm sm:text-base">
+          © 2025 Dreametrix. All rights reserved.
+        </p>
       </footer>
     </div>
-  )
+  );
 }
-
