@@ -7,10 +7,10 @@ const portalButtons = [
   { label: "TEACHER", path: "/teacher/login" }, // TODO : This gonna change to /teacher/dashboard, etc, then in the teacher middleware we're gonna check if there is a loged in teacher
   { label: "STUDENT", path: "/student/login" },
   { label: "PARENT", path: "/parent/login" },
-  { label: "ASCHOOL ADMINISTRATOR", path: "/school_admin/login" },
+  { label: "SCHOOL ADMINISTRATOR", path: "/school_admin/login" },
 ];
 
-export default function PortalSelectionPage() {
+export default function PortalSelection() {
   const router = useRouter();
   const handleSchoolSelect = (schoolId: string) => {
     router.push(`/school/auth/login?school=${schoolId}`);

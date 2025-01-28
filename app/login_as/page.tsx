@@ -1,6 +1,6 @@
 import React from 'react';
-import PortalSelectionPage from '@/components/PortalSelection';
+import PortalSelection from '@/components/PortalSelection';
 
-export default function PortalSelection() {
-  return <PortalSelectionPage />;
+export default function PortalSelectionPage() {
+  return <PortalSelection />;
 }
