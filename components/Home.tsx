@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
+import DreaMetrixLogo from "./ui/dreametrix-logo";
 
 const schools = [{ id: "35948177", name: "Nehemie School" }];
 
@@ -127,14 +128,7 @@ export default function Home() {
       {/* Navigation */}
       <nav className="bg-white py-4 px-4 sm:px-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Image
-            src="/assets/img/logo.png"
-            alt="Dreametrix Logo"
-            width={150}
-            height={40}
-            priority
-            className="w-32 sm:w-[150px]"
-          />
+          <DreaMetrixLogo />
         </div>
 
         <div className="hidden md:flex items-center gap-4 lg:gap-8">

@@ -1,4 +1,4 @@
-import { Header } from "./header";
+import { Header } from "../Header";
 import { Sidebar } from "./sidebar";
 import { ActivityFeed } from "./activity-feed";
 import { AIAssistance } from "./ai-assistance";
@@ -18,7 +18,9 @@ export default function SchoolAdminDashboard() {
         </Card>
 
         <main className="flex-1 space-y-6">
-          <h1 className="text-2xl font-bold px-2">DashBoard</h1>
+          <h1 className="text-2xl font-bold px-2 text-primaryText">
+            School Admin DashBoard
+          </h1>
 
           <Card className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">

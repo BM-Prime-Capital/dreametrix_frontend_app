@@ -1,4 +1,4 @@
-import Dashboard from "@/components/school_admin/page";
+import SchoolAdminDashboard from "@/components/school_admin/page";
 export default function SchoolDashboardPage() {
-  return <Dashboard />;
+  return <SchoolAdminDashboard />;
 }
