@@ -1,22 +1,22 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "../../../app/globals.css";
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Edit2, Settings, Search } from "lucide-react";
+import { Sidebar } from "@/components/layout/Sidebar";
 
-const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "DreaMetrix - School Dashboard",
-  description: "School Management Dashboard",
-};
-
-export default function SchoolAdminLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
-    </html>
+    <div className="flex flex-col lg:flex-row gap-6 p-4 sm:p-6">
+      <Card className="w-full lg:w-[200px] h-fit">
+        <Sidebar />
+      </Card>
+      {children}
+    </div>
   );
 }

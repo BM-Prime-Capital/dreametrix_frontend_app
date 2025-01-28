@@ -1,17 +1,14 @@
-import { Header } from "../Header";
-import { Sidebar } from "./sidebar";
-import { ActivityFeed } from "./activity-feed";
-import { AIAssistance } from "./ai-assistance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Edit2, Settings, Search } from "lucide-react";
+import { Sidebar } from "../layout/Sidebar";
+import { ActivityFeed } from "../layout/ActivityFeed";
 
-export default function SchoolAdminDashboard() {
+export default function TeacherDashboard() {
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Header />
+    <div>
       <div className="flex flex-col lg:flex-row gap-6 p-4 sm:p-6">
         <Card className="w-full lg:w-[200px] h-fit">
           <Sidebar />
@@ -19,7 +16,7 @@ export default function SchoolAdminDashboard() {
 
         <main className="flex-1 space-y-6">
           <h1 className="text-2xl font-bold px-2 text-primaryText">
-            School Admin DashBoard
+            Teacher DashBoard
           </h1>
 
           <Card className="p-4 sm:p-6">
@@ -40,7 +37,7 @@ export default function SchoolAdminDashboard() {
           </Card>
 
           <Card className="p-4 sm:p-6">
-            <AIAssistance />
+            <p>Some content</p>
           </Card>
 
           <Card className="p-4 sm:p-6">

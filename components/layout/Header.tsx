@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChevronDown, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import DreaMetrixLogo from "./ui/dreametrix-logo";
+import DreaMetrixLogo from "../ui/dreametrix-logo";
 
 export function Header() {
   const router = useRouter();

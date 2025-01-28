@@ -21,6 +21,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import DreaMetrixLogo from "./ui/dreametrix-logo";
+import { userPath } from "@/constants/userConstants";
 
 const schools = [{ id: "35948177", name: "Nehemie School" }];
 
@@ -160,7 +161,9 @@ export default function Home() {
             asChild
             className="bg-[#25AAE1] hover:bg-[#1E8BB3] hidden sm:inline-flex"
           >
-            <Link href="/school/auth/register">Register your School here</Link>
+            <Link href={`${userPath.SCHOOL_ADMIN_REGISTER_PATH}`}>
+              Register your School here
+            </Link>
           </Button>
           <MobileNav />
         </div>

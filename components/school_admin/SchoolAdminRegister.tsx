@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Building2, MapPin, Lock } from "lucide-react";
+import { userPath } from "@/constants/userConstants";
+import DreaMetrixLogo from "../ui/dreametrix-logo";
 
 export interface RegisterFormData {
   schoolEmail: string;
@@ -20,7 +22,7 @@ export interface RegisterErrors {
   password: boolean;
 }
 
-export default function Register({
+export default function SchoolAdminRegister({
   userType,
   userBasePath,
 }: {
@@ -72,7 +74,7 @@ export default function Register({
     // Simulation d'un appel API
     setTimeout(() => {
       setIsLoading(false);
-      router.push("/school/auth/login");
+      router.push(userPath.SCHOOL_ADMIN_LOGIN_PATH);
     }, 1000);
   };
 
@@ -83,13 +85,7 @@ export default function Register({
     >
       <div className="bg-[#f1f1f1e6] p-6 sm:p-8 rounded-[15px] shadow-[0px_4px_20px_rgba(0,0,0,0.1)] w-full max-w-[450px] mx-4 text-center">
         <div className="flex justify-center mb-6">
-          <Image
-            src="/assets/images/logo.png"
-            alt="Dreametrix Logo"
-            width={194}
-            height={69}
-            priority
-          />
+          <DreaMetrixLogo />
         </div>
 
         {isLoading && (
@@ -172,7 +168,7 @@ export default function Register({
           <p className="text-center text-sm text-gray-500">
             Already registered?
             <Link
-              href={`/${userBasePath}/login`}
+              href={`${userPath.SCHOOL_ADMIN_LOGIN_PATH}`}
               className="text-[#25AAE1] hover:text-[#25AAE1]"
             >
               {` Login as ${userType} here`}

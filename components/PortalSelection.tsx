@@ -2,12 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { userPath, userTitle } from "@/constants/userConstants";
 
 const portalButtons = [
-  { label: "TEACHER", path: "/teacher/login" }, // TODO : This gonna change to /teacher/dashboard, etc, then in the teacher middleware we're gonna check if there is a loged in teacher
-  { label: "STUDENT", path: "/student/login" },
-  { label: "PARENT", path: "/parent/login" },
-  { label: "SCHOOL ADMINISTRATOR", path: "/school_admin/login" },
+  { label: userTitle.TEACHER, path: userPath.TEACHER_LOGIN_PATH }, // TODO : This gonna change to DASHBOARD paths etc, then in the teacher middleware we're gonna check if there is a loged in teacher
+  { label: userTitle.STUDENT, path: userPath.STUDENT_LOGIN_PATH },
+  { label: userTitle.PARENT, path: userPath.PARENT_LOGIN_PATH },
+  { label: userTitle.SCHOOL_ADMIN, path: userPath.SCHOOL_ADMIN_LOGIN_PATH },
 ];
 
 export default function PortalSelection() {

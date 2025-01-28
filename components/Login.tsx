@@ -3,8 +3,11 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, Lock } from "lucide-react";
+import { getUserNavigationInfo } from "@/utils/userUtility";
+import { userPath, userTypeEnum } from "@/constants/userConstants";
+import DreaMetrixLogo from "./ui/dreametrix-logo";
 
 export interface LoginFormData {
   email: string;
@@ -17,13 +20,15 @@ export interface LoginErrors {
 }
 const TEST_EMAIL = "test@example.com";
 const TEST_PASSWORD = "test";
-export default function Login({
-  userType,
-  userBasePath,
-}: {
-  userType: string;
-  userBasePath: string;
-}) {
+export default function Login() {
+  const searchParams = useSearchParams();
+  const userTypeParam = searchParams.get("userType") || userTypeEnum.TEACHER;
+  const userNagivationInfo = getUserNavigationInfo(userTypeParam);
+  const USER_REGISTER_PATH =
+    userNagivationInfo.basePath === userPath.PARENT_BASE_PATH
+      ? userPath.PARENT_REGISTER_PATH
+      : userPath.SCHOOL_ADMIN_REGISTER_PATH;
+
   const router = useRouter();
   const [formData, setFormData] = useState<LoginFormData>({
     email: TEST_EMAIL,
@@ -62,7 +67,7 @@ export default function Login({
     setTimeout(() => {
       setIsLoading(false);
       if (email === TEST_EMAIL && password === TEST_PASSWORD) {
-        router.push(`/${userBasePath}`);
+        router.push(`${userNagivationInfo.basePath}`);
       } else {
         setErrors({
           email: email !== TEST_EMAIL,
@@ -79,13 +84,7 @@ export default function Login({
     >
       <div className="bg-[#f1f1f1e6] p-6 sm:p-8 rounded-[15px] shadow-[0px_4px_20px_rgba(0,0,0,0.1)] w-full max-w-[450px] mx-4 text-center">
         <div className="flex justify-center mb-6">
-          <Image
-            src="/assets/images/logo.png"
-            alt="Dreametrix Logo"
-            width={194}
-            height={69}
-            priority
-          />
+          <DreaMetrixLogo />
         </div>
 
         {isLoading && (
@@ -96,7 +95,7 @@ export default function Login({
 
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="text-left">
-            <h3 className="text-2xl font-bold text-[#25AAE1]">{`Login as ${userType}`}</h3>
+            <h3 className="text-2xl font-bold text-[#25AAE1]">{`Login as ${userNagivationInfo.label}`}</h3>
           </div>
 
           <div className="space-y-2">
@@ -147,7 +146,7 @@ export default function Login({
 
           <div className="text-right">
             <Link
-              href={`/${userBasePath}/forgot-password`}
+              href={"/forgot_password"}
               className="text-sm text-[#25AAE1] hover:text-[#25AAE1]"
             >
               Forgot Password?
@@ -167,12 +166,23 @@ export default function Login({
 
             <p className="text-center text-sm text-gray-500">
               Not registered yet?{" "}
-              <Link
-                href={`/${userBasePath}/register`}
-                className="text-[#25AAE1] hover:text-[#25AAE1]"
-              >
-                {`Sign up as ${userType} here`}
-              </Link>
+              {userNagivationInfo.basePath === userPath.PARENT_BASE_PATH ||
+              userNagivationInfo.basePath ===
+                userPath.SCHOOL_ADMIN_BASE_PATH ? (
+                <Link
+                  href={`${USER_REGISTER_PATH}`}
+                  className="text-[#25AAE1] hover:text-[#25AAE1]"
+                >
+                  {`Sign up as ${userNagivationInfo.label} here`}
+                </Link>
+              ) : (
+                <Link
+                  href={`#`}
+                  className="text-[#25AAE1] hover:text-[#25AAE1]"
+                >
+                  {`Please contact your School Administrator`}
+                </Link>
+              )}
             </p>
           </div>
         </form>
