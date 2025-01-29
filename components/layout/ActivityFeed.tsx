@@ -1,63 +1,69 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Check, FileText, MessageSquare } from "lucide-react";
 import { Card } from "../ui/card";
+import PageTitleH2 from "../ui/page-title-h2";
+import { teacherImages } from "@/constants/images";
+import Image from "next/image";
+import ActivityFeedItem from "../ui/activity-feed-item";
+import { activityType } from "@/constants/userConstants";
 
 export function ActivityFeed() {
   return (
     <Card className="w-full lg:w-[300px] h-fit">
-      <div className="p-4">
-        <h2 className="font-semibold mb-4">Activity</h2>
+      <div className="flex flex-col gap-4 p-4">
+        <PageTitleH2 title="Activity" />
         <div className="space-y-4">
           <div className="text-xs text-muted-foreground">TODAY</div>
-          <div className="flex items-start gap-2">
-            <Avatar className="h-8 w-8 shrink-0">
-              <AvatarImage src="/placeholder.svg" />
-              <AvatarFallback>DS</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm truncate">
-                <span className="font-medium">Darika Samak</span> mark as done
-                <span className="text-muted-foreground">
-                  {" "}
-                  Listing on Science
-                </span>
-              </p>
-              <p className="text-xs text-muted-foreground">8:40 PM</p>
-            </div>
-            <Check className="h-4 w-4 text-green-500 shrink-0" />
-          </div>
-          <div className="flex items-start gap-2">
-            <Avatar className="h-8 w-8 shrink-0">
-              <AvatarImage src="/placeholder.svg" />
-              <AvatarFallback>ES</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm truncate">
-                <span className="font-medium">Emilee Simchenko</span> sent you a
-                message
-              </p>
-              <p className="text-xs text-muted-foreground">7:32 PM</p>
-            </div>
-            <MessageSquare className="h-4 w-4 text-blue-500 shrink-0" />
-          </div>
-          <div className="flex items-start gap-2">
-            <Avatar className="h-8 w-8 shrink-0">
-              <AvatarImage src="/placeholder.svg" />
-              <AvatarFallback>DS</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm truncate">
-                <span className="font-medium">Darika Samak</span> uploaded 4
-                files
-                <span className="text-muted-foreground">
-                  {" "}
-                  on Task2 - Mathematics
-                </span>
-              </p>
-              <p className="text-xs text-muted-foreground">6:02 PM</p>
-            </div>
-            <FileText className="h-4 w-4 text-orange-500 shrink-0" />
-          </div>
+          <ActivityFeedItem
+            type={activityType.DONE}
+            userName="Darika Samak"
+            task="Listing on Science"
+            time="8:40 PM"
+          />
+
+          <ActivityFeedItem
+            type={activityType.MESSAGE}
+            userName="Emilee Simchenko"
+            task=""
+            time="7:32 PM"
+          />
+
+          <ActivityFeedItem
+            type={activityType.UPLOAD}
+            userName="Darika Samak"
+            task="4 files on Task3 - Mathematics"
+            time="6:02 PM"
+          />
+        </div>
+
+        <div className="space-y-4">
+          <div className="text-xs text-muted-foreground">YESTERDAY</div>
+          <ActivityFeedItem
+            type={activityType.UPLOAD}
+            userName="Darika Samak"
+            task="4 files on Task2 - Mathematics"
+            time="6:02 PM"
+          />
+          <ActivityFeedItem
+            type={activityType.DONE}
+            userName="Darika Samak"
+            task="Listing on Science"
+            time="6:49 PM"
+          />
+
+          <ActivityFeedItem
+            type={activityType.EDIT}
+            userName="Darika Samak"
+            task="Listing on Science"
+            time="7:32 PM"
+          />
+
+          <ActivityFeedItem
+            type={activityType.MESSAGE}
+            userName="Emilee Simchenko"
+            task=""
+            time="6:02 PM"
+          />
         </div>
       </div>
     </Card>
