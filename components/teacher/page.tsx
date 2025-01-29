@@ -3,22 +3,17 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Edit2, Settings, Search } from "lucide-react";
-import { Sidebar } from "../layout/Sidebar";
 import { ActivityFeed } from "../layout/ActivityFeed";
+import PageTitleH1 from "../ui/page-title-h1";
+import PageTitleH2 from "../ui/page-title-h2";
 
 export default function TeacherDashboard() {
   return (
-    <div>
+    <section className="flex flex-col gap-6 w-full">
+      <PageTitleH1 title="Dashboard" />
+
       <div className="flex flex-col lg:flex-row gap-6 p-4 sm:p-6">
-        <Card className="w-full lg:w-[200px] h-fit">
-          <Sidebar />
-        </Card>
-
-        <main className="flex-1 space-y-6">
-          <h1 className="text-2xl font-bold px-2 text-primaryText">
-            Teacher DashBoard
-          </h1>
-
+        <div className="flex-1 space-y-6">
           <Card className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
               <Avatar className="h-16 w-16">
@@ -26,7 +21,8 @@ export default function TeacherDashboard() {
                 <AvatarFallback>SL</AvatarFallback>
               </Avatar>
               <div className="text-center sm:text-left">
-                <h2 className="text-xl font-semibold">School Lead/Principal</h2>
+                <PageTitleH2 title="Sarah Young" />
+
                 <div className="flex gap-2 justify-center sm:justify-start">
                   <Settings className="h-4 w-4" />
                   <Search className="h-4 w-4" />
@@ -104,12 +100,10 @@ export default function TeacherDashboard() {
               </div>
             </div>
           </Card>
-        </main>
+        </div>
 
-        <Card className="w-full lg:w-[300px] h-fit">
-          <ActivityFeed />
-        </Card>
+        <ActivityFeed />
       </div>
-    </div>
+    </section>
   );
 }

@@ -18,9 +18,9 @@ export function Header() {
   return (
     <header className="border-b p-4 flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="lg:hidden">
+        {/*  <Button variant="ghost" size="icon" className="lg:hidden">
           <Menu className="h-6 w-6" />
-        </Button>
+        </Button> */}
         <DreaMetrixLogo />
       </div>
       <DropdownMenu>

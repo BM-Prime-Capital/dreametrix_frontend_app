@@ -101,6 +101,7 @@ function SchoolSelector() {
                   <CommandItem
                     key={school.id}
                     onSelect={() => handleSchoolSelect(school.id)}
+                    className="cursor-pointer"
                   >
                     {school.name} - {school.id}
                   </CommandItem>
@@ -119,7 +120,7 @@ export default function Home() {
     <div
       className="min-h-screen flex flex-col"
       style={{
-        backgroundImage: "url('/assets/img/school_class.avif')",
+        backgroundImage: "url('/assets/images/school_class.avif')",
         backgroundRepeat: "no-repeat",
         backgroundSize: "cover",
         backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -197,7 +198,7 @@ export default function Home() {
         <div className="relative hidden md:block">
           <div className="absolute right-0 top-0 w-full max-w-[24rem] aspect-[3/2] bg-[#25AAE1] rounded-lg overflow-hidden shadow-xl">
             <Image
-              src="/assets/img/school_class2.jpg"
+              src="/assets/images/school_class2.jpg"
               alt="Classroom"
               fill
               className="object-cover"

@@ -1,15 +1,18 @@
-import { Card } from "@/components/ui/card"
-import { TeachersTable } from "./teachers-table"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { Card } from "@/components/ui/card";
+import { TeachersTable } from "./teachers-table";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import PageTitleH1 from "@/components/ui/page-title-h1";
 
 export default function TeachersPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         <div className="space-y-2">
-          <h1 className="text-xl font-semibold">TEACHERS</h1>
-          <div className="text-sm text-muted-foreground">TEACHER&apos;S CODE: XXXXXXXX</div>
+          <PageTitleH1 title="TEACHERS" />
+          <div className="text-sm text-muted-foreground">
+            TEACHER&apos;S CODE: XXXXXXXX
+          </div>
         </div>
         <div className="flex items-center gap-4 w-full sm:w-auto">
           <Button className="bg-blue-500 hover:bg-blue-600 w-full sm:w-auto">
@@ -27,6 +30,5 @@ export default function TeachersPage() {
         <TeachersTable />
       </Card>
     </div>
-  )
+  );
 }
-
