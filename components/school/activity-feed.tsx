@@ -3,7 +3,7 @@ import { Check, FileText, MessageSquare } from "lucide-react"
 
 export function ActivityFeed() {
   return (
-    <div className="p-4">
+    <div className="p-4 ">
       <h2 className="font-semibold mb-4">Activity</h2>
       <div className="space-y-4">
         <div className="text-xs text-muted-foreground">TODAY</div>

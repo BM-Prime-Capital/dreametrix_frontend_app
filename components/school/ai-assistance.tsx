@@ -3,7 +3,7 @@ import { AlertCircle, Bell } from "lucide-react"
 
 export function AIAssistance() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-[#f0f9ff]">
       <h2 className="font-semibold">AI Teacher Assistance</h2>
       <Alert className="bg-sky-50 border-sky-100">
         <AlertCircle className="h-4 w-4 shrink-0" />
