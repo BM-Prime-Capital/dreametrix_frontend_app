@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit2, Settings, Search } from "lucide-react";
 import { ActivityFeed } from "../layout/ActivityFeed";
 import PageTitleH1 from "../ui/page-title-h1";
 import PageTitleH2 from "../ui/page-title-h2";
@@ -43,7 +42,7 @@ export default function TeacherDashboard() {
     const existingSubject = subjects.find(
       (subjectValue) => subject.toLowerCase() === subjectValue.toLowerCase()
     );
-    if (!existingSubject) {
+    if (!existingSubject && subject) {
       setSubjects([...subjects, subject]);
       setNewSubject("");
     }
@@ -188,7 +187,7 @@ export default function TeacherDashboard() {
                 <PageTitleH2 title="Sarah Young" />
                 {/* <div className="text-sm text-muted-foreground">Change</div> */}
               </div>
-              <div className="grid gap-4 max-w-xl mx-auto sm:mx-0">
+              <div className="grid gap-8 max-w-xl mx-auto sm:mx-0">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm" htmlFor="username">
@@ -196,7 +195,7 @@ export default function TeacherDashboard() {
                     </label>
                     <Input
                       id="username"
-                      placeholder="School Name"
+                      placeholder="Teacher Name"
                       className="bg-gray-50 rounded-full"
                     />
                   </div>
@@ -208,6 +207,7 @@ export default function TeacherDashboard() {
                       id="email"
                       placeholder="sarah@school.edu"
                       className="bg-gray-50 rounded-full"
+                      readOnly
                     />
                   </div>
                 </div>
@@ -220,6 +220,7 @@ export default function TeacherDashboard() {
                       id="school"
                       placeholder="School1"
                       className="bg-gray-50 rounded-full"
+                      readOnly
                     />
                   </div>
                   <div>
@@ -228,17 +229,20 @@ export default function TeacherDashboard() {
                     </label>
                     <Input
                       id="role"
-                      placeholder="Principal"
+                      placeholder="Teacher"
                       className="bg-gray-50 rounded-full"
+                      readOnly
                     />
                   </div>
                 </div>
-                <Button className="w-full bg-blue-500 hover:bg-blue-600 rounded-full">
-                  UPDATE PROFILE
-                </Button>
-                <Button variant="ghost" className="w-full rounded-full">
-                  Cancel
-                </Button>
+                <div className="flex flex-col gap-2">
+                  <Button className="w-full bg-blue-500 hover:bg-blue-600 rounded-full">
+                    UPDATE PROFILE
+                  </Button>
+                  <Button variant="ghost" className="w-full rounded-full">
+                    Cancel
+                  </Button>
+                </div>
               </div>
             </div>
           </Card>
@@ -247,14 +251,14 @@ export default function TeacherDashboard() {
             <div className="space-y-6">
               <PageTitleH2 title="Seattings" />
 
-              <div className="grid gap-4 max-w-xl mx-auto sm:mx-0">
-                <div className="flex flex-col gap-4">
-                  <div>
+              <div className="grid gap-8 mx-auto sm:mx-0">
+                <div className="flex flex-col gap-4 overflow-x-scroll">
+                  <div className="">
                     <label className="text-sm" htmlFor="subject">
                       Add subjects
                     </label>
-                    <div className="flex flex-wrap items-center gap-2 bg-gray-200 rounded-full text-sm p-2">
-                      <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap overflow-x-scroll items-center gap-2 bg-gray-200 rounded-full text-sm p-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         {subjects.map((subject) => (
                           <MultiSelectionItem
                             title={subject}
@@ -262,7 +266,7 @@ export default function TeacherDashboard() {
                           />
                         ))}
                       </div>
-                      <div className="flex items-center flex-1">
+                      <div className="flex items-center">
                         <input
                           value={newSubject}
                           onChange={(e) => setNewSubject(e.target.value)}
@@ -305,12 +309,14 @@ export default function TeacherDashboard() {
                   </div>
                 </div>
 
-                <Button className="w-full bg-blue-500 hover:bg-blue-600 rounded-full">
-                  UPDATE
-                </Button>
-                <Button variant="ghost" className="w-full rounded-full">
-                  Cancel
-                </Button>
+                <div className="flex flex-col gap-2">
+                  <Button className="w-full bg-blue-500 hover:bg-blue-600 rounded-full">
+                    UPDATE
+                  </Button>
+                  <Button variant="ghost" className="w-full rounded-full">
+                    Cancel
+                  </Button>
+                </div>
               </div>
             </div>
           </Card>

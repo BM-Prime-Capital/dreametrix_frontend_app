@@ -1,8 +1,15 @@
-"use client"
+"use client";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Eye, Pencil, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // This would typically come from your API
 const classes = [
@@ -23,29 +30,34 @@ const classes = [
     students: 15,
   },
   // Add more sample data...
-]
+];
 
-export function ClassesTable() {
+export function AssignmentsTable() {
   return (
     <div className="w-full overflow-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>CLASS</TableHead>
-            <TableHead>SUBJECT</TableHead>
-            <TableHead>GRADE</TableHead>
-            <TableHead>TEACHER</TableHead>
+            <TableHead>TYPE</TableHead>
+            <TableHead>AGV. SCORE</TableHead>
+            <TableHead>GEN. FEEDBACK</TableHead>
+            <TableHead>NO. OF SPECIFIC FEEDBACK</TableHead>
             <TableHead>STUDENTS</TableHead>
-            <TableHead className="w-[100px]"></TableHead>
+            <TableHead>STATUS</TableHead>
+            <TableHead className="w-[100px]">ACTIONS</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {classes.map((class_, index) => (
-            <TableRow key={class_.id} className={index % 2 === 0 ? "bg-sky-50/50" : ""}>
+            <TableRow
+              key={class_.id}
+              className={index % 2 === 0 ? "bg-sky-50/50" : ""}
+            >
               <TableCell>{class_.name}</TableCell>
-              <TableCell>{class_.subject}</TableCell>
-              <TableCell>{class_.grade}</TableCell>
-              <TableCell>{class_.teacher}</TableCell>
+              <TableCell>{class_.students}</TableCell>
+              <TableCell>{class_.students}</TableCell>
+              <TableCell>{class_.students}</TableCell>
+              <TableCell>{class_.students}</TableCell>
               <TableCell>{class_.students}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
@@ -65,6 +77,5 @@ export function ClassesTable() {
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }
-

@@ -15,6 +15,10 @@ export const generalImages = {
   reports: `${GENERAL_IMAGES_BASE_PATH}/reports.svg`,
   seating: `${GENERAL_IMAGES_BASE_PATH}/seating.svg`,
   teach: `${GENERAL_IMAGES_BASE_PATH}/teach.svg`,
+  add: `${GENERAL_IMAGES_BASE_PATH}/add.svg`,
+  calculations: `${GENERAL_IMAGES_BASE_PATH}/calculations.svg`,
+  layout: `${GENERAL_IMAGES_BASE_PATH}/layout.svg`,
+  print: `${GENERAL_IMAGES_BASE_PATH}/print.svg`,
 };
 
 export const teacherImages = {

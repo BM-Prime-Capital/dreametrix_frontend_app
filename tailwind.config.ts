@@ -31,6 +31,7 @@ const config: Config = {
           foreground: "hsl(var(--popover-foreground))",
         },
         primaryText: "#27AAE1",
+        secondaryBtn: "#D15A9D",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
