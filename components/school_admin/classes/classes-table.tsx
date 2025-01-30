@@ -4,14 +4,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Eye, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-// This would typically come from your API
 const classes = [
   {
     id: 1,
     name: "Class 5 - Sci",
     subject: "Science",
     grade: "Grade 5",
-    teacher: "Samantha Brown",
     students: 15,
   },
   {
@@ -19,10 +17,43 @@ const classes = [
     name: "Class 5 - Math",
     subject: "Mathematics",
     grade: "Grade 5",
-    teacher: "Joe Smith",
     students: 15,
   },
-  // Add more sample data...
+  {
+    id: 3,
+    name: "Class 6 - Math",
+    subject: "Mathematics",
+    grade: "Grade 6",
+    students: 15,
+  },
+  {
+    id: 4,
+    name: "Class 7 - Sci",
+    subject: "Science",
+    grade: "Grade 7",
+    students: 15,
+  },
+  {
+    id: 5,
+    name: "Class 8 - Math",
+    subject: "Mathematics",
+    grade: "Grade 8",
+    students: 15,
+  },
+  {
+    id: 6,
+    name: "Class 7 - Math",
+    subject: "Mathematics",
+    grade: "Grade 7",
+    students: 15,
+  },
+  {
+    id: 7,
+    name: "Class 9 - Sci",
+    subject: "Science",
+    grade: "Grade 9",
+    students: 15,
+  },
 ]
 
 export function ClassesTable() {
@@ -34,31 +65,32 @@ export function ClassesTable() {
             <TableHead>CLASS</TableHead>
             <TableHead>SUBJECT</TableHead>
             <TableHead>GRADE</TableHead>
-            <TableHead>TEACHER</TableHead>
             <TableHead>STUDENTS</TableHead>
+            <TableHead className="w-[100px]"></TableHead>
             <TableHead className="w-[100px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {classes.map((class_, index) => (
-            <TableRow key={class_.id} className={index % 2 === 0 ? "bg-sky-50/50" : ""}>
-              <TableCell>{class_.name}</TableCell>
-              <TableCell>{class_.subject}</TableCell>
-              <TableCell>{class_.grade}</TableCell>
-              <TableCell>{class_.teacher}</TableCell>
-              <TableCell>{class_.students}</TableCell>
+          {classes.map((classItem, index) => (
+            <TableRow key={classItem.id} className={index % 2 === 0 ? "bg-sky-50/50" : ""}>
+              <TableCell className="font-medium">{classItem.name}</TableCell>
+              <TableCell>{classItem.subject}</TableCell>
+              <TableCell>{classItem.grade}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Eye className="h-4 w-4 text-sky-500" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Pencil className="h-4 w-4 text-sky-500" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
+                  {classItem.students}
+                  <Eye className="h-4 w-4 text-blue-500" />
                 </div>
+              </TableCell>
+              <TableCell>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Pencil className="h-4 w-4 text-blue-500" />
+                </Button>
+              </TableCell>
+              <TableCell>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </Button>
               </TableCell>
             </TableRow>
           ))}
@@ -67,4 +99,3 @@ export function ClassesTable() {
     </div>
   )
 }
-

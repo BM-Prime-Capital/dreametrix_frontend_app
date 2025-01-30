@@ -1,68 +1,75 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   Home,
   Users,
   UserRound,
   GraduationCap,
   MessageSquare,
-} from "lucide-react";
-import { cn } from "@/utils/tailwind";
+} from "lucide-react"
+import { cn } from "@/libs/utils"
 
 const routes = [
   {
-    path: "/school/home",
+    path: "/school_admin/classes",
     icon: Home,
     label: "HOME",
+    color: "text-blue-500",
   },
   {
-    path: "/school/teachers",
+    path: "/school_admin/teachers",
     icon: Users,
     label: "TEACHERS",
+    color: "text-orange-500",
   },
   {
-    path: "/parents",
+    path: "/school_admin/parents",
     icon: UserRound,
     label: "PARENTS",
+    color: "text-green-500",
   },
   {
-    path: "/students",
+    path: "/school_admin/students",
     icon: GraduationCap,
     label: "STUDENTS",
+    color: "text-orange-500",
   },
   {
-    path: "/communicate",
+    path: "/school_admin/communicate",
     icon: MessageSquare,
     label: "COMMUNICATE",
+    color: "text-green-500",
   },
-];
+]
 
 export function Sidebar() {
-  const pathname = usePathname();
+  const pathname = usePathname()
 
   return (
-    <div className="p-4 flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible">
-      {routes.map((route) => {
-        const Icon = route.icon;
-        const isActive = pathname === route.path;
+    <div className="flex flex-col gap-2">
+      {routes.map((route, index) => {
+        const Icon = route.icon
+        const isActive = pathname === route.path
 
         return (
           <Link
             key={route.path}
             href={route.path}
             className={cn(
-              "flex items-center gap-2 p-2 text-sm rounded-md whitespace-nowrap transition-colors",
-              "hover:bg-blue-50 hover:text-blue-600",
-              isActive && "bg-blue-50 text-blue-600"
+              "flex items-center gap-3 p-4 text-sm rounded-md transition-colors",
+              "hover:bg-blue-500 hover:text-white",
+              isActive ? "bg-blue-500 text-white" : "bg-white",
+              index === 0 && "rounded-t-lg",
+              index === routes.length - 1 && "rounded-b-lg"
             )}
           >
-            <Icon className="w-4 h-4" />
-            <span className="hidden sm:inline">{route.label}</span>
+            <Icon className={cn("w-4 h-4", !isActive && route.color)} />
+            <span>{route.label}</span>
           </Link>
-        );
+        )
       })}
     </div>
-  );
+  )
 }

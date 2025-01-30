@@ -33,12 +33,12 @@ export default function SchoolAdminDashboard() {
           </div>
         </Card>
 
-        <Card className="p-4 sm:p-6">
+        <Card className="p-4 sm:p-6 bg-[#f0f9ff]">
           <AIAssistance />
         </Card>
 
-        <Card className="p-4 sm:p-6">
-          <div className="space-y-6">
+        <Card className="p-4 sm:p-6 ">
+          <div className="space-y-6 ">
             <h2 className="text-xl font-semibold">Profile</h2>
             <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
               <Avatar className="h-16 w-16">
@@ -92,7 +92,7 @@ export default function SchoolAdminDashboard() {
                   />
                 </div>
               </div>
-              <Button className="w-full bg-blue-500 hover:bg-blue-600">
+              <Button className="w-full bg-blue-500">
                 UPDATE PROFILE
               </Button>
               <Button variant="ghost" className="w-full">
@@ -103,9 +103,6 @@ export default function SchoolAdminDashboard() {
         </Card>
       </section>
 
-      <Card className="w-full lg:w-[300px] h-fit">
-        <ActivityFeed />
-      </Card>
     </>
   );
 }
