@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -8,8 +10,45 @@ import PageTitleH1 from "../ui/page-title-h1";
 import PageTitleH2 from "../ui/page-title-h2";
 import Image from "next/image";
 import { teacherImages } from "@/constants/images";
+import MultiSelectionItem from "../ui/multi-selection-item";
+import { useState } from "react";
 
 export default function TeacherDashboard() {
+  const [feedbackDuration, setFeedbackDuration] = useState<number>(2);
+  const [newSubject, setNewSubject] = useState("");
+  const [subjects, setSubjects] = useState<string[]>([
+    "Science",
+    "Mathematics",
+  ]);
+
+  const incrementFeedbackDuration = () => {
+    if (feedbackDuration <= 9) {
+      setFeedbackDuration(feedbackDuration + 1);
+    }
+  };
+  const decrementFeedbackDuration = () => {
+    if (feedbackDuration >= 2) {
+      setFeedbackDuration(feedbackDuration - 1);
+    }
+  };
+
+  const deleteSubject = (subject: string) => {
+    const newSubjects = subjects.filter(
+      (subjectValue) => subjectValue != subject
+    );
+    setSubjects(newSubjects);
+  };
+
+  const addSubject = (subject: string) => {
+    const existingSubject = subjects.find(
+      (subjectValue) => subject.toLowerCase() === subjectValue.toLowerCase()
+    );
+    if (!existingSubject) {
+      setSubjects([...subjects, subject]);
+      setNewSubject("");
+    }
+  };
+
   return (
     <section className="flex flex-col gap-6 w-full">
       <PageTitleH1 title="Dashboard" />
@@ -196,6 +235,78 @@ export default function TeacherDashboard() {
                 </div>
                 <Button className="w-full bg-blue-500 hover:bg-blue-600 rounded-full">
                   UPDATE PROFILE
+                </Button>
+                <Button variant="ghost" className="w-full rounded-full">
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 sm:py-6 sm:px-24">
+            <div className="space-y-6">
+              <PageTitleH2 title="Seattings" />
+
+              <div className="grid gap-4 max-w-xl mx-auto sm:mx-0">
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <label className="text-sm" htmlFor="subject">
+                      Add subjects
+                    </label>
+                    <div className="flex flex-wrap items-center gap-2 bg-gray-200 rounded-full text-sm p-2">
+                      <div className="flex items-center gap-2">
+                        {subjects.map((subject) => (
+                          <MultiSelectionItem
+                            title={subject}
+                            deleteCallback={() => deleteSubject(subject)}
+                          />
+                        ))}
+                      </div>
+                      <div className="flex items-center flex-1">
+                        <input
+                          value={newSubject}
+                          onChange={(e) => setNewSubject(e.target.value)}
+                          className="p-1 h-fit w-full flex-1 rounded-l-full bg-gray-100 focus:bg-gray-50 focus:outline-none focus:border-transparent focus:shadow-none active:outline-none active:border-transparent active:shadow-none"
+                          placeholder="Add subject"
+                        />
+                        <label
+                          className="text-blue-500 text-lg rounded-r-full bg-gray-100 hover:text-white hover:border-white hover:bg-blue-600 active:bg-blue-700 px-2 font-bold cursor-pointer"
+                          onClick={() => addSubject(newSubject)}
+                        >
+                          &#43;
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm" htmlFor="email">
+                      Maximun duration for feedback audio (minutes)
+                    </label>
+                    <div className="flex">
+                      <span
+                        className="flex justify-center items-center border w-10 h-10 text-lg text-blue-500 hover:bg-gray-50 active:bg-gray-100 cursor-pointer font-bold rounded-l-md"
+                        onClick={() => decrementFeedbackDuration()}
+                      >
+                        &#8722;
+                      </span>
+                      <span className="flex justify-center items-center border w-10 h-10 text-lg font-bold">
+                        {feedbackDuration < 10 ? 0 : ""}
+                        {feedbackDuration}
+                      </span>
+                      <span
+                        className="flex justify-center items-center border w-10 h-10 text-lg bg-blue-500 text-white font-bold rounded-r-md hover:bg-blue-600 active:bg-blue-700 cursor-pointer"
+                        onClick={() => incrementFeedbackDuration()}
+                      >
+                        {" "}
+                        &#43;
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <Button className="w-full bg-blue-500 hover:bg-blue-600 rounded-full">
+                  UPDATE
                 </Button>
                 <Button variant="ghost" className="w-full rounded-full">
                   Cancel

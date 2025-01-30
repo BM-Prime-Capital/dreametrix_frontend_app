@@ -25,7 +25,6 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
                 "hover:bg-blue-50 hover:text-blue-600 border-b",
                 isActive && "bg-blue-50 text-blue-600"
               )}
-              title={route.label}
             >
               <Image
                 src={iconPath}
@@ -33,6 +32,7 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
                 width={100}
                 height={100}
                 className="w-4 h-4"
+                title={route.label}
               />
               <span className="hidden sm:inline">{route.label}</span>
             </Link>
