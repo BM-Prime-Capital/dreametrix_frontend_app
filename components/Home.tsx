@@ -87,7 +87,7 @@ function SchoolSelector() {
     <div className="relative w-full sm:w-auto">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button className="bg-[#25AAE1] hover:bg-[#1E8BB3] px-8 w-full sm:w-auto">
+          <Button className="bg-[#25AAE1] hover:bg-[#1E8BB3] px-8 w-full sm:w-auto text-lg">
             Select Your School here
           </Button>
         </PopoverTrigger>
@@ -116,18 +116,23 @@ function SchoolSelector() {
 
 export default function Home() {
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{
-        backgroundImage: "url('/assets/img/school_class.avif')",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        backgroundBlendMode: "darken",
-      }}
-    >
+    <div className="min-h-screen flex flex-col relative">
+      {/* Background Image with Overlay */}
+      <div 
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: "url('/assets/img/school_class.avif')",
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-black/70" />
+      </div>
+
       {/* Navigation */}
-      <nav className="bg-white py-4 px-4 sm:px-6 flex items-center justify-between">
+      <nav className="relative z-10 bg-white py-4 px-4 sm:px-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <DreaMetrixLogo />
         </div>
@@ -170,18 +175,21 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <main className="flex-1 grid md:grid-cols-2 gap-8 p-4 sm:p-6 md:p-12">
-        <div className="flex flex-col justify-center gap-6 text-center md:text-left">
-          <h1 className="text-4xl sm:text-5xl font-bold">
-            <span className="text-white">Empowering Your</span>{" "}
-            <span className="text-[#1E8BB3] block mt-2">Classrooms</span>
-          </h1>
-          <p className="text-base sm:text-lg text-white max-w-md mx-auto md:mx-0">
-            Take control of your teaching with Dreametrix's online class
-            management system. Built for educators, loved by students.
-          </p>
+      <main className="relative z-10 flex-1 grid md:grid-cols-2 gap-8 p-4 sm:p-6 md:p-12">
+        {/* Left Content */}
+        <div className="flex flex-col justify-center gap-8 text-center md:text-left">
+          <div>
+            <h1 className="text-5xl sm:text-6xl font-bold mb-4">
+              <span className="text-white">Empowering Your</span>
+              <span className="text-[#25AAE1] block mt-2">Classrooms</span>
+            </h1>
+            <p className="text-lg sm:text-xl text-white/90 max-w-xl">
+              Take control of your teaching with Dreametrix's online class
+              management system. Built for educators, loved by students.
+            </p>
+          </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 mt-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <SchoolSelector />
             <Button
               asChild
@@ -194,21 +202,23 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="relative hidden md:block">
-          <div className="absolute right-0 top-0 w-full max-w-[24rem] aspect-[3/2] bg-[#25AAE1] rounded-lg overflow-hidden shadow-xl">
+        {/* Right Image */}
+        <div className="hidden md:flex items-center justify-center">
+          <div className="relative w-[500px] h-[300px] rounded-lg overflow-hidden shadow-2xl transform translate-y-12">
             <Image
               src="/assets/img/school_class2.jpg"
               alt="Classroom"
               fill
               className="object-cover"
+              priority
             />
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="py-4 px-4 sm:px-6 text-center text-white border-t mt-auto">
-        <p className="text-sm sm:text-base">
+      <footer className="relative z-10 py-6 text-center text-white/80">
+        <p className="text-sm">
           © 2025 Dreametrix. All rights reserved.
         </p>
       </footer>
