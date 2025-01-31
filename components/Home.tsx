@@ -1,29 +1,18 @@
-"use client";
+"use client"
 
-import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
-import DreaMetrixLogo from "./ui/dreametrix-logo";
-import { userPath } from "@/constants/userConstants";
+import Image from "next/image"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Menu } from "lucide-react"
+import DreaMetrixLogo from "./ui/dreametrix-logo"
+import { userPath } from "@/constants/userConstants"
 
-const schools = [{ id: "35948177", name: "Nehemie School" }];
+const schools = [{ id: "35948177", name: "Nehemie School" }]
 
 function MobileNav() {
   return (
@@ -38,50 +27,35 @@ function MobileNav() {
           <Link href="/" className="text-lg font-medium hover:text-gray-900">
             Home
           </Link>
-          <Link
-            href="/administrators"
-            className="text-lg font-medium hover:text-gray-900"
-          >
+          <Link href="/administrators" className="text-lg font-medium hover:text-gray-900">
             Administrators
           </Link>
-          <Link
-            href="/teachers"
-            className="text-lg font-medium hover:text-gray-900"
-          >
+          <Link href="/teachers" className="text-lg font-medium hover:text-gray-900">
             Teachers
           </Link>
-          <Link
-            href="/families"
-            className="text-lg font-medium hover:text-gray-900"
-          >
+          <Link href="/families" className="text-lg font-medium hover:text-gray-900">
             Families
           </Link>
-          <Link
-            href="/about"
-            className="text-lg font-medium hover:text-gray-900"
-          >
+          <Link href="/about" className="text-lg font-medium hover:text-gray-900">
             About Us
           </Link>
-          <Link
-            href="/contact"
-            className="text-lg font-medium hover:text-gray-900"
-          >
+          <Link href="/contact" className="text-lg font-medium hover:text-gray-900">
             Contact
           </Link>
         </nav>
       </SheetContent>
     </Sheet>
-  );
+  )
 }
 
 function SchoolSelector() {
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
 
   const handleSchoolSelect = (schoolId: string) => {
-    setOpen(false);
-    router.push("/login_as");
-  };
+    setOpen(false)
+    router.push("/login_as")
+  }
 
   return (
     <div className="relative w-full sm:w-auto">
@@ -98,10 +72,7 @@ function SchoolSelector() {
               <CommandEmpty>No school found.</CommandEmpty>
               <CommandGroup>
                 {schools.map((school) => (
-                  <CommandItem
-                    key={school.id}
-                    onSelect={() => handleSchoolSelect(school.id)}
-                  >
+                  <CommandItem key={school.id} onSelect={() => handleSchoolSelect(school.id)}>
                     {school.name} - {school.id}
                   </CommandItem>
                 ))}
@@ -111,14 +82,14 @@ function SchoolSelector() {
         </PopoverContent>
       </Popover>
     </div>
-  );
+  )
 }
 
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col relative">
       {/* Background Image with Overlay */}
-      <div 
+      <div
         className="absolute inset-0 z-0"
         style={{
           backgroundImage: "url('/assets/img/school_class.avif')",
@@ -141,10 +112,7 @@ export default function Home() {
           <Link href="/" className="text-gray-600 hover:text-gray-900">
             Home
           </Link>
-          <Link
-            href="/administrators"
-            className="text-gray-600 hover:text-gray-900"
-          >
+          <Link href="/administrators" className="text-gray-600 hover:text-gray-900">
             Administrators
           </Link>
           <Link href="/teachers" className="text-gray-600 hover:text-gray-900">
@@ -162,66 +130,53 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            asChild
-            className="bg-[#25AAE1] hover:bg-[#1E8BB3] hidden sm:inline-flex"
-          >
-            <Link href={`${userPath.SCHOOL_ADMIN_REGISTER_PATH}`}>
-              Register your School here
-            </Link>
+          <Button asChild className="bg-[#25AAE1] hover:bg-[#1E8BB3] hidden sm:inline-flex">
+            <Link href={`${userPath.SCHOOL_ADMIN_REGISTER_PATH}`}>Register your School here</Link>
           </Button>
           <MobileNav />
         </div>
       </nav>
 
       {/* Hero Section */}
-      <main className="relative z-10 flex-1 grid md:grid-cols-2 gap-8 p-4 sm:p-6 md:p-12">
+      <main className="relative z-10 flex-1 flex items-center justify-between p-8 md:p-12 max-w-full mx-auto w-full">
         {/* Left Content */}
-        <div className="flex flex-col justify-center gap-8 text-center md:text-left">
+        <div className="flex flex-col justify-center gap-8 text-left max-w-xl">
           <div>
             <h1 className="text-5xl sm:text-6xl font-bold mb-4">
               <span className="text-white">Empowering Your</span>
               <span className="text-[#25AAE1] block mt-2">Classrooms</span>
             </h1>
-            <p className="text-lg sm:text-xl text-white/90 max-w-xl">
-              Take control of your teaching with Dreametrix's online class
-              management system. Built for educators, loved by students.
+            <p className="text-lg sm:text-xl text-white/90">
+              Take control of your teaching with Dreametrix's online class management system. Built for educators, loved
+              by students.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
             <SchoolSelector />
-            <Button
-              asChild
-              className="bg-[#25AAE1] hover:bg-[#1E8BB3] w-full sm:hidden"
-            >
-              <Link href="/school/auth/register">
-                Register your School here
-              </Link>
+            <Button asChild className="bg-[#25AAE1] hover:bg-[#1E8BB3] w-full sm:hidden">
+              <Link href="/school/auth/register">Register your School here</Link>
             </Button>
           </div>
         </div>
 
         {/* Right Image */}
-        <div className="hidden md:flex items-center justify-center">
-          <div className="relative w-[500px] h-[300px] rounded-lg overflow-hidden shadow-2xl transform translate-y-12">
-            <Image
-              src="/assets/img/school_class2.jpg"
-              alt="Classroom"
-              fill
-              className="object-cover"
-              priority
-            />
+        <div className="hidden md:block">
+          <div className="relative w-[500px] h-[300px] rounded-lg overflow-hidden shadow-2xl">
+            <Image src="/assets/img/school_class2.jpg" alt="Classroom" fill className="object-cover" priority />
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 py-6 text-center text-white/80">
-        <p className="text-sm">
-          © 2025 Dreametrix. All rights reserved.
-        </p>
+      <footer className="relative z-10 mt-auto mb-11">
+        <div className="bg-white h-[8rem]">
+          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p className="text-sm text-gray-600 text-center mt-5">© 2025 Dreametrix. All rights reserved.</p>
+          </div>
+        </div>
       </footer>
     </div>
-  );
+  )
 }
+
