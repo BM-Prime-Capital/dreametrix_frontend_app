@@ -72,7 +72,11 @@ function SchoolSelector() {
               <CommandEmpty>No school found.</CommandEmpty>
               <CommandGroup>
                 {schools.map((school) => (
-                  <CommandItem key={school.id} onSelect={() => handleSchoolSelect(school.id)}>
+                  <CommandItem
+                    key={school.id}
+                    onSelect={() => handleSchoolSelect(school.id)}
+                    className="cursor-pointer"
+                  >
                     {school.name} - {school.id}
                   </CommandItem>
                 ))}
@@ -87,21 +91,16 @@ function SchoolSelector() {
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col relative">
-      {/* Background Image with Overlay */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          backgroundImage: "url('/assets/img/school_class.avif')",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black/70" />
-      </div>
-
+    <div
+      className="min-h-screen flex flex-col"
+      style={{
+        backgroundImage: "url('/assets/images/school_class.avif')",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        backgroundBlendMode: "darken",
+      }}
+    >
       {/* Navigation */}
       <nav className="relative z-10 bg-white py-4 px-4 sm:px-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -160,10 +159,14 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right Image */}
-        <div className="hidden md:block">
-          <div className="relative w-[500px] h-[300px] rounded-lg overflow-hidden shadow-2xl">
-            <Image src="/assets/img/school_class2.jpg" alt="Classroom" fill className="object-cover" priority />
+        <div className="relative hidden md:block">
+          <div className="absolute right-0 top-0 w-full max-w-[24rem] aspect-[3/2] bg-[#25AAE1] rounded-lg overflow-hidden shadow-xl">
+            <Image
+              src="/assets/images/school_class2.jpg"
+              alt="Classroom"
+              fill
+              className="object-cover"
+            />
           </div>
         </div>
       </main>

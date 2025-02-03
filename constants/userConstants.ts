@@ -27,7 +27,6 @@ export enum userPath {
   SCHOOL_ADMIN_LOGIN_PATH = `${LOGIN_PAGE_PATH}?userType=${userTypeEnum.SCHOOL_ADMIN}`,
   SCHOOL_ADMIN_DASHBOARD_PATH = `${userPath.SCHOOL_ADMIN_BASE_PATH}${HOME_PAGE_PATH}`,
   SCHOOL_ADMIN_REGISTER_PATH = `${REGISTER_PATH}?userType=${userTypeEnum.SCHOOL_ADMIN}`,
-
 }
 
 export enum userTitle {
@@ -35,4 +34,18 @@ export enum userTitle {
   PARENT = "Parent",
   SCHOOL_ADMIN = "School Admin",
   TEACHER = "Teacher",
+}
+
+export enum activityType {
+  DONE = "done",
+  MESSAGE = "message",
+  UPLOAD = "upload",
+  EDIT = "edit",
+}
+
+export enum activityLabel {
+  DONE = "mark as done",
+  MESSAGE = "sent you a message",
+  UPLOAD = "uploaded",
+  EDIT = "edited",
 }

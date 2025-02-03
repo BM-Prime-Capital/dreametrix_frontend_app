@@ -1,75 +1,44 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import {
-  Home,
-  Users,
-  UserRound,
-  GraduationCap,
-  MessageSquare,
-} from "lucide-react"
-import { cn } from "@/libs/utils"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/utils/tailwind";
+import Image from "next/image";
+import { Card } from "../ui/card";
 
-const routes = [
-  {
-    path: "/school_admin/classes",
-    icon: Home,
-    label: "HOME",
-    color: "text-blue-500",
-  },
-  {
-    path: "/school_admin/teachers",
-    icon: Users,
-    label: "TEACHERS",
-    color: "text-orange-500",
-  },
-  {
-    path: "/school_admin/parents",
-    icon: UserRound,
-    label: "PARENTS",
-    color: "text-green-500",
-  },
-  {
-    path: "/school_admin/students",
-    icon: GraduationCap,
-    label: "STUDENTS",
-    color: "text-orange-500",
-  },
-  {
-    path: "/school_admin/communicate",
-    icon: MessageSquare,
-    label: "COMMUNICATE",
-    color: "text-green-500",
-  },
-]
-
-export function Sidebar() {
-  const pathname = usePathname()
+export function Sidebar({ routes }: { routes: MenuRoute[] }) {
+  const pathname = usePathname();
 
   return (
-    <div className="flex flex-col gap-2">
-      {routes.map((route, index) => {
-        const Icon = route.icon
-        const isActive = pathname === route.path
+    <Card className="w-full lg:w-[200px] h-fit lg:rounded-tr-none lg:rounded-br-none">
+      <div className="p-4 flex flex-row lg:flex-col gap-2 overflow-x-scroll">
+        {routes.map((route: any) => {
+          const iconPath = route.icon;
+          const isActive = pathname === route.path;
 
-        return (
-          <Link
-            key={route.path}
-            href={route.path}
-            className={cn(
-              "flex items-center gap-3 p-4 text-sm rounded-md transition-colors",
-              "hover:bg-blue-500 hover:text-white",
-              isActive ? "bg-blue-500 text-white" : "bg-white",
-              index === 0 && "rounded-t-lg",
-              index === routes.length - 1 && "rounded-b-lg"
-            )}
-          >
-            <Icon className={cn("w-4 h-4", !isActive && route.color)} />
-            <span>{route.label}</span>
-          </Link>
-        )
-      })}
-    </div>
-  )
+          return (
+            <Link
+              key={route.path}
+              href={route.path}
+              className={cn(
+                "flex flex-shrink-0 items-center gap-2 p-2 text-sm rounded-md whitespace-nowrap transition-colors",
+                "hover:bg-blue-50 hover:text-blue-600 border-b",
+                isActive && "bg-blue-50 text-blue-600"
+              )}
+            >
+              <Image
+                src={iconPath}
+                alt="Icon"
+                width={100}
+                height={100}
+                className="w-4 h-4"
+                title={route.label}
+              />
+              <span className="hidden sm:inline">{route.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </Card>
+  );
 }

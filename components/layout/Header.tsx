@@ -13,8 +13,13 @@ import { useRouter } from "next/navigation"
 export function Header() {
   const router = useRouter()
   return (
-    <header className="flex items-center justify-between p-6">
-      <h2 className="text-2xl font-semibold text-blue-500 flex justify-center flex-grow">DreaMetrix</h2>
+    <header className="border-b p-4 flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        {/*  <Button variant="ghost" size="icon" className="lg:hidden">
+          <Menu className="h-6 w-6" />
+        </Button> */}
+        <DreaMetrixLogo />
+      </div>
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border">
           <Avatar className="h-8 w-8">

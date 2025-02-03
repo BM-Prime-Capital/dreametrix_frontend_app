@@ -1,3 +1,4 @@
+import { generalImages } from "@/constants/images";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -12,7 +13,7 @@ function DreaMetrixLogo({
   return (
     <Link href={"/"}>
       <Image
-        src="/assets/img/logo.png"
+        src={generalImages.dreaMetrixLogo}
         alt="Dreametrix Logo"
         width={width ? width : 150}
         height={height ? height : 40}
