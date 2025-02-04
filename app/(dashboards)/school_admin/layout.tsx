@@ -8,8 +8,6 @@ export default function SchoolAminDashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [showMobileSidebar, setShowMobileSidebar] = useState(false)
-  const [showMobileActivity, setShowMobileActivity] = useState(false)
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 p-4 sm:p-6">

@@ -9,6 +9,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ChevronDown } from "lucide-react"
 import { useRouter } from "next/navigation"
+import DreaMetrixLogo from "../ui/dreametrix-logo"
 
 export function Header() {
   const router = useRouter()
