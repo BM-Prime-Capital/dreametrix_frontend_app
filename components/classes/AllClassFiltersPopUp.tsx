@@ -34,38 +34,46 @@ export default function AllClassFiltersPopUp() {
           <h2 className="pb-2" style={{ borderBottom: "solid 1px #eee" }}>
             Filter by
           </h2>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 text-gray-600">
             <select
               style={{ border: "solid 1px #eee" }}
               className="px-2 py-1 bg-white rounded-full"
             >
-              <option>Class</option>
+              <option selected disabled>
+                Class
+              </option>
               <option>C1</option>
               <option>C2</option>
               <option>C3</option>
             </select>
+
             <select
               style={{ border: "solid 1px #eee" }}
               className="px-2 py-1 bg-white rounded-full"
             >
-              <option>Subject</option>
+              <option selected disabled>
+                Subject
+              </option>
               <option>S1</option>
               <option>S2</option>
               <option>S3</option>
             </select>
+
             <select
               style={{ border: "solid 1px #eee" }}
               className="px-2 py-1 bg-white rounded-full"
             >
-              <option>Grade</option>
+              <option selected disabled>
+                Grade
+              </option>
               <option>G1</option>
               <option>G2</option>
               <option>G3</option>
             </select>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-2">
             <button
-              className="max-w-fit rounded-full px-4"
+              className="max-w-fit rounded-full px-4 hover:bg-gray-100"
               onClick={() => setOpen(false)}
             >
               Cancel
