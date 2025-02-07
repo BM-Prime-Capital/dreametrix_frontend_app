@@ -19,6 +19,7 @@ export const generalImages = {
   calculations: `${GENERAL_IMAGES_BASE_PATH}/calculations.svg`,
   layout: `${GENERAL_IMAGES_BASE_PATH}/layout.svg`,
   print: `${GENERAL_IMAGES_BASE_PATH}/print.svg`,
+  filter: `${GENERAL_IMAGES_BASE_PATH}/filter.svg`,
 };
 
 export const teacherImages = {

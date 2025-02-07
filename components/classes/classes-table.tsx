@@ -56,12 +56,14 @@ export function ClassesTable() {
               <TableCell>{class_.subject}</TableCell>
               <TableCell>{class_.grade}</TableCell>
               <TableCell>{class_.teacher}</TableCell>
-              <TableCell>{class_.students}</TableCell>
+              <TableCell className="flex items-center">
+                {class_.students}
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Eye className="h-4 w-4 text-sky-500" />
+                </Button>
+              </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Eye className="h-4 w-4 text-sky-500" />
-                  </Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8">
                     <Pencil className="h-4 w-4 text-sky-500" />
                   </Button>
