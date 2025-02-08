@@ -33,7 +33,7 @@ export default function ClassStudentsDialog({
           style={{ borderBottom: "solid 1px #eee" }}
         >
           <DialogTitle className="flex gap-2 items-center opacity-80">
-            <span>Students Ok</span>
+            <span>Students</span>
             <span className="text-muted-foreground">{studentClassName}</span>
           </DialogTitle>
         </DialogHeader>
