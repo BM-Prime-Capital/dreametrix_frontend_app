@@ -11,7 +11,7 @@ import {
 import Image from "next/image";
 import { teacherImages } from "@/constants/images";
 
-export default function ContactParentModal({
+export default function ContactParentDialog({
   childrenName,
 }: {
   childrenName: string;

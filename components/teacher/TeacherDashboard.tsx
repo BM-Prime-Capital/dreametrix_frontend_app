@@ -11,7 +11,7 @@ import Image from "next/image";
 import { teacherImages } from "@/constants/images";
 import MultiSelectionItem from "../ui/multi-selection-item";
 import { useState } from "react";
-import ContactParentModal from "./ContactParentModal";
+import ContactParentDialog from "./ContactParentDialog";
 
 export default function TeacherDashboard() {
   const [feedbackDuration, setFeedbackDuration] = useState<number>(2);
@@ -115,12 +115,12 @@ export default function TeacherDashboard() {
                     <ul className="list-none pl-6">
                       <li className="flex gap-2 items-center font-bold opacity-80">
                         <label>Marta Sae</label>
-                        <ContactParentModal childrenName="Marta Sae" />
+                        <ContactParentDialog childrenName="Marta Sae" />
                       </li>
 
                       <li className="flex gap-2 items-center font-bold opacity-80">
                         <label>John Smith</label>
-                        <ContactParentModal childrenName="John Smith" />
+                        <ContactParentDialog childrenName="John Smith" />
                       </li>
                     </ul>
                   </div>

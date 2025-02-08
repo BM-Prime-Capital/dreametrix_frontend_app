@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/table";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ClassStudentsDialog from "./ClassStudentsDialog";
+import ClassStudentsPopUp from "./StudentClassesDialog";
 
 // This would typically come from your API
 const classes = [
@@ -58,9 +60,7 @@ export function ClassesTable() {
               <TableCell>{class_.teacher}</TableCell>
               <TableCell className="flex items-center">
                 {class_.students}
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Eye className="h-4 w-4 text-sky-500" />
-                </Button>
+                <ClassStudentsDialog studentClassName={class_.name} />
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
