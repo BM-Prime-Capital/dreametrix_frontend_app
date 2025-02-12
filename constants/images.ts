@@ -20,6 +20,7 @@ export const generalImages = {
   layout: `${GENERAL_IMAGES_BASE_PATH}/layout.svg`,
   print: `${GENERAL_IMAGES_BASE_PATH}/print.svg`,
   filter: `${GENERAL_IMAGES_BASE_PATH}/filter.svg`,
+  status: `${GENERAL_IMAGES_BASE_PATH}/status.svg`,
 };
 
 export const teacherImages = {
