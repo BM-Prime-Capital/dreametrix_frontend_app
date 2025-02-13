@@ -88,3 +88,10 @@
   box-shadow: none;
   border-color: transparent; /* Optional */
 }
+
+#studentClassesTable {
+  th,
+  td {
+    text-align: center;
+  }
+}

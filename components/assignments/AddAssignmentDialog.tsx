@@ -15,7 +15,7 @@ import Image from "next/image";
 import { generalImages } from "@/constants/images";
 import TimeTableItem from "../ui/time-table-item";
 
-export function AddClassDialog() {
+export function AddAssignmentDialog() {
   const [open, setOpen] = useState(false);
   const [classDays, setClassDays] = useState<ClassDay[]>([
     { id: 1, day: "Monday", hour: "00", munite: "00", dayPart: "AM" },
@@ -60,13 +60,13 @@ export function AddClassDialog() {
             height={100}
             className="w-8 h-8"
           />
-          <span>Add New Class</span>
+          <span>Add New Assignment</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-blue-500">
-            CLASS
+            ASSIGNMENT
           </DialogTitle>
         </DialogHeader>
         <div className="flex flex-wrap gap-4 py-4">
@@ -84,33 +84,6 @@ export function AddClassDialog() {
               <Input className="rounded-full pl-9" placeholder="Students" />
               <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
             </div>
-          </div>
-          <div
-            className="flex flex-col flex-1 min-w-[200px] p-4 gap-2 relative rounded-md"
-            style={{ border: "solid 1px #eee" }}
-          >
-            <label className="text-gray-500 absolute -top-3.5 bg-white">
-              Class Days
-            </label>
-            {classDays.map((classDay: ClassDay) => (
-              <TimeTableItem
-                key={classDay.id}
-                id={classDay.id}
-                day={classDay.day}
-                hour={classDay.hour}
-                munite={classDay.munite}
-                dayPart={classDay.dayPart}
-                handleTimeTableItemChangeCallback={handleClassDayChange}
-                handleDeleteCallback={handleDeleteClassDay}
-              />
-            ))}
-
-            <button
-              className="max-w-fit mt-4 bg-blue-500 hover:bg-blue-600 text-white rounded-full px-4"
-              onClick={() => addNewClassDay()}
-            >
-              Add new Day
-            </button>
           </div>
         </div>
         <div className="flex justify-end gap-4 mt-4">
