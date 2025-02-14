@@ -1,10 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
-  eslint: {
-    ignoreDuringBuilds: true,
+  reactStrictMode: true,
+  staticPageGenerationTimeout: 1000,
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
   },
-  images: { unoptimized: true },
+  images: {
+    domains: ['images.unsplash.com', 'upload.wikimedia.org', 'https://via.placeholder.com/60'],
+  },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
