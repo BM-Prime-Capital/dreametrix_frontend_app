@@ -32,9 +32,20 @@ export default function ActivityFeedItem({
       ? activityLabel.EDIT
       : activityLabel.UPLOAD;
 
+  const bgColor =
+    type === activityType.DONE
+      ? "bg-bgGreenLight"
+      : type === activityType.MESSAGE
+      ? "bg-bgPinkLight"
+      : type === activityType.EDIT
+      ? "bg-bgPurpleLight"
+      : "bg-bgBlueLight";
+
   return (
     <div className="flex items-start gap-2">
-      <div className="flex justify-center items-center h-8 w-8 shrink-0 bg-[#DFECF2] rounded-full">
+      <div
+        className={`flex justify-center items-center h-8 w-8 shrink-0 rounded-full ${bgColor}`}
+      >
         <Image
           className="h-2 w-2"
           src={iconPath}
@@ -46,9 +57,9 @@ export default function ActivityFeedItem({
 
       <div className="flex-1 min-w-0">
         <p className="text-sm">
-          <span className="font-medium">{userName}</span>
+          <span className="font-bold">{userName}</span>
           <span className="text-muted-foreground"> {label}</span>
-          {` ${task}`}
+          <span className="font-bold">{` ${task}`}</span>
         </p>
         <p className="text-xs text-muted-foreground">{time}</p>
       </div>
