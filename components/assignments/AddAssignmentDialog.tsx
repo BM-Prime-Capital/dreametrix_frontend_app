@@ -71,19 +71,43 @@ export function AddAssignmentDialog() {
         </DialogHeader>
         <div className="flex flex-wrap gap-4 py-4">
           <div className="flex-1 min-w-[200px]">
-            <Input className="rounded-full" placeholder="Class" />
+            <select className="rounded-full flex h-10 w-full border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+              <option disabled selected>
+                Class
+              </option>
+              <option>Class 1</option>
+              <option>Class 2</option>
+              <option>Class 3</option>
+              <option>Class 4</option>
+            </select>
           </div>
           <div className="flex-1 min-w-[200px]">
             <Input className="rounded-full" placeholder="Subjet" />
           </div>
           <div className="flex-1 min-w-[200px]">
-            <Input className="rounded-full" placeholder="Grade" />
+            <select className="rounded-full flex h-10 w-full border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+              <option disabled selected>
+                Grade
+              </option>
+              <option>Grade 1</option>
+              <option>Grade 2</option>
+              <option>Grade 3</option>
+              <option>Grade 4</option>
+            </select>{" "}
           </div>
           <div className="flex-1 min-w-[200px]">
-            <div className="relative">
-              <Input className="rounded-full pl-9" placeholder="Students" />
-              <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-            </div>
+            <select className="rounded-full flex h-10 w-full border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+              <option disabled selected>
+                Status
+              </option>
+              <option>Open</option>
+              <option>Pending</option>
+              <option>Canceled</option>
+              <option>Closed</option>
+            </select>{" "}
+          </div>
+          <div className="flex-1 min-w-[200px]">
+            <Input type="file" className="rounded-full" placeholder="File" />
           </div>
         </div>
         <div className="flex justify-end gap-4 mt-4">

@@ -14,6 +14,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { generalImages } from "@/constants/images";
 import TimeTableItem from "../ui/time-table-item";
+import SelectedStudentsPopUp from "../SelectedStudentsPopUp";
 
 export function AddClassDialog() {
   const [open, setOpen] = useState(false);
@@ -80,10 +81,7 @@ export function AddClassDialog() {
             <Input className="rounded-full" placeholder="Grade" />
           </div>
           <div className="flex-1 min-w-[200px]">
-            <div className="relative">
-              <Input className="rounded-full pl-9" placeholder="Students" />
-              <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-            </div>
+            <SelectedStudentsPopUp selectedStudents={[]} />
           </div>
           <div
             className="flex flex-col flex-1 min-w-[200px] p-4 gap-2 relative rounded-md"
