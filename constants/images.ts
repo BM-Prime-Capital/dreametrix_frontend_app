@@ -3,6 +3,7 @@ const GENERAL_IMAGES_BASE_PATH = `${IMAGES_BASE_PATH}/general`;
 const TEACHER_IMAGES_BASE_PATH = `${IMAGES_BASE_PATH}/teacher`;
 const TEACHER_DASHBOARD_IMAGES_BASE_PATH = `${TEACHER_IMAGES_BASE_PATH}/dashboard`;
 const TEACHER_ASSIGNMENT_IMAGES_BASE_PATH = `${TEACHER_IMAGES_BASE_PATH}/assignments`;
+const TEACHER_ATTENDANCE_IMAGES_BASE_PATH = `${TEACHER_IMAGES_BASE_PATH}/attendance`;
 
 export const generalImages = {
   dreaMetrixLogo: `${GENERAL_IMAGES_BASE_PATH}/logo.png`,
@@ -22,6 +23,7 @@ export const generalImages = {
   print: `${GENERAL_IMAGES_BASE_PATH}/print.svg`,
   filter: `${GENERAL_IMAGES_BASE_PATH}/filter.svg`,
   status: `${GENERAL_IMAGES_BASE_PATH}/status.svg`,
+  arrow_down: `${GENERAL_IMAGES_BASE_PATH}/arrow_down.png`,
 };
 
 export const teacherImages = {
@@ -37,4 +39,8 @@ export const teacherImages = {
   upload: `${TEACHER_DASHBOARD_IMAGES_BASE_PATH}/upload.svg`,
   feedback: `${TEACHER_ASSIGNMENT_IMAGES_BASE_PATH}/feedback.svg`,
   files: `${TEACHER_ASSIGNMENT_IMAGES_BASE_PATH}/files.svg`,
+  report: `${TEACHER_ATTENDANCE_IMAGES_BASE_PATH}/report.svg`,
+  calendar: `${TEACHER_ATTENDANCE_IMAGES_BASE_PATH}/calendar.svg`,
+  save: `${TEACHER_ATTENDANCE_IMAGES_BASE_PATH}/save.svg`,
+  print: `${TEACHER_ATTENDANCE_IMAGES_BASE_PATH}/print.svg`,
 };
