@@ -1,54 +1,14 @@
 "use client";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Plus, Calendar, Users } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
-import { generalImages, teacherImages } from "@/constants/images";
-import TimeTableItem from "../ui/time-table-item";
+import { teacherImages } from "@/constants/images";
 import SelectedStudentsPopUp from "../SelectedStudentsPopUp";
 
-export function AddAttendanceDialog() {
+export function ReportAttendanceDialog() {
   const [open, setOpen] = useState(false);
-  const [classDays, setClassDays] = useState<ClassDay[]>([
-    { id: 1, day: "Monday", hour: "00", munite: "00", dayPart: "AM" },
-  ]);
-
-  const addNewClassDay = () => {
-    const newId = classDays[classDays.length - 1].id + 1;
-    setClassDays([
-      ...classDays,
-      { id: newId, day: "Monday", hour: "00", munite: "00", dayPart: "AM" },
-    ]);
-  };
-
-  const handleClassDayChange = (
-    classDayId: number,
-    fieldName: "day" | "hour" | "munite" | "dayPart",
-    newValue: string
-  ) => {
-    const newClassDays = classDays.map((classDay) => {
-      if (classDay.id === classDayId) {
-        classDay[fieldName] = newValue;
-        return classDay;
-      }
-      return classDay;
-    });
-    setClassDays([...newClassDays]);
-  };
-
-  const handleDeleteClassDay = (id: number) => {
-    const newClassDays = classDays.filter((classDay) => classDay.id != id);
-    setClassDays([...newClassDays]);
-  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -117,7 +77,7 @@ export function AddAttendanceDialog() {
               className="h-6 w-6"
               alt="save"
             />
-            <label>SAVE REPORT</label>
+            <label className="cursor-pointer">SAVE REPORT</label>
           </button>
           <button
             className="rounded-full px-4 py-2 hover:bg-gray-100"

@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import PageTitleH1 from "@/components/ui/page-title-h1";
 import { AttendanceTable } from "./attendance-table";
-import { AddAttendanceDialog } from "./AddAttendanceDialog";
+import { ReportAttendanceDialog } from "./ReportAttendanceDialog";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import { teacherImages } from "@/constants/images";
@@ -29,7 +29,7 @@ export default function Attendance() {
         </div>
       </div>
       <div className="flex gap-4 justify-start">
-        <AddAttendanceDialog />
+        <ReportAttendanceDialog />
         <Link
           target="_blank"
           href={"/assets/google_search.pdf"}
