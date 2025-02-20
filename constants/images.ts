@@ -4,6 +4,7 @@ const TEACHER_IMAGES_BASE_PATH = `${IMAGES_BASE_PATH}/teacher`;
 const TEACHER_DASHBOARD_IMAGES_BASE_PATH = `${TEACHER_IMAGES_BASE_PATH}/dashboard`;
 const TEACHER_ASSIGNMENT_IMAGES_BASE_PATH = `${TEACHER_IMAGES_BASE_PATH}/assignments`;
 const TEACHER_ATTENDANCE_IMAGES_BASE_PATH = `${TEACHER_IMAGES_BASE_PATH}/attendance`;
+const TEACHER_CHARACTER_IMAGES_BASE_PATH = `${TEACHER_IMAGES_BASE_PATH}/character`;
 
 export const generalImages = {
   dreaMetrixLogo: `${GENERAL_IMAGES_BASE_PATH}/logo.png`,
@@ -43,4 +44,6 @@ export const teacherImages = {
   calendar: `${TEACHER_ATTENDANCE_IMAGES_BASE_PATH}/calendar.svg`,
   save: `${TEACHER_ATTENDANCE_IMAGES_BASE_PATH}/save.svg`,
   print: `${TEACHER_ATTENDANCE_IMAGES_BASE_PATH}/print.svg`,
+  down: `${TEACHER_CHARACTER_IMAGES_BASE_PATH}/down.svg`,
+  up: `${TEACHER_CHARACTER_IMAGES_BASE_PATH}/up.svg`,
 };

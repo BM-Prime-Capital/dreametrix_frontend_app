@@ -3,3 +3,16 @@ export const attendanceLabel = {
   ABSENT: "Absent",
   LATE: "Late",
 };
+
+export const studentClassCharacters = [
+  "Integrity",
+  "Grit",
+  "Emotional Intelligence",
+  "Positivity",
+  "Self-control",
+  "Intellectual curiosity",
+  "Decorum",
+  "Optimism",
+  "Gratitude",
+  "Engagement",
+];
