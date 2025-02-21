@@ -8,12 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { generalImages } from "@/constants/images";
-import Image from "next/image";
-import AssignmentStudentsDialog from "./AssignmentStudentsDialog";
-import { attendanceLabel } from "@/constants/global";
 import CharacterItem from "../ui/character-item";
 
 // This would typically come from your API

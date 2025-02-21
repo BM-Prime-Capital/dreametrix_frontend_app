@@ -15,7 +15,7 @@ import Image from "next/image";
 import { generalImages } from "@/constants/images";
 import TimeTableItem from "../ui/time-table-item";
 import SelectedStudentsPopUp from "../SelectedStudentsPopUp";
-import { ClassDay } from "../assignments/AddAssignmentDialog";
+import { ClassDay } from "@/types";
 
 export function AddClassDialog() {
   const [open, setOpen] = useState(false);

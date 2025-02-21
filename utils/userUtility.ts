@@ -1,4 +1,5 @@
 import { userPath, userTitle } from "@/constants/userConstants";
+import { UserNavigationInfo } from "@/types";
 
 export function getUserNavigationInfo(userType: string): UserNavigationInfo {
   const defaultUserNavigation = {
