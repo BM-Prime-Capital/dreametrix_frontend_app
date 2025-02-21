@@ -1,16 +1,16 @@
 import { title } from "node:process";
-interface UserNavigationInfo {
+export interface UserNavigationInfo {
   label: string;
   basePath: string;
 }
 
-interface MenuRoute {
+export interface MenuRoute {
   path: string;
   icon: any;
   label: string;
 }
 
-interface ClassDay {
+export interface ClassDay {
   id: number;
   day: string;
   hour: string;
