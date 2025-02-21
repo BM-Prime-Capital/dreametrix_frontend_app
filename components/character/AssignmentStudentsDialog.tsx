@@ -71,7 +71,7 @@ export default function AssignmentStudentsDialog({
                         <AvatarFallback>SL</AvatarFallback>
                       </Avatar>
                       <label className="text-gray-700">Student name</label>
-                      <AssignmentStudentDialog studentClassName="Student name" />
+                      <AssignmentStudentDialog studentClassName="Student name" studentName={""} />
                     </div>
                   </TableCell>
                   <TableCell>{49}</TableCell>
@@ -105,7 +105,7 @@ export default function AssignmentStudentsDialog({
                         <AvatarFallback>SL</AvatarFallback>
                       </Avatar>
                       <label className="text-gray-700">Student name</label>
-                      <AssignmentStudentDialog studentClassName="Student name" />
+                      <AssignmentStudentDialog studentClassName="Student name" studentName={""} />
                     </div>
                   </TableCell>
                   <TableCell>{75}</TableCell>

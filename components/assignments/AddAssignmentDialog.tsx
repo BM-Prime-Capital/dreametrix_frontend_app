@@ -15,6 +15,14 @@ import Image from "next/image";
 import { generalImages } from "@/constants/images";
 import TimeTableItem from "../ui/time-table-item";
 
+export interface ClassDay {
+  id: number;
+  day: string;
+  hour: string;
+  munite: string;
+  dayPart: string;
+}
+
 export function AddAssignmentDialog() {
   const [open, setOpen] = useState(false);
   const [classDays, setClassDays] = useState<ClassDay[]>([
