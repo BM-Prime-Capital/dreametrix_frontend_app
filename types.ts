@@ -1,3 +1,4 @@
+import { title } from "node:process";
 interface UserNavigationInfo {
   label: string;
   basePath: string;
