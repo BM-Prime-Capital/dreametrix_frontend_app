@@ -1,36 +1,36 @@
 version: 0.2
 
+env:
+  variables:
+    AWS_REGION: "us-east-1"
+    REPOSITORY_URI: "954976285887.dkr.ecr.us-east-1.amazonaws.com/dreametrix-ecr"
+    IMAGE_TAG: "build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')"
+
 phases:
   pre_build:
     commands:
-      - docker --version
-      - echo "Checking Docker daemon status..."
-      - docker info
-      - echo "Logging in to Amazon ECR..."
-      - aws --version
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 954976285887.dkr.ecr.us-east-1.amazonaws.com
-      - echo "Checking Docker images..."
-      - docker images
-      - REPOSITORY_URI=954976285887.dkr.ecr.us-east-1.amazonaws.com/dreametrix-ecr
-      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+      - echo "🔹 Vérification des fichiers du projet..."
       - ls -la
+      - echo "🔹 Vérification du Dockerfile..."
+      - cat Dockerfile || echo "⚠️ Dockerfile introuvable !"
+      - echo "🔹 Vérification des permissions AWS..."
+      - aws sts get-caller-identity
+      - echo "🔹 Connexion à Amazon ECR..."
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
 
   build:
     commands:
+      - echo "🚀 Début du build Docker..."
       - docker build -t $REPOSITORY_URI:latest -f ./Dockerfile .
-      - echo "Build started on $(date)"
-      - echo "Building the Docker image..."
-      - docker build -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
     commands:
-      - echo "Build completed on $(date)"
-      - echo "Pushing Docker image to ECR..."
+      - echo "📤 Pushing des images vers Amazon ECR..."
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo "Writing image definitions file..."
-      - printf '[{"name":"dreametrix-ecsservice","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - echo "📝 Génération du fichier imagedefinitions.json..."
+      - printf '[{"name":"dreametrix-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
       - cat imagedefinitions.json
 
 artifacts:
