@@ -14,6 +14,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { generalImages } from "@/constants/images";
 import TimeTableItem from "../ui/time-table-item";
+import { ClassDay } from "@/types";
 
 export function AddAssignmentDialog() {
   const [open, setOpen] = useState(false);
