@@ -4,38 +4,29 @@ env:
   variables:
     AWS_REGION: "us-east-1"
     REPOSITORY_URI: "954976285887.dkr.ecr.us-east-1.amazonaws.com/dreametrix-ecr"
-    IMAGE_TAG: "build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')"
+    IMAGE_TAG: "latest"
 
 phases:
   install:
-    runtime-versions:
-      docker: 19
     commands:
-      - echo "Installing Docker..."
-      - curl -fsSL https://get.docker.com | sh
-      - sudo usermod -aG docker $USER
-      - sudo service docker start
+      - echo "🔹 Installing Docker..."
       - docker --version
 
   pre_build:
     commands:
-      - echo "🔹 Vérification des permissions AWS..."
-      - aws sts get-caller-identity
-      - echo "🔹 Connexion à Amazon ECR..."
+      - echo "🔹 Logging into Amazon ECR..."
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
 
   build:
     commands:
-      - echo "🚀 Début du build Docker..."
-      - docker build -t $REPOSITORY_URI:latest -f ./Dockerfile .
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+      - echo "🚀 Building Docker image..."
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f ./Dockerfile .
 
   post_build:
     commands:
-      - echo "📤 Pushing des images vers Amazon ECR..."
-      - docker push $REPOSITORY_URI:latest
+      - echo "📤 Pushing Docker image to Amazon ECR..."
       - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo "📝 Génération du fichier imagedefinitions.json..."
+      - echo "📝 Creating image definition file..."
       - printf '[{"name":"dreametrix-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
       - cat imagedefinitions.json
 
