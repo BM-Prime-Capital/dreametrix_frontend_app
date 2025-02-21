@@ -1,67 +1,49 @@
-import { teacherImages } from "@/constants/images";
-import { activityLabel, activityType } from "@/constants/userConstants";
-import Image from "next/image";
-import React from "react";
+import { ActivityType, activityType } from "@/components/constants/activityTypes";
+import { CheckCircle, MessageSquare, Upload, Edit } from "lucide-react";
 
-export default function ActivityFeedItem({
-  type,
-  userName,
-  task,
-  time,
-}: {
-  type: string;
+interface ActivityFeedItemProps {
+  type: ActivityType;
   userName: string;
   task: string;
   time: string;
-}) {
-  const iconPath =
-    type === activityType.DONE
-      ? teacherImages.done
-      : type === activityType.MESSAGE
-      ? teacherImages.message
-      : type === activityType.EDIT
-      ? teacherImages.edit
-      : teacherImages.upload;
+}
 
-  const label =
-    type === activityType.DONE
-      ? activityLabel.DONE
-      : type === activityType.MESSAGE
-      ? activityLabel.MESSAGE
-      : type === activityType.EDIT
-      ? activityLabel.EDIT
-      : activityLabel.UPLOAD;
+const iconMap = {
+  [activityType.DONE]: CheckCircle,
+  [activityType.MESSAGE]: MessageSquare,
+  [activityType.UPLOAD]: Upload,
+  [activityType.EDIT]: Edit,
+};
 
-  const bgColor =
-    type === activityType.DONE
-      ? "bg-bgGreenLight"
-      : type === activityType.MESSAGE
-      ? "bg-bgPinkLight"
-      : type === activityType.EDIT
-      ? "bg-bgPurpleLight"
-      : "bg-bgBlueLight";
+const colorMap = {
+  [activityType.DONE]: "bg-green-100 text-green-600",
+  [activityType.MESSAGE]: "bg-yellow-100 text-yellow-600",
+  [activityType.UPLOAD]: "bg-blue-100 text-blue-600",
+  [activityType.EDIT]: "bg-purple-100 text-purple-600",
+};
 
+export default function ActivityFeedItem({ type, userName, task, time }: ActivityFeedItemProps) {
+  const Icon = iconMap[type];
+  
   return (
-    <div className="flex items-start gap-2">
-      <div
-        className={`flex justify-center items-center h-8 w-8 shrink-0 rounded-full ${bgColor}`}
-      >
-        <Image
-          className="h-2 w-2"
-          src={iconPath}
-          alt="icon"
-          width={100}
-          height={100}
-        />
+    <div className="flex gap-3">
+      <div className="flex flex-col items-center">
+        <div className={`p-2 rounded-full ${colorMap[type]}`}>
+          <Icon className="h-4 w-4" />
+        </div>
+        {/* Vertical line */}
+        <div className="w-px h-full bg-gray-200 my-2" />
       </div>
-
-      <div className="flex-1 min-w-0">
-        <p className="text-sm">
-          <span className="font-bold">{userName}</span>
-          <span className="text-muted-foreground"> {label}</span>
-          <span className="font-bold">{` ${task}`}</span>
+      <div className="flex-1">
+        <p className="text-sm text-gray-600">
+          <span className="font-semibold text-gray-900">{userName}</span>{" "}
+          {type === activityType.DONE && "marked as done"}
+          {type === activityType.MESSAGE && "sent you a message"}
+          {type === activityType.UPLOAD && "uploaded"}
+          {type === activityType.EDIT && "edited"}{" "}
+          {task && <span className="font-semibold text-gray-900">{task}</span>}
         </p>
-        <p className="text-xs text-muted-foreground">{time}</p>
+        <p className="text-xs text-gray-500 mt-1">{time}</p>
       </div>
     </div>
   );

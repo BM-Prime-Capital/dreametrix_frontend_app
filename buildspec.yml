@@ -1,0 +1,35 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: "us-east-1"
+    REPOSITORY_URI: "954976285887.dkr.ecr.us-east-1.amazonaws.com/dreametrix-ecr"
+    IMAGE_TAG: "latest"
+
+phases:
+  install:
+    commands:
+      - echo "🔹 Installing Docker..."
+      - docker --version  # Vérifie que Docker est installé
+
+  pre_build:
+    commands:
+      - echo "🔹 Logging into Amazon ECR..."
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
+
+  build:
+    commands:
+      - echo "🚀 Building Docker image..."
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f ./Dockerfile .
+
+  post_build:
+    commands:
+      - echo "📤 Pushing Docker image to Amazon ECR..."
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo "📝 Creating image definition file..."
+      - printf '[{"name":"dreametrix-container","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - cat imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json
