@@ -25,7 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { teacherImages } from "@/constants/images";
 import Image from "next/image";
 import PageTitleH2 from "../ui/page-title-h2";
-import AssignmentStudentDialog from "./AssignmentStudentDialog";
+import AssignmentStudentDialog from "./GoodCharacterDialog";
 
 export default function AssignmentStudentsDialog({
   studentClassName,
