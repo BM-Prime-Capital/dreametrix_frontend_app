@@ -16,14 +16,6 @@ import { generalImages } from "@/constants/images";
 import TimeTableItem from "../ui/time-table-item";
 import { ClassDay } from "@/types";
 
-export interface ClassDay {
-  id: number;
-  day: string;
-  hour: string;
-  munite: string;
-  dayPart: string;
-}
-
 export function AddAssignmentDialog() {
   const [open, setOpen] = useState(false);
   const [classDays, setClassDays] = useState<ClassDay[]>([
