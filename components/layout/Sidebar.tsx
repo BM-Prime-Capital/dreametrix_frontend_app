@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/utils/tailwind";
 import Image from "next/image";
 import { Card } from "../ui/card";
+import { MenuRoute } from "@/types";
 
 export function Sidebar({ routes }: { routes: MenuRoute[] }) {
   const pathname = usePathname();
