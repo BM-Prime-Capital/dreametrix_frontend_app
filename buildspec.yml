@@ -10,7 +10,7 @@ phases:
   install:
     commands:
       - echo "🔹 Installing Docker..."
-      - docker --version
+      - docker --version  # Vérifie que Docker est installé
 
   pre_build:
     commands:
