@@ -6,13 +6,15 @@ import { cn } from "@/utils/tailwind";
 import Image from "next/image";
 import { Card } from "../ui/card";
 
-export function Sidebar({ routes }: { routes: MenuRoute[] }) {
+
+export function Sidebar({ routes }: { routes: { path: string; icon: string; label: string }[] }) {
   const pathname = usePathname();
 
   return (
     <Card className="w-full lg:w-[200px] h-fit lg:rounded-tr-none lg:rounded-br-none">
       <div className="p-4 flex flex-row lg:flex-col gap-2 overflow-x-scroll">
-        {routes.map((route: any) => {
+
+        {routes.map((route) => {
           const iconPath = route.icon;
           const isActive = pathname === route.path;
 
