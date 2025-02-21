@@ -7,6 +7,16 @@ env:
     IMAGE_TAG: "build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')"
 
 phases:
+  install:
+    runtime-versions:
+      docker: 19
+    commands:
+      - echo "Installing Docker..."
+      - curl -fsSL https://get.docker.com | sh
+      - sudo usermod -aG docker $USER
+      - sudo service docker start
+      - docker --version
+
   pre_build:
     commands:
       - echo "🔹 Vérification des permissions AWS..."
