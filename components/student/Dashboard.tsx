@@ -1,41 +1,64 @@
+"use client"
+
 import { ActivityFeed } from "../layout/ActivityFeed"
-import { AIAssistance } from "./ai-assistance"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Edit2, Settings, Search } from "lucide-react"
+import { Instagram, MessageCircle } from "lucide-react"
 import PageTitleH1 from "../ui/page-title-h1"
-import PageTitleH2 from "../ui/page-title-h2"
+import { Bell } from "lucide-react"
 
-export default function SchoolAdminDashboard() {
+export default function StudentDashboard() {
   return (
     <section className="flex flex-col gap-6 w-full">
-      <PageTitleH1 title="Dashboard" />
+      <PageTitleH1 title="PROFILE" />
 
       <div className="flex flex-col lg:flex-row gap-6 p-4 sm:p-6">
         <div className="flex-1 space-y-6">
+          {/* Profile Header Card */}
           <Card className="p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
+            <div className="flex items-start gap-4">
               <Avatar className="h-16 w-16">
                 <AvatarImage src="/placeholder.svg" />
-                <AvatarFallback>SL</AvatarFallback>
+                <AvatarFallback>JS</AvatarFallback>
               </Avatar>
-              <div className="text-center sm:text-left">
-                <PageTitleH2 title="School Lead/Principal" />
-                <div className="flex gap-2 justify-center sm:justify-start">
-                  <Settings className="h-4 w-4" />
-                  <Search className="h-4 w-4" />
-                  <Edit2 className="h-4 w-4" />
+              <div className="flex flex-col">
+                <h2 className="text-xl font-medium mb-2">John Smith</h2>
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
+                    <Instagram className="h-5 w-5 text-[#25AAE1]" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
+                    <MessageCircle className="h-5 w-5 text-[#25AAE1]" />
+                  </Button>
                 </div>
               </div>
             </div>
           </Card>
 
-          <Card className="p-4 sm:p-6">
-            <AIAssistance />
+          {/* AI Assistance Card */}
+          <Card className="p-4 sm:p-6 space-x-8">
+            <div className="space-y-4 space-x-8">
+              <h2 className="text-lg text-gray-700">AI Student Assistance</h2>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Bell className="h-5 w-5 text-amber-400" />
+                  <p className="text-sm text-gray-600">
+                    Remember that tomorrow <span className="text-gray-700">Class 5 - Math has an exam</span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Bell className="h-5 w-5 text-amber-400" />
+                  <p className="text-sm text-gray-600">
+                    Remember that tomorrow <span className="text-gray-700">Class 5 - Sci has an exam</span>
+                  </p>
+                </div>
+              </div>
+            </div>
           </Card>
 
+          {/* Profile Edit Card */}
           <Card className="p-4 sm:p-6">
             <div className="flex flex-col items-center w-full max-w-2xl mx-auto">
               <h2 className="text-xl font-semibold mb-6">Profile</h2>
@@ -43,7 +66,7 @@ export default function SchoolAdminDashboard() {
               <div className="flex flex-col items-center gap-2 mb-8">
                 <Avatar className="h-20 w-20">
                   <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback>SL</AvatarFallback>
+                  <AvatarFallback>JS</AvatarFallback>
                 </Avatar>
                 <span className="text-sm text-muted-foreground cursor-pointer hover:text-primary">Change</span>
               </div>
@@ -54,13 +77,13 @@ export default function SchoolAdminDashboard() {
                     <label className="text-sm font-medium" htmlFor="username">
                       Username
                     </label>
-                    <Input id="username" placeholder="School Name" className="bg-gray-50 h-11" />
+                    <Input id="username" placeholder="John Smith" className="bg-gray-50 h-11" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium" htmlFor="email">
                       Email
                     </label>
-                    <Input id="email" placeholder="sarah@school.edu" className="bg-gray-50 h-11" />
+                    <Input id="email" placeholder="johnsmith@school.edu" className="bg-gray-50 h-11" />
                   </div>
                 </div>
 
@@ -75,7 +98,7 @@ export default function SchoolAdminDashboard() {
                     <label className="text-sm font-medium" htmlFor="role">
                       Role
                     </label>
-                    <Input id="role" placeholder="Principal" className="bg-gray-50 h-11" />
+                    <Input id="role" placeholder="Student" className="bg-gray-50 h-11" />
                   </div>
                 </div>
 
@@ -90,6 +113,7 @@ export default function SchoolAdminDashboard() {
           </Card>
         </div>
 
+        {/* Activity Feed */}
         <ActivityFeed />
       </div>
     </section>
