@@ -1,33 +1,27 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, FileText, MessageSquare } from "lucide-react";
-import { Card } from "../ui/card";
-import PageTitleH2 from "../ui/page-title-h2";
-import { teacherImages } from "@/constants/images";
-import Image from "next/image";
+import { activityType } from "@/components/constants/activityTypes"
+import { Card } from "@/components/ui/card";
 import ActivityFeedItem from "../ui/activity-feed-item";
-import { activityType } from "@/constants/userConstants";
 
 export function ActivityFeed() {
   return (
-    <Card className="w-full lg:w-[300px] h-fit">
+    <Card className="w-full lg:w-[300px]">
       <div className="flex flex-col gap-4 p-4">
-        <PageTitleH2 title="Activity" />
+        <h2 className="text-xl font-semibold">Activity</h2>
+        
         <div className="space-y-4">
-          <div className="text-xs text-muted-foreground">TODAY</div>
+          <div className="text-xs text-gray-500">TODAY</div>
           <ActivityFeedItem
             type={activityType.DONE}
             userName="Darika Samak"
             task="Listing on Science"
             time="8:40 PM"
           />
-
           <ActivityFeedItem
             type={activityType.MESSAGE}
-            userName="Emilee Simchenko"
+            userName="Emilee Sinchenko"
             task=""
             time="7:32 PM"
           />
-
           <ActivityFeedItem
             type={activityType.UPLOAD}
             userName="Darika Samak"
@@ -37,7 +31,7 @@ export function ActivityFeed() {
         </div>
 
         <div className="space-y-4">
-          <div className="text-xs text-muted-foreground">YESTERDAY</div>
+          <div className="text-xs text-gray-500">YESTERDAY</div>
           <ActivityFeedItem
             type={activityType.UPLOAD}
             userName="Darika Samak"
@@ -48,21 +42,19 @@ export function ActivityFeed() {
             type={activityType.DONE}
             userName="Darika Samak"
             task="Listing on Science"
-            time="6:49 PM"
+            time="5:49 PM"
           />
-
           <ActivityFeedItem
             type={activityType.EDIT}
             userName="Darika Samak"
             task="Listing on Science"
-            time="7:32 PM"
+            time="5:40 PM"
           />
-
           <ActivityFeedItem
             type={activityType.MESSAGE}
-            userName="Emilee Simchenko"
+            userName="Emilee Sinchenko"
             task=""
-            time="6:02 PM"
+            time="4:32 PM"
           />
         </div>
       </div>
