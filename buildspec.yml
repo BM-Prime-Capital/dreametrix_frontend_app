@@ -9,10 +9,6 @@ env:
 phases:
   pre_build:
     commands:
-      - echo "🔹 Vérification des fichiers du projet..."
-      - ls -la
-      - echo "🔹 Vérification du Dockerfile..."
-      - cat Dockerfile || echo "⚠️ Dockerfile introuvable !"
       - echo "🔹 Vérification des permissions AWS..."
       - aws sts get-caller-identity
       - echo "🔹 Connexion à Amazon ECR..."
