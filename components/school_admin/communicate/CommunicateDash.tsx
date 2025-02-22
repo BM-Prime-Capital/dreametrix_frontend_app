@@ -8,7 +8,7 @@ import { CommunicateTable } from "./communicate-table"
 import { useState } from "react"
 
 export default function CommunicatePage() {
-  const [selectedTab, setSelectedTab] = useState("individual-teacher")
+  const [, setSelectedTab] = useState("individual-teacher")
 
   return (
     <div className="w-full space-y-6">
