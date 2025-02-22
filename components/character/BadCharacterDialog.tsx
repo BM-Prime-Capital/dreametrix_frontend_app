@@ -75,7 +75,7 @@ const BadCharacterDialog = React.memo(
                   }`}
                 >
                   <Image
-                    src={teacherImages.up}
+                    src={teacherImages.down}
                     width={20}
                     height={20}
                     alt="up"
