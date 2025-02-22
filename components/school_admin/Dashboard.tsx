@@ -4,9 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Edit2, Settings, Search } from "lucide-react"
 import PageTitleH1 from "../ui/page-title-h1"
-import PageTitleH2 from "../ui/page-title-h2"
+import SchoolAdminHeader from "./Header"
 
 export default function SchoolAdminDashboard() {
   return (
@@ -15,7 +14,8 @@ export default function SchoolAdminDashboard() {
 
       <div className="flex flex-col lg:flex-row gap-6 p-4 sm:p-6">
         <div className="flex-1 space-y-6">
-          <Card className="p-4 sm:p-6">
+          <SchoolAdminHeader />
+          {/* <Card className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
               <Avatar className="h-16 w-16">
                 <AvatarImage src="/placeholder.svg" />
@@ -30,7 +30,7 @@ export default function SchoolAdminDashboard() {
                 </div>
               </div>
             </div>
-          </Card>
+          </Card> */}
 
           <Card className="p-4 sm:p-6">
             <AIAssistance />
