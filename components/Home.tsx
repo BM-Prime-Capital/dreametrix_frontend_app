@@ -1,262 +1,174 @@
 "use client"
 
-import Image from "next/image"
+import { useState, type ChangeEvent, type FormEvent } from "react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, Search, X } from "lucide-react"
-import DreaMetrixLogo from "./ui/dreametrix-logo"
+import { Mail, Lock, AlertTriangle } from "lucide-react"
 import { userPath } from "@/constants/userConstants"
+import DreaMetrixLogo from "./ui/dreametrix-logo"
 
-// Mock data - replace with actual API call
-const mockSchools = Array.from({ length: 50 }, (_, i) => ({
-  id: `school-${i + 1}`,
-  name: `School ${i + 1}${i % 3 === 0 ? ' International' : i % 2 === 0 ? ' Academy' : ' High School'}`
-}))
-
-function MobileNav() {
-  return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
-          <Menu className="h-6 w-6" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-        <nav className="flex flex-col gap-4">
-          <Link href="/" className="text-[#0056b3] hover:text-[#0f60a3] text-lg font-semibold">
-            Home
-          </Link>
-          <Link href="/administrators" className="text-[#0056b3] hover:text-[#0f60a3] text-lg font-semibold">
-            Administrators
-          </Link>
-          <Link href="/teachers" className="text-[#0056b3] hover:text-[#0f60a3] text-lg font-semibold">
-            Teachers
-          </Link>
-          <Link href="/families" className="text-[#0056b3] hover:text-[#0f60a3] text-lg font-semibold">
-            Families
-          </Link>
-          <Link href="/about" className="text-[#0056b3] hover:text-[#0f60a3] text-lg font-semibold">
-            About Us
-          </Link>
-          <Link href="/contact" className="text-[#0056b3] hover:text-[#0f60a3] text-lg font-semibold">
-            Contact
-          </Link>
-        </nav>
-      </SheetContent>
-    </Sheet>
-  )
+export interface LoginFormData {
+  email: string
+  password: string
 }
 
-function SchoolSelector() {
+export interface LoginErrors {
+  email: boolean
+  password: boolean
+}
+
+const TEST_EMAIL = "test@example.com"
+const TEST_PASSWORD = "test"
+
+export default function Login() {
   const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const schoolsPerPage = 10
+  const [formData, setFormData] = useState<LoginFormData>({
+    email: TEST_EMAIL,
+    password: TEST_PASSWORD,
+  })
+  const [formSubmitted, setFormSubmitted] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [errors, setErrors] = useState<LoginErrors>({
+    email: false,
+    password: false,
+  })
 
-  // Filter schools based on search query
-  const filteredSchools = mockSchools.filter(school => 
-    school.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+    setErrors((prev) => ({ ...prev, [name]: false }))
+  }
 
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredSchools.length / schoolsPerPage)
-  const startIndex = (currentPage - 1) * schoolsPerPage
-  const paginatedSchools = filteredSchools.slice(startIndex, startIndex + schoolsPerPage)
+  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+    e.preventDefault()
+    setFormSubmitted(true)
+    setIsLoading(true)
 
-  const handleSchoolSelect = (schoolId: string) => {
-    setIsOpen(false)
-    router.push("/login_as")
+    const { email, password } = formData
+
+    if (!email || !password) {
+      setErrors({
+        email: !email,
+        password: !password,
+      })
+      setIsLoading(false)
+      return
+    }
+
+    setTimeout(() => {
+      setIsLoading(false)
+      if (email === TEST_EMAIL && password === TEST_PASSWORD) {
+        router.push(userPath.SCHOOL_ADMIN_BASE_PATH)
+      } else {
+        setErrors({
+          email: email !== TEST_EMAIL,
+          password: password !== TEST_PASSWORD,
+        })
+      }
+    }, 1000)
   }
 
   return (
-    <>
-      <Button 
-        onClick={() => setIsOpen(true)}
-        className="w-full sm:w-auto text-xl px-10 py-6 bg-[#29a1e8] hover:bg-[#217bb4] transform transition-all duration-300 hover:-translate-y-1"
-      >
-        Select Your School here
-      </Button>
+    <div className="min-h-screen bg-[url('/assets/images/bg.png')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-4">
+      <div className="w-full max-w-[450px] bg-[rgba(230,230,230,0.90)] p-6 sm:p-8 rounded-[15px] shadow-[0px_4px_20px_rgba(0,0,0,0.1)]">
+        <div className="flex justify-center mb-6">
+          <DreaMetrixLogo />
+        </div>
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-2xl font-bold">Select Your School</DialogTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsOpen(false)}
-                className="h-8 w-8 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </DialogHeader>
+        <div className="text-left mb-6">
+          <h2 className="text-[#1A73E8] text-lg font-medium ml-2.5">Login Here</h2>
+        </div>
 
-          <div className="relative flex items-center mb-4">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <Input
-              placeholder="Search schools..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value)
-                setCurrentPage(1) // Reset to first page on search
-              }}
-              className="pl-10"
-            />
+        {isLoading && (
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#25AAE1]"></div>
           </div>
+        )}
 
-          <div className="flex-1 overflow-y-auto min-h-[300px] border rounded-md">
-            {paginatedSchools.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-gray-500">
-                No schools found
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <div
+              className={`relative rounded-full overflow-hidden border ${
+                formSubmitted && errors.email ? "border-red-500" : "border-gray-200"
+              }`}
+            >
+              <div className="flex items-center px-4 py-2.5">
+                <Mail className="h-5 w-5 text-gray-400 mr-2" />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="flex-1 bg-transparent focus:outline-none text-sm"
+                />
               </div>
-            ) : (
-              <div className="divide-y">
-                {paginatedSchools.map((school) => (
-                  <button
-                    key={school.id}
-                    onClick={() => handleSchoolSelect(school.id)}
-                    className="w-full px-4 py-3 text-left hover:bg-gray-100 transition-colors duration-200"
-                  >
-                    <p className="font-medium text-gray-900">{school.name}</p>
-                    <p className="text-sm text-gray-500">ID: {school.id}</p>
-                  </button>
-                ))}
+            </div>
+            {formSubmitted && errors.email && (
+              <div className="absolute right-[-160px] top-1/2 transform -translate-y-1/2 bg-red-100 text-red-700 px-3 py-1 rounded-md shadow-md">
+                <div className="absolute left-[-6px] top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-red-100"></div>
+                <div className="flex items-center">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  <span className="text-sm">Incorrect username</span>
+                </div>
               </div>
             )}
           </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between pt-4 border-t">
-              <Button
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
+          <div className="relative">
+            <div
+              className={`relative rounded-full overflow-hidden border ${
+                formSubmitted && errors.password ? "border-red-500" : "border-gray-200"
+              }`}
+            >
+              <div className="flex items-center px-4 py-2.5">
+                <Lock className="h-5 w-5 text-gray-400 mr-2" />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="flex-1 bg-transparent focus:outline-none text-sm"
+                />
+              </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
-  )
-}
-
-export default function Home() {
-  return (
-    <div
-      className="min-h-screen flex flex-col font-['Roboto']"
-      style={{
-        background: "linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.3)), url('/assets/images/school_class.avif')",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
-      {/* Navigation */}
-      <nav className="relative z-10 bg-white/90 py-5 px-12 flex items-center justify-between flex-col md:flex-row gap-4">
-        <div className="flex items-center gap-2">
-          <DreaMetrixLogo  />
-        </div>
-
-        <div className="hidden md:flex items-center gap-4 lg:gap-8">
-          <Link href="/" className="text-[#0056b3] hover:text-[#0f60a3] text-sm font-semibold">
-            Home
-          </Link>
-          <Link href="/administrators" className="text-[#0056b3] hover:text-[#0f60a3] text-sm font-semibold">
-            Administrators
-          </Link>
-          <Link href="/teachers" className="text-[#0056b3] hover:text-[#0f60a3] text-sm font-semibold">
-            Teachers
-          </Link>
-          <Link href="/families" className="text-[#0056b3] hover:text-[#0f60a3] text-sm font-semibold">
-            Families
-          </Link>
-          <Link href="/about" className="text-[#0056b3] hover:text-[#0f60a3] text-sm font-semibold">
-            About Us
-          </Link>
-          <Link href="/contact" className="text-[#0056b3] hover:text-[#0f60a3] text-sm font-semibold">
-            Contact
-          </Link>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button asChild className="bg-[#217bb4] hover:bg-[#0f60a3] text-white font-bold px-5 py-3 hidden sm:inline-flex transition-colors duration-300">
-            <Link href={`${userPath.SCHOOL_ADMIN_REGISTER_PATH}`}>Register your School here</Link>
-          </Button>
-          <MobileNav />
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <main className="relative z-10 flex-1 flex items-center justify-between p-8 md:p-12 max-w-full mx-auto w-full">
-        {/* Left Content */}
-        <div className="flex flex-col justify-center gap-8 text-left max-w-[500px]">
-          <div>
-            <h1 className="text-5xl md:text-[3.5rem] font-bold mb-5 text-white">
-              Empowering Your{" "}
-              <span className="text-[#29a1e8] block">Classrooms</span>
-            </h1>
-            <p className="text-xl md:text-[1.4rem] text-white leading-relaxed">
-              Take control of your teaching with Dreametrix's online class management system. Built for educators, loved
-              by students.
-            </p>
+            {formSubmitted && errors.password && (
+              <div className="absolute right-[-160px] top-1/2 transform -translate-y-1/2 bg-red-100 text-red-700 px-3 py-1 rounded-md shadow-md">
+                <div className="absolute left-[-6px] top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-red-100"></div>
+                <div className="flex items-center">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  <span className="text-sm">Incorrect password</span>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 mt-6">
-            <SchoolSelector />
-            <Button asChild className="bg-[#217bb4] hover:bg-[#0f60a3] w-full sm:hidden">
-              <Link href="/school/auth/register">Register your School here</Link>
-            </Button>
+          <div className="text-right">
+            <Link href="/forgot_password" className="text-[#1A73E8] hover:text-[#1453B8] text-sm">
+              Forgot Password?
+            </Link>
           </div>
-        </div>
 
-        {/* Right Image */}
-         <div className="relative hidden md:block">
-          <div className=" right right-0 top-0">
-            <div className="relative w-[25rem] h-[20rem]">
-              <Image
-                src="/assets/images/school_class2.jpg"
-                alt="Classroom"
-                fill
-                className="object-cover clip-polygon rounded-[20px] border-[5px] border-[#29a1e8] shadow-[0px_10px_30px_rgba(0,0,0,0.3)] hover-scale"
-                style={{
-                  maxWidth: "650px",
-                  clipPath: "polygon(20% 0%, 100% 0%, 100% 80%, 80% 100%, 0% 100%, 0% 20%)",
-                }}
-              />
-            </div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-3 rounded-full 
+                     transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1] 
+                     focus:ring-offset-2 disabled:opacity-50 text-base font-medium"
+          >
+            {isLoading ? "LOGGING IN..." : "LOGIN"}
+          </button>
+
+          <div className="text-center text-sm text-gray-600 mt-4">
+            Not registered yet?{" "}
+            <Link href={userPath.SCHOOL_ADMIN_REGISTER_PATH} className="text-[#1A73E8] hover:text-[#1453B8]">
+              Contact your school administrator
+            </Link>
           </div>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="mt-auto">
-        <div className="bg-white/90 py-8">
-          <p className="text-gray-800 text-center text-base">
-            © 2025 Dreametrix. All rights reserved.
-          </p>
-        </div>
-      </footer>
+        </form>
+      </div>
     </div>
   )
 }
+

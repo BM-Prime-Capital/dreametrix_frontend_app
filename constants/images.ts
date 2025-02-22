@@ -28,6 +28,9 @@ export const generalImages = {
   arrow_down: `${GENERAL_IMAGES_BASE_PATH}/arrow_down.png`,
   student: `${GENERAL_IMAGES_BASE_PATH}/student.png`,
   student2: `${GENERAL_IMAGES_BASE_PATH}/student2.png`,
+  library: `${GENERAL_IMAGES_BASE_PATH}/library.svg`,
+  rewards: `${GENERAL_IMAGES_BASE_PATH}/rewards.svg`,
+  tutor: `${GENERAL_IMAGES_BASE_PATH}/tutor.svg`,
 };
 
 export const teacherImages = {

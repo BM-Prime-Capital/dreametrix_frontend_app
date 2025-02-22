@@ -1,90 +1,83 @@
-"use client";
+'use client';
 
-import { generalImages } from "@/constants/images";
-import Image from "next/image";
-import React, { useState } from "react";
-import CrossCloseButton from "../ui/cross-close-button";
+import { Filter, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useState } from "react";
 
 export default function AllClassFiltersPopUp() {
   const [open, setOpen] = useState(false);
 
   return (
     <div className="flex flex-col relative">
-      <div className="flex items-center gap-8">
-        <label>{"All Classes"}</label>
-        <button
-          className="flex justify-center items-center bg-white p-1 rounded-md w-7 h-7"
+      <div className="flex items-center gap-4">
+        <span className="text-gray-600">All Classes</span>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8"
           onClick={() => setOpen(!open)}
         >
           {open ? (
-            <CrossCloseButton callBack={() => setOpen(false)} />
+            <X className="h-4 w-4" />
           ) : (
-            <Image
-              src={generalImages.filter}
-              alt="add"
-              width={100}
-              height={100}
-              className="w-5 h-5"
-            />
+            <Filter className="h-4 w-4" />
           )}
-        </button>
+        </Button>
       </div>
-      {open ? (
-        <div className="flex flex-col bg-white shadow-md rounded-md p-4 gap-4 w-fit absolute top-7 -left-20 z-10">
-          <h2 className="pb-2" style={{ borderBottom: "solid 1px #eee" }}>
-            Filter by
-          </h2>
-          <div className="flex flex-col gap-2 text-gray-600">
-            <select
-              style={{ border: "solid 1px #eee" }}
-              className="px-2 py-1 bg-white rounded-full"
-            >
-              <option selected disabled>
-                Class
-              </option>
-              <option>C1</option>
-              <option>C2</option>
-              <option>C3</option>
-            </select>
+      
+      {open && (
+        <div className="absolute top-12 right-0 z-50 w-64 bg-white rounded-lg shadow-lg border p-4">
+          <h2 className="font-semibold text-gray-900 pb-3 border-b">Filter by</h2>
+          
+          <div className="flex flex-col gap-3 mt-3">
+            <Select>
+              <SelectTrigger>
+                <SelectValue placeholder="Class" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="c1">Class 5N</SelectItem>
+                <SelectItem value="c2">Class 5M</SelectItem>
+                <SelectItem value="c3">Class 6A</SelectItem>
+              </SelectContent>
+            </Select>
 
-            <select
-              style={{ border: "solid 1px #eee" }}
-              className="px-2 py-1 bg-white rounded-full"
-            >
-              <option selected disabled>
-                Subject
-              </option>
-              <option>S1</option>
-              <option>S2</option>
-              <option>S3</option>
-            </select>
+            <Select>
+              <SelectTrigger>
+                <SelectValue placeholder="Subject" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="s1">Science</SelectItem>
+                <SelectItem value="s2">Mathematics</SelectItem>
+                <SelectItem value="s3">English</SelectItem>
+              </SelectContent>
+            </Select>
 
-            <select
-              style={{ border: "solid 1px #eee" }}
-              className="px-2 py-1 bg-white rounded-full"
-            >
-              <option selected disabled>
-                Grade
-              </option>
-              <option>G1</option>
-              <option>G2</option>
-              <option>G3</option>
-            </select>
+            <Select>
+              <SelectTrigger>
+                <SelectValue placeholder="Grade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="g1">Grade 5</SelectItem>
+                <SelectItem value="g2">Grade 6</SelectItem>
+                <SelectItem value="g3">Grade 7</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <div className="flex justify-between gap-2">
-            <button
-              className="max-w-fit rounded-full px-4 hover:bg-gray-100"
-              onClick={() => setOpen(false)}
-            >
+
+          <div className="flex justify-end gap-2 mt-4 pt-3 border-t">
+            <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
-            </button>
-            <button className="max-w-fit bg-blue-500 hover:bg-blue-600 text-white rounded-full px-4">
-              Apply
-            </button>
+            </Button>
+            <Button>Apply</Button>
           </div>
         </div>
-      ) : (
-        ""
       )}
     </div>
   );
