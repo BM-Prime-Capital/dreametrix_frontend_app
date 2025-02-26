@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, Mail, GraduationCap, Clock, User } from "lucide-react"
+import {  Mail, GraduationCap, Clock, User } from "lucide-react"
 import { useState } from "react"
 import Image from "next/image"
 import { generalImages } from "@/constants/images"
