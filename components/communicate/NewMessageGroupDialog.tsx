@@ -28,6 +28,11 @@ export function NewMessageGroupDialog() {
           New Group
         </h2>
         <div className="flex flex-col gap-4 text-gray-600">
+          <input
+            type="text"
+            placeholder="Group name"
+            className="px-2 py-1.5 bg-white rounded-full border-[1px] border-[#eee]"
+          />
           <select className="p-2 bg-white rounded-full border-[1px] border-[#eee]">
             <option>Class 1</option>
             <option>Class 2</option>
