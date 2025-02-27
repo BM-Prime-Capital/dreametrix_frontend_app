@@ -9,6 +9,7 @@ import { useState } from "react";
 import Image from "next/image";
 import CommunicationItem from "./CommunicationItem";
 import { Communication } from "@/types";
+import { NewMessageGroupDialog } from "./NewMessageGroupDialog";
 
 type CommunicationGroupsWrapper = {
   id: number;
@@ -190,6 +191,12 @@ export default function Communicate() {
           </div>
         </div>
         <div className="p-4 overflow-scroll">
+          {currentCommunicationGroup.id === communicationGroups.length - 1 ? (
+            <NewMessageGroupDialog/>
+          ) : (
+            ""
+          )}
+
           {currentCommunicationGroup.communications.map((communication) => (
             <CommunicationItem communicationItem={communication} />
           ))}

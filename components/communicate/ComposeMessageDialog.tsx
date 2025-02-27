@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import Image from "next/image";
 import { teacherImages } from "@/constants/images";
-import SelectedStudentsPopUp from "../SelectedStudentsPopUp";
 
 export function ComposeMessageDialog() {
   const [open, setOpen] = useState(false);
@@ -24,7 +23,7 @@ export function ComposeMessageDialog() {
           <span>Compose</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-fit]">
+      <DialogContent className="w-fit">
         <h2
           className="pb-2 font-bold"
           style={{ borderBottom: "solid 1px #eee;" }}

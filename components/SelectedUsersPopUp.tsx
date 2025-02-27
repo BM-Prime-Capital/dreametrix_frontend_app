@@ -4,7 +4,7 @@ import { generalImages } from "@/constants/images";
 import Image from "next/image";
 import React, { useState } from "react";
 
-const allStudents = [
+const allUsers = [
   { name: "Prince bakenga" },
   { name: "Rose Mariline" },
   { name: "David Ligth" },
@@ -19,10 +19,12 @@ const allStudents = [
   { name: "Clara Jhonson" },
 ];
 
-export default function SelectedStudentsPopUp({
-  selectedStudents,
+export default function SelectedUsersPopUp({
+  selectedUsers,
+  usersLabel,
 }: {
-  selectedStudents: [];
+  selectedUsers: [];
+  usersLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -33,7 +35,7 @@ export default function SelectedStudentsPopUp({
           className="flex justify-between items-center w-full bg-white p-1 border-[1px] border-[#eee] rounded-full"
           onClick={() => setOpen(!open)}
         >
-          <span>Students List</span>
+          <span>{usersLabel || "Users"} List</span>
           <Image
             src={generalImages.arrow_down}
             width={12}
@@ -48,10 +50,10 @@ export default function SelectedStudentsPopUp({
             className="pb-2 font-bold"
             style={{ borderBottom: "solid 1px #eee" }}
           >
-            Selected Students
+            Selected {usersLabel || " Users"}
           </h2>
           <div className="flex flex-col gap-2 max-h-[125px] overflow-scroll">
-            {allStudents.map((student) => (
+            {allUsers.map((student) => (
               <div className="flex gap-4">
                 <label>{student.name}</label>
                 <input type="checkbox" />

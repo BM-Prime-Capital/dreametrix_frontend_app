@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import Image from "next/image";
 import { teacherImages } from "@/constants/images";
-import SelectedStudentsPopUp from "../SelectedStudentsPopUp";
+import SelectedUsersPopUp from "../SelectedUsersPopUp";
 
 export function ReportAttendanceDialog() {
   const [open, setOpen] = useState(false);
@@ -41,7 +41,7 @@ export function ReportAttendanceDialog() {
             <option>Class 7 - Math</option>
           </select>
 
-          <SelectedStudentsPopUp selectedStudents={[]} />
+          <SelectedUsersPopUp selectedUsers={[]} usersLabel="Students" />
 
           <div
             className="relative p-2 mt-2 rounded-md"
