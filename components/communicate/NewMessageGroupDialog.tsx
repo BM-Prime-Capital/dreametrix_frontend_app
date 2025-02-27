@@ -49,7 +49,7 @@ export function NewMessageGroupDialog() {
             Cancel
           </button>
           <button className="flex p-2 px-8 items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full">
-            SEND
+            CREATE
           </button>
         </div>
       </DialogContent>
