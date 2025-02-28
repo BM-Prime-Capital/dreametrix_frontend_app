@@ -4,6 +4,7 @@ import PageTitleH1 from "@/components/ui/page-title-h1";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { generalImages } from "@/constants/images";
+import ClassSelect from "../ClassSelect";
 
 export default function Gradebook() {
   return (
@@ -11,6 +12,7 @@ export default function Gradebook() {
       <div className="flex justify-between items-center">
         <PageTitleH1 title="GRADEBOOK" />
         <div className="flex items-center gap-2">
+          <ClassSelect />
           <select className="px-2 py-1 border rounded-md text-sm">
             <option>All Gradebook</option>
             <option>Grade 5</option>

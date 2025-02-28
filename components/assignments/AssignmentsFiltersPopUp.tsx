@@ -4,6 +4,7 @@ import { generalImages } from "@/constants/images";
 import Image from "next/image";
 import React, { useState } from "react";
 import CrossCloseButton from "../ui/cross-close-button";
+import ClassSelect from "../ClassSelect";
 
 export default function AssignmentFiltersPopUp() {
   const [open, setOpen] = useState(false);
@@ -11,11 +12,7 @@ export default function AssignmentFiltersPopUp() {
   return (
     <div className="flex flex-col relative">
       <div className="flex items-center gap-8">
-        <select className="bg-white p-1 rounded-md">
-          <option>Class 5 - Math</option>
-          <option>Class 4 - Science</option>
-          <option>Class 3 - Language</option>
-        </select>
+        <ClassSelect />
         <button
           className="flex justify-center items-center bg-white p-1 rounded-md w-7 h-7"
           onClick={() => setOpen(!open)}
