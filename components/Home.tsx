@@ -49,11 +49,8 @@ export default function Login() {
       return
     }
 
-    const success = await login({ email, password })
-    if (success) {
-      // The backend will handle the redirect, so we don't need to do anything here
-      // The page will automatically change due to the backend's redirect
-    }
+    await login({ email, password })
+    // The login function now handles the redirection based on the user's role
   }
 
   return (
