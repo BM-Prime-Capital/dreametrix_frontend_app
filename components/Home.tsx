@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Mail, Lock, AlertTriangle } from "lucide-react"
 import { userPath } from "@/constants/userConstants"
 import DreaMetrixLogo from "./ui/dreametrix-logo"
-import { useLogin } from "@/hooks/SchoolAdmin/useLogin"
+import { useLogin } from "@/hooks/useLogin"
 
 export interface LoginFormData {
   email: string
@@ -49,11 +49,8 @@ export default function Login() {
       return
     }
 
-    const success = await login({ email, password })
-    if (success) {
-      // The backend will handle the redirect, so we don't need to do anything here
-      // The page will automatically change due to the backend's redirect
-    }
+    await login({ email, password })
+    // The login function now handles the redirection based on the user's role
   }
 
   return (

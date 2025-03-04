@@ -1,15 +1,29 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 interface LoginCredentials {
   email: string
   password: string
 }
 
+interface LoginResponse {
+  refresh: string
+  access: string
+  user: {
+    role: string
+    // other user properties...
+  }
+  tenant: {
+    name: string
+  }
+}
+
 export function useLogin() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   const login = async (credentials: LoginCredentials) => {
     setIsLoading(true)
@@ -22,15 +36,38 @@ export function useLogin() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(credentials),
-        redirect: "follow", // This allows the browser to follow redirects
       })
 
       if (response.ok) {
-        // The backend will handle the redirect, so we don't need to do anything here
-        // The browser will automatically follow the redirect
+        const data: LoginResponse = await response.json()
+
+        // Store tokens in localStorage (consider using a more secure method in production)
+        localStorage.setItem("accessToken", data.access)
+        localStorage.setItem("refreshToken", data.refresh)
+
+        // Redirect based on user role
+        switch (data.user.role) {
+          case "school_admin":
+            router.push("/school_admin")
+            break
+          case "teacher":
+            router.push("/teacher")
+            break
+          case "student":
+            router.push("/student")
+            break
+          case "parent":
+            router.push("/parent")
+            break
+          case "superadmin":
+            router.push("/superadmin")
+            break
+          default:
+            router.push("/dashboard")
+        }
+
         return true
       } else {
-        // If the response is not ok, we'll assume it's an error
         const errorData = await response.json()
         throw new Error(errorData.message || "Login failed")
       }
