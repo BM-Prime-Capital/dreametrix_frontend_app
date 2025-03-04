@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Mail, Lock, AlertTriangle } from "lucide-react"
 import { userPath } from "@/constants/userConstants"
 import DreaMetrixLogo from "./ui/dreametrix-logo"
-import { useLogin } from "@/hooks/useLogin"
+import { useLogin } from "@/hooks/SchoolAdmin/useLogin"
 
 export interface LoginFormData {
   email: string
