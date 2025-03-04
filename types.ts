@@ -17,3 +17,16 @@ export interface ClassDay {
   munite: string;
   dayPart: string;
 }
+
+type FileRecord = {
+  name: string;
+  url: string;
+};
+
+export interface Communication {
+  userImageUrl: string;
+  userName: string;
+  message: string;
+  created: string;
+  attachedFilesUrls: FileRecord[];
+}

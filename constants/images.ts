@@ -6,6 +6,7 @@ const TEACHER_ASSIGNMENT_IMAGES_BASE_PATH = `${TEACHER_IMAGES_BASE_PATH}/assignm
 const TEACHER_ATTENDANCE_IMAGES_BASE_PATH = `${TEACHER_IMAGES_BASE_PATH}/attendance`;
 const TEACHER_CHARACTER_IMAGES_BASE_PATH = `${TEACHER_IMAGES_BASE_PATH}/character`;
 const TEACHER_SEATING_IMAGES_BASE_PATH = `${TEACHER_IMAGES_BASE_PATH}/seating`;
+const TEACHER_COMMUNICATE_IMAGES_BASE_PATH = `${TEACHER_IMAGES_BASE_PATH}/communicate`;
 
 export const generalImages = {
   dreaMetrixLogo: `${GENERAL_IMAGES_BASE_PATH}/logo.png`,
@@ -59,4 +60,20 @@ export const teacherImages = {
   manual: `${TEACHER_SEATING_IMAGES_BASE_PATH}/manual.svg`,
   seat_left: `${TEACHER_SEATING_IMAGES_BASE_PATH}/seat_left.svg`,
   seat_right: `${TEACHER_SEATING_IMAGES_BASE_PATH}/seat_right.svg`,
+  all_parents: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/all_parents.svg`,
+  attachment: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/attachment.svg`,
+  compose: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/compose.svg`,
+  delete: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/delete.svg`,
+  external: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/external.svg`,
+  individual_parent: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/individual_parent.svg`,
+  whole_class: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/whole_class.svg`,
+  voice_note: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/voice_note.svg`,
+  schedule: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/schedule.svg`,
+  reply: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/reply.svg`,
+  play: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/play.svg`,
+  pause: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/pause.svg`,
+  next: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/next.svg`,
+  new_group: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/new_group.svg`,
+  individual_student: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/individual_student.svg`,
+  attachement: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/attachement.svg`,
 };

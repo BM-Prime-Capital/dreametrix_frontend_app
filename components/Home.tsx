@@ -2,10 +2,10 @@
 
 import { useState, type ChangeEvent, type FormEvent } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { Mail, Lock, AlertTriangle } from "lucide-react"
 import { userPath } from "@/constants/userConstants"
 import DreaMetrixLogo from "./ui/dreametrix-logo"
+import { useLogin } from "@/hooks/SchoolAdmin/useLogin"
 
 export interface LoginFormData {
   email: string
@@ -17,17 +17,13 @@ export interface LoginErrors {
   password: boolean
 }
 
-const TEST_EMAIL = "test@example.com"
-const TEST_PASSWORD = "test"
-
 export default function Login() {
-  const router = useRouter()
+  const { login, isLoading, error } = useLogin()
   const [formData, setFormData] = useState<LoginFormData>({
-    email: TEST_EMAIL,
-    password: TEST_PASSWORD,
+    email: "",
+    password: "",
   })
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [errors, setErrors] = useState<LoginErrors>({
     email: false,
     password: false,
@@ -39,10 +35,9 @@ export default function Login() {
     setErrors((prev) => ({ ...prev, [name]: false }))
   }
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault()
     setFormSubmitted(true)
-    setIsLoading(true)
 
     const { email, password } = formData
 
@@ -51,21 +46,14 @@ export default function Login() {
         email: !email,
         password: !password,
       })
-      setIsLoading(false)
       return
     }
 
-    setTimeout(() => {
-      setIsLoading(false)
-      if (email === TEST_EMAIL && password === TEST_PASSWORD) {
-        router.push(userPath.SCHOOL_ADMIN_BASE_PATH)
-      } else {
-        setErrors({
-          email: email !== TEST_EMAIL,
-          password: password !== TEST_PASSWORD,
-        })
-      }
-    }, 1000)
+    const success = await login({ email, password })
+    if (success) {
+      // The backend will handle the redirect, so we don't need to do anything here
+      // The page will automatically change due to the backend's redirect
+    }
   }
 
   return (
@@ -109,7 +97,7 @@ export default function Login() {
                 <div className="absolute left-[-6px] top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-red-100"></div>
                 <div className="flex items-center">
                   <AlertTriangle className="h-4 w-4 mr-2" />
-                  <span className="text-sm">Incorrect username</span>
+                  <span className="text-sm">Email is required</span>
                 </div>
               </div>
             )}
@@ -138,11 +126,20 @@ export default function Login() {
                 <div className="absolute left-[-6px] top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-red-100"></div>
                 <div className="flex items-center">
                   <AlertTriangle className="h-4 w-4 mr-2" />
-                  <span className="text-sm">Incorrect password</span>
+                  <span className="text-sm">Password is required</span>
                 </div>
               </div>
             )}
           </div>
+
+          {error && (
+            <div className="bg-red-100 text-red-700 px-4 py-2 rounded-md">
+              <div className="flex items-center">
+                <AlertTriangle className="h-5 w-5 mr-2" />
+                <span>{error}</span>
+              </div>
+            </div>
+          )}
 
           <div className="text-right">
             <Link href="/forgot_password" className="text-[#1A73E8] hover:text-[#1453B8] text-sm">

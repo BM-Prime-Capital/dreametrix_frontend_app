@@ -40,6 +40,7 @@ export function CharacterTable() {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>CLASS</TableHead>
             <TableHead>DATE</TableHead>
             <TableHead>STUDENT</TableHead>
             <TableHead>CHARACTER</TableHead>
@@ -53,6 +54,7 @@ export function CharacterTable() {
               key={character.id}
               className={index % 2 === 0 ? "bg-sky-50/50" : ""}
             >
+              <TableCell>{character.name}</TableCell>
               <TableCell>{character.date}</TableCell>
               <TableCell>{character.student}</TableCell>
               <TableCell>
