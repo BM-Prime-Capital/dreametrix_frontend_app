@@ -22,7 +22,7 @@ export function ExcelUploadDialog() {
       setIsLoading(true)
 
       const formData = new FormData()
-      formData.append("file", file)
+      formData.append("excel_file", file)
 
       try {
         const token = localStorage.getItem("accessToken") // Assurez-vous d'avoir stocké le token lors de la connexion
@@ -128,4 +128,3 @@ export function ExcelUploadDialog() {
     </Dialog>
   )
 }
-
