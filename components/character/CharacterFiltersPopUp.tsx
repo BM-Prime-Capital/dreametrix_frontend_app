@@ -39,18 +39,6 @@ export default function CharacterFiltersPopUp() {
               className="px-2 py-1 bg-white rounded-full"
             >
               <option selected disabled>
-                All Classes
-              </option>
-              <option>Class 1 - Math</option>
-              <option>Class 2 - Scence</option>
-              <option>Class 3 - Math</option>
-            </select>
-
-            <select
-              style={{ border: "solid 1px #eee" }}
-              className="px-2 py-1 bg-white rounded-full"
-            >
-              <option selected disabled>
                 Student
               </option>
               <option>Student 1</option>

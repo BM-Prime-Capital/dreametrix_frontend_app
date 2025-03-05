@@ -9,6 +9,7 @@ import PageTitleH2 from "../ui/page-title-h2";
 import StudentArrangementItem from "./student-arrangement-item";
 import { useState } from "react";
 import StudentSeatingConditionsDialog from "./StudentSeatingConditionsDialog";
+import ClassSelect from "../ClassSelect";
 
 type StudentArrangement = {
   studentImageUrl: string;
@@ -159,11 +160,7 @@ export default function Seating() {
       <div className="flex justify-between items-center">
         <PageTitleH1 title="SEATING" />
         <div className="flex items-center gap-2">
-          <select className="bg-white p-1 rounded-md">
-            <option>Class 5 - Math</option>
-            <option>Class 4 - Science</option>
-            <option>Class 3 - Language</option>
-          </select>
+          <ClassSelect />
         </div>
       </div>
       <div className="flex gap-2 flex-wrap">

@@ -7,6 +7,7 @@ import Image from "next/image";
 import { teacherImages } from "@/constants/images";
 import Link from "next/link";
 import CharacterFiltersPopUp from "./CharacterFiltersPopUp";
+import ClassSelect from "../ClassSelect";
 
 export default function Character() {
   return (
@@ -14,7 +15,7 @@ export default function Character() {
       <div className="flex justify-between items-center">
         <PageTitleH1 title="CHARACTER" />
         <div className="flex items-center flex-wrap gap-2">
-          <label>Today - All Classes- All Students </label>
+          <ClassSelect />
 
           <CharacterFiltersPopUp />
         </div>
