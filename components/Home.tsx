@@ -13,8 +13,8 @@ export interface LoginFormData {
 }
 
 export interface LoginErrors {
-  email: boolean
-  password: boolean
+  email: string | null
+  password: string | null
 }
 
 export default function Login() {
@@ -25,14 +25,27 @@ export default function Login() {
   })
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false)
   const [errors, setErrors] = useState<LoginErrors>({
-    email: false,
-    password: false,
+    email: null,
+    password: null,
   })
+
+  const validateEmail = (email: string): string | null => {
+    if (!email) return "Email is required"
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) return "Invalid email address"
+    return null
+  }
+
+  const validatePassword = (password: string): string | null => {
+    if (!password) return "Password is required"
+    if (password.length < 8) return "Password must be at least 8 characters long"
+    return null
+  }
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
-    setErrors((prev) => ({ ...prev, [name]: false }))
+    setErrors((prev) => ({ ...prev, [name]: null }))
   }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
@@ -41,16 +54,45 @@ export default function Login() {
 
     const { email, password } = formData
 
-    if (!email || !password) {
-      setErrors({
-        email: !email,
-        password: !password,
-      })
+    const emailError = validateEmail(email)
+    const passwordError = validatePassword(password)
+
+    setErrors({
+      email: emailError,
+      password: passwordError,
+    })
+
+    if (emailError || passwordError) {
       return
     }
 
-    await login({ email, password })
-    // The login function now handles the redirection based on the user's role
+    try {
+      await login({ email, password })
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.message.includes("email")) {
+          setErrors((prev) => ({ ...prev, email: err.message }))
+        } else if (err.message.includes("password")) {
+          setErrors((prev) => ({ ...prev, password: err.message }))
+        } else {
+          // Handle general error
+          console.error(err.message)
+        }
+      }
+    }
+  }
+
+  const renderErrorMessage = (errorMessage: string | null) => {
+    if (!errorMessage) return null
+    return (
+      <div className="absolute right-[-160px] top-1/2 transform -translate-y-1/2 bg-red-100 text-red-700 px-3 py-1 rounded-md shadow-md">
+        <div className="absolute left-[-6px] top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-red-100"></div>
+        <div className="flex items-center">
+          <AlertTriangle className="h-4 w-4 mr-2" />
+          <span className="text-sm">{errorMessage}</span>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -89,15 +131,7 @@ export default function Login() {
                 />
               </div>
             </div>
-            {formSubmitted && errors.email && (
-              <div className="absolute right-[-160px] top-1/2 transform -translate-y-1/2 bg-red-100 text-red-700 px-3 py-1 rounded-md shadow-md">
-                <div className="absolute left-[-6px] top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-red-100"></div>
-                <div className="flex items-center">
-                  <AlertTriangle className="h-4 w-4 mr-2" />
-                  <span className="text-sm">Email is required</span>
-                </div>
-              </div>
-            )}
+            {renderErrorMessage(errors.email)}
           </div>
 
           <div className="relative">
@@ -118,15 +152,7 @@ export default function Login() {
                 />
               </div>
             </div>
-            {formSubmitted && errors.password && (
-              <div className="absolute right-[-160px] top-1/2 transform -translate-y-1/2 bg-red-100 text-red-700 px-3 py-1 rounded-md shadow-md">
-                <div className="absolute left-[-6px] top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-red-100"></div>
-                <div className="flex items-center">
-                  <AlertTriangle className="h-4 w-4 mr-2" />
-                  <span className="text-sm">Password is required</span>
-                </div>
-              </div>
-            )}
+            {renderErrorMessage(errors.password)}
           </div>
 
           {error && (
