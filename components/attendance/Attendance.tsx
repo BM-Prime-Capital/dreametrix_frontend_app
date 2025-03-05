@@ -68,7 +68,7 @@ export default function Attendance() {
           <Button
             variant="ghost"
             size="icon"
-            className="flex h-full bg-white rounded-md hover:bg-blue-50"
+            className="flex h-full bg-white rounded-md border-[1px] border-[#ddd] hover:bg-blue-50"
             title="Modify All"
             onClick={() => setIsAttendanceDatePast(false)}
           >
