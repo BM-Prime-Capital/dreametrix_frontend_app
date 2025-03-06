@@ -1,7 +1,6 @@
 import { generalImages, teacherImages } from "@/constants/images";
 import Image from "next/image";
-import React from "react";
-import ChangeStudentSeatPopUp from "./ChangeStudentSeatPopUp";
+import React, { useState } from "react";
 
 export default function StudentArrangementItem({
   studentName,
@@ -9,7 +8,7 @@ export default function StudentArrangementItem({
   placeImageUrl,
   className,
   id,
-  changeSeatNumber,
+  handleSeatClick,
   maxSeatNumber,
   isSeatingArrangementAuto,
 }: {
@@ -18,39 +17,38 @@ export default function StudentArrangementItem({
   placeImageUrl?: string;
   className: string;
   id: number;
-  changeSeatNumber: Function;
+  handleSeatClick: Function;
   maxSeatNumber: number;
   isSeatingArrangementAuto: boolean;
 }) {
+  const [isClicked, setIsClicked] = useState(false);
+
+  const handleClick = () => {
+    setIsClicked(true);
+    handleSeatClick();
+    setTimeout(() => {
+      setIsClicked(false);
+    }, 3000);
+  };
   return (
     <div
-      className={`flex justify-center items-center gap-2 bg-gray-100 p-2 w-[200px] rounded-md relative ${className}`}
+      onClick={() => handleClick()}
+      className={`flex justify-center items-center gap-2 bg-gray-100 p-2 w-full rounded-md hover:border-[1px] hover:border-bgPink relative ${
+        isClicked ? "border-[1px] border-bgPink" : ""
+      } ${className}`}
     >
-      {!isSeatingArrangementAuto ? (
-        <>
-          <label className="font-bold text-red-500 absolute -top-4 left-4">
-            {id}
-          </label>
-          <div className="absolute top-2 left-2">
-            <ChangeStudentSeatPopUp
-              currentSeatNumber={id}
-              changeSeatNumber={changeSeatNumber}
-              maxSeatNumber={maxSeatNumber}
-            />
-          </div>
-        </>
-      ) : (
-        ""
-      )}
+      <label className="seat-number font-bold text-xs text-bgPurple absolute -top-4 left-4 hidden">
+        {id}
+      </label>
 
       <div className="flex flex-col gap-2 justify-center items-center">
-        <Image src={studentImageUrl} alt="student" width={70} height={70} />
-        <label>{studentName}</label>
+        <Image src={studentImageUrl} alt="student" width={25} height={25} />
+        <label className="text-xs">{studentName}</label>
       </div>
 
       <div className="absolute top-2 right-2">
         {placeImageUrl ? (
-          <Image src={placeImageUrl} alt="student" width={30} height={30} />
+          <Image src={placeImageUrl} alt="student" width={10} height={10} />
         ) : (
           ""
         )}
