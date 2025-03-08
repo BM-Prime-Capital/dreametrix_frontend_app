@@ -5,53 +5,53 @@ export const StudentRoutes = [
   {
     path: userPath.STUDENT_DASHBOARD_PATH,
     icon: generalImages.home,
-    label: "HOME"
+    label: "HOME",
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/classes`,
     icon: generalImages.assignments,
-    label: "CLASSES"
+    label: "CLASSES",
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/assignments`,
     icon: generalImages.assignments,
-    label: "ASSIGNMENTS"
+    label: "ASSIGNMENTS",
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/gradebook`,
     icon: generalImages.gradebook,
-    label: "GRADEBOOK"
+    label: "GRADEBOOK",
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/attendance`,
     icon: generalImages.attendance,
-    label: "ATTENDANCE"
+    label: "ATTENDANCE",
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/character`,
     icon: generalImages.character,
-    label: "CHARACTER"
+    label: "CHARACTER",
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/communicate`,
     icon: generalImages.communicate,
-    label: "COMMUNICATE"
+    label: "COMMUNICATE",
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/library`,
     icon: generalImages.library,
-    label: "LIBRARY"
+    label: "LIBRARY",
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/rewards`,
     icon: generalImages.rewards,
-    label: "REWARDS"
+    label: "REWARDS",
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/tutor`,
     icon: generalImages.tutor,
-    label: "TUTOR"
-  }
+    label: "TUTOR",
+  },
 ];
 
 export const SchoolAdminRoutes = [
@@ -102,6 +102,11 @@ export const TeacherRoutes = [
     path: `${userPath.TEACHER_BASE_PATH}/assignments`,
     icon: generalImages.assignments,
     label: "ASSIGNMENTS",
+  },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/digital_library`,
+    icon: generalImages.assignments,
+    label: "DIGITAL LIBRARY",
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/gradebook`,

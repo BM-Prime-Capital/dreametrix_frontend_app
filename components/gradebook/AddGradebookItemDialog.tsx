@@ -32,7 +32,7 @@ export function AddGradebookItemDialog() {
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-blue-500">
-            ASSIGNMENT
+            Add New Gradebook Entry
           </DialogTitle>
         </DialogHeader>
         <div className="flex flex-wrap gap-4 py-4">
