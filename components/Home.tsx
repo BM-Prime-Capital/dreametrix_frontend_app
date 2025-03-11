@@ -68,16 +68,21 @@ export default function Login() {
 
     try {
       await login({ email, password })
-    } catch (err) {
+    } catch (err: unknown) {
       if (err instanceof Error) {
-        if (err.message.includes("email")) {
-          setErrors((prev) => ({ ...prev, email: err.message }))
-        } else if (err.message.includes("password")) {
-          setErrors((prev) => ({ ...prev, password: err.message }))
+        const errorMessage = err.message
+
+        if (errorMessage.includes("email")) {
+          setErrors((prev) => ({ ...prev, email: errorMessage }))
+        } else if (errorMessage.includes("password")) {
+          setErrors((prev) => ({ ...prev, password: errorMessage }))
         } else {
           // Handle general error
-          console.error(err.message)
+          console.error(errorMessage)
         }
+      } else {
+        // Handle case where err is not an Error object
+        console.error("An unknown error occurred")
       }
     }
   }
