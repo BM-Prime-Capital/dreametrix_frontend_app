@@ -12,11 +12,16 @@ interface LoginResponse {
   refresh: string
   access: string
   user: {
+    id: number
     role: string
-    // other user properties...
+    email: string
+    username: string
+    // Ajoutez d'autres propriétés de l'utilisateur si nécessaire
   }
   tenant: {
     name: string
+    code: string
+    primary_domain: string
   }
 }
 
@@ -41,11 +46,33 @@ export function useLogin() {
       if (response.ok) {
         const data: LoginResponse = await response.json()
 
-        // Store tokens in localStorage (consider using a more secure method in production)
+        // Stocker les tokens
         localStorage.setItem("accessToken", data.access)
         localStorage.setItem("refreshToken", data.refresh)
 
-        // Redirect based on user role
+        // Stocker les informations de l'utilisateur
+        localStorage.setItem(
+          "userData",
+          JSON.stringify({
+            id: data.user.id,
+            role: data.user.role,
+            email: data.user.email,
+            username: data.user.username,
+            // Ajoutez d'autres propriétés si nécessaire
+          }),
+        )
+
+        // Stocker les informations du tenant
+        localStorage.setItem(
+          "tenantData",
+          JSON.stringify({
+            name: data.tenant.name,
+            code: data.tenant.code,
+            primary_domain: data.tenant.primary_domain,
+          }),
+        )
+
+        // Redirection basée sur le rôle de l'utilisateur
         switch (data.user.role) {
           case "school_admin":
             router.push("/school_admin")
