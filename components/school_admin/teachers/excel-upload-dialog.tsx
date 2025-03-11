@@ -62,7 +62,7 @@ export function ExcelUploadDialog() {
         throw new Error("URL de base non disponible. Veuillez vous reconnecter.")
       }
 
-      const uploadUrl = `${baseUrl}/school-admin/upload-users/`
+      const uploadUrl = `https://${baseUrl}/school-admin/upload-users/`
 
       console.log("Uploading to:", uploadUrl)
 
