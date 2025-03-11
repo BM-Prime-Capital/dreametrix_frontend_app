@@ -9,11 +9,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Calendar, Users } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import { generalImages } from "@/constants/images";
-import TimeTableItem from "../ui/time-table-item";
 import { ClassDay } from "@/types";
 
 export function AddAssignmentDialog() {
