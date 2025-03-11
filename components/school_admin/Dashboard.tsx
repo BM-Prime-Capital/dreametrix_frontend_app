@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { ActivityFeed } from "../layout/ActivityFeed"
 import { AIAssistance } from "./ai-assistance"
 import { Button } from "@/components/ui/button"
@@ -7,30 +10,43 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import PageTitleH1 from "../ui/page-title-h1"
 import SchoolAdminHeader from "./Header"
 
+interface UserData {
+  id: number
+  role: string
+  email: string
+  username: string
+  picture: string
+}
+
+interface TenantData {
+  name: string
+  code: string
+  primary_domain: string
+}
+
 export default function SchoolAdminDashboard() {
+  const [userData, setUserData] = useState<UserData | null>(null)
+  const [tenantData, setTenantData] = useState<TenantData | null>(null)
+
+  useEffect(() => {
+    const storedUserData = localStorage.getItem("userData")
+    const storedTenantData = localStorage.getItem("tenantData")
+
+    if (storedUserData) {
+      setUserData(JSON.parse(storedUserData))
+    }
+    if (storedTenantData) {
+      setTenantData(JSON.parse(storedTenantData))
+    }
+  }, [])
+
   return (
     <section className="flex flex-col gap-6 w-full">
       <PageTitleH1 title="Dashboard" />
 
       <div className="flex flex-col lg:flex-row gap-6 p-4 sm:p-6">
         <div className="flex-1 space-y-6">
-          <SchoolAdminHeader />
-          {/* <Card className="p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
-              <Avatar className="h-16 w-16">
-                <AvatarImage src="/placeholder.svg" />
-                <AvatarFallback>SL</AvatarFallback>
-              </Avatar>
-              <div className="text-center sm:text-left">
-                <PageTitleH2 title="School Lead/Principal" />
-                <div className="flex gap-2 justify-center sm:justify-start">
-                  <Settings className="h-4 w-4" />
-                  <Search className="h-4 w-4" />
-                  <Edit2 className="h-4 w-4" />
-                </div>
-              </div>
-            </div>
-          </Card> */}
+          <SchoolAdminHeader userData={userData} tenantData={tenantData} />
 
           <Card className="p-4 sm:p-6">
             <AIAssistance />
@@ -42,8 +58,8 @@ export default function SchoolAdminDashboard() {
 
               <div className="flex flex-col items-center gap-2 mb-8">
                 <Avatar className="h-20 w-20">
-                  <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback>SL</AvatarFallback>
+                  <AvatarImage src={userData?.picture || "/placeholder.svg"} />
+                  <AvatarFallback>{userData?.username?.slice(0, 2).toUpperCase() || "SL"}</AvatarFallback>
                 </Avatar>
                 <span className="text-sm text-muted-foreground cursor-pointer hover:text-primary">Change</span>
               </div>
@@ -54,13 +70,13 @@ export default function SchoolAdminDashboard() {
                     <label className="text-sm font-medium" htmlFor="username">
                       Username
                     </label>
-                    <Input id="username" placeholder="School Name" className="bg-gray-50 h-11" />
+                    <Input id="username" value={userData?.username || ""} className="bg-gray-50 h-11" readOnly />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium" htmlFor="email">
                       Email
                     </label>
-                    <Input id="email" placeholder="sarah@school.edu" className="bg-gray-50 h-11" />
+                    <Input id="email" value={userData?.email || ""} className="bg-gray-50 h-11" readOnly />
                   </div>
                 </div>
 
@@ -69,13 +85,13 @@ export default function SchoolAdminDashboard() {
                     <label className="text-sm font-medium" htmlFor="school">
                       School
                     </label>
-                    <Input id="school" placeholder="School1" className="bg-gray-50 h-11" />
+                    <Input id="school" value={tenantData?.name || ""} className="bg-gray-50 h-11" readOnly />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium" htmlFor="role">
                       Role
                     </label>
-                    <Input id="role" placeholder="Principal" className="bg-gray-50 h-11" />
+                    <Input id="role" value={userData?.role || ""} className="bg-gray-50 h-11" readOnly />
                   </div>
                 </div>
 

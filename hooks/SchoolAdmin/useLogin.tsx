@@ -58,6 +58,7 @@ export function useLogin() {
             role: data.user.role,
             email: data.user.email,
             username: data.user.username,
+           
             // Ajoutez d'autres propriétés si nécessaire
           }),
         )
