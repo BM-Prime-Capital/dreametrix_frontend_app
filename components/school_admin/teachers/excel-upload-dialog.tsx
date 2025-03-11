@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../ui/dialog"
 import { Button } from "../../ui/button"
@@ -18,21 +19,16 @@ export function ExcelUploadDialog() {
   const [baseUrl, setBaseUrl] = useState<string | null>(null)
 
   useEffect(() => {
-    const userDataString = localStorage.getItem("userData")
-    if (userDataString) {
-      try {
-        const userData = JSON.parse(userDataString)
-        if (userData.tenant && userData.tenant.primary_domain) {
-          setBaseUrl(`https://${userData.tenant.primary_domain}`)
-        } else {
-          setError("Domaine principal non trouvé. Veuillez vous reconnecter.")
-        }
-      } catch (error) {
-        console.error("Error parsing user data:", error)
-        setError("Erreur lors de la récupération des données utilisateur")
+    const tenantData = localStorage.getItem("tenantData")
+    if (tenantData) {
+      const { primary_domain } = JSON.parse(tenantData)
+      if (primary_domain) {
+        setBaseUrl(`https://${primary_domain}`)
+      } else {
+        setError("Domaine principal non trouvé. Veuillez vous reconnecter.")
       }
     } else {
-      setError("Données utilisateur non trouvées. Veuillez vous reconnecter.")
+      setError("Données du tenant non trouvées. Veuillez vous reconnecter.")
     }
   }, [])
 
