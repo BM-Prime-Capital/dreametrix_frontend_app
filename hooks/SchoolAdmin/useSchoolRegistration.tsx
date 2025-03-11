@@ -310,7 +310,7 @@ export const useSchoolRegistration = () => {
     return isValid
   }
 
-  const handleInputChange = (name: keyof SchoolFormData, value: string) => {
+  const handleInputChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }))
     setErrors((prev) => ({ ...prev, [name]: "" }))
   }
