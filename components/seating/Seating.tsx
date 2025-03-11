@@ -262,9 +262,9 @@ export default function Seating() {
             <div className="flex sm:flex-col gap-4 pl-4 sm:pl-0 overflow-scroll">
               {studentArrangements.map((studentArrangement) => (
                 <label
-                  className={`text-[#55b4f1] whitespace-nowrap cursor-pointer ${
+                  className={`text-[#55b4f1] whitespace-nowrap cursor-pointer p-2 sm:p-0 ${
                     currentStudentArrangements.id === studentArrangement.id
-                      ? "bg-white p-2 sm:py-2 sm:px-4 rounded-t-lg sm:rounded-r-full"
+                      ? "bg-white sm:py-2 sm:px-4 rounded-t-lg sm:rounded-r-full"
                       : "sm:pl-4"
                   }`}
                   onClick={() =>

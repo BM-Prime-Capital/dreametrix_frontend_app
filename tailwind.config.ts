@@ -26,6 +26,8 @@ const config: Config = {
         bgBlueLight: "#dbddf6",
         bgPinkLight: "#f5f5dd",
         bgPinkLight2: "#ff7979",
+        bgPink: "#ea52b1",
+        bgPinkHover: "#cc3493",
         bgPurpleLight: "#eedbf7",
         bgYellow: "#ffd271",
         foreground: "hsl(var(--foreground))",

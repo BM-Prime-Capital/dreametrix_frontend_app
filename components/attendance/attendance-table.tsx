@@ -15,6 +15,7 @@ import Image from "next/image";
 import AssignmentStudentsDialog from "./AssignmentStudentsDialog";
 import AttendanceItem from "../ui/attendance-item";
 import { attendanceLabel } from "@/constants/global";
+import { useEffect, useState } from "react";
 
 // This would typically come from your API
 const attendances = [
@@ -36,7 +37,7 @@ const attendances = [
     lateAttendanceCount: 20,
   },
   {
-    id: 2,
+    id: 3,
     name: "Clara Pearl",
     currentAttendance: attendanceLabel.PRESENT,
     presentAttendanceCount: 24,
@@ -45,7 +46,11 @@ const attendances = [
   },
 ];
 
-export function AttendanceTable() {
+export function AttendanceTable({
+  isAttendanceDatePast,
+}: {
+  isAttendanceDatePast: boolean;
+}) {
   return (
     <div className="w-full overflow-auto">
       <Table>
@@ -64,7 +69,10 @@ export function AttendanceTable() {
             >
               <TableCell>{attendance.name}</TableCell>
               <TableCell>
-                <AttendanceItem label={attendance.currentAttendance} />
+                <AttendanceItem
+                  label={attendance.currentAttendance}
+                  isAttendanceDatePast={isAttendanceDatePast}
+                />
               </TableCell>
               <TableCell>
                 <div className="flex gap-8">

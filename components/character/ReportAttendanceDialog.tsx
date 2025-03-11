@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import Image from "next/image";
 import { teacherImages } from "@/constants/images";
-import SelectedStudentsPopUp from "../SelectedStudentsPopUp";
+import SelectedUsersPopUp from "../SelectedUsersPopUp";
 
 export function ReportAttendanceDialog() {
   const [open, setOpen] = useState(false);
@@ -41,7 +41,7 @@ export function ReportAttendanceDialog() {
             <option>Class 7 - Math</option>
           </select>
 
-          <SelectedStudentsPopUp selectedStudents={[]} />
+          <SelectedUsersPopUp selectedUsers={[]} usersLabel="Students" />
 
           <div
             className="relative p-2 mt-2 rounded-md"
@@ -67,7 +67,6 @@ export function ReportAttendanceDialog() {
               </label>
             </div>
           </div>
-          
         </div>
         <div className="flex flex-col justify-between gap-2">
           <button className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2">
