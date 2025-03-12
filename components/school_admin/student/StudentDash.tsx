@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Settings } from "lucide-react"
 import { AddStudentDialog } from "./AddStudentDialog"
-import { StudentsTable } from "./StudentTable"
+import { StudentsTable } from  "./StudentTable"
 
 export default function StudentsDash() {
   return (
@@ -22,17 +22,18 @@ export default function StudentsDash() {
                 </Button>
               </div>
             </div>
-            
+
             {/* Action row */}
             <div className="flex items-center justify-between">
               <AddStudentDialog />
               <p className="text-sm text-muted-foreground">STUDENT&apos;S CODE: XXXXXXXX</p>
             </div>
           </div>
-          
+
           <StudentsTable />
         </div>
       </Card>
     </div>
   )
 }
+
