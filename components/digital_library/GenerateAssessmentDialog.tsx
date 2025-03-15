@@ -24,6 +24,9 @@ export function GenerateAssessmentDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <h4 className="font-bold text-center">Preview</h4>
+        <div className="w-full h-[500px]">
+          <iframe src="/assets/google_search.pdf" width="100%" height="100%" />
+        </div>
         <div className="flex justify-between gap-4 mt-4">
           <Button className="bg-blue-500 hover:bg-blue-600 text-white w-full">
             Download

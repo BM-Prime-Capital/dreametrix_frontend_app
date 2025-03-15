@@ -36,7 +36,10 @@ export function GradebookTable({
               key={class_.id}
               className={index % 2 === 0 ? "bg-sky-50/50" : ""}
             >
-              <TableCell onClick={() => setCurrentClass(class_)}>
+              <TableCell
+                className="cursor-pointer"
+                onClick={() => setCurrentClass(class_)}
+              >
                 {class_.name}
               </TableCell>
               <TableCell>{class_.average}</TableCell>

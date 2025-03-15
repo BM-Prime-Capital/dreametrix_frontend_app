@@ -60,7 +60,7 @@ export function AddPollsDialog() {
             ) : (
               <>
                 <li
-                  className={`${
+                  className={`cursor-pointer ${
                     currentStep === 1 ? "border-b-[2px] border-blue-500" : ""
                   }`}
                   onClick={() => setCurrentStep(1)}
@@ -68,7 +68,7 @@ export function AddPollsDialog() {
                   Step 1
                 </li>
                 <li
-                  className={`${
+                  className={`cursor-pointer ${
                     currentStep === 2 ? "border-b-[2px] border-blue-500" : ""
                   }`}
                   onClick={() => setCurrentStep(2)}
@@ -76,7 +76,7 @@ export function AddPollsDialog() {
                   Step 2
                 </li>
                 <li
-                  className={`${
+                  className={`cursor-pointer ${
                     currentStep === 3 ? "border-b-[2px] border-blue-500" : ""
                   }`}
                   onClick={() => setCurrentStep(3)}
