@@ -8,6 +8,8 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 import ClassSelect from "../ClassSelect";
 import { useSelector } from "react-redux";
+import LineChartComponent from "../ui/line-chart";
+import DoughnutChartComponent from "../ui/pie-chart";
 
 export default function Reports() {
   const { selectedClass } = useSelector((state: any) => state.generalInfo);
@@ -16,7 +18,7 @@ export default function Reports() {
     <section className="flex flex-col gap-2 w-full p-6">
       <div className="flex justify-between items-center">
         <PageTitleH1 title="REPORTS" />
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <label className="flex items-center gap-2">
             <span className="text-muted-foreground">From: </span>
             <input
@@ -73,7 +75,7 @@ export default function Reports() {
       </div>
       <Card className="rounded-md">
         <div className="flex flex-col p-4">
-          <div className="flex justify-between mb-4  border-b-[1px] border-[#eee] ">
+          <div className="flex flex-wrap justify-between mb-4  border-b-[1px] border-[#eee] ">
             <div className="flex gap-4 items-center">
               <label className="font-bold">CHARACTER SCORE REPORT</label>
               <span className="text-muted-foreground">07/03 - 14/03</span>
@@ -97,44 +99,32 @@ export default function Reports() {
               <span className="text-[3em] text-[#b9d63c] font-bold">A</span>
             </div>
           </div>
-          <div className="flex gap-8">
-            <div className="flex flex-col">
+          <div className="flex flex-wrap gap-8">
+            <div className="flex flex-col gap-8">
               <div className="flex gap-8">
-                <div className="flex flex-col gap-8">
-                  <div className="flex flex-col">
-                    <label className="text-sm font-bold mb-4">
-                      Character Domain Breakdown:
-                    </label>
-                    <div className="flex gap-4">
-                      <span className="bg-[#65be4d] text-white font-bold rounded-md p-2 h-8 w-8 flex items-center justify-center">
-                        A+
-                      </span>
-                      <span className="bg-[#fbe809] text-white font-bold rounded-md p-2 h-8 w-8 flex items-center justify-center">
-                        B
-                      </span>
-                      <span className="bg-[#fcc144] text-white font-bold rounded-md p-2 h-8 w-8 flex items-center justify-center">
-                        C
-                      </span>
-                      <span className="bg-[#f38053] text-white font-bold rounded-md p-2 h-8 w-8 flex items-center justify-center">
-                        D
-                      </span>
-                      <span className="bg-[#ef4c4c] text-white font-bold rounded-md p-2 h-8 w-8 flex items-center justify-center">
-                        F
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="text-sm font-bold mb-4">
-                      Score History:
-                    </label>
-                    <Image
-                      src={"/assets/images/to_remove/score_history.png"}
-                      alt="score_history"
-                      height={400}
-                      width={400}
-                    />
+                <div className="flex flex-col">
+                  <label className="text-sm font-bold mb-4">
+                    Character Domain Breakdown:
+                  </label>
+                  <div className="flex gap-4">
+                    <span className="bg-[#65be4d] text-white font-bold rounded-md p-2 h-8 w-8 flex items-center justify-center">
+                      A+
+                    </span>
+                    <span className="bg-[#fbe809] text-white font-bold rounded-md p-2 h-8 w-8 flex items-center justify-center">
+                      B
+                    </span>
+                    <span className="bg-[#fcc144] text-white font-bold rounded-md p-2 h-8 w-8 flex items-center justify-center">
+                      C
+                    </span>
+                    <span className="bg-[#f38053] text-white font-bold rounded-md p-2 h-8 w-8 flex items-center justify-center">
+                      D
+                    </span>
+                    <span className="bg-[#ef4c4c] text-white font-bold rounded-md p-2 h-8 w-8 flex items-center justify-center">
+                      F
+                    </span>
                   </div>
                 </div>
+
                 <div className="flex flex-col">
                   <label className="text-sm font-bold mb-4">Overview:</label>
                   <table className="text-center shadow-md rounded-md">
@@ -164,6 +154,12 @@ export default function Reports() {
                       <td>C</td>
                     </tr>
                   </table>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <label className="text-sm font-bold mb-4">Score History:</label>
+                <div className="flex justify-center items-center h-[300px] bg-white rounded-md">
+                  <LineChartComponent />
                 </div>
               </div>
               <div className="flex flex-col gap-2">
@@ -215,12 +211,12 @@ export default function Reports() {
             <div className="flex flex-col gap-8">
               <div className="flex flex-col">
                 <label className="text-sm font-bold mb-4">Score:</label>
-                <Image
-                  src={"/assets/images/to_remove/score.png"}
-                  alt="score"
-                  height={100}
-                  width={100}
-                />
+                <div className="flex justify-center items-center h-[200px] bg-white relative">
+                  <DoughnutChartComponent />
+                  <div className="text-2xl text-[#b9d63c] font-bold h-[60px] w-[60px] flex flex-col items-center justify-center border-[2px] border-[#b9d63c] rounded-full absolute">
+                    84
+                  </div>
+                </div>
               </div>
               <div className="flex flex-col">
                 <label className="text-sm font-bold mb-4">
