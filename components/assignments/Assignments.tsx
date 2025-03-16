@@ -1,3 +1,5 @@
+"use client";
+
 import { Card } from "@/components/ui/card";
 import { AssignmentsTable } from "./assignments-table";
 import PageTitleH1 from "@/components/ui/page-title-h1";

@@ -14,22 +14,18 @@ export default function AttendanceItem({
   const ABSENT = attendanceLabel.ABSENT;
   const LATE = attendanceLabel.LATE;
 
-  const PRESENT_BG_COLOR = isAttendanceDatePast
-    ? "bg-gray-300"
-    : "bg-bgGreenLight2";
+  const PRESENT_COLOR = isAttendanceDatePast ? "gray-300" : "bgGreenLight2";
 
-  const ABSENT_BG_COLOR = isAttendanceDatePast
-    ? "bg-gray-300"
-    : "bg-bgPinkLight2";
+  const ABSENT_COLOR = isAttendanceDatePast ? "gray-300" : "bgPinkLight2";
 
-  const LATE_BG_COLOR = isAttendanceDatePast ? "bg-gray-300" : "bg-bgYellow";
+  const LATE_COLOR = isAttendanceDatePast ? "gray-300" : "bgYellow";
 
   function handleClick(attendanceLabel: string): void {
     if (!isAttendanceDatePast) {
       setCurrentAttendanceLabel(attendanceLabel);
     } else {
       alert(
-        "This is a past Attendance list, please click the related edit icon to change this record."
+        "This is a past attendance list, please click edit button for any change.\nDon't forget to save you changes."
       );
     }
   }
@@ -39,8 +35,8 @@ export default function AttendanceItem({
       <span
         className={`py-2 px-4 rounded-full cursor-pointer ${
           currentAttendanceLabel == PRESENT
-            ? PRESENT_BG_COLOR
-            : "border-2 border-bgGreenLight2"
+            ? `bg-${PRESENT_COLOR}`
+            : `border-2 border-${PRESENT_COLOR}`
         }`}
         onClick={() => handleClick(PRESENT)}
       >
@@ -50,8 +46,8 @@ export default function AttendanceItem({
       <span
         className={`py-2 px-4 rounded-full cursor-pointer ${
           currentAttendanceLabel == ABSENT
-            ? ABSENT_BG_COLOR
-            : "border-2 border-bgPinkLight2"
+            ? `bg-${ABSENT_COLOR}`
+            : `border-2 border-${ABSENT_COLOR}`
         }`}
         onClick={() => handleClick(ABSENT)}
       >
@@ -61,8 +57,8 @@ export default function AttendanceItem({
       <span
         className={`py-2 px-4 rounded-full cursor-pointer ${
           currentAttendanceLabel == LATE
-            ? LATE_BG_COLOR
-            : "border-2 border-bgYellow"
+            ? `bg-${LATE_COLOR}`
+            : `border-2 border-${LATE_COLOR}`
         }`}
         onClick={() => handleClick(LATE)}
       >

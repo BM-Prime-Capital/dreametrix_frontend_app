@@ -11,38 +11,23 @@ import {
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// This would typically come from your API
-const classes = [
-  {
-    id: 1,
-    name: "Class 5 - Sci",
-    subject: "Science",
-    grade: "Grade 5",
-    teacher: "Samantha Brown",
-    students: 15,
-  },
-  {
-    id: 2,
-    name: "Class 5 - Math",
-    subject: "Mathematics",
-    grade: "Grade 5",
-    teacher: "Joe Smith",
-    students: 15,
-  },
-  // Add more sample data...
-];
-
-export function GradebookTable() {
+export function GradebookTable({
+  classes,
+  setCurrentClass,
+}: {
+  classes: any[];
+  setCurrentClass: Function;
+}) {
   return (
-    <div className="w-full overflow-auto">
+    <div className="w-full overflow-auto text-center">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>STUDENT</TableHead>
-            <TableHead>AVERAGE</TableHead>
-            <TableHead>EXAM(3)</TableHead>
-            <TableHead>TEST(2)</TableHead>
-            <TableHead>ASSIGNMENTS(14)</TableHead>
+            <TableHead className="text-center">CLASS</TableHead>
+            <TableHead className="text-center">AVERAGE</TableHead>
+            <TableHead className="text-center">NUMBER OF EXAMS</TableHead>
+            <TableHead className="text-center">NUMBER OF TESTS</TableHead>
+            <TableHead className="text-center">NUMBER OF HOMEWORKS</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -51,11 +36,16 @@ export function GradebookTable() {
               key={class_.id}
               className={index % 2 === 0 ? "bg-sky-50/50" : ""}
             >
-              <TableCell>{class_.name}</TableCell>
-              <TableCell>{class_.subject}</TableCell>
-              <TableCell>{class_.grade}</TableCell>
-              <TableCell>{class_.teacher}</TableCell>
-              <TableCell>{class_.students}</TableCell>
+              <TableCell
+                className="cursor-pointer"
+                onClick={() => setCurrentClass(class_)}
+              >
+                {class_.name}
+              </TableCell>
+              <TableCell>{class_.average}</TableCell>
+              <TableCell>{class_.noOfExams}</TableCell>
+              <TableCell>{class_.noOfTests}</TableCell>
+              <TableCell>{class_.noOfHomeworks}</TableCell>
             </TableRow>
           ))}
         </TableBody>
