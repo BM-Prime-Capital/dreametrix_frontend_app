@@ -4,13 +4,15 @@ import { generalImages } from "@/constants/images";
 import Image from "next/image";
 import React, { useState } from "react";
 import CrossCloseButton from "../ui/cross-close-button";
+import ClassSelect from "../ClassSelect";
 
-export default function CharacterFiltersPopUp() {
+export default function TeachFiltersPopUp() {
   const [open, setOpen] = useState(false);
 
   return (
     <div className="flex flex-col relative">
       <div className="flex items-center gap-8">
+        <label>All Dates - All Classes</label>
         <button
           className="flex justify-center items-center bg-white p-1 rounded-md w-7 h-7"
           onClick={() => setOpen(!open)}
@@ -29,7 +31,7 @@ export default function CharacterFiltersPopUp() {
         </button>
       </div>
       {open ? (
-        <div className="flex flex-col bg-white shadow-md rounded-md p-4 gap-4 w-fit absolute top-8 right-0 z-10">
+        <div className="flex flex-col bg-white shadow-md rounded-md p-4 gap-4 w-fit absolute top-8 right-1 z-10">
           <h2 className="pb-2" style={{ borderBottom: "solid 1px #eee" }}>
             Filter by
           </h2>
@@ -39,11 +41,23 @@ export default function CharacterFiltersPopUp() {
               className="px-2 py-1 bg-white rounded-full"
             >
               <option selected disabled>
-                Student
+                Subject
               </option>
-              <option>Student 1</option>
-              <option>Student 2</option>
-              <option>Student 3</option>
+              <option>Math</option>
+              <option>Language</option>
+            </select>
+
+            <ClassSelect />
+
+            <select
+              style={{ border: "solid 1px #eee" }}
+              className="px-2 py-1 bg-white rounded-full"
+            >
+              <option selected disabled>
+                Type
+              </option>
+              <option>Type 1</option>
+              <option>Type 2</option>
             </select>
 
             <div

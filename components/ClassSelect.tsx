@@ -1,11 +1,29 @@
+"use client";
+
+import { initialClasses } from "@/constants/global";
+import { updateSelectedClass } from "@/redux/slices/generalInfoReducer";
 import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function ClassSelect() {
+  const { selectedClass, allClasses } = useSelector(
+    (state: any) => state.generalInfo
+  );
+  const dispatch = useDispatch();
+
+  const handleClassChange = (newSelectedCalss: string) => {
+    dispatch(updateSelectedClass(newSelectedCalss));
+  };
+
   return (
-    <select className="bg-white p-1 rounded-md">
-      <option>Class 5 - Math</option>
-      <option>Class 4 - Science</option>
-      <option>Class 3 - Language</option>
+    <select
+      value={selectedClass}
+      onChange={(e) => handleClassChange(e.target.value)}
+      className="text-white bg-bgPurple font-bold p-1 rounded-md"
+    >
+      {initialClasses.map((classEl: any) => (
+        <option value={classEl.name}>{classEl.name}</option>
+      ))}
     </select>
   );
 }

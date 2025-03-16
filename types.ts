@@ -30,3 +30,29 @@ export interface Communication {
   created: string;
   attachedFilesUrls: FileRecord[];
 }
+
+export interface SchoolClasses {
+  subject: string;
+  grade: string;
+  name: string;
+  teacher: string;
+}
+
+export interface GradebookSheet {
+  subject: string;
+  grade: string;
+  domain: string;
+  specificStandards: string[];
+  questionType: string;
+  studentsClass: string[];
+}
+
+export interface SheetDomain {
+  subject: string;
+  grade: string;
+  name: string;
+  specificStandards: string[];
+}
+
+
+
