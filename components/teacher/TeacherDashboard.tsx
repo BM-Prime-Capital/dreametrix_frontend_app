@@ -182,8 +182,9 @@ export default function TeacherDashboard() {
                     </label>
                     <Input
                       id="username"
-                      placeholder="Teacher Name"
-                      className="bg-gray-50 rounded-full"
+                      placeholder="Sarah Young"
+                      className="bg-[#e7e7e5] rounded-full"
+                      readOnly
                     />
                   </div>
                   <div>
@@ -193,7 +194,7 @@ export default function TeacherDashboard() {
                     <Input
                       id="email"
                       placeholder="sarah@school.edu"
-                      className="bg-gray-50 rounded-full"
+                      className="bg-[#e7e7e5] rounded-full"
                       readOnly
                     />
                   </div>
@@ -206,7 +207,7 @@ export default function TeacherDashboard() {
                     <Input
                       id="school"
                       placeholder="School1"
-                      className="bg-gray-50 rounded-full"
+                      className="bg-[#e7e7e5] rounded-full"
                       readOnly
                     />
                   </div>
@@ -217,14 +218,14 @@ export default function TeacherDashboard() {
                     <Input
                       id="role"
                       placeholder="Teacher"
-                      className="bg-gray-50 rounded-full"
+                      className="bg-[#e7e7e5] rounded-full"
                       readOnly
                     />
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
                   <Button className="w-full bg-blue-500 hover:bg-blue-600 rounded-full">
-                    UPDATE PROFILE
+                    Update Profile Picture
                   </Button>
                   <Button variant="ghost" className="w-full rounded-full">
                     Cancel
