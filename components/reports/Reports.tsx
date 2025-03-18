@@ -128,31 +128,35 @@ export default function Reports() {
                 <div className="flex flex-col">
                   <label className="text-sm font-bold mb-4">Overview:</label>
                   <table className="text-center shadow-md rounded-md">
-                    <tr className="bg-[#faf9f9]">
-                      <th className="font-normal px-4">Score</th>
-                      <th className="font-normal px-4">Rating</th>
-                    </tr>
-                    <tr>
-                      <td className="text-[#65be4d]">100 - 90</td>
-                      <td>A+</td>
-                    </tr>
-                    <tr>
-                      <td className="text-[#fbe809]">89 - 80</td>
-                      <td>B</td>
-                    </tr>
-                    <tr>
-                      <td className="text-[#fcc144]">79 - 70</td>
-                      <td>C</td>
-                    </tr>
+                    <thead>
+                      <tr className="bg-[#faf9f9]">
+                        <th className="font-normal px-4">Score</th>
+                        <th className="font-normal px-4">Rating</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="text-[#65be4d]">100 - 90</td>
+                        <td>A+</td>
+                      </tr>
+                      <tr>
+                        <td className="text-[#fbe809]">89 - 80</td>
+                        <td>B</td>
+                      </tr>
+                      <tr>
+                        <td className="text-[#fcc144]">79 - 70</td>
+                        <td>C</td>
+                      </tr>
 
-                    <tr>
-                      <td className="text-[#f38053]">69 - 55</td>
-                      <td>C</td>
-                    </tr>
-                    <tr>
-                      <td className="text-[#ef4c4c]">54 - 0</td>
-                      <td>C</td>
-                    </tr>
+                      <tr>
+                        <td className="text-[#f38053]">69 - 55</td>
+                        <td>C</td>
+                      </tr>
+                      <tr>
+                        <td className="text-[#ef4c4c]">54 - 0</td>
+                        <td>C</td>
+                      </tr>
+                    </tbody>
                   </table>
                 </div>
               </div>

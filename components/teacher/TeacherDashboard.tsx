@@ -246,8 +246,9 @@ export default function TeacherDashboard() {
                     </label>
                     <div className="flex flex-wrap overflow-x-scroll items-center gap-2 bg-gray-200 rounded-full text-sm p-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        {subjects.map((subject) => (
+                        {subjects.map((subject, index) => (
                           <MultiSelectionItem
+                            key={index}
                             title={subject}
                             deleteCallback={() => deleteSubject(subject)}
                           />

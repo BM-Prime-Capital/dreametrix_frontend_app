@@ -21,8 +21,10 @@ export default function ClassSelect() {
       onChange={(e) => handleClassChange(e.target.value)}
       className="text-white bg-bgPurple font-bold p-1 rounded-md"
     >
-      {initialClasses.map((classEl: any) => (
-        <option value={classEl.name}>{classEl.name}</option>
+      {initialClasses.map((classEl: any, index) => (
+        <option key={index} value={classEl.name}>
+          {classEl.name}
+        </option>
       ))}
     </select>
   );
