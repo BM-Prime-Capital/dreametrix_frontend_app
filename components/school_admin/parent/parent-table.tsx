@@ -1,8 +1,15 @@
-"use client"
+"use client";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Eye, Pencil, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Sample data - would typically come from your API
 const parents = [
@@ -48,7 +55,7 @@ const parents = [
     status: "Paid",
     students: "Malcolm Jones",
   },
-]
+];
 
 export function ParentTable() {
   return (
@@ -66,12 +73,14 @@ export function ParentTable() {
           </TableHeader>
           <TableBody>
             {parents.map((parent, index) => (
-              <TableRow key={parent.id} className={index % 2 === 0 ? "bg-sky-50/50" : ""}>
+              <TableRow key={parent.id}>
                 <TableCell>{parent.name}</TableCell>
                 <TableCell>
                   <span
                     className={`px-2 py-1 rounded-full text-xs ${
-                      parent.status === "Paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                      parent.status === "Paid"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
                     }`}
                   >
                     {parent.status}
@@ -100,7 +109,10 @@ export function ParentTable() {
       {/* Mobile version */}
       <div className="md:hidden space-y-4">
         {parents.map((parent) => (
-          <div key={parent.id} className="bg-white p-4 rounded-lg shadow-sm border">
+          <div
+            key={parent.id}
+            className="bg-white p-4 rounded-lg shadow-sm border"
+          >
             <div className="flex justify-between items-start mb-2">
               <div>
                 <h3 className="font-medium">{parent.name}</h3>
@@ -108,7 +120,9 @@ export function ParentTable() {
               </div>
               <span
                 className={`px-2 py-1 rounded-full text-xs ${
-                  parent.status === "Paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                  parent.status === "Paid"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
                 }`}
               >
                 {parent.status}
@@ -132,5 +146,5 @@ export function ParentTable() {
         ))}
       </div>
     </div>
-  )
+  );
 }

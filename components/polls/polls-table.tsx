@@ -48,10 +48,7 @@ export function PollsTable() {
         </TableHeader>
         <TableBody>
           {classes.map((class_, index) => (
-            <TableRow
-              key={class_.id}
-              className={index % 2 === 0 ? "bg-sky-50/50" : ""}
-            >
+            <TableRow key={class_.id}>
               <TableCell>{class_.subject}</TableCell>
               <TableCell>{class_.name}</TableCell>
               <TableCell>file.pdf</TableCell>

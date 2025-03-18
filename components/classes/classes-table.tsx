@@ -1,8 +1,15 @@
-"use client"
+"use client";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Eye, Pencil, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Sample class data
 const classes = [
@@ -22,7 +29,7 @@ const classes = [
     teacher: "Joe Smith",
     students: 15,
   },
-]
+];
 
 export function ClassesTable() {
   return (
@@ -35,19 +42,12 @@ export function ClassesTable() {
             <TableHead className="font-bold">GRADE</TableHead>
             <TableHead className="font-bold">TEACHER</TableHead>
             <TableHead className="font-bold">STUDENTS</TableHead>
-            <TableHead>EDIT</TableHead>
-            <TableHead>DELETE</TableHead>
+            <TableHead>ACTIONS</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {classes.map((class_, index) => (
-            <TableRow
-              key={class_.id}
-              className={`
-                ${index % 2 === 0 ? "bg-[#F8FBFF]" : "bg-white"}
-                hover:bg-[#F8FBFF]/80
-              `}
-            >
+            <TableRow key={class_.id}>
               <TableCell className="font-medium">{class_.name}</TableCell>
               <TableCell>{class_.subject}</TableCell>
               <TableCell>{class_.grade}</TableCell>
@@ -55,26 +55,37 @@ export function ClassesTable() {
               <TableCell>
                 <div className="flex items-center gap-2">
                   {class_.students}
-                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-blue-50">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 hover:bg-blue-50"
+                  >
                     <Eye className="h-4 w-4 text-[#25AAE1]" />
                   </Button>
                 </div>
               </TableCell>
               <TableCell>
-                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-blue-50">
-                  <Pencil className="h-4 w-4 text-[#25AAE1]" />
-                </Button>
-              </TableCell>
-              <TableCell>
-                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-50">
-                  <Trash2 className="h-4 w-4 text-red-500" />
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 hover:bg-blue-50"
+                  >
+                    <Pencil className="h-4 w-4 text-[#25AAE1]" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }
-

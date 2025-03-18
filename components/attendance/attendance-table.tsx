@@ -63,10 +63,7 @@ export function AttendanceTable({
         </TableHeader>
         <TableBody>
           {attendances.map((attendance, index) => (
-            <TableRow
-              key={attendance.id}
-              className={index % 2 === 0 ? "bg-sky-50/50" : ""}
-            >
+            <TableRow key={attendance.id}>
               <TableCell>{attendance.name}</TableCell>
               <TableCell>
                 <AttendanceItem

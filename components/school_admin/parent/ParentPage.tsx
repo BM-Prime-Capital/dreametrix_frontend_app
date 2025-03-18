@@ -1,8 +1,15 @@
-"use client"
+"use client";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Eye, Pencil, Trash2, Settings } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Eye, Pencil, Trash2, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Sample data - would typically come from your API
 const parents = [
@@ -48,7 +55,7 @@ const parents = [
     status: "Paid",
     students: "Malcolm Jones",
   },
-]
+];
 
 export function Parent() {
   return (
@@ -76,12 +83,14 @@ export function Parent() {
           </TableHeader>
           <TableBody>
             {parents.map((parent, index) => (
-              <TableRow key={parent.id} className={index % 2 === 0 ? "bg-sky-50/50" : ""}>
+              <TableRow key={parent.id}>
                 <TableCell className="font-medium">{parent.name}</TableCell>
                 <TableCell>
                   <span
                     className={`px-2 py-1 rounded-full text-xs ${
-                      parent.status === "Paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                      parent.status === "Paid"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
                     }`}
                   >
                     {parent.status}
@@ -109,5 +118,5 @@ export function Parent() {
         </Table>
       </div>
     </div>
-  )
+  );
 }

@@ -96,10 +96,7 @@ export function GradebookClassTable() {
         </TableHeader>
         <TableBody>
           {students.map((class_, index) => (
-            <TableRow
-              key={class_.id}
-              className={index % 2 === 0 ? "bg-sky-50/50" : ""}
-            >
+            <TableRow key={class_.id}>
               <TableCell>{class_.name}</TableCell>
               <TableCell>
                 {class_.average} <RecordDialog />

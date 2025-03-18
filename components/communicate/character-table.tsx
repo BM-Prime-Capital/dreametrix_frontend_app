@@ -50,10 +50,7 @@ export function CharacterTable() {
         </TableHeader>
         <TableBody>
           {characters.map((character, index) => (
-            <TableRow
-              key={character.id}
-              className={index % 2 === 0 ? "bg-sky-50/50" : ""}
-            >
+            <TableRow key={character.id}>
               <TableCell>{character.name}</TableCell>
               <TableCell>{character.date}</TableCell>
               <TableCell>{character.student}</TableCell>
