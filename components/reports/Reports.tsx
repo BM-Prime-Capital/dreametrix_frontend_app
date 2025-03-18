@@ -15,7 +15,7 @@ export default function Reports() {
   const { selectedClass } = useSelector((state: any) => state.generalInfo);
 
   return (
-    <section className="flex flex-col gap-2 w-full p-6">
+    <section className="flex flex-col gap-2 w-full">
       <div className="flex justify-between items-center">
         <PageTitleH1 title="REPORTS" />
         <div className="flex flex-wrap items-center justify-end gap-2">

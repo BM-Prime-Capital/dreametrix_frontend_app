@@ -29,7 +29,7 @@ export default function Attendance() {
   }, [attendanceDate]);
 
   return (
-    <section className="flex flex-col gap-2 w-full p-6">
+    <section className="flex flex-col gap-2 w-full">
       <div className="flex justify-between items-center">
         <PageTitleH1 title="ATTENDANCE" />
         <div className="flex items-center gap-2">

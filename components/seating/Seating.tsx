@@ -301,7 +301,7 @@ export default function Seating() {
   } */
 
   return (
-    <section className="flex flex-col gap-2 w-full p-6">
+    <section className="flex flex-col gap-2 w-full">
       <div className="flex justify-between items-center">
         <PageTitleH1 title="SEATING" />
         <div className="flex items-center gap-2">

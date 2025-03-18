@@ -45,7 +45,7 @@ export default function Gradebook() {
   const [currentClass, setCurrentClass] = useState<any>(null);
 
   return (
-    <section className="flex flex-col gap-2 w-full p-6">
+    <section className="flex flex-col gap-2 w-full">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <PageTitleH1 title="GRADEBOOK" className="text-[#e91e63]" />

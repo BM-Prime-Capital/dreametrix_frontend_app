@@ -9,9 +9,9 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="h-full relative">
-      <main className="min-h-screen bg-gray-100">
+      <main className="flex flex-col gap-4 min-h-screen bg-gray-100">
         <Header />
-        {children}
+        <div className="px-20">{children}</div>
       </main>
     </div>
   );
