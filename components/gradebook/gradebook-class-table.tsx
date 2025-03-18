@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye, File, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { RecordDialog } from "./RecordDialog";
@@ -72,21 +72,17 @@ export function GradebookClassTable() {
               AVERAGE
             </TableHead>
             <TableHead colSpan={2} className="text-center">
-              EXAM(3)
+              EXAM
             </TableHead>
             <TableHead colSpan={4} className="text-center">
-              QUIZ(2)
+              QUIZ
             </TableHead>
             <TableHead colSpan={3} className="text-center">
-              HOMEWORK(14)
+              HOMEWORK
             </TableHead>
-            <TableHead>ACTIONS</TableHead>
+            <TableHead rowSpan={2}>ACTIONS</TableHead>
           </TableRow>
-        </TableHeader>
-        <TableBody>
           <TableRow>
-            <TableHead></TableHead>
-            <TableHead></TableHead>
             <TableHead>General</TableHead>
             <TableHead>Practical</TableHead>
             <TableHead>General</TableHead>
@@ -96,8 +92,9 @@ export function GradebookClassTable() {
             <TableHead>Chapter 3</TableHead>
             <TableHead>General</TableHead>
             <TableHead>Project</TableHead>
-            <TableHead></TableHead>
           </TableRow>
+        </TableHeader>
+        <TableBody>
           {students.map((class_, index) => (
             <TableRow
               key={class_.id}
@@ -151,6 +148,31 @@ export function GradebookClassTable() {
                 <span className="flex gap-1 justify-center">
                   {class_.homeWorkProject} <RecordDialog />
                 </span>
+              </TableCell>
+              <TableCell>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 hover:bg-blue-50"
+                  >
+                    <Pencil className="h-4 w-4 text-[#25AAE1]" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 hover:bg-red-50"
+                  >
+                    <File className="h-4 w-4 text-green-500" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}
