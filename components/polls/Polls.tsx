@@ -9,7 +9,7 @@ import { PrintTeachDialog } from "./PrintTeachDialog";
 
 export default function Polls() {
   return (
-    <section className="flex flex-col gap-2 w-full p-6">
+    <section className="flex flex-col gap-2 w-full">
       <div className="flex justify-between items-center">
         <PageTitleH1 title="POLLS" />
         <div className="flex items-center gap-2">

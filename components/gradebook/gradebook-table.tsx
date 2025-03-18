@@ -34,14 +34,10 @@ export function GradebookTable({
           {classes.map((class_, index) => (
             <TableRow
               key={class_.id}
-              className={index % 2 === 0 ? "bg-sky-50/50" : ""}
+              className={"cursor-pointer"}
+              onClick={() => setCurrentClass(class_)}
             >
-              <TableCell
-                className="cursor-pointer"
-                onClick={() => setCurrentClass(class_)}
-              >
-                {class_.name}
-              </TableCell>
+              <TableCell>{class_.name}</TableCell>
               <TableCell>{class_.average}</TableCell>
               <TableCell>{class_.noOfExams}</TableCell>
               <TableCell>{class_.noOfTests}</TableCell>

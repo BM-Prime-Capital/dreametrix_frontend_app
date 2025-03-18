@@ -35,7 +35,7 @@ export default function AttendanceItem({
       <span
         className={`py-2 px-4 rounded-full cursor-pointer ${
           currentAttendanceLabel == PRESENT
-            ? `bg-${PRESENT_COLOR}`
+            ? `bg-${PRESENT_COLOR} text-green-900`
             : `border-2 border-${PRESENT_COLOR}`
         }`}
         onClick={() => handleClick(PRESENT)}
@@ -46,7 +46,7 @@ export default function AttendanceItem({
       <span
         className={`py-2 px-4 rounded-full cursor-pointer ${
           currentAttendanceLabel == ABSENT
-            ? `bg-${ABSENT_COLOR}`
+            ? `bg-${ABSENT_COLOR} text-pink-900`
             : `border-2 border-${ABSENT_COLOR}`
         }`}
         onClick={() => handleClick(ABSENT)}
@@ -57,7 +57,7 @@ export default function AttendanceItem({
       <span
         className={`py-2 px-4 rounded-full cursor-pointer ${
           currentAttendanceLabel == LATE
-            ? `bg-${LATE_COLOR}`
+            ? `bg-[#ffd271] text-yellow-900`
             : `border-2 border-${LATE_COLOR}`
         }`}
         onClick={() => handleClick(LATE)}

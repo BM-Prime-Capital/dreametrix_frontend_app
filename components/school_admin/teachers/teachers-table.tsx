@@ -1,25 +1,34 @@
-"use client"
+"use client";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Eye, Pencil, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useTeachers } from "@/hooks/SchoolAdmin/use-teachers"
-import { Loader } from "@/components/ui/loader"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useTeachers } from "@/hooks/SchoolAdmin/use-teachers";
+import { Loader } from "@/components/ui/loader";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export function TeachersTable() {
-  const { teachers, isLoading, error } = useTeachers()
+  const { teachers, isLoading, error } = useTeachers();
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-8">
         <div className="flex flex-col items-center">
           <Loader className="text-blue-600" />
-          <p className="mt-4 text-sm text-slate-500">Chargement des enseignants...</p>
+          <p className="mt-4 text-sm text-slate-500">
+            Chargement des enseignants...
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -28,13 +37,15 @@ export function TeachersTable() {
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>{error}</AlertDescription>
       </Alert>
-    )
+    );
   }
 
   if (teachers.length === 0) {
     return (
-      <div className="text-center p-8 text-slate-500">Aucun enseignant trouvé. Veuillez en ajouter un nouveau.</div>
-    )
+      <div className="text-center p-8 text-slate-500">
+        Aucun enseignant trouvé. Veuillez en ajouter un nouveau.
+      </div>
+    );
   }
 
   return (
@@ -53,7 +64,7 @@ export function TeachersTable() {
         </TableHeader>
         <TableBody>
           {teachers.map((teacher, index) => (
-            <TableRow key={teacher.id} className={index % 2 === 0 ? "bg-sky-50/50" : ""}>
+            <TableRow key={teacher.id}>
               <TableCell className="font-medium">
                 {teacher.user.first_name} {teacher.user.last_name}
               </TableCell>
@@ -80,6 +91,5 @@ export function TeachersTable() {
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }
-

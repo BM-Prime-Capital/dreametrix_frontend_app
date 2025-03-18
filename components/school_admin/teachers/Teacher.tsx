@@ -1,17 +1,19 @@
-"use client"
+"use client";
 
-import { TeachersTable } from "./teachers-table"
-import { ExcelUploadDialog } from "./excel-upload-dialog"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { TeachersTable } from "./teachers-table";
+import { ExcelUploadDialog } from "./excel-upload-dialog";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export default function TeachersPage() {
   return (
-    <section className="flex flex-col gap-2 w-full p-6">
+    <section className="flex flex-col gap-2 w-full">
       <div className="flex justify-between items-center">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold">TEACHERS</h1>
-          <div className="text-sm text-slate-500">TEACHER&apos;S CODE: XXXXXXXX</div>
+          <div className="text-sm text-slate-500">
+            TEACHER&apos;S CODE: XXXXXXXX
+          </div>
         </div>
         <select className="px-2 py-1 border rounded-md text-sm">
           <option>All Classes</option>
@@ -28,6 +30,5 @@ export default function TeachersPage() {
       </div>
       <TeachersTable />
     </section>
-  )
+  );
 }
-

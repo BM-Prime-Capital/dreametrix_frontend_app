@@ -159,7 +159,7 @@ export default function Communicate() {
     useState<CommunicationGroupsWrapper>(communicationGroups[0]);
 
   return (
-    <section className="flex flex-col gap-2 w-full p-6">
+    <section className="flex flex-col gap-2 w-full">
       <div className="flex items-center">
         <PageTitleH1 title="COMMUNICATE" />
       </div>
@@ -170,8 +170,9 @@ export default function Communicate() {
       <Card className="rounded-md">
         <div className="w-full flex gap-6 bg-[#dfecf1] p-4 pb-0 pl-0">
           <div className="flex gap-4 pl-4 overflow-scroll">
-            {communicationGroups.map((communicationGroup) => (
+            {communicationGroups.map((communicationGroup, index) => (
               <label
+                key={index}
                 className={`text-[#55b4f1] whitespace-nowrap cursor-pointer p-2 flex flex-col items-center justify-between ${
                   currentCommunicationGroup.id === communicationGroup.id
                     ? "bg-white rounded-t-lg"
@@ -192,14 +193,19 @@ export default function Communicate() {
         </div>
         <div className="p-4 overflow-scroll">
           {currentCommunicationGroup.id === communicationGroups.length - 1 ? (
-            <NewMessageGroupDialog/>
+            <NewMessageGroupDialog />
           ) : (
             ""
           )}
 
-          {currentCommunicationGroup.communications.map((communication) => (
-            <CommunicationItem communicationItem={communication} />
-          ))}
+          {currentCommunicationGroup.communications.map(
+            (communication, index) => (
+              <CommunicationItem
+                key={index}
+                communicationItem={communication}
+              />
+            )
+          )}
         </div>
       </Card>
     </section>

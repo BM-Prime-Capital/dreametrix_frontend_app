@@ -92,7 +92,7 @@ export default function DigitalLibrary() {
   };
 
   return (
-    <section className="flex flex-col gap-2 w-full p-6">
+    <section className="flex flex-col gap-2 w-full">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <PageTitleH1 title="CREATED SHEET" className="text-bgPurple" />

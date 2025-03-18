@@ -1,25 +1,34 @@
-"use client"
+"use client";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Eye, Pencil, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useStudents } from "@/hooks/SchoolAdmin/use-students"
-import { Loader } from "@/components/ui/loader"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useStudents } from "@/hooks/SchoolAdmin/use-students";
+import { Loader } from "@/components/ui/loader";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export function StudentsTable() {
-  const { students, isLoading, error } = useStudents()
+  const { students, isLoading, error } = useStudents();
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-8">
         <div className="flex flex-col items-center">
           <Loader className="text-blue-600" />
-          <p className="mt-4 text-sm text-slate-500">Chargement des étudiants...</p>
+          <p className="mt-4 text-sm text-slate-500">
+            Chargement des étudiants...
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -28,29 +37,33 @@ export function StudentsTable() {
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>{error}</AlertDescription>
       </Alert>
-    )
+    );
   }
 
   if (students.length === 0) {
-    return <div className="text-center p-8 text-slate-500">Aucun étudiant trouvé. Veuillez en ajouter un nouveau.</div>
+    return (
+      <div className="text-center p-8 text-slate-500">
+        Aucun étudiant trouvé. Veuillez en ajouter un nouveau.
+      </div>
+    );
   }
 
   // Helper function to convert grade number to display format
   const formatGrade = (grade: number) => {
-    return `Grade ${grade}`
-  }
+    return `Grade ${grade}`;
+  };
 
   // For demo purposes, we'll alternate between "Paid" and "Debt" status
   // In a real app, this would come from the API
   const getPaymentStatus = (id: number) => {
-    return id % 2 === 0 ? "Paid" : "Debt"
-  }
+    return id % 2 === 0 ? "Paid" : "Debt";
+  };
 
   // For demo purposes, we'll alternate between "Morning" and "Afternoon" shifts
   // In a real app, this would come from the API
   const getShift = (id: number) => {
-    return id % 2 === 0 ? "Morning" : "Afternoon"
-  }
+    return id % 2 === 0 ? "Morning" : "Afternoon";
+  };
 
   return (
     <div className="w-full overflow-auto">
@@ -68,14 +81,16 @@ export function StudentsTable() {
         </TableHeader>
         <TableBody>
           {students.map((student, index) => (
-            <TableRow key={student.id} className={index % 2 === 0 ? "bg-sky-50/50" : ""}>
+            <TableRow key={student.id}>
               <TableCell className="font-medium">
                 {student.user.first_name} {student.user.last_name}
               </TableCell>
               <TableCell>
                 <span
                   className={`px-2 py-1 rounded-full text-xs ${
-                    getPaymentStatus(student.id) === "Paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                    getPaymentStatus(student.id) === "Paid"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
                   }`}
                 >
                   {getPaymentStatus(student.id)}
@@ -103,6 +118,5 @@ export function StudentsTable() {
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }
-
