@@ -101,34 +101,36 @@ export default function DigitalLibrary() {
 
       <Card className="rounded-md flex">
         <form className="flex flex-col gap-4 p-4 w-full">
-          <div>
-            <label
-              onClick={() => setIsDreaMetrixBankOfQuestion(true)}
-              className="flex gap-4 items-center font-bold"
-            >
-              DreaMetrix Bank of questions
-              <input className="h-4 min-w-4" type="radio" name="question" />
-            </label>
-            {isDreaMetrixBankOfQuestion && (
-              <label className="text-red-500">
-                Functionality not yet available.{" "}
+          <div className="flex flex-wrap gap-2">
+            <div className="flex-1">
+              <label
+                onClick={() => setIsDreaMetrixBankOfQuestion(true)}
+                className="flex gap-4 items-center font-bold"
+              >
+                <input className="h-4 min-w-4" type="radio" name="question" />
+                DreaMetrix Bank of questions
               </label>
-            )}
-          </div>
+              {isDreaMetrixBankOfQuestion && (
+                <label className="text-red-500">
+                  Functionality not yet available.{" "}
+                </label>
+              )}
+            </div>
 
-          <label
-            onClick={() => setIsDreaMetrixBankOfQuestion(false)}
-            className="flex gap-4 items-center font-bold"
-          >
-            Or Actual release Questions
-            <input
-              className="h-4 min-w-4"
-              type="radio"
-              name="question"
-              checked={isDreaMetrixBankOfQuestion === false}
-              onChange={() => console.log("Checked")}
-            />
-          </label>
+            <label
+              onClick={() => setIsDreaMetrixBankOfQuestion(false)}
+              className="flex-1 flex gap-4 items-center font-bold"
+            >
+              <input
+                className="h-4 min-w-4"
+                type="radio"
+                name="question"
+                checked={isDreaMetrixBankOfQuestion === false}
+                onChange={() => console.log("Checked")}
+              />
+              Or Actual release Questions
+            </label>
+          </div>
 
           <div className="flex gap-6 flex-wrap flex-1 ">
             <div className="flex flex-col flex-1">
@@ -239,7 +241,7 @@ export default function DigitalLibrary() {
             </div>
           </div>
 
-          <div className="flex gap-6 flex-wrap w-full">
+          <div className="flex gap-6 flex-wrap items-center w-full">
             <div className="flex flex-col flex-1">
               <label className="text-muted-foreground whitespace-nowrap">
                 Number of Questions(1-13):
@@ -253,13 +255,17 @@ export default function DigitalLibrary() {
                 max={13}
               />
             </div>
-            <div className="flex flex-col flex-1"></div>
+            <div className="flex flex-col flex-1">
+              <label className="flex gap-4 items-center font-bold">
+                Generate Answer Sheets
+                <input
+                  className="h-4 min-w-4"
+                  type="checkbox"
+                  name="question"
+                />
+              </label>
+            </div>
           </div>
-
-          <label className="flex gap-4 items-center font-bold">
-            Generate Answer Sheets
-            <input className="h-4 min-w-4" type="checkbox" name="question" />
-          </label>
 
           <GenerateAssessmentDialog />
         </form>

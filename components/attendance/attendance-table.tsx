@@ -16,41 +16,41 @@ import AssignmentStudentsDialog from "./AssignmentStudentsDialog";
 import AttendanceItem from "../ui/attendance-item";
 import { attendanceLabel } from "@/constants/global";
 import { useEffect, useState } from "react";
+import { getAttendances, updateAttendance } from "@/services/AttendanceService";
 
-// This would typically come from your API
-const attendances = [
-  {
-    id: 1,
-    name: "Jordan Clever",
-    currentAttendance: attendanceLabel.PRESENT,
-    presentAttendanceCount: 45,
-    absentAttendanceCount: 5,
-    lateAttendanceCount: 10,
-  },
-  {
-    id: 2,
-    name: "Prince Ilunga",
-    subject: "Mathematics",
-    currentAttendance: attendanceLabel.PRESENT,
-    presentAttendanceCount: 33,
-    absentAttendanceCount: 7,
-    lateAttendanceCount: 20,
-  },
-  {
-    id: 3,
-    name: "Clara Pearl",
-    currentAttendance: attendanceLabel.PRESENT,
-    presentAttendanceCount: 24,
-    absentAttendanceCount: 17,
-    lateAttendanceCount: 19,
-  },
-];
+type Attendance = {};
 
 export function AttendanceTable({
   isAttendanceDatePast,
 }: {
   isAttendanceDatePast: boolean;
 }) {
+  const [attendances, setAttendances] = useState<any>([]);
+  const [primaryDomain, setPrimaryDomain] = useState<string>("");
+  const [accessToken, setAccessToken] = useState<string>("");
+  const [refreshToken, setRefreshToken] = useState<string>("");
+
+  useEffect(() => {
+    const accessToken: any = localStorage.getItem("accessToken");
+    const refreshToken: any = localStorage.getItem("refreshToken");
+    const tenantData: any = localStorage.getItem("tenantData");
+
+    const { primary_domain } = JSON.parse(tenantData);
+    const domain = `https://${primary_domain}`;
+
+    setPrimaryDomain(domain);
+    setAccessToken(accessToken);
+    setRefreshToken(refreshToken);
+
+    const loadAttendance = async () => {
+      const data = await getAttendances(domain, accessToken, refreshToken);
+      console.log("getAttendances DATA => ", data);
+      setAttendances(data);
+    };
+
+    loadAttendance();
+  }, []);
+
   return (
     <div className="w-full overflow-auto">
       <Table>
@@ -62,13 +62,25 @@ export function AttendanceTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {attendances.map((attendance, index) => (
+          {attendances.map((attendance: any, index: any) => (
             <TableRow key={attendance.id}>
-              <TableCell>{attendance.name}</TableCell>
+              <TableCell>{attendance.student}</TableCell>
               <TableCell>
                 <AttendanceItem
-                  label={attendance.currentAttendance}
+                  label={attendance.status}
                   isAttendanceDatePast={isAttendanceDatePast}
+                  handleChange={(status: string) =>
+                    updateAttendance(
+                      {
+                        id: attendance.id,
+                        status: status,
+                        student: attendance.student,
+                      },
+                      primaryDomain,
+                      accessToken,
+                      refreshToken
+                    )
+                  }
                 />
               </TableCell>
               <TableCell>
