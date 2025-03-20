@@ -1,3 +1,4 @@
+//import { Character } from "@/components/character/Charracter";
 "use server";
 
 export async function getCharracters(
@@ -13,7 +14,7 @@ export async function getCharracters(
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
-  const url = `${tenantPrimaryDomain}/charracters/`;
+  const url = `${tenantPrimaryDomain}/characters/character-rating/`;
   let response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -64,18 +65,37 @@ export async function getCharracters(
 
   console.log("getCharracters => ", data);
 
-  return data.results;
+  return data;
 }
+/* 
+const CharacterType = {
+  student	integer
+title: Student
+x-nullable: true
+class_info	integer
+title: Class info
+x-nullable: true
+teacher_comment	string
+title: Teacher Comment
+x-nullable: true
+bad_statistics_character*	[string
+maxLength: 255
+minLength: 1]
+good_statistics_character*	[string
+maxLength: 255
+minLength: 1]
+created_at
+} */
 
-export async function updateAttendance(
-  attendance: any,
+export async function updateCharacter(
+  character: any,
   tenantPrimaryDomain: string,
   accessToken: string,
   refreshToken: string
 ) {
   try {
     console.log("UPDATING Attendance => ", {
-      attendance,
+      character,
       tenantPrimaryDomain,
       accessToken,
       refreshToken,
@@ -88,7 +108,7 @@ export async function updateAttendance(
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({
-        ...attendance,
+        ...character,
         course_id: 1,
         student: 1,
         notes: "good good",
