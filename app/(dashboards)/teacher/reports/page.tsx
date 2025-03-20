@@ -1,4 +1,4 @@
-import Attendance from "@/components/attendance/Attendance";
+import AttendanceFocusedView from "@/components/attendance/AttendanceSpecificView";
 import Reports from "@/components/reports/Reports";
 import React from "react";
 

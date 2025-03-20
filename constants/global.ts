@@ -322,3 +322,8 @@ export const initialClasses = [
     name: "Class 4 - Language",
   },
 ];
+
+export const views = {
+  GENERAL_VIEW: "General View",
+  FOCUSED_VIEW: "Focused View",
+};

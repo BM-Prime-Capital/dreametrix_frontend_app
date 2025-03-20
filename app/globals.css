@@ -106,10 +106,16 @@ table thead th {
   background-color: #f8f9fa;
 }
 
-table tbody tr:nth-of-type(odd) {
+table tbody tr:nth-of-type(odd):not(#statisticTable tbody tr) {
   background-color: #deecf1;
 }
 
-table tbody tr td {
+table tbody tr td:not(#statisticTable tbody tr td) {
   color: gray;
+}
+
+#statisticTable th,
+td {
+  padding: 4px;
+  opacity: 80%;
 }
