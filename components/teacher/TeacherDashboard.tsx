@@ -8,18 +8,27 @@ import { ActivityFeed } from "../layout/ActivityFeed";
 import PageTitleH1 from "../ui/page-title-h1";
 import PageTitleH2 from "../ui/page-title-h2";
 import Image from "next/image";
-import { teacherImages } from "@/constants/images";
+import { generalImages, teacherImages } from "@/constants/images";
 import MultiSelectionItem from "../ui/multi-selection-item";
 import { useState } from "react";
 import ContactParentDialog from "./ContactParentDialog";
+import { localStorageKey } from "@/constants/global";
+import UserAvatar from "../ui/user-avatar";
 
 export default function TeacherDashboard() {
   const [feedbackDuration, setFeedbackDuration] = useState<number>(2);
   const [newSubject, setNewSubject] = useState("");
+
+  // TODO get subjects from DB
   const [subjects, setSubjects] = useState<string[]>([
     "Science",
     "Mathematics",
   ]);
+
+  const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
+  const tenantData = JSON.parse(
+    localStorage.getItem(localStorageKey.TENANT_DATA)!
+  );
 
   const incrementFeedbackDuration = () => {
     if (feedbackDuration <= 9) {
@@ -62,7 +71,7 @@ export default function TeacherDashboard() {
                 <AvatarFallback>SY</AvatarFallback>
               </Avatar>
               <div className="text-center sm:text-left">
-                <PageTitleH2 title="Sarah Young" />
+                <PageTitleH2 title={userData.username} />
 
                 <div className="flex gap-2 justify-center sm:justify-start">
                   <Image
@@ -167,11 +176,8 @@ export default function TeacherDashboard() {
             <div className="space-y-6">
               <PageTitleH2 title="Profile" />
               <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback>SL</AvatarFallback>
-                </Avatar>
-                <PageTitleH2 title="Sarah Young" />
+                <UserAvatar />
+                <PageTitleH2 title={userData.username} />
                 {/* <div className="text-sm text-muted-foreground">Change</div> */}
               </div>
               <div className="grid gap-8 max-w-xl mx-auto sm:mx-0">
@@ -182,9 +188,10 @@ export default function TeacherDashboard() {
                     </label>
                     <Input
                       id="username"
-                      placeholder="Sarah Young"
+                      placeholder="User name"
                       className="bg-[#e7e7e5] rounded-full"
                       readOnly
+                      value={userData.username}
                     />
                   </div>
                   <div>
@@ -196,6 +203,7 @@ export default function TeacherDashboard() {
                       placeholder="sarah@school.edu"
                       className="bg-[#e7e7e5] rounded-full"
                       readOnly
+                      value={userData.email}
                     />
                   </div>
                 </div>
@@ -209,6 +217,7 @@ export default function TeacherDashboard() {
                       placeholder="School1"
                       className="bg-[#e7e7e5] rounded-full"
                       readOnly
+                      value={tenantData.name}
                     />
                   </div>
                   <div>
@@ -220,6 +229,7 @@ export default function TeacherDashboard() {
                       placeholder="Teacher"
                       className="bg-[#e7e7e5] rounded-full"
                       readOnly
+                      value={userData.role}
                     />
                   </div>
                 </div>
@@ -255,7 +265,7 @@ export default function TeacherDashboard() {
                           />
                         ))}
                       </div>
-                      <div className="flex items-center">
+                      {/* <div className="flex items-center">
                         <input
                           value={newSubject}
                           onChange={(e) => setNewSubject(e.target.value)}
@@ -268,7 +278,7 @@ export default function TeacherDashboard() {
                         >
                           &#43;
                         </label>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
 

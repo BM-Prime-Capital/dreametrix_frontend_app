@@ -48,7 +48,9 @@ export function useLogin() {
       );
 
       if (response.ok) {
-        const data: LoginResponse = await response.json();
+        const data: any = await response.json();
+
+        console.log("LoginData => ", data);
 
         // Stocker les tokens
         localStorage.setItem(localStorageKey.ACCESS_TOKEN, data.access);
