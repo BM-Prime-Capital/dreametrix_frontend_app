@@ -4,7 +4,6 @@ import { useState, type ChangeEvent, type FormEvent } from "react"
 import Link from "next/link"
 import { Mail, Lock, AlertTriangle } from "lucide-react"
 import { userPath } from "@/constants/userConstants"
-import DreaMetrixLogo from "./ui/dreametrix-logo"
 import { useLogin } from "@/hooks/SchoolAdmin/useLogin"
 
 export interface LoginFormData {
@@ -18,7 +17,7 @@ export interface LoginErrors {
 }
 
 export default function Login() {
-  const { login, isLoading, error } = useLogin()
+  const { login, isLoading } = useLogin()
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -32,20 +31,26 @@ export default function Login() {
   const validateEmail = (email: string): string | null => {
     if (!email) return "Email is required"
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) return "Invalid email address"
+    if (!emailRegex.test(email)) return "Incorrect Username"
     return null
   }
 
   const validatePassword = (password: string): string | null => {
     if (!password) return "Password is required"
-    if (password.length < 8) return "Password must be at least 8 characters long"
+    if (password.length < 8) return "Incorrect Password"
     return null
   }
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
-    setErrors((prev) => ({ ...prev, [name]: null }))
+    if (formSubmitted) {
+      if (name === 'email') {
+        setErrors((prev) => ({ ...prev, email: validateEmail(value) }))
+      } else if (name === 'password') {
+        setErrors((prev) => ({ ...prev, password: validatePassword(value) }))
+      }
+    }
   }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
@@ -72,16 +77,14 @@ export default function Login() {
       if (err instanceof Error) {
         const errorMessage = err.message
 
-        if (errorMessage.includes("email")) {
-          setErrors((prev) => ({ ...prev, email: errorMessage }))
-        } else if (errorMessage.includes("password")) {
-          setErrors((prev) => ({ ...prev, password: errorMessage }))
+        if (errorMessage.toLowerCase().includes("email") || errorMessage.toLowerCase().includes("username")) {
+          setErrors((prev) => ({ ...prev, email: "Incorrect Username" }))
+        } else if (errorMessage.toLowerCase().includes("password")) {
+          setErrors((prev) => ({ ...prev, password: "Incorrect Password" }))
         } else {
-          // Handle general error
           console.error(errorMessage)
         }
       } else {
-        // Handle case where err is not an Error object
         console.error("An unknown error occurred")
       }
     }
@@ -90,11 +93,14 @@ export default function Login() {
   const renderErrorMessage = (errorMessage: string | null) => {
     if (!errorMessage) return null
     return (
-      <div className="absolute right-[-160px] top-1/2 transform -translate-y-1/2 bg-red-100 text-red-700 px-3 py-1 rounded-md shadow-md">
-        <div className="absolute left-[-6px] top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-red-100"></div>
+      <div className="absolute right-[-180px] top-1/2 transform -translate-y-1/2 bg-red-500 text-white px-4 py-2 rounded-md shadow-md min-w-[160px]">
+        <div className="absolute left-[-8px] top-1/2 transform -translate-y-1/2 w-0 h-0 
+          border-y-[8px] border-y-transparent 
+          border-r-[8px] border-r-red-500">
+        </div>
         <div className="flex items-center">
-          <AlertTriangle className="h-4 w-4 mr-2" />
-          <span className="text-sm">{errorMessage}</span>
+          <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0" />
+          <span className="text-sm whitespace-nowrap">{errorMessage}</span>
         </div>
       </div>
     )
@@ -102,21 +108,10 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[url('/assets/images/bg.png')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-4">
-      <div className="w-full max-w-[450px] bg-[rgba(230,230,230,0.90)] p-6 sm:p-8 rounded-[15px] shadow-[0px_4px_20px_rgba(0,0,0,0.1)]">
-        <div className="flex justify-center mb-6">
-          <DreaMetrixLogo />
-        </div>
-
+      <div className="w-full max-w-[450px] bg-white/90 p-6 sm:p-8 rounded-[15px] shadow-[0px_4px_20px_rgba(0,0,0,0.1)]">
         <div className="text-left mb-6">
-          <h2 className="text-[#1A73E8] text-lg font-medium ml-2.5">Login Here</h2>
+          <h2 className="text-[#25AAE1] text-xl font-medium">Login</h2>
         </div>
-
-        {isLoading && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#25AAE1]"></div>
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <div
@@ -124,15 +119,18 @@ export default function Login() {
                 formSubmitted && errors.email ? "border-red-500" : "border-gray-200"
               }`}
             >
-              <div className="flex items-center px-4 py-2.5">
-                <Mail className="h-5 w-5 text-gray-400 mr-2" />
+              <div className="flex items-center">
+                <div className="flex items-center px-4 py-2.5 text-[#25AAE1]">
+                  <Mail className="h-5 w-5" />
+                </div>
+                <div className="h-[30px] w-[1px] bg-gray-300"></div>
                 <input
                   type="email"
                   placeholder="Email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="flex-1 bg-transparent focus:outline-none text-sm"
+                  className="flex-1 bg-transparent focus:outline-none text-sm px-4 py-2.5"
                 />
               </div>
             </div>
@@ -145,32 +143,26 @@ export default function Login() {
                 formSubmitted && errors.password ? "border-red-500" : "border-gray-200"
               }`}
             >
-              <div className="flex items-center px-4 py-2.5">
-                <Lock className="h-5 w-5 text-gray-400 mr-2" />
+              <div className="flex items-center">
+                <div className="flex items-center px-4 py-2.5 text-[#25AAE1]">
+                  <Lock className="h-5 w-5" />
+                </div>
+                <div className="h-[30px] w-[1px] bg-gray-300"></div>
                 <input
                   type="password"
                   placeholder="Password"
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="flex-1 bg-transparent focus:outline-none text-sm"
+                  className="flex-1 bg-transparent focus:outline-none text-sm px-4 py-2.5"
                 />
               </div>
             </div>
             {renderErrorMessage(errors.password)}
           </div>
 
-          {error && (
-            <div className="bg-red-100 text-red-700 px-4 py-2 rounded-md">
-              <div className="flex items-center">
-                <AlertTriangle className="h-5 w-5 mr-2" />
-                <span>{error}</span>
-              </div>
-            </div>
-          )}
-
           <div className="text-right">
-            <Link href="/forgot_password" className="text-[#1A73E8] hover:text-[#1453B8] text-sm">
+            <Link href="/forgot_password" className="text-[#25AAE1] hover:text-[#25AAE1] text-sm">
               Forgot Password?
             </Link>
           </div>
@@ -178,22 +170,27 @@ export default function Login() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-3 rounded-full 
-                     transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1] 
-                     focus:ring-offset-2 disabled:opacity-50 text-base font-medium"
+            className="w-full bg-[#25AAE1] hover:bg-[#25AAE1] text-white py-3 rounded-full 
+           transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1] 
+           focus:ring-offset-2 disabled:opacity-50 text-base font-medium"
           >
             {isLoading ? "LOGGING IN..." : "LOGIN"}
           </button>
-
-          <div className="text-center text-sm text-gray-600 mt-4">
-            Not registered yet?{" "}
-            <Link href={userPath.SCHOOL_ADMIN_REGISTER_PATH} className="text-[#1A73E8] hover:text-[#1453B8]">
-              Contact your school administrator
-            </Link>
-          </div>
         </form>
+        <div className="text-center text-sm text-gray-600 mt-4">
+          Register your School{" "}
+          <Link href={userPath.SCHOOL_ADMIN_REGISTER_PATH} className="text-[#25AAE1] hover:text-[#25AAE1]">
+            here
+          </Link>
+          .
+          <br />
+          Not registered yet? Sign up{" "}
+          <Link href={userPath.SCHOOL_ADMIN_REGISTER_PATH} className="text-[#25AAE1] hover:text-[#25AAE1]">
+            here
+          </Link>
+          .
+        </div>
       </div>
     </div>
   )
 }
-

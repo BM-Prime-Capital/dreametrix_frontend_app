@@ -15,10 +15,7 @@ export function Header() {
   const router = useRouter()
   return (
     <header className="border-b p-4 flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        {/*  <Button variant="ghost" size="icon" className="lg:hidden">
-          <Menu className="h-6 w-6" />
-        </Button> */}
+      <div className="flex-1 flex justify-center">
         <DreaMetrixLogo />
       </div>
       <DropdownMenu>
@@ -27,7 +24,7 @@ export function Header() {
             <AvatarImage src="/placeholder.svg" />
             <AvatarFallback>AD</AvatarFallback>
           </Avatar>
-          <span className="text-gray-700">Dashboard</span>
+          <span className="text-blue-600">Dashboard</span>
           <ChevronDown className="h-4 w-4 text-gray-500" />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
@@ -39,5 +36,4 @@ export function Header() {
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
-  )
-}
+  )}

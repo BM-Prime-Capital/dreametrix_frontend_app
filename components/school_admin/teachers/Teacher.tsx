@@ -3,29 +3,36 @@
 import { TeachersTable } from "./teachers-table"
 import { ExcelUploadDialog } from "./excel-upload-dialog"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { PlusSquare, SlidersHorizontal } from "lucide-react"
 
 export default function TeachersPage() {
   return (
-    <section className="flex flex-col gap-2 w-full p-6">
+    <section className="flex flex-col gap-4 w-full p-6 max-w-[1400px] mx-auto">
+      <div>
+        <h1 className="text-2xl font-normal text-[#D4AF37]">TEACHERS</h1>
+      </div>
+
       <div className="flex justify-between items-center">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold">TEACHERS</h1>
-          <div className="text-sm text-slate-500">TEACHER&apos;S CODE: XXXXXXXX</div>
+        <div className="flex items-center gap-4">
+          <Button className="bg-[#1E88E5] hover:bg-[#1976D2] text-white rounded-md py-6 px-5 flex items-center gap-2">
+            <PlusSquare className="h-5 w-5" />
+            <span className="text-base font-normal">Add New Teacher</span>
+          </Button>
+          <ExcelUploadDialog />
         </div>
-        <select className="px-2 py-1 border rounded-md text-sm">
-          <option>All Classes</option>
-          <option>Morning</option>
-          <option>Afternoon</option>
-        </select>
+
+        <div className="flex items-center gap-2">
+          <span className="text-gray-700 font-normal">TEACHE&apos;S CODE: XXXXXXXX</span>
+          <div className="w-40"></div> {/* Spacer */}
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600">All Classes</span>
+            <Button variant="ghost" size="sm" className="h-8 w-8 rounded-md p-0">
+              <SlidersHorizontal className="h-5 w-5 text-gray-500" />
+            </Button>
+          </div>
+        </div>
       </div>
-      <div className="flex items-center gap-2 mb-4">
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="mr-2 h-4 w-4" />
-          Add New Teacher
-        </Button>
-        <ExcelUploadDialog />
-      </div>
+
       <TeachersTable />
     </section>
   )

@@ -1,36 +1,42 @@
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Bell } from "lucide-react"
+import { AlertCircle, Bell } from "lucide-react";
 
 export function AIAssistance() {
   return (
-    <div className="space-y-4 bg-[#f0f9ff]">
-      <h2 className="font-semibold">AI Teacher Assistance</h2>
-      <Alert className="bg-sky-50 border-sky-100">
-        <AlertCircle className="h-4 w-4 shrink-0" />
-        <div>
-          <AlertTitle>Contact Required</AlertTitle>
-          <AlertDescription>
-            Students who need you to contact their parents:
-            <ul className="mt-2 ml-4 space-y-1">
-              <li className="text-sm">Martha Roe</li>
-              <li className="text-sm">John Smith</li>
+    <div className="flex flex-col pl-4 sm:pl-16">
+      <h2 className="text-xl font-semibold">AI Teacher Assistance</h2>
+      <div className="flex flex-col pl-1 gap-4 mt-4">
+        <div className="flex gap-4">
+          <AlertCircle className="h-6 w-6 text-blue-500" />
+          <div>
+            Students who need you to{" "}
+            <span className="font-bold opacity-80">contact their parents</span>
+            <ul className="list-none pl-6">
+              <li className="flex gap-2 items-center font-bold opacity-80">
+                <label>Martha Roe</label>
+              </li>
+              <li className="flex gap-2 items-center font-bold opacity-80">
+                <label>John Smith</label>
+              </li>
             </ul>
-          </AlertDescription>
+          </div>
         </div>
-      </Alert>
-      <Alert className="bg-sky-50 border-sky-100">
-        <Bell className="h-4 w-4 shrink-0" />
-        <div>
-          <AlertTitle>Upcoming Exams</AlertTitle>
-          <AlertDescription>
-            <ul className="ml-4 space-y-1">
-              <li className="text-sm">Remember that tomorrow Class 5 - Math has an exam</li>
-              <li className="text-sm">Remember that tomorrow Class 5 - Sci has an exam</li>
-            </ul>
-          </AlertDescription>
-        </div>
-      </Alert>
-    </div>
-  )
-}
 
+        <div className="flex gap-4">
+          <Bell className="h-6 w-6 text-blue-500" />
+          <div>
+            Remember that tomorrow{" "}
+            <span className="font-bold opacity-80">Class 5 - Math has an exam</span>
+          </div>
+        </div>
+
+        <div className="flex gap-4">
+          <Bell className="h-6 w-6 text-blue-500" />
+          <div>
+            Remember that tomorrow{" "}
+            <span className="font-bold opacity-80">Class 5 - Sci has an exam</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

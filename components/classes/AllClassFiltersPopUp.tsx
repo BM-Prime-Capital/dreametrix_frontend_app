@@ -1,5 +1,4 @@
-'use client';
-
+import React, { useState } from 'react';
 import { Filter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
 
 export default function AllClassFiltersPopUp() {
   const [open, setOpen] = useState(false);

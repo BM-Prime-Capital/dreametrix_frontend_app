@@ -1,6 +1,4 @@
 "use client"
-
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Eye, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -8,7 +6,7 @@ import { Button } from "@/components/ui/button"
 const classes = [
   {
     id: 1,
-    name: "Class 5N",
+    name: "Class 5 - Sci",
     subject: "Science",
     grade: "Grade 5",
     teacher: "Samantha Brown",
@@ -16,10 +14,50 @@ const classes = [
   },
   {
     id: 2,
-    name: "Class 5M",
+    name: "Class 5 - Math",
     subject: "Mathematics",
     grade: "Grade 5",
     teacher: "Joe Smith",
+    students: 15,
+  },
+  {
+    id: 3,
+    name: "Class 6 - Math",
+    subject: "Mathematics",
+    grade: "Grade 6",
+    teacher: "Joe Smith",
+    students: 15,
+  },
+  {
+    id: 4,
+    name: "Class 7 - Sci",
+    subject: "Science",
+    grade: "Grade 7",
+    teacher: "Samantha Brown",
+    students: 15,
+  },
+  {
+    id: 5,
+    name: "Class 6 - Math",
+    subject: "Mathematics",
+    grade: "Grade 6",
+    teacher: "Joe Smith",
+    students: 15,
+  },
+  {
+    id: 6,
+    name: "Class 7 - Math",
+    subject: "Mathematics",
+    grade: "Grade 7",
+    teacher: "Joe Smith",
+    students: 15,
+  },
+  {
+    id: 7,
+    name: "Class 8 - Sci",
+    subject: "Science",
+    grade: "Grade 8",
+    teacher: "Samantha Brown",
     students: 15,
   },
 ]
@@ -27,53 +65,57 @@ const classes = [
 export function ClassesTable() {
   return (
     <div className="w-full">
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="font-bold">CLASS</TableHead>
-            <TableHead className="font-bold">SUBJECT</TableHead>
-            <TableHead className="font-bold">GRADE</TableHead>
-            <TableHead className="font-bold">TEACHER</TableHead>
-            <TableHead className="font-bold">STUDENTS</TableHead>
-            <TableHead>EDIT</TableHead>
-            <TableHead>DELETE</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {classes.map((class_, index) => (
-            <TableRow
-              key={class_.id}
-              className={`
-                ${index % 2 === 0 ? "bg-[#F8FBFF]" : "bg-white"}
-                hover:bg-[#F8FBFF]/80
-              `}
-            >
-              <TableCell className="font-medium">{class_.name}</TableCell>
-              <TableCell>{class_.subject}</TableCell>
-              <TableCell>{class_.grade}</TableCell>
-              <TableCell>{class_.teacher}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  {class_.students}
-                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-blue-50">
-                    <Eye className="h-4 w-4 text-[#25AAE1]" />
+      
+
+      <div className="w-full overflow-x-auto rounded-b-lg">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-50 border-y border-gray-200">
+              <th className="py-5 px-6 text-left text-gray-600 font-medium text-base">CLASS</th>
+              <th className="py-5 px-6 text-left text-gray-600 font-medium text-base">SUBJECT</th>
+              <th className="py-5 px-6 text-left text-gray-600 font-medium text-base">GRADE</th>
+              <th className="py-5 px-6 text-left text-gray-600 font-medium text-base">TEACHER</th>
+              <th className="py-5 px-6 text-left text-gray-600 font-medium text-base">STUDENTS</th>
+              <th className="py-5 px-6 text-left text-gray-600 font-normal text-base">EDIT</th>
+              <th className="py-5 px-6 text-left text-gray-600 font-normal text-base">DELETE</th>
+            </tr>
+          </thead>
+          <tbody>
+            {classes.map((class_, index) => (
+              <tr
+                key={class_.id}
+                className={`
+                  ${index % 2 === 0 ? "bg-[#EBF5FA]" : "bg-white"}
+                  hover:bg-[#EBF5FA]/80 transition-colors
+                `}
+              >
+                <td className="py-5 px-6 font-normal text-gray-700">{class_.name}</td>
+                <td className="py-5 px-6 text-gray-600 font-normal">{class_.subject}</td>
+                <td className="py-5 px-6 text-gray-600 font-normal">{class_.grade}</td>
+                <td className="py-5 px-6 text-gray-600 font-normal">{class_.teacher}</td>
+                <td className="py-5 px-6">
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-600 font-normal">{class_.students}</span>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0">
+                      <Eye className="h-5 w-5 text-[#25AAE1]" />
+                    </Button>
+                  </div>
+                </td>
+                <td className="py-5 px-6">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0">
+                    <Pencil className="h-5 w-5 text-[#25AAE1]" />
                   </Button>
-                </div>
-              </TableCell>
-              <TableCell>
-                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-blue-50">
-                  <Pencil className="h-4 w-4 text-[#25AAE1]" />
-                </Button>
-              </TableCell>
-              <TableCell>
-                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-50">
-                  <Trash2 className="h-4 w-4 text-red-500" />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                </td>
+                <td className="py-5 px-6">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0">
+                    <Trash2 className="h-5 w-5 text-red-400" />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }

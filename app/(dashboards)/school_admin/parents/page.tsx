@@ -1,5 +1,5 @@
-import { Parent } from "@/components/school_admin/parent/ParentPage";
+import { ParentsPage } from "@/components/school_admin/parent/ParentPage";
 
 export default function ParentPage() {
-  return <Parent />;
+  return <ParentsPage />;
 }

@@ -1,8 +1,6 @@
-"use client"
+'use client'
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Eye, Pencil, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 
 // Sample data - would typically come from your API
 const parents = [
@@ -48,89 +46,100 @@ const parents = [
     status: "Paid",
     students: "Malcolm Jones",
   },
-]
+];
 
-export function ParentTable() {
+export function ParentsTable() {
   return (
-    <div className="w-full">
-      {/* Desktop version */}
-      <div className="hidden md:block overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>PARENT</TableHead>
-              <TableHead>STATUS</TableHead>
-              <TableHead>STUDENT</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {parents.map((parent, index) => (
-              <TableRow key={parent.id} className={index % 2 === 0 ? "bg-sky-50/50" : ""}>
-                <TableCell>{parent.name}</TableCell>
-                <TableCell>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs ${
-                      parent.status === "Paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                    }`}
+    <div className="w-full overflow-auto rounded-lg shadow-sm bg-white">
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="bg-gray-50 border-y border-gray-200">
+            <th className="py-5 px-6 text-left text-gray-600 font-medium text-base">PARENT</th>
+            <th className="py-5 px-6 text-left text-gray-600 font-medium text-base">STATUS</th>
+            <th className="py-5 px-6 text-left text-gray-600 font-medium text-base">STUDENT</th>
+            <th className="py-5 px-6 text-left text-gray-600 font-normal text-base">VIEW MORE</th>
+            <th className="py-5 px-6 text-left text-gray-600 font-normal text-base">EDIT</th>
+            <th className="py-5 px-6 text-left text-gray-600 font-normal text-base">DELETE</th>
+          </tr>
+        </thead>
+        <tbody>
+          {parents.map((parent, index) => (
+            <tr
+              key={parent.id}
+              className={`
+                ${index % 2 === 0 ? "bg-[#EBF5FA]" : "bg-white"}
+                hover:bg-[#EBF5FA]/80 transition-colors
+              `}
+            >
+              <td className="py-5 px-6 font-normal text-gray-700">{parent.name}</td>
+              <td className="py-5 px-6 text-gray-600 font-normal">
+                <span
+                  className={`px-2 py-1 rounded-full text-xs ${
+                    parent.status === "Paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {parent.status}
+                </span>
+              </td>
+              <td className="py-5 px-6 text-gray-600 font-normal">{parent.students}</td>
+              <td className="py-5 px-6">
+                <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#25AAE1"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    {parent.status}
-                  </span>
-                </TableCell>
-                <TableCell>{parent.students}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Eye className="h-4 w-4 text-sky-500" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Pencil className="h-4 w-4 text-sky-500" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Mobile version */}
-      <div className="md:hidden space-y-4">
-        {parents.map((parent) => (
-          <div key={parent.id} className="bg-white p-4 rounded-lg shadow-sm border">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <h3 className="font-medium">{parent.name}</h3>
-                <p className="text-sm text-gray-500 mt-1">{parent.students}</p>
-              </div>
-              <span
-                className={`px-2 py-1 rounded-full text-xs ${
-                  parent.status === "Paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                }`}
-              >
-                {parent.status}
-              </span>
-            </div>
-            <div className="flex gap-2 mt-3">
-              <Button variant="ghost" size="sm" className="flex-1">
-                <Eye className="h-4 w-4 text-sky-500 mr-2" />
-                View
-              </Button>
-              <Button variant="ghost" size="sm" className="flex-1">
-                <Pencil className="h-4 w-4 text-sky-500 mr-2" />
-                Edit
-              </Button>
-              <Button variant="ghost" size="sm" className="flex-1">
-                <Trash2 className="h-4 w-4 text-red-500 mr-2" />
-                Delete
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </Button>
+              </td>
+              <td className="py-5 px-6">
+                <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#25AAE1"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  </svg>
+                </Button>
+              </td>
+              <td className="py-5 px-6">
+                <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#FF6B6B"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M3 6h18" />
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                  </svg>
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
-  )
+  );
 }

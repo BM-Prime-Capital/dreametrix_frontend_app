@@ -1,39 +1,38 @@
 "use client"
 
-import { Card } from "@/components/ui/card"
+import { StudentsTable } from './StudentTable'
 import { Button } from "@/components/ui/button"
-import { Settings } from "lucide-react"
-import { AddStudentDialog } from "./AddStudentDialog"
-import { StudentsTable } from  "./StudentTable"
+import { PlusSquare, SlidersHorizontal } from "lucide-react"
 
-export default function StudentsDash() {
+export default function StudentsPage() {
   return (
-    <div className="w-full space-y-6">
-      <Card className="p-6">
-        <div className="flex flex-col space-y-6">
-          <div className="flex flex-col space-y-4">
-            {/* Title row */}
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-semibold tracking-tight text-blue-500">STUDENTS</h1>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-600">All Classes</span>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+    <section className="flex flex-col gap-4 w-full p-6 max-w-[1400px] mx-auto">
+      <div>
+        <h1 className="text-2xl font-normal text-[#1E88E5]">STUDENTS</h1>
+      </div>
 
-            {/* Action row */}
-            <div className="flex items-center justify-between">
-              <AddStudentDialog />
-              <p className="text-sm text-muted-foreground">STUDENT&apos;S CODE: XXXXXXXX</p>
-            </div>
-          </div>
-
-          <StudentsTable />
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <Button className="bg-[#1E88E5] hover:bg-[#1976D2] text-white rounded-md py-6 px-5 flex items-center gap-2">
+            <PlusSquare className="h-5 w-5" />
+            <span className="text-base font-normal">Add New Student</span>
+          </Button>
         </div>
-      </Card>
-    </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-gray-700 font-normal">STUDENTS&apos;S CODE: XXXXXXXX</span>
+          <div className="w-40"></div> {/* Spacer */}
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600">All Classes</span>
+            <Button variant="ghost" size="sm" className="h-8 w-8 rounded-md p-0">
+              <SlidersHorizontal className="h-5 w-5 text-gray-500" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <StudentsTable />
+    </section>
   )
 }
 
