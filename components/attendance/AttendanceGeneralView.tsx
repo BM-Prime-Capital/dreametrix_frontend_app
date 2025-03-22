@@ -143,15 +143,10 @@ function AttendanceGeneralView({ changeView }: { changeView: Function }) {
             </thead>
 
             <tbody>
-              {attendanceStatistics.map((as: AttendanceStat) => (
+              {attendanceStatistics.map((as: AttendanceStat, index: number) => (
                 <tr
-                  className={`cursor-pointer ${
-                    as.absences > as.presences
-                      ? "bg-red-100"
-                      : as.lates > as.presences
-                      ? "bg-yellow-100"
-                      : "bg-green-100"
-                  }`}
+                  key={index}
+                  className={`cursor-pointer`}
                   onClick={() => handleClick(as.className)}
                 >
                   <td>{as.className}</td>

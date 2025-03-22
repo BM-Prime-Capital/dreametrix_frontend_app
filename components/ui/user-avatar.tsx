@@ -4,7 +4,7 @@ import React from "react";
 
 function UserAvatar({ className }: { className?: string }) {
   return (
-    <div className={`h-[4rem] w-[4rem] rounded-full object-cover ${className}`}>
+    <div className={`h-6 w-6 rounded-full object-cover ${className}`}>
       <Image
         src={generalImages.default_user}
         alt="user"

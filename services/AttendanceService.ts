@@ -1,15 +1,13 @@
 "use server";
 
+import { localStorageKey } from "@/constants/global";
+import { redirect } from "next/navigation";
+
 export async function getAttendances(
   tenantPrimaryDomain: string,
   accessToken: string,
   refreshToken: string
 ) {
-  console.log("Sending getAttendances payload => ", {
-    tenantPrimaryDomain,
-    accessToken,
-    refreshToken,
-  });
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
@@ -23,21 +21,25 @@ export async function getAttendances(
   if (!response.ok) {
     if (response.status === 401) {
       // throw new Error("Votre session a expiré. Veuillez vous reconnecter.");
-      const refreshResponse = await fetch(
+
+      return redirect("/");
+
+      /* const refreshResponse = await fetch(
         // TO BE Completed with the true refresh API
-        `${tenantPrimaryDomain}/auth/refresh`,
+        `${tenantPrimaryDomain}/refresh-token/`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ refreshToken }),
+          body: JSON.stringify({ refresh: refreshToken }),
         }
       );
-
+      console.log("refreshResponse => ", refreshResponse);
       if (refreshResponse.ok) {
         const data = await refreshResponse.json();
         const newAccessToken = data.accessToken;
+        const newRefreshToken = data.refreshToken;
 
         // Retry the original request with the new access token
         response = await fetch(url, {
@@ -47,10 +49,12 @@ export async function getAttendances(
         });
 
         // Optionally, update your stored accessToken for future requests
-        localStorage.setItem("accessToken", newAccessToken);
+        localStorage.setItem(localStorageKey.ACCESS_TOKEN, newAccessToken);
+        localStorage.setItem(localStorageKey.REFRESH_TOKEN, newRefreshToken);
       } else {
         throw new Error("Failed to refresh the access token");
       }
+       */
     } else if (response.status === 403) {
       throw new Error(
         "Vous n'avez pas la permission d'accéder aux enseignants."
@@ -82,7 +86,7 @@ export async function updateAttendance(
     });
     const url = `${tenantPrimaryDomain}/attendances/${attendance.id}/`;
     let response = await fetch(url, {
-      method: "PUT", // replace by PUT
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
@@ -99,8 +103,11 @@ export async function updateAttendance(
       console.log("PUT Attendance data => ", data);
     } else {
       console.log("PUT Attendance Failed => ", response);
-
-      throw new Error("Attendance modification failed");
+      if (response.status == 401) {
+        return redirect("/");
+      } else {
+        throw new Error("Attendance modification failed");
+      }
     }
   } catch (error) {
     console.log("Error => ", error);

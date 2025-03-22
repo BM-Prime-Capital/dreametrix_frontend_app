@@ -61,6 +61,7 @@ export function useLogin() {
           localStorageKey.USER_DATA,
           JSON.stringify({
             id: data.user.id,
+            owner_id: data.user.owner_id,
             role: data.user.role,
             email: data.user.email,
             username: data.user.username,

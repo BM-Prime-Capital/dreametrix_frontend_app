@@ -1,31 +1,13 @@
-import { cn } from "@/libs/utils"
-
 export function Loader({ className }: { className?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2">
-      <div className={cn("h-24 w-24", className)}>
-        <svg
-          className="animate-spin"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          />
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          />
-        </svg>
+    <div className={`flex items-center justify-center ${className}`}>
+      <div className="flex flex-col items-center p-4 gap-1 max-h-[300px] max-w-[300px]">
+        <video
+          src={"/assets/videos/general/drea_metrix_loader.mp4"}
+          autoPlay={true}
+        />
+        <label className="mt-4 text-sm text-slate-500">Loading...</label>
       </div>
-      <p className="text-sm text-slate-500">Loading...</p>
     </div>
-  )
+  );
 }

@@ -2,12 +2,12 @@
 
 import { redirect } from "next/navigation";
 
-export async function getSeatings(
+export async function getTeachers(
   tenantPrimaryDomain: string,
   accessToken: string,
   refreshToken: string
 ) {
-  console.log("Sending getSeatings payload => ", {
+  console.log("Sending getTeachers payload => ", {
     tenantPrimaryDomain,
     accessToken,
     refreshToken,
@@ -15,7 +15,7 @@ export async function getSeatings(
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
-  const url = `${tenantPrimaryDomain}/seatings/`;
+  const url = `${tenantPrimaryDomain}/teachers/`;
   let response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -36,48 +36,47 @@ export async function getSeatings(
 
   const data = await response.json();
 
-  console.log("getSeatings => ", data);
+  console.log("getTeachers => ", data);
 
   return data.results;
 }
 
-export async function updateAttendance(
-  attendance: any,
+export async function updateTeacher(
+  teacher: any,
   tenantPrimaryDomain: string,
   accessToken: string,
   refreshToken: string
 ) {
   try {
-    console.log("UPDATING Attendance => ", {
-      attendance,
+    console.log("UPDATING Teacher => ", {
+      teacher,
       tenantPrimaryDomain,
       accessToken,
       refreshToken,
     });
-    const url = `${tenantPrimaryDomain}/seatings/`;
+    const url = `${tenantPrimaryDomain}/teachers/${teacher.id}/`;
     let response = await fetch(url, {
-      method: "POST", // replace by PUT
+      method: "PUT", // replace by PUT
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({
-        ...attendance,
+        ...teacher,
         course_id: 1,
-        student: 1,
         notes: "good good",
       }),
     });
 
     if (response.ok) {
       const data: any = await response.json();
-      console.log("PUT Attendance data => ", data);
+      console.log("PUT Teacher data => ", data);
     } else {
-      console.log("PUT Attendance Failed => ", response);
+      console.log("PUT Teacher Failed => ", response);
       if (response.status == 401) {
         return redirect("/");
       } else {
-        throw new Error("Attendance modification failed");
+        throw new Error("Teacher modification failed");
       }
     }
   } catch (error) {

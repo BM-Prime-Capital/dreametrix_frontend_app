@@ -126,11 +126,7 @@ function CharacterGeneralView({ changeView }: { changeView: Function }) {
             <tbody>
               {attendanceStatistics.map((as: CharacterStat) => (
                 <tr
-                  className={`cursor-pointer ${
-                    as.badCharacters > as.goodCharacters
-                      ? "bg-red-100"
-                      : "bg-green-100"
-                  }`}
+                  className={"cursor-pointer"}
                   onClick={() => handleClick(as.className)}
                 >
                   <td>{as.className}</td>

@@ -37,6 +37,7 @@ export const generalImages = {
   red_cross: `${GENERAL_IMAGES_BASE_PATH}/red_cross.png`,
   classes: `${GENERAL_IMAGES_BASE_PATH}/classes.png`,
   default_user: `${GENERAL_IMAGES_BASE_PATH}/default_user.png`,
+  no_data: `${GENERAL_IMAGES_BASE_PATH}/no_data.png`,
 };
 
 export const teacherImages = {
