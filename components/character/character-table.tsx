@@ -11,9 +11,13 @@ import {
 import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CharacterItem from "../ui/character-item";
+import { useEffect, useState } from "react";
+import { getAttendances } from "@/services/AttendanceService";
+import { localStorageKey } from "@/constants/global";
+import { getCharracters } from "@/services/CharacterService";
 
 // This would typically come from your API
-const characters = [
+const charactersMock = [
   {
     id: 1,
     name: "Class 4 - Math",
@@ -33,8 +37,40 @@ const characters = [
     student: "Sarah Tante",
   },
 ];
-
+type Character = {
+  id: string;
+  name: string;
+  date: string;
+  student: string;
+};
 export function CharacterTable() {
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [primaryDomain, setPrimaryDomain] = useState<string>("");
+  const [accessToken, setAccessToken] = useState<string>("");
+  const [refreshToken, setRefreshToken] = useState<string>("");
+
+  useEffect(() => {
+    const accessToken: any = localStorage.getItem(localStorageKey.ACCESS_TOKEN);
+    const refreshToken: any = localStorage.getItem(
+      localStorageKey.REFRESH_TOKEN
+    );
+    const tenantData: any = localStorage.getItem(localStorageKey.TENANT_DATA);
+
+    const { primary_domain } = JSON.parse(tenantData);
+    const domain = `https://${primary_domain}`;
+
+    setPrimaryDomain(domain);
+    setAccessToken(accessToken);
+    setRefreshToken(refreshToken);
+
+    const loadCharacter = async () => {
+      const data = await getCharracters(domain, accessToken, refreshToken);
+      console.log("getCharracters DATA => ", data);
+      setCharacters(data);
+    };
+
+    //  loadCharacter();
+  }, []);
   return (
     <div className="w-full overflow-auto">
       <Table>
@@ -48,7 +84,7 @@ export function CharacterTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {characters.map((character, index) => (
+          {charactersMock.map((character, index) => (
             <TableRow key={character.id}>
               <TableCell>{character.date}</TableCell>
               <TableCell>{character.student}</TableCell>

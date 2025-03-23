@@ -1,4 +1,4 @@
-import Character from "@/components/character/Charracter";
+import Character from "@/components/character/Character";
 import React from "react";
 
 export default function AttendancePage() {

@@ -1,20 +1,20 @@
 "use client";
 
 import React, { useState } from "react";
-import AttendanceGeneralView from "./AttendanceGeneralView";
-import AttendanceFocusedView from "./AttendanceSpecificView";
 import { views } from "@/constants/global";
+import CharacterGeneralView from "./CharacterGeneralView";
+import CharacterFocusedView from "./CharracterFocusedView";
 
-function Attendance() {
+function Character() {
   const [view, setView] = useState<string>(views.GENERAL_VIEW);
   return (
     <>
       {view === views.GENERAL_VIEW ? (
-        <AttendanceGeneralView
+        <CharacterGeneralView
           changeView={(viewName: string) => setView(viewName)}
         />
       ) : (
-        <AttendanceFocusedView
+        <CharacterFocusedView
           changeView={(viewName: string) => setView(viewName)}
         />
       )}
@@ -22,4 +22,4 @@ function Attendance() {
   );
 }
 
-export default Attendance;
+export default Character;

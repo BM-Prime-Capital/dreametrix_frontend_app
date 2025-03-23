@@ -322,3 +322,15 @@ export const initialClasses = [
     name: "Class 4 - Language",
   },
 ];
+
+export const views = {
+  GENERAL_VIEW: "General View",
+  FOCUSED_VIEW: "Focused View",
+};
+
+export const localStorageKey = {
+  ACCESS_TOKEN: "accessToken",
+  REFRESH_TOKEN: "refreshToken",
+  USER_DATA: "userData",
+  TENANT_DATA: "tenantData",
+};

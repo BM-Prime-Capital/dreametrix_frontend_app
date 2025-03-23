@@ -1,5 +1,5 @@
-import Loader from "@/components/Loader";
 import Login from "@/components/Login";
+import { Loader } from "@/components/ui/loader";
 import { Suspense } from "react";
 
 export default async function LoginPage() {
