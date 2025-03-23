@@ -21,11 +21,9 @@ export async function getSubjects(
     if (response.status === 401) {
       return redirect("/");
     } else if (response.status === 403) {
-      throw new Error(
-        "Vous n'avez pas la permission d'accéder aux enseignants."
-      );
+      throw new Error("Vous n'avez pas la permission d'accéder aux donnees.");
     } else {
-      throw new Error("Erreur lors de la récupération des enseignants.");
+      throw new Error("Erreur lors de la récupération des donnees.");
     }
   }
 
@@ -56,11 +54,9 @@ export async function getGrades(
     if (response.status === 401) {
       return redirect("/");
     } else if (response.status === 403) {
-      throw new Error(
-        "Vous n'avez pas la permission d'accéder aux enseignants."
-      );
+      throw new Error("Vous n'avez pas la permission d'accéder aux donnees.");
     } else {
-      throw new Error("Erreur lors de la récupération des enseignants.");
+      throw new Error("Erreur lors de la récupération des donnees.");
     }
   }
 
@@ -91,11 +87,9 @@ export async function getDomains(
     if (response.status === 401) {
       return redirect("/");
     } else if (response.status === 403) {
-      throw new Error(
-        "Vous n'avez pas la permission d'accéder aux enseignants."
-      );
+      return [];
     } else {
-      throw new Error("Erreur lors de la récupération des enseignants.");
+      return [];
     }
   }
 
@@ -130,11 +124,9 @@ export async function getStandards(
     if (response.status === 401) {
       return redirect("/");
     } else if (response.status === 403) {
-      throw new Error(
-        "Vous n'avez pas la permission d'accéder aux enseignants."
-      );
+      throw new Error("Vous n'avez pas la permission d'accéder aux donnees.");
     } else {
-      throw new Error("Erreur lors de la récupération des enseignants.");
+      throw new Error("Erreur lors de la récupération des donnees.");
     }
   }
 

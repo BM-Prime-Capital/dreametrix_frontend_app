@@ -25,6 +25,8 @@ import { getTeachers } from "@/services/TeacherService";
 import { localStorageKey } from "@/constants/global";
 import { createClass } from "@/services/ClassService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
+import { getGrades, getSubjects } from "@/services/DigitalLibraryService";
+import { usePathname, useRouter } from "next/navigation";
 
 interface ClassDay {
   id: number;
@@ -49,17 +51,25 @@ const schoolClassInit = {
   students: [],
 };
 
-export function AddClassDialog() {
+export function AddClassDialog({
+  setRefreshTime,
+}: {
+  setRefreshTime: Function;
+}) {
   const [open, setOpen] = useState(false);
   const { list: teachers, isLoading, error } = useList(getTeachers);
+  const { list: subjects } = useList(getSubjects);
+  const [grades, setGrades] = useState<any[]>([]);
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  const [isSubmiting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState("");
+  const router = useRouter();
 
-  console.log("teachers => ", teachers);
   const [schoolClass, setSchoolClass] = useState<ISchoolClass>(schoolClassInit);
 
   const [classDays, setClassDays] = useState<ClassDay[]>([
-    { id: 1, day: "Monday", hour: "00", minute: "00", dayPart: "AM" },
+    { id: 1, day: "Monday", hour: "01", minute: "01", dayPart: "AM" },
   ]);
 
   const addNewClassDay = () => {
@@ -88,8 +98,40 @@ export function AddClassDialog() {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    await createClass(schoolClass, tenantDomain, accessToken, refreshToken);
+    setIsSubmitting(true);
+
+    const rep = await createClass(
+      schoolClass,
+      tenantDomain,
+      accessToken,
+      refreshToken
+    );
+    if (!rep) {
+      setMessage("The class creation failed.");
+    } else {
+      setRefreshTime(new Date().toISOString());
+      setOpen(false);
+    }
+
+    setIsSubmitting(false);
   };
+
+  useEffect(() => {
+    const loadGrades = async () => {
+      if (schoolClass.subject_in_short) {
+        const grades = await getGrades(
+          schoolClass.subject_in_short,
+          tenantDomain,
+          accessToken,
+          refreshToken
+        );
+
+        setGrades(grades);
+      }
+    };
+
+    loadGrades();
+  }, [schoolClass]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -105,178 +147,215 @@ export function AddClassDialog() {
             Add New Class
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={(e) => handleSubmit(e)}>
-          <div className="grid grid-cols-2 gap-4 py-4">
-            <Input
-              className="rounded-lg"
-              placeholder="Class Name"
-              value={schoolClass.name}
-              onChange={(e) =>
-                setSchoolClass({ ...schoolClass, name: e.target.value })
-              }
-            />
-            <Input
-              className="rounded-lg"
-              placeholder="Subject"
-              value={schoolClass.subject_in_all_letter}
-              onChange={(e) =>
-                setSchoolClass({
-                  ...schoolClass,
-                  subject_in_all_letter: e.target.value,
-                })
-              }
-            />
-            <Input
-              className="rounded-lg"
-              placeholder="Grade"
-              value={schoolClass.grade}
-              onChange={(e) =>
-                setSchoolClass({
-                  ...schoolClass,
-                  grade: e.target.value,
-                })
-              }
-            />
-            <Select
-              value={`${schoolClass.teacher}`}
-              onValueChange={(value) =>
-                setSchoolClass({
-                  ...schoolClass,
-                  teacher: Number.parseInt(value),
-                })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Teacher" />
-              </SelectTrigger>
-              <SelectContent>
-                {userData.role === "teacher" ? (
-                  <SelectItem
-                    aria-selected
-                    key={userData.ownerId}
-                    value={userData.ownerId}
-                  >
-                    {userData.name}
-                  </SelectItem>
-                ) : (
-                  <>
-                    {teachers.length > 0 ? (
-                      teachers.map((teacher: any) => (
-                        <SelectItem key={teacher.id} value={teacher.id}>
-                          {teacher.name}
+        <div className="flex flex-col gap-4">
+          {message ? <label className="text-red-500 p-2">{message}</label> : ""}
+          <form onSubmit={(e) => handleSubmit(e)}>
+            <div className="grid grid-cols-2 gap-4 py-4">
+              <select
+                style={{ border: "solid 1px #eee" }}
+                className="px-2 py-1 bg-white rounded-lg"
+                placeholder="Subject in short"
+                value={schoolClass.subject_in_short}
+                onChange={(e) =>
+                  setSchoolClass({
+                    ...schoolClass,
+                    subject_in_short: e.target.value,
+                  })
+                }
+                required
+              >
+                <option disabled value={""}>
+                  Select Subject in short
+                </option>
+                {subjects?.map((subject: string, index: number) => (
+                  <option key={index}>{subject}</option>
+                ))}
+              </select>
+
+              <Input
+                className="rounded-lg"
+                placeholder="Subject in all letter"
+                value={schoolClass.subject_in_all_letter}
+                onChange={(e) =>
+                  setSchoolClass({
+                    ...schoolClass,
+                    subject_in_all_letter: e.target.value,
+                  })
+                }
+                required
+              />
+
+              <select
+                style={{ border: "solid 1px #eee" }}
+                className="px-2 py-1 bg-white rounded-lg"
+                placeholder="Subject in short"
+                value={schoolClass.grade}
+                onChange={(e) =>
+                  setSchoolClass({
+                    ...schoolClass,
+                    grade: e.target.value,
+                  })
+                }
+                required
+              >
+                <option disabled selected value={""}>
+                  Select Grade
+                </option>
+                {grades?.map((grade: string, index: number) => (
+                  <option key={index}>{grade}</option>
+                ))}
+              </select>
+
+              <Select
+                value={`${
+                  userData.role === "teacher"
+                    ? userData.owner_id
+                    : schoolClass.teacher
+                }`}
+                onValueChange={(value) =>
+                  setSchoolClass({
+                    ...schoolClass,
+                    teacher: Number.parseInt(value),
+                  })
+                }
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Teacher" />
+                </SelectTrigger>
+                <SelectContent>
+                  {userData.role === "teacher" ? (
+                    <SelectItem
+                      aria-selected
+                      key={`${userData.owner_id}`}
+                      value={`${userData.owner_id}`}
+                    >
+                      {userData.username}
+                    </SelectItem>
+                  ) : (
+                    <>
+                      {teachers.length > 0 ? (
+                        teachers.map((teacher: any) => (
+                          <SelectItem key={teacher.id} value={teacher.id}>
+                            {teacher.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem key={0} value={"0"} disabled>
+                          {"No teacher"}
                         </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem key={0} value={"0"} disabled>
-                        {"No teacher"}
-                      </SelectItem>
-                    )}
-                  </>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
+                      )}
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="border rounded-lg p-4 space-y-4">
-            <label className="text-sm font-medium text-gray-700">
-              Class Days
-            </label>
+            <div className="border rounded-lg p-4 space-y-4">
+              <label className="text-sm font-medium text-gray-700">
+                Class Days
+              </label>
 
-            {classDays.map((day) => (
-              <div key={day.id} className="grid grid-cols-4 gap-2">
-                <Select
-                  value={day.day}
-                  onValueChange={(value) =>
-                    handleClassDayChange(day.id, "day", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Day" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[
-                      "Monday",
-                      "Tuesday",
-                      "Wednesday",
-                      "Thursday",
-                      "Friday",
-                    ].map((d) => (
-                      <SelectItem key={d} value={d}>
-                        {d}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Input
-                  type="number"
-                  min="1"
-                  max="12"
-                  value={day.hour}
-                  onChange={(e) =>
-                    handleClassDayChange(day.id, "hour", e.target.value)
-                  }
-                  className="w-full"
-                  placeholder="Hour"
-                />
-
-                <Input
-                  type="number"
-                  min="0"
-                  max="59"
-                  value={day.minute}
-                  onChange={(e) =>
-                    handleClassDayChange(day.id, "minute", e.target.value)
-                  }
-                  className="w-full"
-                  placeholder="Minute"
-                />
-
-                <Select
-                  value={day.dayPart}
-                  onValueChange={(value) =>
-                    handleClassDayChange(day.id, "dayPart", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="AM/PM" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="AM">AM</SelectItem>
-                    <SelectItem value="PM">PM</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                {classDays.length > 1 && (
-                  <Button
-                    variant="ghost"
-                    className="text-red-500 hover:text-red-600"
-                    onClick={() => handleDeleteClassDay(day.id)}
+              {classDays.map((day) => (
+                <div key={day.id} className="grid grid-cols-4 gap-2">
+                  <Select
+                    value={day.day}
+                    onValueChange={(value) =>
+                      handleClassDayChange(day.id, "day", value)
+                    }
                   >
-                    Remove
-                  </Button>
-                )}
-              </div>
-            ))}
+                    <SelectTrigger>
+                      <SelectValue placeholder="Day" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[
+                        "Monday",
+                        "Tuesday",
+                        "Wednesday",
+                        "Thursday",
+                        "Friday",
+                      ].map((d) => (
+                        <SelectItem key={d} value={d}>
+                          {d}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-            <Button
-              variant="outline"
-              onClick={addNewClassDay}
-              className="w-full mt-2"
-            >
-              Add Another Day
-            </Button>
-          </div>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="12"
+                    value={day.hour}
+                    onChange={(e) =>
+                      handleClassDayChange(day.id, "hour", e.target.value)
+                    }
+                    className="w-full"
+                    placeholder="Hour"
+                  />
 
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" className="bg-blue-500 hover:bg-blue-600">
-              Create Class
-            </Button>
-          </div>
-        </form>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={day.minute}
+                    onChange={(e) =>
+                      handleClassDayChange(day.id, "minute", e.target.value)
+                    }
+                    className="w-full"
+                    placeholder="Minute"
+                  />
+
+                  <Select
+                    value={day.dayPart}
+                    onValueChange={(value) =>
+                      handleClassDayChange(day.id, "dayPart", value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="AM/PM" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="AM">AM</SelectItem>
+                      <SelectItem value="PM">PM</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {classDays.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      className="text-red-500 hover:text-red-600"
+                      onClick={() => handleDeleteClassDay(day.id)}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
+              ))}
+
+              <Button
+                variant="outline"
+                onClick={addNewClassDay}
+                className="w-full mt-2"
+              >
+                Add Another Day
+              </Button>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                disabled={isSubmiting}
+                type="submit"
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                {isSubmiting ? "Submitting..." : "Create Class"}
+              </Button>
+            </div>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

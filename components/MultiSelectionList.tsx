@@ -10,6 +10,7 @@ export default function MultiSelectList({
   itemsAreLoading,
   allShouldBeSelected,
   withSheckbox,
+  className,
 }: {
   selectedItems: any[];
   allItems: any[];
@@ -18,6 +19,7 @@ export default function MultiSelectList({
   itemsAreLoading: boolean;
   allShouldBeSelected: boolean;
   withSheckbox: boolean;
+  className?: string;
 }) {
   // State to keep track of checkboxes
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
@@ -72,7 +74,7 @@ export default function MultiSelectList({
   return (
     <>
       {!itemsAreLoading ? (
-        <div className="flex flex-col gap-2">
+        <div className={"flex flex-col gap-2"}>
           {/* Select All Checkbox */}
           <label className="flex items-center space-x-2">
             {withSheckbox ? (
@@ -92,7 +94,10 @@ export default function MultiSelectList({
           <div className="flex gap-2 flex-wrap">
             {/* Item Checkboxes */}
             {allItems?.map((item, index) => (
-              <label key={index} className="flex items-center space-x-2">
+              <label
+                key={index}
+                className={`flex items-center space-x-2 ${className}`}
+              >
                 {withSheckbox ? (
                   <input
                     type="checkbox"

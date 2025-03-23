@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useList } from "@/hooks/useList";
 import NoData from "../ui/no-data";
 import { Loader } from "../ui/loader";
+import { useRequestInfo } from "@/hooks/useRequestInfo";
 
 // Sample class data
 const classesMock = [
@@ -36,8 +37,33 @@ const classesMock = [
   },
 ];
 
-export function ClassesTable() {
-  const { list: classes, isLoading, error } = useList(getClasses);
+export function ClassesTable({ refreshTime }: { refreshTime: string }) {
+  //  const { list: classes, isLoading, error } = useList(getClasses);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [allClasses, setAllClasses] = useState<any[]>([]);
+  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  console.log("useRequestInfo =>> ", {
+    tenantDomain,
+    accessToken,
+    refreshToken,
+  });
+  useEffect(() => {
+    const loadClasses = async () => {
+      if (tenantDomain && accessToken && refreshToken) {
+        setIsLoading(true);
+        const classes = await getClasses(
+          tenantDomain,
+          accessToken,
+          refreshToken
+        );
+        setAllClasses(classes);
+        setIsLoading(false);
+      }
+    };
+    loadClasses();
+  }, [refreshTime, tenantDomain, accessToken, refreshToken]);
+
+  console.log("allClasses >> ", { allClasses, refreshTime });
 
   return (
     <div className="w-full">
@@ -45,7 +71,7 @@ export function ClassesTable() {
         <Loader />
       ) : (
         <>
-          {classes.legnth > 0 ? (
+          {allClasses && allClasses.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
@@ -58,15 +84,15 @@ export function ClassesTable() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {classes.map((class_: any, index: number) => (
+                {allClasses.map((class_: any, index: number) => (
                   <TableRow key={class_.id}>
                     <TableCell className="font-medium">{class_.name}</TableCell>
-                    <TableCell>{class_.subject}</TableCell>
+                    <TableCell>{class_.subject_in_short}</TableCell>
                     <TableCell>{class_.grade}</TableCell>
-                    <TableCell>{class_.teacher}</TableCell>
+                    <TableCell>{class_.teacher.full_name}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        {class_.students}
+                      <div className="flex items-center gap-2 ">
+                        {class_.students.length}
                         <Button
                           variant="ghost"
                           size="icon"

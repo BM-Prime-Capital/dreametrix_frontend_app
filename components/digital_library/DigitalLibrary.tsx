@@ -376,6 +376,7 @@ export default function DigitalLibrary() {
                 selectedItems={allClasses}
                 allItems={allClasses?.flatMap((cl: any) => cl.name)}
                 itemsLabel="Classes"
+                className={"border-[1px] border-bgPurple p-2 rounded-md"}
                 allShouldBeSelected={false}
                 itemsAreLoading={classesIsLoading}
                 withSheckbox={false}
