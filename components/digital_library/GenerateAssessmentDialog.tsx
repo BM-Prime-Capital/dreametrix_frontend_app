@@ -14,29 +14,16 @@ import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { DigitalLibrarySheet } from "@/types";
 import Link from "next/link";
 
-export function GenerateAssessmentDialog({
-  fileStream,
-  handleFileGeneration,
-  isLoadinfFileError,
-}: {
-  fileStream: any;
-  handleFileGeneration: Function;
-  isLoadinfFileError: boolean;
-}) {
+export function GenerateAssessmentDialog({ fileStream }: { fileStream: any }) {
   const [open, setOpen] = useState(false);
-  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
-  const [shouldSubmit, setShouldSubmit] = useState<boolean>(true);
-
-  if (isLoadinfFileError) {
-    setOpen(false);
-  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          onClick={() => handleFileGeneration()}
-          className="w-full bg-blue-500 hover:bg-blue-600 rounded-full"
+          type="button"
+          id="openFileModalButton"
+          className="w-full bg-blue-500 hover:bg-blue-600 rounded-full invisible"
         >
           GENERATE
         </Button>
