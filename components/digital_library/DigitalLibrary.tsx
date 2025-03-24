@@ -16,7 +16,8 @@ import {
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { getClasses } from "@/services/ClassService";
 import { DigitalLibrarySheet } from "@/types";
-import { allSheetDomains } from "@/constants/global";
+import { allSheetDomains, localStorageKey } from "@/constants/global";
+import { Button } from "../ui/button";
 
 const GRADEBOOK_SHEET_INIT_STATE = {
   subject: "",
@@ -45,7 +46,7 @@ export default function DigitalLibrary() {
   const [digitalLibrarySheet, setDigitalLibrarySheet] =
     useState<DigitalLibrarySheet>(GRADEBOOK_SHEET_INIT_STATE);
 
-  const [isLoadinfFileError, setIsLoadinfFileError] = useState(false);
+  const [isLoadingFileError, setIsLoadingFileError] = useState(false);
 
   const [sheetDomains, setSheetDomains] = useState<string[]>([]);
 
@@ -59,6 +60,8 @@ export default function DigitalLibrary() {
   const [standards, setStandards] = useState<any[]>([]);
   const [standardsAreLoading, setStandardsAreLoading] = useState<boolean>(true);
   const [fileStream, setFileStream] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
 
@@ -158,16 +161,17 @@ export default function DigitalLibrary() {
     setStandardsAreLoading(false);
   };
 
-  const createDigitalLibrary = async () => {
+  const createDigitalLibrary = async (e: any) => {
+    e.preventDefault();
+
     if (checkedStandards.length < 1 || checkedClasses.length < 1) {
-      alert("You have to select at least one Standard and one Class");
+      alert(
+        "You have to select a subject, a grade, a domain and at least one standard"
+      );
       return;
     }
 
-    if (checkedClasses.length > 1) {
-      alert("You have to select only one Class for now.");
-      return;
-    }
+    setIsLoading(true);
 
     const standards =
       checkedStandards.length > 1
@@ -175,6 +179,10 @@ export default function DigitalLibrary() {
         : checkedStandards[0];
     const selected_class =
       checkedClasses.length > 1 ? checkedClasses.join(",") : checkedClasses[0];
+
+    const userData = JSON.parse(
+      localStorage.getItem(localStorageKey.USER_DATA)!
+    );
 
     const data = {
       subject: digitalLibrarySheet.subject,
@@ -184,12 +192,11 @@ export default function DigitalLibrary() {
       kind: digitalLibrarySheet.questionType,
       selected_class: selected_class,
       generate_answer_sheet: true,
-      teacher_name: "Mr. Smith",
+      teacher_name: userData.name,
       student_id: 1,
       assignment_type: "Homework",
     };
 
-    console.log("SENDING createDigitalLibrary data => ", data);
     try {
       const url = `${tenantDomain}/digital_library/generate-pdf/`;
       let response = await fetch(url, {
@@ -206,21 +213,24 @@ export default function DigitalLibrary() {
         const url = URL.createObjectURL(blob);
         setFileStream(url);
 
-        console.log("POST DigitalLibrary data OK => ", url);
+        document.getElementById("openFileModalButton")?.click(); // We open the Modal to display the Generated File
       } else {
         console.log("POST DigitalLibrary Failed => ", response);
 
         throw new Error("DigitalLibrary creation failed");
       }
     } catch (error) {
-      setIsLoadinfFileError(true);
+      setError(
+        "There is a server or internet issue, please try again, if this persits, contact you admin."
+      );
     }
+
+    setIsLoading(false);
   };
 
   useEffect(() => {
     if (!classesIsLoading) {
       setAllClasses(initialClasses);
-      //  setCheckedClasses(initialClasses.flatMap((cl: any) => cl.name)); // TODO uncomment when The POST API will support multiple classe selection and DO the same when filtering classes
     }
   }, [classesIsLoading]);
 
@@ -233,7 +243,11 @@ export default function DigitalLibrary() {
       </div>
 
       <Card className="rounded-md flex">
-        <form className="flex flex-col gap-4 p-4 w-full">
+        <form
+          className="flex flex-col gap-4 p-4 w-full"
+          onSubmit={(e) => createDigitalLibrary(e)}
+        >
+          {error && <div className="p-2 text-red-500">{error}</div>}
           <div className="flex flex-wrap gap-2">
             <div className="flex-1">
               <label
@@ -413,11 +427,15 @@ export default function DigitalLibrary() {
             </div>
           </div>
 
-          <GenerateAssessmentDialog
-            fileStream={fileStream}
-            handleFileGeneration={() => createDigitalLibrary()}
-            isLoadinfFileError={isLoadinfFileError}
-          />
+          <Button
+            type="submit"
+            className="w-full bg-blue-500 hover:bg-blue-600 rounded-full"
+            disabled={isLoading}
+          >
+            {isLoading ? "Generating the sheet..." : "GENERATE"}
+          </Button>
+
+          <GenerateAssessmentDialog fileStream={fileStream} />
         </form>
       </Card>
     </section>
