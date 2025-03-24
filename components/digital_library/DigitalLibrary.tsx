@@ -35,6 +35,8 @@ export default function DigitalLibrary() {
     error: classesError,
   } = useList(getClasses);
 
+  const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
+
   const [allClasses, setAllClasses] = useState<any[]>([]);
 
   const [checkedClasses, setCheckedClasses] = useState<string[]>([]);
@@ -180,10 +182,6 @@ export default function DigitalLibrary() {
     const selected_class =
       checkedClasses.length > 1 ? checkedClasses.join(",") : checkedClasses[0];
 
-    const userData = JSON.parse(
-      localStorage.getItem(localStorageKey.USER_DATA)!
-    );
-
     const data = {
       subject: digitalLibrarySheet.subject,
       grade: digitalLibrarySheet.grade,
@@ -192,7 +190,7 @@ export default function DigitalLibrary() {
       kind: digitalLibrarySheet.questionType,
       selected_class: selected_class,
       generate_answer_sheet: true,
-      teacher_name: userData.name,
+      teacher_name: userData.username,
       student_id: 1,
       assignment_type: "Homework",
     };
