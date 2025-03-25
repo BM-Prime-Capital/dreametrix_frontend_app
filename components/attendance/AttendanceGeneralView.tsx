@@ -4,6 +4,8 @@ import Image from "next/image";
 import { generalImages, teacherImages } from "@/constants/images";
 import StatisticItem from "../ui/StatisticItem";
 import { views } from "@/constants/global";
+import { useList } from "@/hooks/useList";
+import { getClasses } from "@/services/ClassService";
 
 type AttendanceStat = {
   className: string;
@@ -79,6 +81,8 @@ function AttendanceGeneralView({ changeView }: { changeView: Function }) {
     //TODO: Change Current class
     changeView(views.FOCUSED_VIEW);
   };
+  const { list: classes, isLoading, error } = useList(getClasses);
+  
   return (
     <div className="flex flex-col gap-8 w-full pb-4">
       <PageTitleH1 title="ATTENDANCE GENERAL VIEW " />

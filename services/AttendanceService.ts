@@ -1,22 +1,28 @@
 "use server";
 
-import { localStorageKey } from "@/constants/global";
 import { redirect } from "next/navigation";
 
 export async function getAttendances(
+  initAttendanceData: { date: string; class_id: number; teacher_id: number }, // "04.17.2025"
   tenantPrimaryDomain: string,
   accessToken: string,
   refreshToken: string
 ) {
+  console.log("initAttendanceData => ", initAttendanceData);
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
-  const url = `${tenantPrimaryDomain}/attendances/`;
+  const url = `${tenantPrimaryDomain}/attendances/initialize-attendance/`;
   let response = await fetch(url, {
+    method: "POST",
     headers: {
+      "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
+    body: JSON.stringify(initAttendanceData),
   });
+
+  console.log("ATTENDANCE INIT resp", response);
 
   if (!response.ok) {
     if (response.status === 401) {
@@ -56,11 +62,9 @@ export async function getAttendances(
       }
        */
     } else if (response.status === 403) {
-      throw new Error(
-        "Vous n'avez pas la permission d'accéder aux enseignants."
-      );
+      throw new Error("Vous n'avez pas la permission d'accéder aux data.");
     } else {
-      throw new Error("Erreur lors de la récupération des enseignants.");
+      throw new Error("Erreur lors de la récupération des attendances.");
     }
   }
 
@@ -68,7 +72,7 @@ export async function getAttendances(
 
   console.log("getAttendances => ", data);
 
-  return data.results;
+  return data.attendances;
 }
 
 export async function updateAttendance(
@@ -93,8 +97,6 @@ export async function updateAttendance(
       },
       body: JSON.stringify({
         ...attendance,
-        course_id: 1,
-        notes: "good good",
       }),
     });
 
