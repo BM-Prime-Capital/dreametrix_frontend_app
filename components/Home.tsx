@@ -103,15 +103,15 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[url('/assets/images/bg.png')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-4">
-      <div className="w-full max-w-[450px] bg-[rgba(230,230,230,0.90)] p-6 sm:p-8 rounded-[15px] shadow-[0px_4px_20px_rgba(0,0,0,0.1)]">
-        <div className="flex justify-center mb-6">
+    <div className="min-h-screen bg-[url('/assets/images/bg.png')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-2">
+      <div className="w-full max-w-[450px] bg-[rgba(230,230,230,0.90)] p-3 sm:p-6 rounded-[15px] shadow-[0px_4px_20px_rgba(0,0,0,0.1)]">
+        <div className="flex justify-center mb-4">
           <DreaMetrixLogo />
         </div>
 
-        <div className="text-left mb-6">
+        <div className="text-left mb-1">
           <h2 className="text-[#1A73E8] text-lg font-medium ml-2.5">
-            Login Here
+            Login here
           </h2>
         </div>
 
@@ -121,8 +121,8 @@ export default function Login() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="relative">
+        <form onSubmit={handleSubmit}>
+          <div className="relative mb-3">
             <div
               className={`relative rounded-full overflow-hidden border ${
                 formSubmitted && errors.email
@@ -169,32 +169,33 @@ export default function Login() {
             </div>
           )}
 
-          <div className="text-right">
+          <div className="text-right flex gap-2 justify-center items-center text-sm mt-1">
+            <label className="text-gray-600">Forgot your password?</label>
             <Link
               href="/forgot_password"
-              className="text-[#1A73E8] hover:text-[#1453B8] text-sm"
+              className="text-[#1A73E8] hover:text-[#1453B8]"
             >
-              Forgot Password?
+              Reset it here.
             </Link>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-3 rounded-full 
+            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-2 rounded-full 
                      transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1] 
                      focus:ring-offset-2 disabled:opacity-50 text-base font-medium"
           >
-            {isLoading ? "LOGGING IN..." : "LOGIN"}
+            {isLoading ? "Logging in..." : "Login"}
           </button>
 
-          <div className="text-center text-sm text-gray-600 mt-4">
+          <div className="text-center text-sm text-gray-600 mt-1">
             Not registered yet?{" "}
             <Link
               href={userPath.SCHOOL_ADMIN_REGISTER_PATH}
               className="text-[#1A73E8] hover:text-[#1453B8]"
             >
-              Contact your school administrator
+              Register your School here.
             </Link>
           </div>
         </form>
