@@ -59,7 +59,7 @@ export default function TeacherDashboard() {
   };
 
   return (
-    <section className="flex flex-col gap-6 w-full">
+    <section className="flex flex-col  w-full">
       <PageTitleH1 title="Dashboard" />
 
       <div className="flex flex-col lg:flex-row gap-6 p-4 sm:p-6">
@@ -250,12 +250,12 @@ export default function TeacherDashboard() {
               <PageTitleH2 title="Seattings" />
 
               <div className="grid gap-8 mx-auto sm:mx-0">
-                <div className="flex flex-col gap-4 overflow-x-scroll">
+                <div className="flex flex-col gap-4">
                   <div className="">
                     <label className="text-sm" htmlFor="subject">
                       Add subjects
                     </label>
-                    <div className="flex flex-wrap overflow-x-scroll items-center gap-2 bg-gray-200 rounded-full text-sm p-2">
+                    <div className="flex flex-wrap items-center gap-2 bg-gray-200 rounded-full text-sm p-2">
                       <div className="flex flex-wrap items-center gap-2">
                         {subjects.map((subject, index) => (
                           <MultiSelectionItem

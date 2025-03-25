@@ -19,14 +19,14 @@ export function Header() {
     localStorage.getItem(localStorageKey.USER_DATA)!
   );
   return (
-    <header className="flex flex-col px-20">
-      <div className="flex items-center gap-2 justify-center">
+    <header className="flex flex-col px-5 md:px-20">
+      <div className="flex items-center gap-2 pt-4 justify-center">
         {/*  <Button variant="ghost" size="icon" className="lg:hidden">
           <Menu className="h-6 w-6" />
         </Button> */}
         <DreaMetrixLogo />
       </div>
-      <div className="flex justify-end">
+      <div className="flex justify-end mt-2 md:mt-0">
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-2 bg-white px-2 py-2 rounded-full border">
             <UserAvatar />

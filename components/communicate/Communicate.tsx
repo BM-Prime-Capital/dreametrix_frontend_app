@@ -163,6 +163,7 @@ export default function Communicate() {
       <div className="flex items-center">
         <PageTitleH1 title="COMMUNICATE" />
       </div>
+      
       <div className="flex gap-4 justify-start">
         <ComposeMessageDialog />
         <ExternalCommunicationDialog />
