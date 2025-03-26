@@ -90,7 +90,7 @@ export const SchoolAdminRoutes = [
 export const TeacherRoutes = [
   {
     path: userPath.TEACHER_DASHBOARD_PATH,
-    icon: menuImages.home,
+    icon: generalImages.home,
     label: "HOME",
   },
   {
