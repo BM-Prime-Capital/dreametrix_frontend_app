@@ -460,7 +460,9 @@ export default function DigitalLibrary() {
               <input
                 style={{ border: "solid 1px #eee" }}
                 className="px-2 py-1 bg-white rounded-full min-w-[300px] "
-                disabled={isDreaMetrixBankOfQuestion === true}
+                disabled={
+                  isDreaMetrixBankOfQuestion || !questionsLinks ? true : false
+                }
                 type="number"
                 min={1}
                 max={questionsLinks ? questionsLinks.count : 1}
@@ -471,9 +473,11 @@ export default function DigitalLibrary() {
                     noOfQuestions: e.target.value,
                   })
                 }
-                placeholder={`Enter number (1-${
-                  questionsLinks ? questionsLinks.count : "..."
-                })`}
+                placeholder={`${
+                  questionsLinks
+                    ? "Enter number (1-" + questionsLinks.count + ")"
+                    : "..."
+                }`}
               />
             </div>
             <div className="flex flex-col flex-1">
@@ -497,7 +501,7 @@ export default function DigitalLibrary() {
 
           <Button
             type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 rounded-full"
+            className="w-full bg-blue-500 hover:bg-blue-600 rounded-full mt-2"
             disabled={isLoading}
           >
             {isLoading ? "Generating the sheet..." : "GENERATE"}

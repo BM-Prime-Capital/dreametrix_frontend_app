@@ -6,18 +6,25 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import DreaMetrixLogo from "../ui/dreametrix-logo";
 import UserAvatar from "../ui/user-avatar";
 import { localStorageKey } from "@/constants/global";
+import Cookies from "js-cookie";
 
 export function Header() {
   const router = useRouter();
   const { username } = JSON.parse(
     localStorage.getItem(localStorageKey.USER_DATA)!
   );
+
+  const logout = () => {
+    Cookies.remove("tenantDomain");
+    Cookies.remove(localStorageKey.ACCESS_TOKEN);
+    router.replace("/");
+  };
+
   return (
     <header className="flex flex-col px-5 md:px-20">
       <div className="flex items-center gap-2 pt-4 justify-center">
@@ -36,9 +43,7 @@ export function Header() {
           <DropdownMenuContent>
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push("/")}>
-              Logout
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => logout()}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
