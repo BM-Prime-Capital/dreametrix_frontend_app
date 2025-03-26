@@ -40,7 +40,7 @@ export default function DigitalLibrary() {
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
   const [questionsLinks, setQuestionsLinks] = useState<{
     links: string[];
-    count: number;
+    question_count: number;
   } | null>(null);
 
   const [allClasses, setAllClasses] = useState<any[]>([]);
@@ -208,14 +208,14 @@ export default function DigitalLibrary() {
         );
         if (
           numberOfQuestions < 0 ||
-          (questionsLinks && numberOfQuestions > questionsLinks.count)
+          (questionsLinks && numberOfQuestions > questionsLinks.question_count)
         ) {
           throw Error("Number of Questions is not a valid number.");
         }
       } catch (error) {
         alert(
           "Number of questions has to be a value from 1 to " +
-            questionsLinks?.count
+            questionsLinks?.question_count
         );
         return;
       }
@@ -500,8 +500,8 @@ export default function DigitalLibrary() {
 
           {questionsLinks && (
             <div className="text-muted-foreground">
-              Available questions : {questionsLinks.count} (Max:{" "}
-              {questionsLinks.count})
+              Available questions : {questionsLinks.question_count} (Max:{" "}
+              {questionsLinks.question_count})
             </div>
           )}
 
@@ -518,7 +518,7 @@ export default function DigitalLibrary() {
                 }
                 type="number"
                 min={1}
-                max={questionsLinks ? questionsLinks.count : 1}
+                max={questionsLinks ? questionsLinks.question_count : 1}
                 value={digitalLibrarySheet.noOfQuestions}
                 onChange={(e) =>
                   setDigitalLibrarySheet({
@@ -528,7 +528,7 @@ export default function DigitalLibrary() {
                 }
                 placeholder={`${
                   questionsLinks
-                    ? "Enter number (1-" + questionsLinks.count + ")"
+                    ? "Enter number (1-" + questionsLinks.question_count + ")"
                     : "..."
                 }`}
               />
