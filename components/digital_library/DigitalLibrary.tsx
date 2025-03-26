@@ -198,6 +198,29 @@ export default function DigitalLibrary() {
       return;
     }
 
+    if (!digitalLibrarySheet.noOfQuestions) {
+      alert("Enter Number of Questions");
+      return;
+    } else {
+      try {
+        const numberOfQuestions = Number.parseInt(
+          digitalLibrarySheet.noOfQuestions
+        );
+        if (
+          numberOfQuestions < 0 ||
+          (questionsLinks && numberOfQuestions > questionsLinks.count)
+        ) {
+          throw Error("Number of Questions is not a valid number.");
+        }
+      } catch (error) {
+        alert(
+          "Number of questions has to be a value from 1 to " +
+            questionsLinks?.count
+        );
+        return;
+      }
+    }
+
     setIsLoading(true);
 
     const standards =
@@ -266,21 +289,51 @@ export default function DigitalLibrary() {
       ...digitalLibrarySheet,
       questionType: e.target.value,
     });
-    const data = {
-      subject: digitalLibrarySheet.subject,
-      grade: digitalLibrarySheet.grade,
-      domain: digitalLibrarySheet.domain,
-      questionsType: e.target.value,
-      standards: checkedStandards,
-    };
-    console.log("SENDING DATA => ", data);
-    const questionsLinksData = await getQuestionsLinks(
-      data,
-      tenantDomain,
-      accessToken,
-      refreshToken
-    );
-    setQuestionsLinks(questionsLinksData);
+
+    if (checkedStandards.length > 0) {
+      const data = {
+        subject: digitalLibrarySheet.subject,
+        grade: digitalLibrarySheet.grade,
+        domain: digitalLibrarySheet.domain,
+        questionsType: e.target.value,
+        standards: checkedStandards,
+      };
+      console.log("SENDING DATA => ", data);
+      const questionsLinksData = await getQuestionsLinks(
+        data,
+        tenantDomain,
+        accessToken,
+        refreshToken
+      );
+      setQuestionsLinks(questionsLinksData);
+    } else {
+      setQuestionsLinks(null);
+      setDigitalLibrarySheet({ ...digitalLibrarySheet, noOfQuestions: "" });
+    }
+  }
+
+  async function handleStandardsChange(items: string[]) {
+    setCheckedStandards(items);
+    if (items.length > 0) {
+      const data = {
+        subject: digitalLibrarySheet.subject,
+        grade: digitalLibrarySheet.grade,
+        domain: digitalLibrarySheet.domain,
+        questionsType: digitalLibrarySheet.questionType,
+        standards: items,
+      };
+
+      const questionsLinksData = await getQuestionsLinks(
+        data,
+        tenantDomain,
+        accessToken,
+        refreshToken
+      );
+
+      setQuestionsLinks(questionsLinksData);
+    } else {
+      setQuestionsLinks(null);
+    }
   }
 
   return (
@@ -420,7 +473,7 @@ export default function DigitalLibrary() {
                   itemsAreLoading={standardsAreLoading}
                   withSheckbox={true}
                   updateSelectedItems={(items: string[]) =>
-                    setCheckedStandards(items)
+                    handleStandardsChange(items)
                   }
                 />
               </div>
