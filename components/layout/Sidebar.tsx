@@ -11,8 +11,8 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
   const pathname = usePathname();
 
   return (
-    <Card className="w-full lg:w-[200px] h-fit lg:rounded-tr-none lg:rounded-br-none">
-      <div className="p-4 flex flex-row lg:flex-col gap-2 overflow-x-scroll">
+    <Card className="w-full lg:w-fit h-fit lg:rounded-tr-none lg:rounded-br-none">
+      <div className="p-4 flex flex-row lg:flex-col gap-2 overflow-x-scroll md:overflow-hidden">
         {routes.map((route: any) => {
           const iconPath = route.icon;
           const isActive = pathname === route.path;
