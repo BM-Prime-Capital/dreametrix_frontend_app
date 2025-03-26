@@ -1,4 +1,4 @@
-import { generalImages } from "./images";
+import { generalImages, menuImages } from "./images";
 import { userPath } from "./userConstants";
 
 export const StudentRoutes = [
@@ -14,7 +14,7 @@ export const StudentRoutes = [
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/assignments`,
-    icon: generalImages.assignments,
+    icon: menuImages.assignments,
     label: "ASSIGNMENTS",
   },
   {
@@ -57,32 +57,32 @@ export const StudentRoutes = [
 export const SchoolAdminRoutes = [
   {
     path: userPath.SCHOOL_ADMIN_DASHBOARD_PATH,
-    icon: generalImages.home,
+    icon: menuImages.home,
     label: "HOME",
   },
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/classes`,
-    icon: generalImages.assignments,
+    icon: menuImages.assignments,
     label: "CLASSES",
   },
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/teachers`,
-    icon: generalImages.teach,
+    icon: menuImages.teach,
     label: "TEACHERS",
   },
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/parents`,
-    icon: generalImages.assignments,
+    icon: menuImages.assignments,
     label: "PARENTS",
   },
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/students`,
-    icon: generalImages.seating,
+    icon: menuImages.seating,
     label: "STUDENTS",
   },
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/communicate`,
-    icon: generalImages.communicate,
+    icon: menuImages.communicate,
     label: "COMMUNICATE",
   },
 ];
@@ -90,27 +90,27 @@ export const SchoolAdminRoutes = [
 export const TeacherRoutes = [
   {
     path: userPath.TEACHER_DASHBOARD_PATH,
-    icon: generalImages.home,
+    icon: genermenuImagesalImages.home,
     label: "HOME",
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/classes`,
-    icon: generalImages.assignments,
+    icon: menuImages.assignments,
     label: "CLASSES",
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/assignments`,
-    icon: generalImages.assignments,
+    icon: menuImages.assignments,
     label: "ASSIGNMENTS",
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/digital_library`,
-    icon: generalImages.assignments,
+    icon: menuImages.assignments,
     label: "DIGITAL LIBRARY",
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/gradebook`,
-    icon: generalImages.gradebook,
+    icon: menuImages.gradebook,
     label: "GRADEBOOK",
   },
   {
@@ -120,17 +120,17 @@ export const TeacherRoutes = [
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/character`,
-    icon: generalImages.character,
+    icon: menuImages.character,
     label: "CHARACTER",
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/seating`,
-    icon: generalImages.seating,
+    icon: menuImages.seating,
     label: "SEATING",
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/communicate`,
-    icon: generalImages.communicate,
+    icon: menuImages.communicate,
     label: "COMMUNICATE",
   },{
     path: `${userPath.TEACHER_BASE_PATH}/test_prep`,
@@ -139,17 +139,17 @@ export const TeacherRoutes = [
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/reports`,
-    icon: generalImages.reports,
+    icon: menuImages.reports,
     label: "REPORTS",
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/teach`,
-    icon: generalImages.teach,
+    icon: menuImages.teach,
     label: "TEACH",
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/polls`,
-    icon: generalImages.polls,
+    icon: menuImages.polls,
     label: "POLLS",
   },
 ];
