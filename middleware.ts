@@ -29,7 +29,6 @@ export async function middleware(request: NextRequest) {
         accessToken,
         ""
       );
-      console.log("Middle classes => ", classes);
     } catch (error) {
       // If there is 401 error set tokenExpired = true
       console.log("Middleware Error => ", error);

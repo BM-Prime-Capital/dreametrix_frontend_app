@@ -32,8 +32,6 @@ export async function getClasses(
 
   const data = await response.json();
 
-  console.log("getClasss => ", data);
-
   return data.results;
 }
 
