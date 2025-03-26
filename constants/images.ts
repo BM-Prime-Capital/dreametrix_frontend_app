@@ -9,7 +9,6 @@ const TEACHER_SEATING_IMAGES_BASE_PATH = `${TEACHER_IMAGES_BASE_PATH}/seating`;
 const TEACHER_COMMUNICATE_IMAGES_BASE_PATH = `${TEACHER_IMAGES_BASE_PATH}/communicate`;
 const MENU_IMAGES_BASE_PATH = `${IMAGES_BASE_PATH}/menu`;
 
-
 export const generalImages = {
   dreaMetrixLogo: `${GENERAL_IMAGES_BASE_PATH}/logo.png`,
   assignments: `${GENERAL_IMAGES_BASE_PATH}/assignments.svg`,
@@ -91,13 +90,13 @@ export const menuImages = {
   assignments: `${MENU_IMAGES_BASE_PATH}/Assignments.svg`,
   attendance: `${MENU_IMAGES_BASE_PATH}/Attendance.svg`,
   character: `${MENU_IMAGES_BASE_PATH}/Character.svg`,
-  child_study: `${MENU_IMAGES_BASE_PATH}/Child study.svg`,
+  child_study: `${MENU_IMAGES_BASE_PATH}/ChildStudy.svg`,
   class: `${MENU_IMAGES_BASE_PATH}/Classe.svg`,
   communicate: `${MENU_IMAGES_BASE_PATH}/Communicate.svg`,
-  digital_library: `${MENU_IMAGES_BASE_PATH}/Digital Library.svg`,
-  dream_arcade: `${MENU_IMAGES_BASE_PATH}/Dream arcade.svg`,
-  gradebook: `${MENU_IMAGES_BASE_PATH}/Gradebook.svg`,
-  home: `${MENU_IMAGES_BASE_PATH}/Home.svg`,
+  digital_library: `${MENU_IMAGES_BASE_PATH}/DigitalLibrary.svg`,
+  dream_arcade: `${MENU_IMAGES_BASE_PATH}/DreamArcade.svg`,
+  gradebook: `${MENU_IMAGES_BASE_PATH}/GradeBook.svg`,
+  home: `${MENU_IMAGES_BASE_PATH}/Home.svg`, // This icon does'nt exists
   polls: `${MENU_IMAGES_BASE_PATH}/Polls.svg`,
   reports: `${MENU_IMAGES_BASE_PATH}/Reports.svg`,
   seating: `${MENU_IMAGES_BASE_PATH}/Seating.svg`,
@@ -105,5 +104,4 @@ export const menuImages = {
   add: `${MENU_IMAGES_BASE_PATH}/Add.svg`,
   calculations: `${MENU_IMAGES_BASE_PATH}/Calculations.svg`,
   layout: `${MENU_IMAGES_BASE_PATH}/Layout.svg`,
-  
 };

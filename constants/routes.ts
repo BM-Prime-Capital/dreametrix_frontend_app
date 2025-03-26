@@ -90,12 +90,12 @@ export const SchoolAdminRoutes = [
 export const TeacherRoutes = [
   {
     path: userPath.TEACHER_DASHBOARD_PATH,
-    icon: genermenuImagesalImages.home,
+    icon: menuImages.home,
     label: "HOME",
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/classes`,
-    icon: menuImages.assignments,
+    icon: menuImages.class,
     label: "CLASSES",
   },
   {
@@ -105,7 +105,7 @@ export const TeacherRoutes = [
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/digital_library`,
-    icon: menuImages.assignments,
+    icon: menuImages.digital_library,
     label: "DIGITAL LIBRARY",
   },
   {
