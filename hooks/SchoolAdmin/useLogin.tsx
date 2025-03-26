@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { localStorageKey } from "@/constants/global";
+import Cookies from "js-cookie";
 
 interface LoginCredentials {
   email: string;
@@ -79,6 +80,10 @@ export function useLogin() {
             primary_domain: data.tenant.primary_domain,
           })
         );
+
+        // Stocker les infos utiles pour le middleware dans les cookies
+        Cookies.set("tenantDomain", data.tenant.primary_domain);
+        Cookies.set(localStorageKey.ACCESS_TOKEN, data.access);
 
         // Redirection basée sur le rôle de l'utilisateur
         switch (data.user.role) {
