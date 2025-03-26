@@ -42,9 +42,10 @@ export interface DigitalLibrarySheet {
   subject: string;
   grade: string;
   domain: string;
-  specificStandards: string[];
   questionType: string;
   studentsClass: string[];
+  noOfQuestions: string;
+  generateAnswerSheet: boolean;
 }
 
 export interface SheetDomain {

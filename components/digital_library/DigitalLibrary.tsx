@@ -2,30 +2,32 @@
 
 import { Card } from "@/components/ui/card";
 import PageTitleH1 from "@/components/ui/page-title-h1";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { GenerateAssessmentDialog } from "./GenerateAssessmentDialog";
 import MultiSelectList from "../MultiSelectionList";
 import { useList } from "@/hooks/useList";
 import {
-  createDigitalLibrarySheet,
   getDomains,
   getGrades,
+  getQuestionsLinks,
   getStandards,
   getSubjects,
 } from "@/services/DigitalLibraryService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { getClasses } from "@/services/ClassService";
 import { DigitalLibrarySheet } from "@/types";
-import { allSheetDomains, localStorageKey } from "@/constants/global";
+import { localStorageKey } from "@/constants/global";
 import { Button } from "../ui/button";
+import { LoaderDialog } from "../ui/loader-dialog";
 
 const GRADEBOOK_SHEET_INIT_STATE = {
   subject: "",
   grade: "",
   domain: "",
   questionType: "MC",
-  specificStandards: [],
   studentsClass: [],
+  noOfQuestions: "",
+  generateAnswerSheet: false,
 };
 
 export default function DigitalLibrary() {
@@ -36,6 +38,10 @@ export default function DigitalLibrary() {
   } = useList(getClasses);
 
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
+  const [questionsLinks, setQuestionsLinks] = useState<{
+    links: string[];
+    count: number;
+  } | null>(null);
 
   const [allClasses, setAllClasses] = useState<any[]>([]);
 
@@ -148,7 +154,7 @@ export default function DigitalLibrary() {
       domain: selectedDomain,
     });
 
-    const standardsData = await getStandards(
+    const standardsData: string[] = await getStandards(
       {
         subject: digitalLibrarySheet.subject,
         grade: Number.parseInt(digitalLibrarySheet.grade),
@@ -161,6 +167,25 @@ export default function DigitalLibrary() {
     setStandards(standardsData);
     setCheckedStandards(standardsData);
     setStandardsAreLoading(false);
+
+    const data = {
+      subject: digitalLibrarySheet.subject,
+      grade: digitalLibrarySheet.grade,
+      domain: selectedDomain,
+      questionsType: digitalLibrarySheet.questionType,
+      standards: standardsData,
+    };
+
+    const questionsLinksData = await getQuestionsLinks(
+      data,
+      tenantDomain,
+      accessToken,
+      refreshToken
+    );
+
+    console.log("questionsLinksData DT => ", questionsLinksData);
+
+    setQuestionsLinks(questionsLinksData);
   };
 
   const createDigitalLibrary = async (e: any) => {
@@ -189,11 +214,15 @@ export default function DigitalLibrary() {
       standards: standards,
       kind: digitalLibrarySheet.questionType,
       selected_class: selected_class,
-      generate_answer_sheet: true,
+      generate_answer_sheet: digitalLibrarySheet.generateAnswerSheet,
       teacher_name: userData.username,
       student_id: 1,
       assignment_type: "Homework",
+      number_of_questions: digitalLibrarySheet.noOfQuestions,
+      links: questionsLinks?.links,
     };
+
+    console.log("DIGITAL LIBRARY POST data => ", data);
 
     try {
       const url = `${tenantDomain}/digital_library/generate-pdf/`;
@@ -232,6 +261,28 @@ export default function DigitalLibrary() {
     }
   }, [classesIsLoading]);
 
+  async function handleQuestionsTypeChange(e: ChangeEvent<HTMLSelectElement>) {
+    setDigitalLibrarySheet({
+      ...digitalLibrarySheet,
+      questionType: e.target.value,
+    });
+    const data = {
+      subject: digitalLibrarySheet.subject,
+      grade: digitalLibrarySheet.grade,
+      domain: digitalLibrarySheet.domain,
+      questionsType: e.target.value,
+      standards: checkedStandards,
+    };
+    console.log("SENDING DATA => ", data);
+    const questionsLinksData = await getQuestionsLinks(
+      data,
+      tenantDomain,
+      accessToken,
+      refreshToken
+    );
+    setQuestionsLinks(questionsLinksData);
+  }
+
   return (
     <section className="flex flex-col gap-2 w-full">
       <div className="flex items-center justify-between">
@@ -246,7 +297,7 @@ export default function DigitalLibrary() {
           onSubmit={(e) => createDigitalLibrary(e)}
         >
           {error && <div className="p-2 text-red-500">{error}</div>}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-2">
             <div className="flex-1">
               <label
                 onClick={() => setIsDreaMetrixBankOfQuestion(true)}
@@ -346,12 +397,7 @@ export default function DigitalLibrary() {
                 className="px-2 py-1 bg-white rounded-full min-w-[300px] "
                 disabled={isDreaMetrixBankOfQuestion === true}
                 value={digitalLibrarySheet.questionType}
-                onChange={(e) =>
-                  setDigitalLibrarySheet({
-                    ...digitalLibrarySheet,
-                    questionType: e.target.value,
-                  })
-                }
+                onChange={(e) => handleQuestionsTypeChange(e)}
               >
                 <option disabled>Select Question Type</option>
                 <option value={"MC"}>Multiple Choice(MC)</option>
@@ -367,7 +413,7 @@ export default function DigitalLibrary() {
                   Specific Standards
                 </label>
                 <MultiSelectList
-                  selectedItems={digitalLibrarySheet.specificStandards}
+                  selectedItems={[]}
                   allItems={standards}
                   itemsLabel="Standards"
                   allShouldBeSelected={true}
@@ -399,10 +445,17 @@ export default function DigitalLibrary() {
             </div>
           </div>
 
+          {questionsLinks && (
+            <div className="text-muted-foreground">
+              Available questions : {questionsLinks.count} (Max:{" "}
+              {questionsLinks.count})
+            </div>
+          )}
+
           <div className="flex gap-6 flex-wrap items-center w-full">
             <div className="flex flex-col flex-1">
               <label className="text-muted-foreground whitespace-nowrap">
-                Number of Questions(1-13):
+                Number of Questions:
               </label>
               <input
                 style={{ border: "solid 1px #eee" }}
@@ -410,7 +463,17 @@ export default function DigitalLibrary() {
                 disabled={isDreaMetrixBankOfQuestion === true}
                 type="number"
                 min={1}
-                max={13}
+                max={questionsLinks ? questionsLinks.count : 1}
+                value={digitalLibrarySheet.noOfQuestions}
+                onChange={(e) =>
+                  setDigitalLibrarySheet({
+                    ...digitalLibrarySheet,
+                    noOfQuestions: e.target.value,
+                  })
+                }
+                placeholder={`Enter number (1-${
+                  questionsLinks ? questionsLinks.count : "..."
+                })`}
               />
             </div>
             <div className="flex flex-col flex-1">
@@ -420,6 +483,13 @@ export default function DigitalLibrary() {
                   className="h-4 min-w-4"
                   type="checkbox"
                   name="question"
+                  checked={digitalLibrarySheet.generateAnswerSheet}
+                  onChange={(e) =>
+                    setDigitalLibrarySheet({
+                      ...digitalLibrarySheet,
+                      generateAnswerSheet: e.target.checked,
+                    })
+                  }
                 />
               </label>
             </div>
@@ -435,6 +505,7 @@ export default function DigitalLibrary() {
 
           <GenerateAssessmentDialog fileStream={fileStream} />
         </form>
+        <LoaderDialog shouldOpen={isLoading} />
       </Card>
     </section>
   );

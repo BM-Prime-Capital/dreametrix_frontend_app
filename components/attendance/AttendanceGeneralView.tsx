@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import PageTitleH1 from "../ui/page-title-h1";
 import Image from "next/image";
 import { generalImages, teacherImages } from "@/constants/images";
@@ -6,6 +6,7 @@ import StatisticItem from "../ui/StatisticItem";
 import { views } from "@/constants/global";
 import { useList } from "@/hooks/useList";
 import { getClasses } from "@/services/ClassService";
+import { ISchoolClass } from "@/types";
 
 type AttendanceStat = {
   className: string;
@@ -82,7 +83,9 @@ function AttendanceGeneralView({ changeView }: { changeView: Function }) {
     changeView(views.FOCUSED_VIEW);
   };
   const { list: classes, isLoading, error } = useList(getClasses);
-  
+
+  useEffect(() => {}, []);
+
   return (
     <div className="flex flex-col gap-8 w-full pb-4">
       <PageTitleH1 title="ATTENDANCE GENERAL VIEW " />
@@ -91,11 +94,7 @@ function AttendanceGeneralView({ changeView }: { changeView: Function }) {
           <StatisticItem
             title="Students"
             iconUrl={teacherImages.whole_class}
-            statNumber={`${attendanceStatistics
-              .flatMap((as: AttendanceStat) => as.students)
-              .reduce((as1: number, as2: number) => {
-                return as1 + as2;
-              }, 0)}`}
+            statNumber={"86"}
           />
           <StatisticItem
             title="Presences"
@@ -147,17 +146,17 @@ function AttendanceGeneralView({ changeView }: { changeView: Function }) {
             </thead>
 
             <tbody>
-              {attendanceStatistics.map((as: AttendanceStat, index: number) => (
+              {classes?.map((as: any, index: number) => (
                 <tr
                   key={index}
                   className={`cursor-pointer`}
                   onClick={() => handleClick(as.className)}
                 >
-                  <td>{as.className}</td>
-                  <td>{as.students}</td>
-                  <td>{as.presences}</td>
-                  <td>{as.absences}</td>
-                  <td>{as.lates}</td>
+                  <td>{as.name}</td>
+                  <td>{as.students.length || 1}</td>
+                  <td>{as.presences || 1}</td>
+                  <td>{as.absences || 1}</td>
+                  <td>{as.lates || 1}</td>
                 </tr>
               ))}
             </tbody>

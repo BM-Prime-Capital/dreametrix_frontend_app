@@ -80,10 +80,20 @@ export default function MultiSelectList({
             {withSheckbox ? (
               <>
                 <input
+                  className="hidden"
                   type="checkbox"
                   checked={selectAll}
                   onChange={handleSelectAllChange}
                 />
+                <span className="flex p-[2px] border-[2px] border-[#ff69b4] w-[20px] h-[20px] rounded-sm">
+                  <span
+                    className={`flex-1 rounded-xs ${
+                      selectAll ? "bg-[#ff69b4]" : ""
+                    }`}
+                  >
+                    {" "}
+                  </span>
+                </span>
                 <span>Select All</span>
               </>
             ) : (
@@ -91,7 +101,7 @@ export default function MultiSelectList({
             )}
           </label>
 
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-4 flex-wrap">
             {/* Item Checkboxes */}
             {allItems?.map((item, index) => (
               <label
@@ -99,11 +109,23 @@ export default function MultiSelectList({
                 className={`flex items-center space-x-2 ${className}`}
               >
                 {withSheckbox ? (
-                  <input
-                    type="checkbox"
-                    checked={checkedItems[item]}
-                    onChange={() => handleItemChange(item)}
-                  />
+                  <>
+                    <input
+                      className="hidden"
+                      type="checkbox"
+                      checked={checkedItems[item]}
+                      onChange={() => handleItemChange(item)}
+                    />
+                    <span className="flex p-[2px] border-[2px] border-[#ff69b4] w-[20px] h-[20px] rounded-sm">
+                      <span
+                        className={`flex-1 rounded-xs ${
+                          checkedItems[item] ? "bg-[#ff69b4]" : ""
+                        }`}
+                      >
+                        {" "}
+                      </span>
+                    </span>
+                  </>
                 ) : (
                   ""
                 )}
