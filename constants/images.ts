@@ -14,6 +14,7 @@ export const generalImages = {
   attendance: `${GENERAL_IMAGES_BASE_PATH}/attendance.svg`,
   character: `${GENERAL_IMAGES_BASE_PATH}/character.svg`,
   communicate: `${GENERAL_IMAGES_BASE_PATH}/communicate.svg`,
+  test_prep: `${GENERAL_IMAGES_BASE_PATH}/test_prep.svg`,
   gradebook: `${GENERAL_IMAGES_BASE_PATH}/gradebook.svg`,
   home: `${GENERAL_IMAGES_BASE_PATH}/home.svg`,
   polls: `${GENERAL_IMAGES_BASE_PATH}/polls.svg`,
