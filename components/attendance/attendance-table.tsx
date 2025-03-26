@@ -61,7 +61,7 @@ export function AttendanceTable({
       }
     };
 
-    loadAttendances();
+    // loadAttendances();
   }, [tenantDomain, accessToken, refreshToken]);
 
   return (

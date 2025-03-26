@@ -137,39 +137,51 @@ export async function getStandards(
   return data.standards;
 }
 
-export async function createDigitalLibrarySheet(
-  digitalLibrary: any,
+export async function getQuestionsLinks(
+  {
+    subject,
+    grade,
+    domain,
+    questionsType,
+    standards,
+  }: {
+    subject: string;
+    grade: string;
+    domain: string;
+    questionsType: string;
+    standards: string[];
+  },
   tenantPrimaryDomain: string,
   accessToken: string,
   refreshToken: string
 ) {
-  try {
-    const url = `${tenantPrimaryDomain}/digital_library/generate-pdf/`;
-    let response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify(digitalLibrary),
-    });
-
-    if (response.ok) {
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      console.log("POST DigitalLibrary data => ", url);
-
-      return url;
-    } else {
-      console.log("POST DigitalLibrary Failed => ", response);
-      if (response.status == 401) {
-        return redirect("/");
-      } else {
-        throw new Error("DigitalLibrary creation failed");
-      }
-    }
-  } catch (error) {
-    console.log("Error => ", error);
+  if (!accessToken) {
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
-  return null;
+  const url = `${tenantPrimaryDomain}/digital_library/links/${subject}/${grade}/${domain}/${standards.join(
+    ","
+  )}/${questionsType}/`;
+
+  console.log("URL DATA => ", url);
+  let response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      return redirect("/");
+    } else if (response.status === 403) {
+      throw new Error("Vous n'avez pas la permission d'accéder aux donnees.");
+    } else {
+      throw new Error("Erreur lors de la récupération des donnees.");
+    }
+  }
+
+  const data = await response.json();
+
+  console.log("Questions Links => ", data);
+
+  return data;
 }
