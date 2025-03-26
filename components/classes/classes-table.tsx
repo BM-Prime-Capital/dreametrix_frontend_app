@@ -42,11 +42,7 @@ export function ClassesTable({ refreshTime }: { refreshTime: string }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [allClasses, setAllClasses] = useState<any[]>([]);
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
-  console.log("useRequestInfo =>> ", {
-    tenantDomain,
-    accessToken,
-    refreshToken,
-  });
+  
   useEffect(() => {
     const loadClasses = async () => {
       if (tenantDomain && accessToken && refreshToken) {
@@ -63,7 +59,6 @@ export function ClassesTable({ refreshTime }: { refreshTime: string }) {
     loadClasses();
   }, [refreshTime, tenantDomain, accessToken, refreshToken]);
 
-  console.log("allClasses >> ", { allClasses, refreshTime });
 
   return (
     <div className="w-full">
