@@ -42,13 +42,6 @@ export async function createClass(
   refreshToken: string
 ) {
   try {
-    console.log("CREATING Class => ", {
-      classData,
-      tenantPrimaryDomain,
-      accessToken,
-      refreshToken,
-    });
-
     const url = `${tenantPrimaryDomain}/classes/`;
     const defautSchedule = {
       Monday: [
@@ -110,11 +103,7 @@ export async function createClass(
       return "ok";
     } else {
       console.log("POST Class Failed => ", response);
-      if (response.status === 401) {
-        return redirect("/");
-      } else {
-        throw new Error("Class modification failed");
-      }
+      throw new Error("Class modification failed");
     }
   } catch (error) {
     console.log("Error => ", error);
@@ -153,11 +142,7 @@ export async function updateClass(
       console.log("PUT Class data => ", data);
     } else {
       console.log("PUT Class Failed => ", response);
-      if (response.status === 401) {
-        return redirect("/");
-      } else {
-        throw new Error("Class modification failed");
-      }
+      throw new Error("Class modification failed");
     }
   } catch (error) {
     console.log("Error => ", error);

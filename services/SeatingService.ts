@@ -23,9 +23,7 @@ export async function getSeatings(
   });
 
   if (!response.ok) {
-    if (response.status === 401) {
-      return redirect("/");
-    } else if (response.status === 403) {
+    if (response.status === 403) {
       throw new Error(
         "Vous n'avez pas la permission d'accéder aux enseignants."
       );
@@ -74,11 +72,7 @@ export async function updateAttendance(
       console.log("PUT Attendance data => ", data);
     } else {
       console.log("PUT Attendance Failed => ", response);
-      if (response.status == 401) {
-        return redirect("/");
-      } else {
-        throw new Error("Attendance modification failed");
-      }
+      throw new Error("Attendance modification failed");
     }
   } catch (error) {
     console.log("Error => ", error);
