@@ -1,6 +1,5 @@
 "use client"
 
-import type React from "react"
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import PageTitleH1 from "@/components/ui/page-title-h1";
@@ -54,12 +53,6 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
     onStartTest() // Directly call the navigation function
   }
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Form submitted with data:", formData)
-    onStartTest() // Call the navigation function
-  }
-
   return (
     <section className="flex flex-col gap-2 w-full">
       <div className="">
@@ -67,12 +60,12 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
         <p className="pl-3">Question Simplar</p>
       </div>
       <div className="flex gap-4 justify-start">
-        <form onSubmit={onSubmit} className="px-3 w-full">
+        <div className="px-3 w-full">
           <div className="flex justify-between items-center py-5">
             <div>
               <label className="flex flex-col space-y-1">
                 <span className="text-sm text-gray-600">Select question Simplar</span>
-                <Select value={formData.subject} onValueChange={(value) => handleInputChange("subject", value)}>
+                <Select value={formData.subject} onValueChange={(value: string) => handleInputChange("subject", value)}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a subject" />
                   </SelectTrigger>
@@ -89,7 +82,7 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
             <div>
               <label className="flex flex-col space-y-1">
                 <span className="text-sm text-gray-600">Select Grade</span>
-                <Select value={formData.grade} onValueChange={(value) => handleInputChange("grade", value)}>
+                <Select value={formData.grade} onValueChange={(value: string) => handleInputChange("grade", value)}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a grade" />
                   </SelectTrigger>
@@ -106,7 +99,7 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
             <div>
               <label className="flex flex-col space-y-1">
                 <span className="text-sm text-gray-600">Select Test</span>
-                <Select value={formData.testType} onValueChange={(value) => handleInputChange("testType", value)}>
+                <Select value={formData.testType} onValueChange={(value: string) => handleInputChange("testType", value)}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a test" />
                   </SelectTrigger>
@@ -122,12 +115,11 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
             </div>
           </div>
           <div className="flex justify-center items-center">
-            {/* Use onClick instead of relying on form submission */}
             <Button type="button" onClick={handleLaunchTest} className="gap-2 text-base bg-blue-500 hover:bg-blue-600">
               Launch test
             </Button>
           </div>
-        </form>
+        </div>
       </div>
       <Card className="rounded-md">
         <div className="w-full flex gap-6 bg-[#fff] p-4 pb-0 pl-0">

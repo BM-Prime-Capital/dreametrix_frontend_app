@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import {
   ArrowLeft,
   Bookmark,
@@ -30,17 +29,34 @@ export default function TestQuestion({ onBack }: TestQuestionProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
 
-  // Sample questions with local image paths
+  // Sample text-based math questions
   const questions = [
     {
       id: 1,
-      imageUrl: "/assets/images/test_prep/question1.png",
+      question:
+        "A farmer places beehives containing bees in her orchard to pollinate the plants. The table below shows the ratio of the number of beehives to the number of acres in the orchard.\n\nBEEHIVES PER ACRE\nNumber of Beehives: 3, 9, 12, 18\nNumber of Acres: 8, 24, 32, ?\n\nIf the bees pollinate the plants at a constant rate, how many acres will be pollinated by the bees in 18 beehives?",
       options: ["38", "40", "44", "48"],
     },
     {
       id: 2,
-      imageUrl: "/assets/images/test_prep/question2.png",
+      question:
+        "Jake takes guitar lessons that cost $120.00 per month. Which equation can be used to determine the total number of dollars, d, that Jake pays for lessons for any number of months, m?",
       options: ["d = 120m", "d = 120 + m", "d = 120/m", "d = 120 × m"],
+    },
+    {
+      id: 3,
+      question: "Solve for x: 3x + 7 = 22",
+      options: ["x = 3", "x = 5", "x = 7", "x = 15"],
+    },
+    {
+      id: 4,
+      question: "A rectangle has a length of 12 cm and a width of 8 cm. What is the area of the rectangle?",
+      options: ["20 cm²", "40 cm²", "96 cm²", "120 cm²"],
+    },
+    {
+      id: 5,
+      question: "If 3/4 of a number is 18, what is the number?",
+      options: ["13.5", "21", "24", "27"],
     },
   ]
 
@@ -90,7 +106,9 @@ export default function TestQuestion({ onBack }: TestQuestionProps) {
       <div className="flex-1 p-6 w-full max-w-5xl mx-auto">
         <div className="w-full mx-auto bg-white rounded-xl shadow-sm border p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="font-bold text-xl text-gray-800">Question {questions[currentQuestion].id}</h2>
+            <h2 className="font-bold text-xl text-gray-800">
+              Question {questions[currentQuestion].id} of {questions.length}
+            </h2>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" className="text-indigo-600 hover:bg-indigo-50">
                 <Bookmark size={18} className="mr-1" />
@@ -99,17 +117,9 @@ export default function TestQuestion({ onBack }: TestQuestionProps) {
             </div>
           </div>
 
-          {/* Question Image */}
-          <div className="mb-8 bg-gray-50 p-4 rounded-lg">
-            <div className="relative w-full">
-              <Image
-                src={questions[currentQuestion].imageUrl || "/placeholder.svg"}
-                alt={`Question ${questions[currentQuestion].id}`}
-                width={1000}
-                height={300}
-                className="w-full object-contain"
-              />
-            </div>
+          {/* Question Text */}
+          <div className="mb-8 bg-gray-50 p-6 rounded-lg">
+            <p className="text-lg whitespace-pre-line">{questions[currentQuestion].question}</p>
           </div>
 
           {/* Multiple Choice */}
@@ -158,6 +168,8 @@ export default function TestQuestion({ onBack }: TestQuestionProps) {
                   className={`w-2.5 h-2.5 rounded-full mx-0.5 ${
                     currentQuestion === index ? "bg-indigo-600" : "bg-gray-300"
                   }`}
+                  onClick={() => setCurrentQuestion(index)}
+                  style={{ cursor: "pointer" }}
                 />
               ))}
             </div>
