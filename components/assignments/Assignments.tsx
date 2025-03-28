@@ -3,9 +3,6 @@
 import { Card } from "@/components/ui/card";
 import { AssignmentsTable } from "./assignments-table";
 import PageTitleH1 from "@/components/ui/page-title-h1";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import { generalImages } from "@/constants/images";
 import AssignmentFiltersPopUp from "./AssignmentsFiltersPopUp";
 import { AddAssignmentDialog } from "./AddAssignmentDialog";
 

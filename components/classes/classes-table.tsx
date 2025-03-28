@@ -12,36 +12,22 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getClasses } from "@/services/ClassService";
 import { useEffect, useState } from "react";
-import { useList } from "@/hooks/useList";
 import NoData from "../ui/no-data";
 import { Loader } from "../ui/loader";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 
-// Sample class data
-const classesMock = [
-  {
-    id: 1,
-    name: "Class 5N",
-    subject: "Science",
-    grade: "Grade 5",
-    teacher: "Samantha Brown",
-    students: 15,
-  },
-  {
-    id: 2,
-    name: "Class 5M",
-    subject: "Mathematics",
-    grade: "Grade 5",
-    teacher: "Joe Smith",
-    students: 15,
-  },
-];
 
 export function ClassesTable({ refreshTime }: { refreshTime: string }) {
   //  const { list: classes, isLoading, error } = useList(getClasses);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [allClasses, setAllClasses] = useState<any[]>([]);
-  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  const [allClasses, setAllClasses] = useState<{
+    id: string;
+    name: string;
+    subject_in_short: string;
+    grade: string;
+    teacher: { full_name: string };
+    students: unknown[];
+  }[]>([]);  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
   
   useEffect(() => {
     const loadClasses = async () => {
@@ -79,7 +65,7 @@ export function ClassesTable({ refreshTime }: { refreshTime: string }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {allClasses.map((class_: any, index: number) => (
+                {allClasses.map((class_) => (
                   <TableRow key={class_.id}>
                     <TableCell className="font-medium">{class_.name}</TableCell>
                     <TableCell>{class_.subject_in_short}</TableCell>

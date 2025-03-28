@@ -132,6 +132,10 @@ export const TeacherRoutes = [
     path: `${userPath.TEACHER_BASE_PATH}/communicate`,
     icon: menuImages.communicate,
     label: "COMMUNICATE",
+  },{
+    path: `${userPath.TEACHER_BASE_PATH}/test_prep`,
+    icon: generalImages.test_prep,
+    label: "TEST PREP",
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/reports`,
