@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Select,
@@ -22,7 +22,7 @@ import { ISchoolClass } from "@/types";
 import { useList } from "@/hooks/useList";
 import { getTeachers } from "@/services/TeacherService";
 import { localStorageKey } from "@/constants/global";
-import { createClass } from "@/services/ClassService";
+import { createClass, updateClass } from "@/services/ClassService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { getGrades, getSubjects } from "@/services/DigitalLibraryService";
 
@@ -51,8 +51,10 @@ const schoolClassInit = {
 
 export function AddClassDialog({
   setRefreshTime,
+  existingClass,
 }: {
-  setRefreshTime: (time: string) => void;
+  setRefreshTime: Function;
+  existingClass?: ISchoolClass;
 }) {
   const [open, setOpen] = useState(false);
   const { list: teachers } = useList(getTeachers);
@@ -62,7 +64,10 @@ export function AddClassDialog({
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
   const [isSubmiting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
-  const [schoolClass, setSchoolClass] = useState<ISchoolClass>(schoolClassInit);
+
+  const [schoolClass, setSchoolClass] = useState<ISchoolClass>(
+    existingClass ? existingClass : schoolClassInit
+  );
 
   const [classDays, setClassDays] = useState<ClassDay[]>([
     { id: 1, day: "Monday", hour: "01", minute: "01", dayPart: "AM" },
@@ -96,14 +101,13 @@ export function AddClassDialog({
     e.preventDefault();
     setIsSubmitting(true);
 
-    const rep = await createClass(
-      schoolClass,
-      tenantDomain,
-      accessToken,
-      refreshToken
-    );
+    const rep = existingClass
+      ? await updateClass(schoolClass, tenantDomain, accessToken, refreshToken)
+      : await createClass(schoolClass, tenantDomain, accessToken, refreshToken);
     if (!rep) {
-      setMessage("The class creation failed.");
+      setMessage(
+        "The class creation failed, be sure that you are not creating an existing class, if this persists, please contact the admin."
+      );
     } else {
       setRefreshTime(new Date().toISOString());
       setOpen(false);
@@ -114,28 +118,39 @@ export function AddClassDialog({
 
   useEffect(() => {
     const loadGrades = async () => {
-      if (schoolClass.subject_in_short) {
-        const grades = await getGrades(
-          schoolClass.subject_in_short,
-          tenantDomain,
-          accessToken,
-          refreshToken
-        );
-
-        setGrades(grades);
+      if (accessToken) {
+        if (schoolClass && schoolClass.subject_in_short) {
+          const grades = await getGrades(
+            schoolClass.subject_in_short,
+            tenantDomain,
+            accessToken,
+            refreshToken
+          );
+          setGrades(grades);
+        }
       }
     };
 
     loadGrades();
-  }, [schoolClass]);
+  }, [tenantDomain, accessToken, refreshToken]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2 text-base bg-blue-500 hover:bg-blue-600">
-          <Plus className="h-5 w-5" />
-          Add New Class
-        </Button>
+        {existingClass ? (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 hover:bg-blue-50"
+          >
+            <Pencil className="h-4 w-4 text-[#25AAE1]" />
+          </Button>
+        ) : (
+          <Button className="gap-2 text-base bg-blue-500 hover:bg-blue-600">
+            <Plus className="h-5 w-5" />
+            Add New Class
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
@@ -197,8 +212,10 @@ export function AddClassDialog({
                 <option disabled selected value={""}>
                   Select Grade
                 </option>
-                {grades?.map((grade: string, index: number) => (
-                  <option key={index}>{grade}</option>
+                {grades?.map((grade: number, index: number) => (
+                  <option key={index} value={grade + ""}>
+                    {grade}
+                  </option>
                 ))}
               </select>
 
@@ -347,7 +364,11 @@ export function AddClassDialog({
                 type="submit"
                 className="bg-blue-500 hover:bg-blue-600"
               >
-                {isSubmiting ? "Submitting..." : "Create Class"}
+                {isSubmiting
+                  ? "Submitting..."
+                  : existingClass
+                  ? "Update Class"
+                  : "Create Class"}
               </Button>
             </div>
           </form>

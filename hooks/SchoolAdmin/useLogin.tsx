@@ -66,6 +66,11 @@ export function useLogin() {
             role: data.user.role,
             email: data.user.email,
             username: data.user.username,
+            first_name: data.user.first_name,
+            last_name: data.user.last_name,
+            full_name: data.user.first_name
+              ? `${data.user.first_name} ${data.user.last_name}`
+              : data.user.username,
 
             // Ajoutez d'autres propriétés si nécessaire
           })

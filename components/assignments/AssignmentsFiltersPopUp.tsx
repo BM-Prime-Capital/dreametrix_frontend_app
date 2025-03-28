@@ -12,7 +12,6 @@ export default function AssignmentFiltersPopUp() {
   return (
     <div className="flex flex-col relative">
       <div className="flex items-center gap-8">
-        <ClassSelect />
         <button
           className="flex justify-center items-center bg-white p-1 rounded-md w-7 h-7"
           onClick={() => setOpen(!open)}

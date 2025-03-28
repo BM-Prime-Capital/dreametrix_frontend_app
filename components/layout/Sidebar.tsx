@@ -22,7 +22,7 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
               key={route.path}
               href={route.path}
               className={cn(
-                "flex flex-shrink-0 items-center gap-2 p-2 text-sm rounded-md whitespace-nowrap transition-colors",
+                "flex flex-shrink-0 items-center gap-4 p-2 pr-6 text-sm rounded-md whitespace-nowrap transition-colors",
                 "hover:bg-blue-50 hover:text-blue-600 border-b",
                 isActive && "bg-blue-50 text-blue-600"
               )}
@@ -32,7 +32,7 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
                 alt="Icon"
                 width={100}
                 height={100}
-                className="w-4 h-4"
+                className="w-7 h-7"
                 title={route.label}
               />
               <span className="hidden sm:inline">{route.label}</span>
