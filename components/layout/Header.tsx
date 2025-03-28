@@ -12,10 +12,11 @@ import DreaMetrixLogo from "../ui/dreametrix-logo";
 import UserAvatar from "../ui/user-avatar";
 import { localStorageKey } from "@/constants/global";
 import Cookies from "js-cookie";
+import { useEffect, useState } from "react";
 
 export function Header() {
   const router = useRouter();
-  const { username } = JSON.parse(
+  const { full_name } = JSON.parse(
     localStorage.getItem(localStorageKey.USER_DATA)!
   );
 
@@ -37,7 +38,7 @@ export function Header() {
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-2 bg-white px-2 py-2 rounded-full border">
             <UserAvatar />
-            <span className="text-gray-700">{username}</span>
+            <span className="text-gray-700">{full_name}</span>
             <ChevronDown className="h-4 w-4 text-gray-500" />
           </DropdownMenuTrigger>
           <DropdownMenuContent>

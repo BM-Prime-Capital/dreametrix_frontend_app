@@ -65,13 +65,10 @@ export default function TeacherDashboard() {
       <div className="flex flex-col lg:flex-row gap-6 p-4 sm:p-6">
         <div className="flex-1 space-y-6">
           <Card className="p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row items-center gap-8 mb-6 pl-0 sm:pl-16">
-              <Avatar className="h-16 w-16">
-                <AvatarImage src="/placeholder.svg" />
-                <AvatarFallback>SY</AvatarFallback>
-              </Avatar>
+            <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 pl-0 sm:pl-16">
+              <UserAvatar className="h-16 w-16" />
               <div className="text-center sm:text-left">
-                <PageTitleH2 title={userData.username} />
+                <PageTitleH2 title={userData.full_name} />
 
                 <div className="flex gap-2 justify-center sm:justify-start">
                   <Image
@@ -177,7 +174,7 @@ export default function TeacherDashboard() {
               <PageTitleH2 title="Profile" />
               <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
                 <UserAvatar />
-                <PageTitleH2 title={userData.username} />
+                <PageTitleH2 title={userData.full_name} />
                 {/* <div className="text-sm text-muted-foreground">Change</div> */}
               </div>
               <div className="grid gap-8 max-w-xl mx-auto sm:mx-0">
