@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Filter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,25 +17,23 @@ export default function AllClassFiltersPopUp() {
   return (
     <div className="flex flex-col relative">
       <div className="flex items-center gap-4">
-        <span className="text-gray-600">All Classes</span>
+        <span className="text-gray-600">Filter by</span>
         <Button
           variant="outline"
           size="icon"
           className="h-8 w-8"
           onClick={() => setOpen(!open)}
         >
-          {open ? (
-            <X className="h-4 w-4" />
-          ) : (
-            <Filter className="h-4 w-4" />
-          )}
+          {open ? <X className="h-4 w-4" /> : <Filter className="h-4 w-4" />}
         </Button>
       </div>
-      
+
       {open && (
         <div className="absolute top-12 right-0 z-50 w-64 bg-white rounded-lg shadow-lg border p-4">
-          <h2 className="font-semibold text-gray-900 pb-3 border-b">Filter by</h2>
-          
+          <h2 className="font-semibold text-gray-900 pb-3 border-b">
+            Filter by
+          </h2>
+
           <div className="flex flex-col gap-3 mt-3">
             <Select>
               <SelectTrigger>

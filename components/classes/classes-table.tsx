@@ -16,6 +16,7 @@ import { useList } from "@/hooks/useList";
 import NoData from "../ui/no-data";
 import { Loader } from "../ui/loader";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
+import { AddClassDialog } from "./AddClassDialog";
 
 // Sample class data
 const classesMock = [
@@ -42,7 +43,7 @@ export function ClassesTable({ refreshTime }: { refreshTime: string }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [allClasses, setAllClasses] = useState<any[]>([]);
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
-  
+
   useEffect(() => {
     const loadClasses = async () => {
       if (tenantDomain && accessToken && refreshToken) {
@@ -58,7 +59,6 @@ export function ClassesTable({ refreshTime }: { refreshTime: string }) {
     };
     loadClasses();
   }, [refreshTime, tenantDomain, accessToken, refreshToken]);
-
 
   return (
     <div className="w-full">
@@ -99,13 +99,10 @@ export function ClassesTable({ refreshTime }: { refreshTime: string }) {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-blue-50"
-                        >
-                          <Pencil className="h-4 w-4 text-[#25AAE1]" />
-                        </Button>
+                        <AddClassDialog
+                          setRefreshTime={() => {}}
+                          existingClass={class_}
+                        />
                         <Button
                           variant="ghost"
                           size="icon"

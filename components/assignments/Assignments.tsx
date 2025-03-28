@@ -9,13 +9,16 @@ import { generalImages } from "@/constants/images";
 import AssignmentFiltersPopUp from "./AssignmentsFiltersPopUp";
 import { AddAssignmentDialog } from "./AddAssignmentDialog";
 import ContentViewType from "../layout/ContentViewType";
+import ClassSelect from "../ClassSelect";
 
 export default function Assignments() {
   return (
     <section className="flex flex-col gap-2 w-full">
-      <ContentViewType>
+      <div className="flex justify-between items-center">
         <PageTitleH1 title="ASSIGNMENTS" />
-      </ContentViewType>
+        <ClassSelect />
+      </div>
+
       <div className="flex items-center justify-between">
         <AddAssignmentDialog />
 

@@ -12,7 +12,6 @@ import DreaMetrixLogo from "../ui/dreametrix-logo";
 import UserAvatar from "../ui/user-avatar";
 import { localStorageKey } from "@/constants/global";
 import Cookies from "js-cookie";
-import { useEffect, useState } from "react";
 
 export function Header() {
   const router = useRouter();
@@ -25,7 +24,7 @@ export function Header() {
     Cookies.remove(localStorageKey.ACCESS_TOKEN);
     localStorage.clear();
 
-    router.replace("/");
+    router.push("/");
   };
 
   return (

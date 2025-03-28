@@ -123,18 +123,16 @@ export async function updateClass(
       accessToken,
       refreshToken,
     });
-    const url = `${tenantPrimaryDomain}/classes/${classData.id}/`;
+    const { id, ...data } = classData;
+
+    const url = `${tenantPrimaryDomain}/classes/${id}/`;
     let response = await fetch(url, {
-      method: "PUT", // replace by PUT
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({
-        ...classData,
-        course_id: 1,
-        notes: "good good",
-      }),
+      body: JSON.stringify({ ...data, teacher: data.teacher.id }),
     });
 
     if (response.ok) {
