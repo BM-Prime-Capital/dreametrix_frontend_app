@@ -19,14 +19,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ISchoolClass } from "@/types";
-import TeachersPage from "../school_admin/teachers/Teacher";
 import { useList } from "@/hooks/useList";
 import { getTeachers } from "@/services/TeacherService";
 import { localStorageKey } from "@/constants/global";
 import { createClass } from "@/services/ClassService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { getGrades, getSubjects } from "@/services/DigitalLibraryService";
-import { usePathname, useRouter } from "next/navigation";
 
 interface ClassDay {
   id: number;

@@ -12,30 +12,10 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getClasses } from "@/services/ClassService";
 import { useEffect, useState } from "react";
-import { useList } from "@/hooks/useList";
 import NoData from "../ui/no-data";
 import { Loader } from "../ui/loader";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 
-// Sample class data
-const classesMock = [
-  {
-    id: 1,
-    name: "Class 5N",
-    subject: "Science",
-    grade: "Grade 5",
-    teacher: "Samantha Brown",
-    students: 15,
-  },
-  {
-    id: 2,
-    name: "Class 5M",
-    subject: "Mathematics",
-    grade: "Grade 5",
-    teacher: "Joe Smith",
-    students: 15,
-  },
-];
 
 export function ClassesTable({ refreshTime }: { refreshTime: string }) {
   //  const { list: classes, isLoading, error } = useList(getClasses);

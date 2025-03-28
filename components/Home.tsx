@@ -2,7 +2,7 @@
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
-import { Mail, Lock, AlertTriangle } from "lucide-react";
+import {  AlertTriangle } from "lucide-react";
 import { userPath } from "@/constants/userConstants";
 import DreaMetrixLogo from "./ui/dreametrix-logo";
 import { useLogin } from "@/hooks/SchoolAdmin/useLogin";
