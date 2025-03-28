@@ -20,8 +20,14 @@ import { useRequestInfo } from "@/hooks/useRequestInfo";
 export function ClassesTable({ refreshTime }: { refreshTime: string }) {
   //  const { list: classes, isLoading, error } = useList(getClasses);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [allClasses, setAllClasses] = useState<any[]>([]);
-  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  const [allClasses, setAllClasses] = useState<{
+    id: string;
+    name: string;
+    subject_in_short: string;
+    grade: string;
+    teacher: { full_name: string };
+    students: unknown[];
+  }[]>([]);  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
   
   useEffect(() => {
     const loadClasses = async () => {
@@ -59,7 +65,7 @@ export function ClassesTable({ refreshTime }: { refreshTime: string }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {allClasses.map((class_: any, index: number) => (
+                {allClasses.map((class_) => (
                   <TableRow key={class_.id}>
                     <TableCell className="font-medium">{class_.name}</TableCell>
                     <TableCell>{class_.subject_in_short}</TableCell>

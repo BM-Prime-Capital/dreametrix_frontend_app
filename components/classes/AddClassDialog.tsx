@@ -52,18 +52,16 @@ const schoolClassInit = {
 export function AddClassDialog({
   setRefreshTime,
 }: {
-  setRefreshTime: Function;
+  setRefreshTime: (time: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const { list: teachers, isLoading, error } = useList(getTeachers);
+  const { list: teachers } = useList(getTeachers);
   const { list: subjects } = useList(getSubjects);
-  const [grades, setGrades] = useState<any[]>([]);
+  const [grades, setGrades] = useState<string[]>([]);
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
   const [isSubmiting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
-  const router = useRouter();
-
   const [schoolClass, setSchoolClass] = useState<ISchoolClass>(schoolClassInit);
 
   const [classDays, setClassDays] = useState<ClassDay[]>([
@@ -94,7 +92,7 @@ export function AddClassDialog({
     setClassDays(classDays.filter((day) => day.id !== id));
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -233,8 +231,8 @@ export function AddClassDialog({
                   ) : (
                     <>
                       {teachers.length > 0 ? (
-                        teachers.map((teacher: any) => (
-                          <SelectItem key={teacher.id} value={teacher.id}>
+                        teachers.map((teacher: { id: number; name: string }) => (                          
+                        <SelectItem key={teacher.id} value={`${teacher.id}`}>
                             {teacher.name}
                           </SelectItem>
                         ))

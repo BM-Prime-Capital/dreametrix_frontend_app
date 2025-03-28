@@ -11,7 +11,6 @@ interface TestPrepProps {
 }
 
 export default function TestPrep({ onStartTest }: TestPrepProps) {
-  const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     subject: "math", // Default to math for testing
     grade: "1", // Default to grade 1 for testing
