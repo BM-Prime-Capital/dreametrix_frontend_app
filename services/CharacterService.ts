@@ -20,9 +20,7 @@ export async function getCharracters(
   });
 
   if (!response.ok) {
-    if (response.status === 401) {
-      return redirect("/");
-    } else if (response.status === 403) {
+    if (response.status === 403) {
       throw new Error(
         "Vous n'avez pas la permission d'accéder aux enseignants."
       );
@@ -60,11 +58,7 @@ export async function updateCharacter(
       console.log("PUT Class data => ", data);
     } else {
       console.log("PUT Class Failed => ", response);
-      if (response.status === 401) {
-        return redirect("/");
-      } else {
-        throw new Error("Class modification failed");
-      }
+      throw new Error("Class modification failed");
     }
   } catch (error) {
     console.log("Error => ", error);

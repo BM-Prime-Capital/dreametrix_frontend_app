@@ -3,21 +3,24 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ActivityFeed } from "../layout/ActivityFeed";
 import PageTitleH1 from "../ui/page-title-h1";
 import PageTitleH2 from "../ui/page-title-h2";
 import Image from "next/image";
-import { generalImages, teacherImages } from "@/constants/images";
+import { teacherImages } from "@/constants/images";
 import MultiSelectionItem from "../ui/multi-selection-item";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ContactParentDialog from "./ContactParentDialog";
 import { localStorageKey } from "@/constants/global";
 import UserAvatar from "../ui/user-avatar";
+import { useList } from "@/hooks/useList";
+import { getClasses } from "@/services/ClassService";
+import { ActivityFeed } from "../layout/ActivityFeed";
 
 export default function TeacherDashboard() {
   const [feedbackDuration, setFeedbackDuration] = useState<number>(2);
   const [newSubject, setNewSubject] = useState("");
+
+  const { list: classes } = useList(getClasses);
 
   // TODO get subjects from DB
   const [subjects, setSubjects] = useState<string[]>([
@@ -58,6 +61,11 @@ export default function TeacherDashboard() {
     }
   };
 
+  useEffect(() => {
+    console.log("classes ok ==> ", classes);
+    localStorage.setItem("classes", JSON.stringify(classes));
+  }, [classes]);
+
   return (
     <section className="flex flex-col  w-full">
       <PageTitleH1 title="Dashboard" />
@@ -65,13 +73,10 @@ export default function TeacherDashboard() {
       <div className="flex flex-col lg:flex-row gap-6 p-4 sm:p-6">
         <div className="flex-1 space-y-6">
           <Card className="p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row items-center gap-8 mb-6 pl-0 sm:pl-16">
-              <Avatar className="h-16 w-16">
-                <AvatarImage src="/placeholder.svg" />
-                <AvatarFallback>SY</AvatarFallback>
-              </Avatar>
+            <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 pl-0 sm:pl-16">
+              <UserAvatar className="h-16 w-16" />
               <div className="text-center sm:text-left">
-                <PageTitleH2 title={userData.username} />
+                <PageTitleH2 title={userData.full_name} />
 
                 <div className="flex gap-2 justify-center sm:justify-start">
                   <Image
@@ -177,7 +182,7 @@ export default function TeacherDashboard() {
               <PageTitleH2 title="Profile" />
               <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
                 <UserAvatar />
-                <PageTitleH2 title={userData.username} />
+                <PageTitleH2 title={userData.full_name} />
                 {/* <div className="text-sm text-muted-foreground">Change</div> */}
               </div>
               <div className="grid gap-8 max-w-xl mx-auto sm:mx-0">

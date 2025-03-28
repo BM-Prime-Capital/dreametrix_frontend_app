@@ -25,43 +25,7 @@ export async function getAttendances(
   console.log("ATTENDANCE INIT resp", response);
 
   if (!response.ok) {
-    if (response.status === 401) {
-      // throw new Error("Votre session a expiré. Veuillez vous reconnecter.");
-
-      return redirect("/");
-
-      /* const refreshResponse = await fetch(
-        // TO BE Completed with the true refresh API
-        `${tenantPrimaryDomain}/refresh-token/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ refresh: refreshToken }),
-        }
-      );
-      console.log("refreshResponse => ", refreshResponse);
-      if (refreshResponse.ok) {
-        const data = await refreshResponse.json();
-        const newAccessToken = data.accessToken;
-        const newRefreshToken = data.refreshToken;
-
-        // Retry the original request with the new access token
-        response = await fetch(url, {
-          headers: {
-            Authorization: `Bearer ${newAccessToken}`,
-          },
-        });
-
-        // Optionally, update your stored accessToken for future requests
-        localStorage.setItem(localStorageKey.ACCESS_TOKEN, newAccessToken);
-        localStorage.setItem(localStorageKey.REFRESH_TOKEN, newRefreshToken);
-      } else {
-        throw new Error("Failed to refresh the access token");
-      }
-       */
-    } else if (response.status === 403) {
+    if (response.status === 403) {
       throw new Error("Vous n'avez pas la permission d'accéder aux data.");
     } else {
       throw new Error("Erreur lors de la récupération des attendances.");
@@ -105,11 +69,7 @@ export async function updateAttendance(
       console.log("PUT Attendance data => ", data);
     } else {
       console.log("PUT Attendance Failed => ", response);
-      if (response.status == 401) {
-        return redirect("/");
-      } else {
-        throw new Error("Attendance modification failed");
-      }
+      throw new Error("Attendance modification failed");
     }
   } catch (error) {
     console.log("Error => ", error);

@@ -57,7 +57,7 @@ export const StudentRoutes = [
 export const SchoolAdminRoutes = [
   {
     path: userPath.SCHOOL_ADMIN_DASHBOARD_PATH,
-    icon: menuImages.home,
+    icon: generalImages.home,
     label: "HOME",
   },
   {
@@ -95,7 +95,7 @@ export const TeacherRoutes = [
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/classes`,
-    icon: menuImages.class,
+    icon: menuImages.classes,
     label: "CLASSES",
   },
   {
@@ -115,7 +115,7 @@ export const TeacherRoutes = [
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/attendance`,
-    icon: generalImages.attendance,
+    icon: menuImages.attendance,
     label: "ATTENDANCE",
   },
   {
@@ -132,15 +132,16 @@ export const TeacherRoutes = [
     path: `${userPath.TEACHER_BASE_PATH}/communicate`,
     icon: menuImages.communicate,
     label: "COMMUNICATE",
-  },{
-    path: `${userPath.TEACHER_BASE_PATH}/test_prep`,
-    icon: generalImages.test_prep,
-    label: "TEST PREP",
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/reports`,
     icon: menuImages.reports,
     label: "REPORTS",
+  },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/plan`,
+    icon: menuImages.plan,
+    label: "PLAN",
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/teach`,
@@ -151,5 +152,30 @@ export const TeacherRoutes = [
     path: `${userPath.TEACHER_BASE_PATH}/polls`,
     icon: menuImages.polls,
     label: "POLLS",
+  },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/big_braain`,
+    icon: menuImages.big_braain,
+    label: "BIG BRAA.I.N",
+  },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/test_prep`,
+    icon: menuImages.test_prep,
+    label: "TEST PREP",
+  },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/child_study`,
+    icon: menuImages.child_study,
+    label: "CHILD STUDY",
+  },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/dream_arcade`,
+    icon: menuImages.dream_arcade,
+    label: "DREAM ARCADE",
+  },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/report_card`,
+    icon: menuImages.report_card,
+    label: "REPORT CARD",
   },
 ];
