@@ -23,6 +23,8 @@ export function Header() {
   const logout = () => {
     Cookies.remove("tenantDomain");
     Cookies.remove(localStorageKey.ACCESS_TOKEN);
+    localStorage.clear();
+
     router.replace("/");
   };
 

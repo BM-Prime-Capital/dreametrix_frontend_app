@@ -3,21 +3,24 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ActivityFeed } from "../layout/ActivityFeed";
 import PageTitleH1 from "../ui/page-title-h1";
 import PageTitleH2 from "../ui/page-title-h2";
 import Image from "next/image";
-import { generalImages, teacherImages } from "@/constants/images";
+import { teacherImages } from "@/constants/images";
 import MultiSelectionItem from "../ui/multi-selection-item";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ContactParentDialog from "./ContactParentDialog";
 import { localStorageKey } from "@/constants/global";
 import UserAvatar from "../ui/user-avatar";
+import { useList } from "@/hooks/useList";
+import { getClasses } from "@/services/ClassService";
+import { ActivityFeed } from "../layout/ActivityFeed";
 
 export default function TeacherDashboard() {
   const [feedbackDuration, setFeedbackDuration] = useState<number>(2);
   const [newSubject, setNewSubject] = useState("");
+
+  const { list: classes } = useList(getClasses);
 
   // TODO get subjects from DB
   const [subjects, setSubjects] = useState<string[]>([
@@ -57,6 +60,11 @@ export default function TeacherDashboard() {
       setNewSubject("");
     }
   };
+
+  useEffect(() => {
+    console.log("classes ok ==> ", classes);
+    localStorage.setItem("classes", JSON.stringify(classes));
+  }, [classes]);
 
   return (
     <section className="flex flex-col  w-full">

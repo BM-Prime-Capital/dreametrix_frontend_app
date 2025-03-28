@@ -5,7 +5,7 @@ import { updateSelectedClass } from "@/redux/slices/generalInfoReducer";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-export default function ClassSelect() {
+export default function ClassSelect({ className }: { className?: string }) {
   const { selectedClass, allClasses } = useSelector(
     (state: any) => state.generalInfo
   );
@@ -19,7 +19,7 @@ export default function ClassSelect() {
     <select
       value={selectedClass}
       onChange={(e) => handleClassChange(e.target.value)}
-      className="text-white bg-bgPurple font-bold p-1 rounded-md"
+      className={`text-white bg-bgPurple font-bold p-1 rounded-md ${className}`}
     >
       {initialClasses.map((classEl: any, index) => (
         <option key={index} value={classEl.name}>

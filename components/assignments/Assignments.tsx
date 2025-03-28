@@ -8,19 +8,20 @@ import Image from "next/image";
 import { generalImages } from "@/constants/images";
 import AssignmentFiltersPopUp from "./AssignmentsFiltersPopUp";
 import { AddAssignmentDialog } from "./AddAssignmentDialog";
+import ContentViewType from "../layout/ContentViewType";
 
 export default function Assignments() {
   return (
     <section className="flex flex-col gap-2 w-full">
-      <div className="flex justify-between items-center">
+      <ContentViewType>
         <PageTitleH1 title="ASSIGNMENTS" />
-        <div className="flex items-center gap-2">
-          <AssignmentFiltersPopUp />
-        </div>
-      </div>
-      <div>
+      </ContentViewType>
+      <div className="flex items-center justify-between">
         <AddAssignmentDialog />
+
+        <AssignmentFiltersPopUp />
       </div>
+
       <Card className="rounded-md">
         <AssignmentsTable />
       </Card>
