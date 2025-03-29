@@ -155,7 +155,7 @@ export function AddClassDialog({
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-blue-500">
-            Add New Class
+            {existingClass ? "Update Class" : "Add New Class"}
           </DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4">
@@ -212,8 +212,8 @@ export function AddClassDialog({
                 <option disabled selected value={""}>
                   Select Grade
                 </option>
-                {grades?.map((grade: number, index: number) => (
-                  <option key={index} value={grade + ""}>
+                {grades?.map((grade: string, index: number) => (
+                  <option key={index} value={grade}>
                     {grade}
                   </option>
                 ))}
@@ -248,11 +248,16 @@ export function AddClassDialog({
                   ) : (
                     <>
                       {teachers.length > 0 ? (
-                        teachers.map((teacher: { id: number; name: string }) => (                          
-                        <SelectItem key={teacher.id} value={`${teacher.id}`}>
-                            {teacher.name}
-                          </SelectItem>
-                        ))
+                        teachers.map(
+                          (teacher: { id: number; name: string }) => (
+                            <SelectItem
+                              key={teacher.id}
+                              value={`${teacher.id}`}
+                            >
+                              {teacher.name}
+                            </SelectItem>
+                          )
+                        )
                       ) : (
                         <SelectItem key={0} value={"0"} disabled>
                           {"No teacher"}
