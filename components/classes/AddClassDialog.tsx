@@ -104,10 +104,13 @@ export function AddClassDialog({
     const rep = existingClass
       ? await updateClass(schoolClass, tenantDomain, accessToken, refreshToken)
       : await createClass(schoolClass, tenantDomain, accessToken, refreshToken);
+
     if (!rep) {
-      setMessage(
-        "The class creation failed, be sure that you are not creating an existing class, if this persists, please contact the admin."
-      );
+      const message = existingClass
+        ? "The class update failed, try again please, if this persists contact the admin."
+        : "The class creation failed, be sure that you are not creating an existing class, if this persists, please contact the admin.";
+
+      setMessage(message);
     } else {
       setRefreshTime(new Date().toISOString());
       setOpen(false);
