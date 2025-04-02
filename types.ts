@@ -69,7 +69,10 @@ export interface ISchoolClass {
   name: string;
   subject_in_all_letter: string;
   subject_in_short: string;
-  hours_and_dates_of_course_schedule: SchoolClassSchedule;
+  hours_and_dates_of_course_schedule: Record<
+    string,
+    { start_time: string; end_time: string }
+  >;
   description: string;
   grade: string;
   teacher: number;

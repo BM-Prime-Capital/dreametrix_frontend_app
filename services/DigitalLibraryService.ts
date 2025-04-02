@@ -27,8 +27,6 @@ export async function getSubjects(
 
   const data = await response.json();
 
-  console.log("Subjects => ", data); // Subjects =>  { subjects: [ 'Math', 'Language' ] }
-
   return data.subjects;
 }
 
@@ -58,8 +56,6 @@ export async function getGrades(
 
   const data = await response.json();
 
-  console.log("Grades => ", data);
-
   return data.grades;
 }
 
@@ -88,8 +84,6 @@ export async function getDomains(
   }
 
   const data = await response.json();
-
-  console.log("Domains => ", data);
 
   return data.domains;
 }
@@ -123,8 +117,6 @@ export async function getStandards(
   }
 
   const data = await response.json();
-
-  console.log("Standanrds => ", data);
 
   return data.standards;
 }
@@ -172,8 +164,6 @@ export async function getQuestionsLinks(
   }
 
   const data = await response.json();
-
-  console.log("Questions Links => ", data);
 
   return data;
 }
