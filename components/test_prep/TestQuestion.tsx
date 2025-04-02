@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { ArrowLeft, Bookmark, Calculator, ChevronLeft, ChevronRight, Eraser, HelpCircle, ImageIcon, Lightbulb, Maximize, Palette, PenTool, Ruler, Send, TextCursor, Timer } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
@@ -16,12 +16,15 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [loadedImages, setLoadedImages] = useState<Record<number, boolean>>({});
-  const { tenantDomain } = useRequestInfo();
+  const [previewImageSrc, setPreviewImageSrc] = useState<string | null>(null);
+  const { tenantDomain, accessToken } = useRequestInfo();
+  const mainImageRef = useRef<HTMLImageElement>(null);
 
   const handleNextQuestion = () => {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
       setSelectedAnswer(null);
+      setPreviewImageSrc(null);
     }
   };
 
@@ -29,26 +32,10 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1);
       setSelectedAnswer(null);
+      setPreviewImageSrc(null);
     }
   };
 
-  // Preload the next image
-  useEffect(() => {
-    if (currentQuestion < questions.length - 1) {
-      const nextImage = new Image();
-      nextImage.src = questions[currentQuestion + 1].main_link;
-    }
-  }, [currentQuestion, questions]);
-
-  const handleImageLoad = (questionId: number) => {
-    setLoadedImages(prev => ({
-      ...prev,
-      [questionId]: true
-    }));
-  };
-
-  const currentQuestionData = questions[currentQuestion];
-  
   // Function to get the correct preview URL format
   const getPreviewUrl = (questionId: number, previewUrl: string) => {
     if (!previewUrl) return "";
@@ -60,6 +47,80 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
     // Construct the correct preview URL
     return `${tenantDomain}/testprep/question-preview/${questionId}/?url=${urlParam}`;
   };
+
+  // Fetch preview image with authentication
+  useEffect(() => {
+    const fetchPreviewImage = async () => {
+      if (!questions[currentQuestion]?.preview_urls?.length || !accessToken) return;
+      
+      try {
+        const previewUrl = getPreviewUrl(
+          questions[currentQuestion].id, 
+          questions[currentQuestion].preview_urls[0]
+        );
+        
+        const response = await fetch(previewUrl, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to load preview: ${response.status}`);
+        }
+        
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        setPreviewImageSrc(objectUrl);
+        
+        // Clean up the object URL when it's no longer needed
+        return () => {
+          URL.revokeObjectURL(objectUrl);
+        };
+      } catch (error) {
+        console.error("Error loading preview image:", error);
+      }
+    };
+    
+    fetchPreviewImage();
+  }, [currentQuestion, questions, accessToken]);
+
+  // Preload the next image
+  useEffect(() => {
+    if (currentQuestion < questions.length - 1 && accessToken) {
+      const preloadImage = async () => {
+        try {
+          const response = await fetch(questions[currentQuestion + 1].main_link, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
+          
+          if (response.ok) {
+            const blob = await response.blob();
+            const img = new Image();
+            img.src = URL.createObjectURL(blob);
+            
+            // Clean up
+            return () => URL.revokeObjectURL(img.src);
+          }
+        } catch (error) {
+          console.error("Error preloading next image:", error);
+        }
+      };
+      
+      preloadImage();
+    }
+  }, [currentQuestion, questions, accessToken]);
+
+  const handleImageLoad = (questionId: number) => {
+    setLoadedImages(prev => ({
+      ...prev,
+      [questionId]: true
+    }));
+  };
+
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <div className="min-h-screen bg-white flex flex-col w-full">
@@ -112,19 +173,33 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
             {/* Question Image */}
             <div className="mb-8 bg-gray-50 p-6 rounded-lg">
               <div className="relative">
-                {!loadedImages[currentQuestionData.id] && currentQuestionData.preview_urls && currentQuestionData.preview_urls.length > 0 && (
+                {/* Show loading state if neither preview nor main image is loaded */}
+                {!previewImageSrc && !loadedImages[currentQuestionData?.id] && (
+                  <div className="w-full aspect-video flex justify-center items-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                  </div>
+                )}
+                
+                {/* Show preview image while main image loads */}
+                {previewImageSrc && !loadedImages[currentQuestionData?.id] && (
                   <img
-                    src={getPreviewUrl(currentQuestionData.id, currentQuestionData.preview_urls[0]) || "/placeholder.svg"}
+                    src={previewImageSrc || "/placeholder.svg"}
                     alt={`Question ${currentQuestion + 1} preview`}
                     className="w-full h-auto rounded-lg"
                   />
                 )}
-                <img
-                  src={currentQuestionData.main_link || "/placeholder.svg"}
-                  alt={`Question ${currentQuestion + 1}`}
-                  className={`w-full h-auto rounded-lg ${!loadedImages[currentQuestionData.id] ? 'hidden' : ''}`}
-                  onLoad={() => handleImageLoad(currentQuestionData.id)}
-                />
+                
+                {/* Main image with authentication */}
+                {currentQuestionData && (
+                  <img
+                    ref={mainImageRef}
+                    src={currentQuestionData.main_link || "/placeholder.svg"}
+                    alt={`Question ${currentQuestion + 1}`}
+                    className={`w-full h-auto rounded-lg ${!loadedImages[currentQuestionData.id] ? 'hidden' : ''}`}
+                    onLoad={() => handleImageLoad(currentQuestionData.id)}
+                    crossOrigin="anonymous"
+                  />
+                )}
               </div>
             </div>
 
