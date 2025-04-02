@@ -1,6 +1,8 @@
-'use client'
-import Classes from "@/components/classes/ClassesPage";
+"use client"
 
-export default function ClassesPage() {
-  return <Classes />;
+import ClassesPage from "@/components/school-admin/classes-page"
+
+export default function SchoolAdminClassesPage() {
+  return <ClassesPage />
 }
+

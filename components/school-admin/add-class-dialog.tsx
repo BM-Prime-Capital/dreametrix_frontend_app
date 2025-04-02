@@ -1,37 +1,27 @@
-"use client";
+"use client"
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Pencil, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ISchoolClass } from "@/types";
-import { useList } from "@/hooks/useList";
-import { getTeachers } from "@/services/TeacherService";
-import { localStorageKey } from "@/constants/global";
-import { createClass, updateClass } from "@/services/ClassService";
-import { useRequestInfo } from "@/hooks/useRequestInfo";
-import { getGrades, getSubjects } from "@/services/DigitalLibraryService";
+import type React from "react"
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Pencil, Plus } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import type { ISchoolClass } from "@/types"
+import { useList } from "@/hooks/useList"
+import { getTeachers } from "@/services/TeacherService"
+import { localStorageKey } from "@/constants/global"
+import { createClass, updateClass } from "@/services/ClassService"
+import { useRequestInfo } from "@/hooks/useRequestInfo"
+import { getGrades, getSubjects } from "@/services/DigitalLibraryService"
 
 interface ClassDay {
-  id: number;
-  day: string;
-  hour: string;
-  minute: string;
-  dayPart: string;
+  id: number
+  day: string
+  hour: string
+  minute: string
+  dayPart: string
 }
 
 const schoolClassInit = {
@@ -47,102 +37,99 @@ const schoolClassInit = {
   grade: "",
   teacher: 1,
   students: [],
-};
+}
+
+// Default user data for local development
+const defaultUserData = {
+  role: "school_admin",
+  owner_id: 1,
+  username: "Default Admin",
+}
 
 export function AddClassDialog({
   setRefreshTime,
   existingClass,
 }: {
-  setRefreshTime: Function;
-  existingClass?: ISchoolClass;
+  setRefreshTime: Function
+  existingClass?: ISchoolClass
 }) {
-  const [open, setOpen] = useState(false);
-  const { list: teachers } = useList(getTeachers);
-  const { list: subjects } = useList(getSubjects);
-  const [grades, setGrades] = useState<string[]>([]);
-  const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
-  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
-  const [isSubmiting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState("");
+  const [open, setOpen] = useState(false)
+  const { list: teachers } = useList(getTeachers)
+  const { list: subjects } = useList(getSubjects)
+  const [grades, setGrades] = useState<string[]>([])
 
-  const [schoolClass, setSchoolClass] = useState<ISchoolClass>(
-    existingClass ? existingClass : schoolClassInit
-  );
+  // Safely get user data with fallback to default
+  const getUserData = () => {
+    try {
+      const storedData = localStorage.getItem(localStorageKey.USER_DATA)
+      if (!storedData) return defaultUserData
+
+      return JSON.parse(storedData) || defaultUserData
+    } catch (error) {
+      console.error("Error parsing user data:", error)
+      return defaultUserData
+    }
+  }
+
+  const userData = getUserData()
+  const { tenantDomain, accessToken, refreshToken } = useRequestInfo()
+  const [isSubmiting, setIsSubmitting] = useState(false)
+  const [message, setMessage] = useState("")
+
+  const [schoolClass, setSchoolClass] = useState<ISchoolClass>(existingClass ? existingClass : schoolClassInit)
 
   const [classDays, setClassDays] = useState<ClassDay[]>([
     { id: 1, day: "Monday", hour: "01", minute: "01", dayPart: "AM" },
-  ]);
+  ])
 
   const addNewClassDay = () => {
-    const newId = classDays[classDays.length - 1].id + 1;
-    setClassDays([
-      ...classDays,
-      { id: newId, day: "Monday", hour: "00", minute: "00", dayPart: "AM" },
-    ]);
-  };
+    const newId = classDays[classDays.length - 1].id + 1
+    setClassDays([...classDays, { id: newId, day: "Monday", hour: "00", minute: "00", dayPart: "AM" }])
+  }
 
-  const handleClassDayChange = (
-    classDayId: number,
-    fieldName: keyof ClassDay,
-    newValue: string
-  ) => {
-    setClassDays(
-      classDays.map((day) =>
-        day.id === classDayId ? { ...day, [fieldName]: newValue } : day
-      )
-    );
-  };
+  const handleClassDayChange = (classDayId: number, fieldName: keyof ClassDay, newValue: string) => {
+    setClassDays(classDays.map((day) => (day.id === classDayId ? { ...day, [fieldName]: newValue } : day)))
+  }
 
   const handleDeleteClassDay = (id: number) => {
-    setClassDays(classDays.filter((day) => day.id !== id));
-  };
+    setClassDays(classDays.filter((day) => day.id !== id))
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+    e.preventDefault()
+    setIsSubmitting(true)
 
     const rep = existingClass
       ? await updateClass(schoolClass, tenantDomain, accessToken, refreshToken)
-      : await createClass(schoolClass, tenantDomain, accessToken, refreshToken);
+      : await createClass(schoolClass, tenantDomain, accessToken, refreshToken)
     if (!rep) {
       setMessage(
-        "The class creation failed, be sure that you are not creating an existing class, if this persists, please contact the admin."
-      );
+        "The class creation failed, be sure that you are not creating an existing class, if this persists, please contact the admin.",
+      )
     } else {
-      setRefreshTime(new Date().toISOString());
-      setOpen(false);
+      setRefreshTime(new Date().toISOString())
+      setOpen(false)
     }
 
-    setIsSubmitting(false);
-  };
+    setIsSubmitting(false)
+  }
 
   useEffect(() => {
     const loadGrades = async () => {
-      if (accessToken) {
-        if (schoolClass && schoolClass.subject_in_short) {
-          const grades = await getGrades(
-            schoolClass.subject_in_short,
-            tenantDomain,
-            accessToken,
-            refreshToken
-          );
-          setGrades(grades);
-        }
+      if (accessToken && schoolClass?.subject_in_short) {
+        const grades = await getGrades(schoolClass.subject_in_short, tenantDomain, accessToken, refreshToken)
+        setGrades(grades)
       }
-    };
+    }
 
-    loadGrades();
-  }, [tenantDomain, accessToken, refreshToken]);
+    loadGrades()
+  }, [schoolClass?.subject_in_short, tenantDomain, accessToken, refreshToken])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {existingClass ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 hover:bg-blue-50"
-          >
+          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-blue-50">
             <Pencil className="h-4 w-4 text-[#25AAE1]" />
           </Button>
         ) : (
@@ -209,7 +196,7 @@ export function AddClassDialog({
                 }
                 required
               >
-                <option disabled selected value={""}>
+                <option disabled value={""}>
                   Select Grade
                 </option>
                 {grades?.map((grade: string, index: number) => (
@@ -220,11 +207,7 @@ export function AddClassDialog({
               </select>
 
               <Select
-                value={`${
-                  userData.role === "teacher"
-                    ? userData.owner_id
-                    : schoolClass.teacher
-                }`}
+                value={`${userData?.role === "teacher" ? userData.owner_id : schoolClass.teacher}`}
                 onValueChange={(value) =>
                   setSchoolClass({
                     ...schoolClass,
@@ -238,26 +221,17 @@ export function AddClassDialog({
                 </SelectTrigger>
                 <SelectContent>
                   {userData?.role === "teacher" ? (
-                    <SelectItem
-                      aria-selected
-                      key={`${userData.owner_id}`}
-                      value={`${userData.owner_id}`}
-                    >
+                    <SelectItem aria-selected key={`${userData.owner_id}`} value={`${userData.owner_id}`}>
                       {userData.username}
                     </SelectItem>
                   ) : (
                     <>
                       {teachers.length > 0 ? (
-                        teachers.map(
-                          (teacher: { id: number; name: string }) => (
-                            <SelectItem
-                              key={teacher.id}
-                              value={`${teacher.id}`}
-                            >
-                              {teacher.name}
-                            </SelectItem>
-                          )
-                        )
+                        teachers.map((teacher: { id: number; name: string }) => (
+                          <SelectItem key={teacher.id} value={`${teacher.id}`}>
+                            {teacher.name}
+                          </SelectItem>
+                        ))
                       ) : (
                         <SelectItem key={0} value={"0"} disabled>
                           {"No teacher"}
@@ -270,29 +244,15 @@ export function AddClassDialog({
             </div>
 
             <div className="border rounded-lg p-4 space-y-4">
-              <label className="text-sm font-medium text-gray-700">
-                Class Days
-              </label>
-
+              <label className="text-sm font-medium text-gray-700">Class Days</label>
               {classDays.map((day) => (
                 <div key={day.id} className="grid grid-cols-4 gap-2">
-                  <Select
-                    value={day.day}
-                    onValueChange={(value) =>
-                      handleClassDayChange(day.id, "day", value)
-                    }
-                  >
+                  <Select value={day.day} onValueChange={(value) => handleClassDayChange(day.id, "day", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Day" />
                     </SelectTrigger>
                     <SelectContent>
-                      {[
-                        "Monday",
-                        "Tuesday",
-                        "Wednesday",
-                        "Thursday",
-                        "Friday",
-                      ].map((d) => (
+                      {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map((d) => (
                         <SelectItem key={d} value={d}>
                           {d}
                         </SelectItem>
@@ -305,9 +265,7 @@ export function AddClassDialog({
                     min="1"
                     max="12"
                     value={day.hour}
-                    onChange={(e) =>
-                      handleClassDayChange(day.id, "hour", e.target.value)
-                    }
+                    onChange={(e) => handleClassDayChange(day.id, "hour", e.target.value)}
                     className="w-full"
                     placeholder="Hour"
                   />
@@ -317,19 +275,12 @@ export function AddClassDialog({
                     min="0"
                     max="59"
                     value={day.minute}
-                    onChange={(e) =>
-                      handleClassDayChange(day.id, "minute", e.target.value)
-                    }
+                    onChange={(e) => handleClassDayChange(day.id, "minute", e.target.value)}
                     className="w-full"
                     placeholder="Minute"
                   />
 
-                  <Select
-                    value={day.dayPart}
-                    onValueChange={(value) =>
-                      handleClassDayChange(day.id, "dayPart", value)
-                    }
-                  >
+                  <Select value={day.dayPart} onValueChange={(value) => handleClassDayChange(day.id, "dayPart", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="AM/PM" />
                     </SelectTrigger>
@@ -351,11 +302,7 @@ export function AddClassDialog({
                 </div>
               ))}
 
-              <Button
-                variant="outline"
-                onClick={addNewClassDay}
-                className="w-full mt-2"
-              >
+              <Button variant="outline" onClick={addNewClassDay} className="w-full mt-2">
                 Add Another Day
               </Button>
             </div>
@@ -364,21 +311,14 @@ export function AddClassDialog({
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button
-                disabled={isSubmiting}
-                type="submit"
-                className="bg-blue-500 hover:bg-blue-600"
-              >
-                {isSubmiting
-                  ? "Submitting..."
-                  : existingClass
-                  ? "Update Class"
-                  : "Create Class"}
+              <Button disabled={isSubmiting} type="submit" className="bg-blue-500 hover:bg-blue-600">
+                {isSubmiting ? "Submitting..." : existingClass ? "Update Class" : "Create Class"}
               </Button>
             </div>
           </form>
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
+
