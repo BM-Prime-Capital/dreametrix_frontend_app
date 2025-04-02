@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pencil, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -21,17 +21,19 @@ import {
 import { ISchoolClass } from "@/types";
 import { useList } from "@/hooks/useList";
 import { getTeachers } from "@/services/TeacherService";
-import { localStorageKey } from "@/constants/global";
+import { dayOfTheWeek, localStorageKey } from "@/constants/global";
 import { createClass, updateClass } from "@/services/ClassService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { getGrades, getSubjects } from "@/services/DigitalLibraryService";
+import { convertToClassDays, convertToClassSchedule } from "@/utils/global";
+import SimpleLoader from "../ui/simple-loader";
+import AlertMessage from "../ui/alert-message";
 
 interface ClassDay {
   id: number;
   day: string;
-  hour: string;
-  minute: string;
-  dayPart: string;
+  start_time: string;
+  end_time: string;
 }
 
 const schoolClassInit = {
@@ -39,9 +41,7 @@ const schoolClassInit = {
   subject_in_all_letter: "",
   subject_in_short: "",
   hours_and_dates_of_course_schedule: {
-    Monday: [],
-    Wednesday: [],
-    Friday: [],
+    Monday: { start_time: "09:30 AM", end_time: "10:30 AM" },
   },
   description: "",
   grade: "",
@@ -58,26 +58,36 @@ export function AddClassDialog({
 }) {
   const [open, setOpen] = useState(false);
   const { list: teachers } = useList(getTeachers);
-  const { list: subjects } = useList(getSubjects);
+  const { list: subjects, isLoading: areSubjectsLoading } =
+    useList(getSubjects);
   const [grades, setGrades] = useState<string[]>([]);
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
   const [isSubmiting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<{
+    content: string;
+    color: string;
+  } | null>(null);
+
+  const [areGradesLoading, setAreGradesLoading] = useState<boolean>(true);
 
   const [schoolClass, setSchoolClass] = useState<ISchoolClass>(
     existingClass ? existingClass : schoolClassInit
   );
 
-  const [classDays, setClassDays] = useState<ClassDay[]>([
-    { id: 1, day: "Monday", hour: "01", minute: "01", dayPart: "AM" },
-  ]);
+  const [classDays, setClassDays] = useState<ClassDay[]>([]);
 
-  const addNewClassDay = () => {
+  const addNewClassDay = (e: any) => {
+    e.preventDefault();
     const newId = classDays[classDays.length - 1].id + 1;
     setClassDays([
       ...classDays,
-      { id: newId, day: "Monday", hour: "00", minute: "00", dayPart: "AM" },
+      {
+        id: newId,
+        day: "Monday",
+        start_time: "08:30 AM",
+        end_time: "10:30 AM",
+      },
     ]);
   };
 
@@ -100,41 +110,74 @@ export function AddClassDialog({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    const data: ISchoolClass = {
+      ...schoolClass,
+      hours_and_dates_of_course_schedule: convertToClassSchedule(classDays),
+    };
 
     const rep = existingClass
-      ? await updateClass(schoolClass, tenantDomain, accessToken, refreshToken)
-      : await createClass(schoolClass, tenantDomain, accessToken, refreshToken);
+      ? await updateClass(data, tenantDomain, accessToken, refreshToken)
+      : await createClass(data, tenantDomain, accessToken, refreshToken);
 
     if (!rep) {
       const message = existingClass
         ? "The class update failed, try again please, if this persists contact the admin."
         : "The class creation failed, be sure that you are not creating an existing class, if this persists, please contact the admin.";
 
-      setMessage(message);
+      setMessage({ content: message, color: "red-500" });
     } else {
+      const message = existingClass
+        ? "Class updated with success!"
+        : "Class created with success!";
+      setMessage({ content: message, color: "green-500" });
       setRefreshTime(new Date().toISOString());
-      setOpen(false);
+
+      setTimeout(() => {
+        setOpen(false);
+      }, 3000);
     }
 
     setIsSubmitting(false);
   };
 
+  const handleSubjectChange = async (value: string) => {
+    setSchoolClass({
+      ...schoolClass,
+      subject_in_short: value,
+    });
+    const grades = await getGrades(
+      value,
+      tenantDomain,
+      accessToken,
+      refreshToken
+    );
+    setGrades(grades);
+    setAreGradesLoading(false);
+  };
+
   useEffect(() => {
-    const loadGrades = async () => {
-      if (accessToken) {
-        if (schoolClass && schoolClass.subject_in_short) {
-          const grades = await getGrades(
-            schoolClass.subject_in_short,
-            tenantDomain,
-            accessToken,
-            refreshToken
-          );
-          setGrades(grades);
-        }
+    setClassDays(
+      convertToClassDays(schoolClass.hours_and_dates_of_course_schedule)
+    );
+
+    const loadGradesIfClassExist = async () => {
+      if (
+        tenantDomain &&
+        accessToken &&
+        refreshToken &&
+        schoolClass.subject_in_short
+      ) {
+        const grades = await getGrades(
+          schoolClass.subject_in_short,
+          tenantDomain,
+          accessToken,
+          refreshToken
+        );
+        setGrades(grades);
+        setAreGradesLoading(false);
       }
     };
-
-    loadGrades();
+    loadGradesIfClassExist();
   }, [tenantDomain, accessToken, refreshToken]);
 
   return (
@@ -162,7 +205,11 @@ export function AddClassDialog({
           </DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4">
-          {message ? <label className="text-red-500 p-2">{message}</label> : ""}
+          {message ? (
+            <AlertMessage content={message.content} color={message.color} />
+          ) : (
+            ""
+          )}
           <form onSubmit={(e) => handleSubmit(e)}>
             <div className="grid grid-cols-2 gap-4 py-4">
               <select
@@ -170,20 +217,20 @@ export function AddClassDialog({
                 className="px-2 py-1 bg-white rounded-lg"
                 placeholder="Subject in short"
                 value={schoolClass.subject_in_short}
-                onChange={(e) =>
-                  setSchoolClass({
-                    ...schoolClass,
-                    subject_in_short: e.target.value,
-                  })
-                }
+                onChange={(e) => handleSubjectChange(e.target.value)}
                 required
               >
                 <option disabled value={""}>
                   Select Subject in short
                 </option>
-                {subjects?.map((subject: string, index: number) => (
-                  <option key={index}>{subject}</option>
-                ))}
+
+                {areSubjectsLoading ? (
+                  <SimpleLoader />
+                ) : (
+                  subjects?.map((subject: string, index: number) => (
+                    <option key={index}>{subject}</option>
+                  ))
+                )}
               </select>
 
               <Input
@@ -215,11 +262,16 @@ export function AddClassDialog({
                 <option disabled selected value={""}>
                   Select Grade
                 </option>
-                {grades?.map((grade: string, index: number) => (
-                  <option key={index} value={grade}>
-                    {grade}
-                  </option>
-                ))}
+
+                {areGradesLoading ? (
+                  <SimpleLoader />
+                ) : (
+                  grades?.map((grade: string, index: number) => (
+                    <option key={index} value={grade}>
+                      {grade}
+                    </option>
+                  ))
+                )}
               </select>
 
               <Select
@@ -274,97 +326,90 @@ export function AddClassDialog({
 
             <div className="border rounded-lg p-4 space-y-4">
               <label className="text-sm font-medium text-gray-700">
-                Class Days
+                Class Schedule
               </label>
 
-              {classDays.map((day) => (
-                <div key={day.id} className="grid grid-cols-4 gap-2">
-                  <Select
-                    value={day.day}
-                    onValueChange={(value) =>
-                      handleClassDayChange(day.id, "day", value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Day" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[
-                        "Monday",
-                        "Tuesday",
-                        "Wednesday",
-                        "Thursday",
-                        "Friday",
-                      ].map((d) => (
-                        <SelectItem key={d} value={d}>
-                          {d}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Input
-                    type="number"
-                    min="1"
-                    max="12"
-                    value={day.hour}
-                    onChange={(e) =>
-                      handleClassDayChange(day.id, "hour", e.target.value)
-                    }
-                    className="w-full"
-                    placeholder="Hour"
-                  />
-
-                  <Input
-                    type="number"
-                    min="0"
-                    max="59"
-                    value={day.minute}
-                    onChange={(e) =>
-                      handleClassDayChange(day.id, "minute", e.target.value)
-                    }
-                    className="w-full"
-                    placeholder="Minute"
-                  />
-
-                  <Select
-                    value={day.dayPart}
-                    onValueChange={(value) =>
-                      handleClassDayChange(day.id, "dayPart", value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="AM/PM" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="AM">AM</SelectItem>
-                      <SelectItem value="PM">PM</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  {classDays.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      className="text-red-500 hover:text-red-600"
-                      onClick={() => handleDeleteClassDay(day.id)}
+              {classDays.map(
+                (schedule: {
+                  id: number;
+                  day: string;
+                  start_time: string;
+                  end_time: string;
+                }) => (
+                  <div key={schedule.id} className="grid grid-cols-4 gap-2">
+                    <Select
+                      value={schedule.day}
+                      onValueChange={(value) =>
+                        handleClassDayChange(schedule.id, "day", value)
+                      }
                     >
-                      Remove
-                    </Button>
-                  )}
-                </div>
-              ))}
+                      <SelectTrigger>
+                        <SelectValue placeholder="Day" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {dayOfTheWeek.map((d) => (
+                          <SelectItem key={d} value={d}>
+                            {d}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
+                    <Input
+                      type="text"
+                      value={schedule.start_time}
+                      onChange={(e) =>
+                        handleClassDayChange(
+                          schedule.id,
+                          "start_time",
+                          e.target.value
+                        )
+                      }
+                      className="w-full"
+                      placeholder="start_time => 09:00 AM"
+                    />
+
+                    <Input
+                      type="text"
+                      value={schedule.end_time}
+                      onChange={(e) =>
+                        handleClassDayChange(
+                          schedule.id,
+                          "end_time",
+                          e.target.value
+                        )
+                      }
+                      className="w-full"
+                      placeholder="end_time => 01:00 PM"
+                    />
+
+                    {classDays.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        className="text-red-500 hover:text-red-600"
+                        onClick={() => handleDeleteClassDay(schedule.id)}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                )
+              )}
               <Button
                 variant="outline"
-                onClick={addNewClassDay}
+                onClick={(e) => addNewClassDay(e)}
                 className="w-full mt-2"
               >
-                Add Another Day
+                Add Another Schedule
               </Button>
             </div>
 
             <div className="flex justify-end gap-2 mt-4">
-              <Button variant="outline" onClick={() => setOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
                 Cancel
               </Button>
               <Button
