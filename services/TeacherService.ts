@@ -29,8 +29,6 @@ export async function getTeachers(
 
   const data = await response.json();
 
-  console.log("getTeachers => ", data);
-
   return data.results;
 }
 
