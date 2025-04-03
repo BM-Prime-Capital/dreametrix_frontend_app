@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 
 export async function getAttendances(
-  initAttendanceData: { date: string; class_id: number; teacher_id: number }, // "04.17.2025"
+  initAttendanceData: { date: string; class_id: number; teacher_id: number },
   tenantPrimaryDomain: string,
   accessToken: string,
   refreshToken: string
@@ -52,16 +52,23 @@ export async function updateAttendance(
       accessToken,
       refreshToken,
     });
-    const url = `${tenantPrimaryDomain}/attendances/${attendance.id}/`;
+    const data = {
+      updates: [
+        {
+          attendance_id: attendance.attendance_id,
+          status: attendance.status,
+          notes: "Not Applicable",
+        },
+      ],
+    };
+    const url = `${tenantPrimaryDomain}/attendances/update-attendances/`;
     let response = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({
-        ...attendance,
-      }),
+      body: JSON.stringify(data),
     });
 
     if (response.ok) {

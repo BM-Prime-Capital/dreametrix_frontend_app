@@ -102,8 +102,7 @@ export default function AttendanceFocusedView({
       </div>
       <Card className="rounded-md">
         <AttendanceTable
-          currentClassId={1} // TODO update currentClassId and currentDate with real data
-          currentDate="TODO"
+          currentDate={attendanceDate}
           isAttendanceDatePast={isAttendanceDatePast}
         />
       </Card>

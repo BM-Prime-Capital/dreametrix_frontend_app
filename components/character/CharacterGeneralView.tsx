@@ -3,7 +3,11 @@ import PageTitleH1 from "../ui/page-title-h1";
 import Image from "next/image";
 import { generalImages, teacherImages } from "@/constants/images";
 import StatisticItem from "../ui/StatisticItem";
-import { views } from "@/constants/global";
+import { localStorageKey, views } from "@/constants/global";
+import { ISchoolClass } from "@/types";
+import { useList } from "@/hooks/useList";
+import { getClasses } from "@/services/ClassService";
+import { Loader } from "../ui/loader";
 
 type CharacterStat = {
   className: string;
@@ -66,10 +70,14 @@ const attendanceStatistics: CharacterStat[] = [
 ];
 
 function CharacterGeneralView({ changeView }: { changeView: Function }) {
-  const handleClick = (className: string) => {
-    //TODO: Change Current class
+  const handleClick = (selectedClass: ISchoolClass) => {
+    localStorage.setItem(
+      localStorageKey.CURRENT_SELECTED_CLASS,
+      JSON.stringify(selectedClass)
+    );
     changeView(views.FOCUSED_VIEW);
   };
+  const { list: classes, isLoading, error } = useList(getClasses);
   return (
     <div className="flex flex-col gap-8 w-full pb-4">
       <PageTitleH1 title="CHARACTER GENERAL VIEW " />
@@ -124,17 +132,23 @@ function CharacterGeneralView({ changeView }: { changeView: Function }) {
             </thead>
 
             <tbody>
-              {attendanceStatistics.map((as: CharacterStat) => (
-                <tr
-                  className={"cursor-pointer"}
-                  onClick={() => handleClick(as.className)}
-                >
-                  <td>{as.className}</td>
-                  <td>{as.students}</td>
-                  <td>{as.goodCharacters}</td>
-                  <td>{as.badCharacters}</td>
-                </tr>
-              ))}
+              {isLoading ? (
+                <Loader />
+              ) : (
+                classes?.map((as: any, index: number) => (
+                  <tr
+                    key={index}
+                    className={`cursor-pointer`}
+                    onClick={() => handleClick(as)}
+                  >
+                    <td>{as.name}</td>
+                    <td>{as.students.length || 1}</td>
+                    <td>{as.presences || 1}</td>
+                    <td>{as.absences || 1}</td>
+                    <td>{as.lates || 1}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

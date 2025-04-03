@@ -3,8 +3,9 @@
 
 import { localStorageKey } from "@/constants/global";
 import { redirect } from "next/navigation";
-const characterPath = "/characters/character-rating/";
+const characterPath = "/characters/initialize-class/";
 export async function getCharracters(
+  initCharaterData: { class_id: number; teacher_id: number },
   tenantPrimaryDomain: string,
   accessToken: string,
   refreshToken: string
@@ -12,11 +13,16 @@ export async function getCharracters(
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
+  console.log("initCharaterData => ", initCharaterData);
+
   const url = `${tenantPrimaryDomain}${characterPath}`;
   let response = await fetch(url, {
+    method: "POST",
     headers: {
+      "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
+    body: JSON.stringify(initCharaterData),
   });
 
   if (!response.ok) {
@@ -33,7 +39,7 @@ export async function getCharracters(
 
   console.log("getCharracters => ", data);
 
-  return data.results;
+  return data.characters;
 }
 
 export async function updateCharacter(

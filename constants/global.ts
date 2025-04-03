@@ -333,6 +333,7 @@ export const localStorageKey = {
   REFRESH_TOKEN: "refreshToken",
   USER_DATA: "userData",
   TENANT_DATA: "tenantData",
+  CURRENT_SELECTED_CLASS: "selectedClass",
 };
 
 export const dayOfTheWeek = [
