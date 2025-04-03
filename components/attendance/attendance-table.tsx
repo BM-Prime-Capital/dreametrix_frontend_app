@@ -60,7 +60,7 @@ export function AttendanceTable({
 
         console.log("ATTENDANCES LOADED => ", data);
         setAttendances(data);
-        setIsLoading(true);
+        setIsLoading(false);
       }
     };
 
