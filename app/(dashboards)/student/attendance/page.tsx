@@ -2,30 +2,34 @@
 
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
-import { AssignmentsTable } from "../../../../components/student/assignments/assignments-table"
+import { AttendanceTable } from "../../../../components/student/attendance/attendance-table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar } from "lucide-react"
-import { DatePickerDialog } from "../../../../components/student/assignments/date-picker-dialog"
+import { FileText, Printer, Calendar } from "lucide-react"
+import { DatePickerDialog } from "../../../../components/student/attendance/date-picker-dialog"
+import { ReportDialog } from "../../../../components/student/attendance/report-dialog"
+import { PrintDialog } from "../../../../components/student/attendance/print-dialog"
 
-export default function AssignmentsPage() {
+export default function AttendancePage() {
   const [selectedClass, setSelectedClass] = useState<string>("all-classes")
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
-  const [, setSelectedDates] = useState<number[]>([])
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false)
+  const [, setSelectedDate] = useState<number>(0)
 
-  const handleDateSelection = (dates: number[]) => {
-    setSelectedDates(dates)
+  const handleDateSelection = (date: number) => {
+    setSelectedDate(date)
   }
 
   return (
     <section className="flex flex-col gap-4 w-full  mx-auto p-4 ">
       <div className="flex items-center justify-between">
-        <h1 className="text-[#4CAF50] text-xl font-bold">ASSIGNMENTS</h1>
+        <h1 className="text-[#25AAE1] text-xl font-bold">ATTENDENCE</h1>
         <div className="flex gap-4">
           <button
             className="bg-white border rounded-md px-4 py-2 flex items-center justify-center"
             onClick={() => setIsDatePickerOpen(true)}
           >
-            <span>All Days</span>
+            <span>TODAY</span>
             <Calendar className="ml-2 h-5 w-5 text-gray-500" />
           </button>
 
@@ -46,8 +50,21 @@ export default function AssignmentsPage() {
         </div>
       </div>
 
+      <div className="flex gap-4">
+        <button
+          className="bg-[#B066F2] text-white px-6 py-3 rounded-md flex items-center gap-2"
+          onClick={() => setIsReportModalOpen(true)}
+        >
+          <FileText className="h-5 w-5" />
+          <span>Report</span>
+        </button>
+        <button className="bg-[#25AAE1] text-white px-4 py-3 rounded-md" onClick={() => setIsPrintModalOpen(true)}>
+          <Printer className="h-5 w-5" />
+        </button>
+      </div>
+
       <Card className="rounded-lg shadow-sm p-0 overflow-hidden border-0">
-        <AssignmentsTable />
+        <AttendanceTable />
       </Card>
 
       <DatePickerDialog
@@ -55,6 +72,10 @@ export default function AssignmentsPage() {
         onClose={() => setIsDatePickerOpen(false)}
         onApply={handleDateSelection}
       />
+
+      <ReportDialog isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} />
+
+      <PrintDialog isOpen={isPrintModalOpen} onClose={() => setIsPrintModalOpen(false)} />
     </section>
   )
 }

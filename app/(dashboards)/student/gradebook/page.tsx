@@ -2,33 +2,22 @@
 
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
-import { AssignmentsTable } from "../../../../components/student/assignments/assignments-table"
+import { GradebookTable } from "../../../../components/student/gradebook/gradebook-table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar } from "lucide-react"
-import { DatePickerDialog } from "../../../../components/student/assignments/date-picker-dialog"
+import { FileText, Printer } from "lucide-react"
+import { ReportDialog } from "../../../../components/student/gradebook/report-dialog"
+import { PrintDialog } from "../../../../components/student/gradebook/print-dialog"
 
-export default function AssignmentsPage() {
+export default function GradebookPage() {
   const [selectedClass, setSelectedClass] = useState<string>("all-classes")
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
-  const [, setSelectedDates] = useState<number[]>([])
-
-  const handleDateSelection = (dates: number[]) => {
-    setSelectedDates(dates)
-  }
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false)
 
   return (
     <section className="flex flex-col gap-4 w-full  mx-auto p-4 ">
       <div className="flex items-center justify-between">
-        <h1 className="text-[#4CAF50] text-xl font-bold">ASSIGNMENTS</h1>
+        <h1 className="text-[#B066F2] text-xl font-bold">GRADEBOOK</h1>
         <div className="flex gap-4">
-          <button
-            className="bg-white border rounded-md px-4 py-2 flex items-center justify-center"
-            onClick={() => setIsDatePickerOpen(true)}
-          >
-            <span>All Days</span>
-            <Calendar className="ml-2 h-5 w-5 text-gray-500" />
-          </button>
-
           <Select value={selectedClass} onValueChange={setSelectedClass}>
             <SelectTrigger className="w-[180px] bg-white">
               <SelectValue placeholder="All Classes" />
@@ -46,15 +35,26 @@ export default function AssignmentsPage() {
         </div>
       </div>
 
+      <div className="flex gap-4">
+        <button
+          className="bg-[#B066F2] text-white px-6 py-3 rounded-md flex items-center gap-2"
+          onClick={() => setIsReportModalOpen(true)}
+        >
+          <FileText className="h-5 w-5" />
+          <span>Report</span>
+        </button>
+        <button className="bg-[#25AAE1] text-white px-4 py-3 rounded-md" onClick={() => setIsPrintModalOpen(true)}>
+          <Printer className="h-5 w-5" />
+        </button>
+      </div>
+
       <Card className="rounded-lg shadow-sm p-0 overflow-hidden border-0">
-        <AssignmentsTable />
+        <GradebookTable />
       </Card>
 
-      <DatePickerDialog
-        isOpen={isDatePickerOpen}
-        onClose={() => setIsDatePickerOpen(false)}
-        onApply={handleDateSelection}
-      />
+      <ReportDialog isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} />
+
+      <PrintDialog isOpen={isPrintModalOpen} onClose={() => setIsPrintModalOpen(false)} />
     </section>
   )
 }
