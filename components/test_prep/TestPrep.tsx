@@ -64,11 +64,18 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
     });
   };
 
+ 
+
   const handleLaunchTest = async () => {
     if (!formData.subject || !formData.grade || !formData.domain || !tenantDomain || !accessToken) {
       return;
     }
-
+  
+    // Stocker les infos du test pour le PDF
+    localStorage.setItem('testSubject', formData.subject);
+    localStorage.setItem('testGrade', formData.grade.toString());
+    localStorage.setItem('testDomain', formData.domain);
+  
     try {
       const response = await fetch(
         `${tenantDomain}/testprep/questions/${formData.subject}/${formData.grade}/${encodeURIComponent(formData.domain)}/`,
@@ -78,11 +85,11 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
           }
         }
       );
-
+  
       if (!response.ok) {
         throw new Error('Failed to fetch questions');
       }
-
+  
       const data = await response.json();
       onStartTest(data.questions);
     } catch (error) {

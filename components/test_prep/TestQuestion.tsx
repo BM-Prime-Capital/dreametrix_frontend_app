@@ -1,15 +1,47 @@
-import { useState, useEffect, useRef } from "react"
-import { ArrowLeft, Bookmark, Calculator, ChevronLeft, ChevronRight, Eraser, HelpCircle, ImageIcon, Lightbulb, Maximize, Palette, PenTool, Ruler, Send, TextCursor, Timer } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { useRequestInfo } from "@/hooks/useRequestInfo"
+import { useState, useEffect, useRef, useCallback } from "react";
+import { ArrowLeft, Bookmark, Calculator, ChevronLeft, ChevronRight, Eraser, HelpCircle, ImageIcon, Lightbulb, Maximize, Palette, PenTool, Ruler, Send, TextCursor, Timer, Download } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { useRequestInfo } from "@/hooks/useRequestInfo";
+
+interface Question {
+  id: number;
+  main_link: string;
+  preview_urls: string[];
+  questionNumber: number;
+  correctAnswer: string;
+  pointValue: number;
+  domain?: string;
+}
 
 interface TestQuestionProps {
   onBack: () => void;
-  questions: Array<{
-    id: number;
-    main_link: string;
-    preview_urls: string[];
-  }>;
+  questions: Question[];
+}
+
+interface Answer {
+  questionId: number;
+  questionNumber: number;
+  selectedOption: string | null;
+  correctAnswer: string;
+  isCorrect?: boolean;
+  pointValue: number;
+}
+
+interface CorrectedAnswer extends Answer {
+  isCorrect: boolean;
+  pointsEarned: number;
+}
+
+interface TestDetails {
+  subject: string;
+  grade: string;
+  domain: string;
+  date: string;
+  totalQuestions: number;
+  correctCount: number;
+  totalScore: number;
+  maxPossibleScore: number;
+  percentage: number;
 }
 
 export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
@@ -17,8 +49,148 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [loadedImages, setLoadedImages] = useState<Record<number, boolean>>({});
   const [previewImageSrc, setPreviewImageSrc] = useState<string | null>(null);
+  const [answers, setAnswers] = useState<Answer[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  
   const { tenantDomain, accessToken } = useRequestInfo();
   const mainImageRef = useRef<HTMLImageElement>(null);
+
+  // Initialiser les réponses
+  useEffect(() => {
+    setAnswers(questions.map(q => ({
+      questionId: q.id,
+      questionNumber: q.questionNumber,
+      selectedOption: null,
+      correctAnswer: q.correctAnswer,
+      pointValue: q.pointValue
+    })));
+  }, [questions]);
+
+  // Mettre à jour les réponses quand l'utilisateur sélectionne une option
+  useEffect(() => {
+    if (selectedAnswer !== null) {
+      setAnswers(prev => {
+        const newAnswers = [...prev];
+        newAnswers[currentQuestion] = {
+          ...newAnswers[currentQuestion],
+          selectedOption: selectedAnswer
+        };
+        return newAnswers;
+      });
+    }
+  }, [selectedAnswer, currentQuestion]);
+
+  const generateTestReport = useCallback(async (data: { answers: CorrectedAnswer[], testDetails: TestDetails }) => {
+    setIsGeneratingPdf(true);
+    try {
+      // const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+      const API_BASE_URL = 'http://localhost:3001';
+      console.log('TestQuestion.tsx - API_BASE_URL:', API_BASE_URL); // Debug log
+      const response = await fetch(`${API_BASE_URL}/api/testprep/generate-pdf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.blob();
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      throw error;
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  }, []);
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      // 1. Validation des réponses
+      const unansweredQuestions = answers.filter(a => a.selectedOption === null);
+      if (unansweredQuestions.length > 0) {
+        const unansweredNumbers = unansweredQuestions
+          .map(a => questions.find(q => q.id === a.questionId)?.questionNumber)
+          .filter(Boolean)
+          .join(', ');
+        throw new Error(`Please answer all questions. Missing answers for questions: ${unansweredNumbers}`);
+      }
+
+      // 2. Préparation des données à envoyer au serveur
+      const answersToSubmit = answers.map(answer => ({
+        questionId: answer.questionId,
+        selectedOption: answer.selectedOption
+      }));
+
+      // 3. Envoi au serveur pour correction
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+      console.log('TestQuestion.tsx - API_BASE_URL:', API_BASE_URL); // Debug log
+      const response = await fetch(`${API_BASE_URL}/api/testprep/correct`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ answers: answersToSubmit })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+      }
+
+      // 4. Récupération des résultats corrigés
+      const { correctedAnswers, score, totalPossible, percentage } = await response.json();
+
+      // 5. Préparation des données pour le rapport
+      const testDetails: TestDetails = {
+        subject: localStorage.getItem('testSubject') || 'Unknown Subject',
+        grade: localStorage.getItem('testGrade') || 'Unknown Grade',
+        domain: localStorage.getItem('testDomain') || 'Unknown Domain',
+        date: new Date().toLocaleDateString(),
+        totalQuestions: correctedAnswers.length,
+        correctCount: correctedAnswers.filter((a: CorrectedAnswer) => a.isCorrect).length,
+        totalScore: score,
+        maxPossibleScore: totalPossible,
+        percentage
+      };
+
+      // 6. Génération et téléchargement du rapport
+      const pdfBlob = await generateTestReport({
+        answers: correctedAnswers,
+        testDetails
+      });
+
+      // 7. Téléchargement du PDF
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Test_Results_${testDetails.subject}_${testDetails.grade}_${new Date().toISOString().slice(0,10)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Nettoyage
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+
+      // Feedback à l'utilisateur
+      alert(`Test submitted successfully! Score: ${score}/${totalPossible} (${percentage}%)`);
+
+    } catch (error) {
+      console.error('Test submission failed:', error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'An unexpected error occurred during submission. Please try again.';
+      alert(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleNextQuestion = () => {
     if (currentQuestion < questions.length - 1) {
@@ -36,19 +208,13 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
     }
   };
 
-  // Function to get the correct preview URL format
-  const getPreviewUrl = (questionId: number, previewUrl: string) => {
+  const getPreviewUrl = useCallback((questionId: number, previewUrl: string) => {
     if (!previewUrl) return "";
-    
-    // Extract the URL parameter from the preview_urls
     const urlParam = previewUrl.split('?url=')[1];
     if (!urlParam) return previewUrl;
-    
-    // Construct the correct preview URL
     return `${tenantDomain}/testprep/question-preview/${questionId}/?url=${urlParam}`;
-  };
+  }, [tenantDomain]);
 
-  // Fetch preview image with authentication
   useEffect(() => {
     const fetchPreviewImage = async () => {
       if (!questions[currentQuestion]?.preview_urls?.length || !accessToken) return;
@@ -73,7 +239,6 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
         const objectUrl = URL.createObjectURL(blob);
         setPreviewImageSrc(objectUrl);
         
-        // Clean up the object URL when it's no longer needed
         return () => {
           URL.revokeObjectURL(objectUrl);
         };
@@ -83,9 +248,8 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
     };
     
     fetchPreviewImage();
-  }, [currentQuestion, questions, accessToken]);
+  }, [currentQuestion, questions, accessToken, getPreviewUrl]);
 
-  // Preload the next image
   useEffect(() => {
     if (currentQuestion < questions.length - 1 && accessToken) {
       const preloadImage = async () => {
@@ -100,15 +264,12 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
             const blob = await response.blob();
             const img = new Image();
             img.src = URL.createObjectURL(blob);
-            
-            // Clean up
             return () => URL.revokeObjectURL(img.src);
           }
         } catch (error) {
           console.error("Error preloading next image:", error);
         }
       };
-      
       preloadImage();
     }
   }, [currentQuestion, questions, accessToken]);
@@ -143,12 +304,23 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
             <HelpCircle size={18} className="mr-2" />
             Help
           </Button>
-          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
-            <Send size={18} className="mr-2" />
-            Submit
+          <Button 
+            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            onClick={handleSubmit}
+            disabled={isSubmitting || isGeneratingPdf}
+          >
+            {isSubmitting || isGeneratingPdf ? (
+              'Processing...'
+            ) : (
+              <>
+                <Send size={18} className="mr-2" />
+                Submit & Download PDF
+              </>
+            )}
           </Button>
         </div>
       </header>
+
 
       {/* Main Content */}
       <div className="flex-1 p-6 w-full max-w-5xl mx-auto">
