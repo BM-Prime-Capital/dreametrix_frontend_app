@@ -14,9 +14,14 @@ import CharacterItem from "../ui/character-item";
 import { useEffect, useState } from "react";
 import { getAttendances } from "@/services/AttendanceService";
 import { localStorageKey } from "@/constants/global";
-import { getCharracters } from "@/services/CharacterService";
+import {
+  getCharracters,
+  getCharractersList,
+} from "@/services/CharacterService";
 import { getFormatedDate } from "@/utils/global";
 import { Loader } from "../ui/loader";
+import { useList } from "@/hooks/useList";
+import { Character } from "@/types";
 
 // This would typically come from your API
 const charactersMock = [
@@ -39,21 +44,14 @@ const charactersMock = [
     student: "Sarah Tante",
   },
 ];
-type Character = {
-  character_id: number;
-  student: any;
-  bad_characters: string[];
-  good_characters: string[];
-  teacher_comment: string;
-  create_at: string;
-  update_at: string;
-};
+
 export function CharacterTable() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [primaryDomain, setPrimaryDomain] = useState<string>("");
   const [accessToken, setAccessToken] = useState<string>("");
   const [refreshToken, setRefreshToken] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const { list: charractersList } = useList(getCharractersList);
 
   useEffect(() => {
     const accessToken: any = localStorage.getItem(localStorageKey.ACCESS_TOKEN);
@@ -92,6 +90,16 @@ export function CharacterTable() {
 
     loadCharacter();
   }, []);
+
+  useEffect(() => {
+    if (charractersList) {
+      localStorage.setItem(
+        localStorageKey.CHARACTERS_LIST,
+        JSON.stringify(charractersList)
+      );
+    }
+  }, [charractersList]);
+
   return (
     <div className="w-full overflow-auto">
       {isLoading ? (
@@ -115,7 +123,7 @@ export function CharacterTable() {
                 </TableCell>
                 <TableCell>{`${character.student.first_name} ${character.student.last_name}`}</TableCell>
                 <TableCell>
-                  <CharacterItem />
+                  <CharacterItem character={character} />
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-8">

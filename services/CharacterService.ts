@@ -4,6 +4,7 @@
 import { localStorageKey } from "@/constants/global";
 import { redirect } from "next/navigation";
 const characterPath = "/characters/initialize-class/";
+
 export async function getCharracters(
   initCharaterData: { class_id: number; teacher_id: number },
   tenantPrimaryDomain: string,
@@ -13,8 +14,6 @@ export async function getCharracters(
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
-  console.log("initCharaterData => ", initCharaterData);
-
   const url = `${tenantPrimaryDomain}${characterPath}`;
   let response = await fetch(url, {
     method: "POST",
@@ -37,8 +36,6 @@ export async function getCharracters(
 
   const data = await response.json();
 
-  console.log("getCharracters => ", data);
-
   return data.characters;
 }
 
@@ -50,13 +47,16 @@ export async function updateCharacter(
 ) {
   try {
     const url = `${tenantPrimaryDomain}${characterPath}${character.id}/`;
+    const data = {
+      updates: [character],
+    };
     let response = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify(character),
+      body: JSON.stringify(data),
     });
 
     if (response.ok) {
@@ -69,4 +69,36 @@ export async function updateCharacter(
   } catch (error) {
     console.log("Error => ", error);
   }
+}
+
+export async function getCharractersList(
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  refreshToken: string
+) {
+  if (!accessToken) {
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
+  }
+  const url = `${tenantPrimaryDomain}/characters/public-characters/`;
+  let response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 403) {
+      throw new Error(
+        "Vous n'avez pas la permission d'accéder aux enseignants."
+      );
+    } else {
+      throw new Error("Erreur lors de la récupération des enseignants.");
+    }
+  }
+
+  const data = await response.json();
+
+  return data;
 }

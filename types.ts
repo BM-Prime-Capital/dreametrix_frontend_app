@@ -78,3 +78,13 @@ export interface ISchoolClass {
   teacher: number;
   students: number[];
 }
+
+export interface Character {
+  character_id: number;
+  student: { id: number; first_name: string; last_name: string };
+  bad_characters: string[];
+  good_characters: string[];
+  teacher_comment: string;
+  create_at: string;
+  update_at: string;
+}
