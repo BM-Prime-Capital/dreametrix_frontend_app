@@ -23,28 +23,6 @@ import { Loader } from "../ui/loader";
 import { useList } from "@/hooks/useList";
 import { Character } from "@/types";
 
-// This would typically come from your API
-const charactersMock = [
-  {
-    id: 1,
-    name: "Class 4 - Math",
-    date: "03/04",
-    student: "Sarah Boorn",
-  },
-  {
-    id: 2,
-    name: "Class 5 - Math",
-    date: "08/03",
-    student: "Jason Malcom",
-  },
-  {
-    id: 3,
-    name: "Class 3 - Science",
-    date: "01/02",
-    student: "Sarah Tante",
-  },
-];
-
 export function CharacterTable() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [primaryDomain, setPrimaryDomain] = useState<string>("");
@@ -52,6 +30,7 @@ export function CharacterTable() {
   const [refreshToken, setRefreshToken] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const { list: charractersList } = useList(getCharractersList);
+  const [shouldRefreshData, setShouldRefreshData] = useState<boolean>(true);
 
   useEffect(() => {
     const accessToken: any = localStorage.getItem(localStorageKey.ACCESS_TOKEN);
@@ -76,20 +55,22 @@ export function CharacterTable() {
     setRefreshToken(refreshToken);
 
     const loadCharacter = async () => {
-      setIsLoading(true);
-      const data = await getCharracters(
-        { class_id: currentClassId, teacher_id: owner_id },
-        domain,
-        accessToken,
-        refreshToken
-      );
-      console.log("getCharracters DATA => ", data);
-      setCharacters(data);
-      setIsLoading(false);
+      if (shouldRefreshData) {
+        setIsLoading(true);
+        const data = await getCharracters(
+          { class_id: currentClassId, teacher_id: owner_id },
+          domain,
+          accessToken,
+          refreshToken
+        );
+        setCharacters(data);
+        setIsLoading(false);
+        setShouldRefreshData(false);
+      }
     };
 
     loadCharacter();
-  }, []);
+  }, [shouldRefreshData]);
 
   useEffect(() => {
     if (charractersList) {
@@ -99,6 +80,8 @@ export function CharacterTable() {
       );
     }
   }, [charractersList]);
+
+  console.log("NOW CHARACTERS =>", characters);
 
   return (
     <div className="w-full overflow-auto">
@@ -123,7 +106,10 @@ export function CharacterTable() {
                 </TableCell>
                 <TableCell>{`${character.student.first_name} ${character.student.last_name}`}</TableCell>
                 <TableCell>
-                  <CharacterItem character={character} />
+                  <CharacterItem
+                    character={character}
+                    setShouldRefreshData={setShouldRefreshData}
+                  />
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-8">
