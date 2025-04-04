@@ -334,6 +334,7 @@ export const localStorageKey = {
   USER_DATA: "userData",
   TENANT_DATA: "tenantData",
   CURRENT_SELECTED_CLASS: "selectedClass",
+  CHARACTERS_LIST: "charractersList",
 };
 
 export const dayOfTheWeek = [
