@@ -46,7 +46,8 @@ export async function updateCharacter(
   refreshToken: string
 ) {
   try {
-    const url = `${tenantPrimaryDomain}${characterPath}${character.id}/`;
+    const url = `${tenantPrimaryDomain}/characters/update-ratings/`;
+    console.log("URL => ", url);
     const data = {
       updates: [character],
     };
@@ -62,6 +63,8 @@ export async function updateCharacter(
     if (response.ok) {
       const data: any = await response.json();
       console.log("PUT Class data => ", data);
+
+      return "ok";
     } else {
       console.log("PUT Class Failed => ", response);
       throw new Error("Class modification failed");

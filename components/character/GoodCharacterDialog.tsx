@@ -1,17 +1,24 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 import { teacherImages } from "@/constants/images";
 import Image from "next/image";
 import PageTitleH2 from "../ui/page-title-h2";
-import { localStorageKey, studentClassCharacters } from "@/constants/global";
+import { localStorageKey } from "@/constants/global";
 import { Character } from "@/types";
-import MultiSelectList from "../MultiSelectionList";
+import { updateCharacter } from "@/services/CharacterService";
+import { useRequestInfo } from "@/hooks/useRequestInfo";
 
 const GoodCharacterDialog = React.memo(
-  ({ character }: { character: Character }) => {
+  ({
+    character,
+    setShouldRefreshData,
+  }: {
+    character: Character;
+    setShouldRefreshData: Function;
+  }) => {
     const [open, setOpen] = useState(false);
     const currentClass = JSON.parse(
       localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
@@ -19,56 +26,95 @@ const GoodCharacterDialog = React.memo(
     const characterList: { id: number; name: string }[] = JSON.parse(
       localStorage.getItem(localStorageKey.CHARACTERS_LIST)!
     );
-    const [isSelected, setIsSelected] = useState(false);
-    const [selectedCharacters, setSelectedCharacters] = useState<string[]>([]); // this gonna be initialized by a prop
-    const [comment, setComment] = useState<string>("");
+    const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+    const [allItems, setAllItems] = useState<any[]>([]);
+    const [comment, setComment] = useState<string>(character.teacher_comment);
+    // These are selected googd characterscthat we are gonna save on good_characters field
+    const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(
+      {}
+    );
+    const [selectAll, setSelectAll] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-    /*     const handleClick = (clickedCharacter: string) => {
-      const foundCharacter = selectedCharacters.find(
-        (character) => character === clickedCharacter
+    // Handle individual item checkbox change
+    const handleItemChange = (item: string) => {
+      const updatedItems: Record<string, boolean> = {
+        ...checkedItems,
+        [item]: !checkedItems[item],
+      };
+      setCheckedItems(updatedItems);
+
+      // Update Select All state if any item is unchecked
+      const allChecked = Object.values(updatedItems).every(Boolean);
+      setSelectAll(allChecked);
+    };
+
+    // Handle Select All change
+    const handleSelectAllChange = () => {
+      const newCheckedState = !selectAll;
+      const updatedItems = Object.fromEntries(
+        allItems?.map((item) => [item, newCheckedState])
       );
-      if (foundCharacter) {
-        const newCharacters = selectedCharacters.filter(
-          (character) => character !== clickedCharacter
-        );
 
-        setSelectedCharacters(newCharacters);
-      } else {
-        setSelectedCharacters([...selectedCharacters, clickedCharacter]);
-      }
-    }; */
+      setCheckedItems(updatedItems);
+      setSelectAll(newCheckedState);
+    };
 
     const handleSubmit = async (e: any) => {
       e.preventDefault();
-      // TODO: handle submission
-
+      setIsSubmitting(true);
       const data = {
-        character_id: 7,
-        bad_statistics_character: ["lazy", "disorganized"],
-        good_statistics_character: ["creative", "helpful"],
+        character_id: character.character_id,
+        bad_statistics_character: character.bad_characters,
+        good_statistics_character: Object.keys(checkedItems).filter(
+          (key) => checkedItems[key as keyof typeof checkedItems] === true
+        ),
         teacher_comment: comment,
       };
+      const rep = await updateCharacter(
+        data,
+        tenantDomain,
+        accessToken,
+        refreshToken
+      );
+      console.log("updateCharacter resp => ", rep);
+
+      setShouldRefreshData(true);
+
+      setIsSubmitting(false);
 
       setOpen(false);
     };
 
-    const handleSelectedCharacters = useCallback(
-      (items: string[]) => {
-        if (characterList.length > 0) {
-          setSelectedCharacters(items);
+    useEffect(() => {
+      if (characterList && allItems.length < 1) {
+        const allCharacters = characterList.flatMap((char) => char.name);
+
+        if (character.good_characters.length > 0) {
+          const updatedItems = Object.fromEntries(
+            allCharacters?.map((item) =>
+              character.good_characters.includes(item)
+                ? [item, true]
+                : [item, false]
+            )
+          );
+
+          setCheckedItems(updatedItems);
         }
-      },
-      [characterList]
-    );
+
+        setAllItems(allCharacters);
+      }
+    }, [characterList]);
 
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild className="cursor-pointer">
           <span
             className={`flex justify-center items-center p-2 h-10 w-10 rounded-full cursor-pointer ${
-              isSelected ? "bg-bgGreenLight2" : "border-2 border-bgGreenLight2"
+              character.good_characters.length > 0
+                ? "bg-bgGreenLight2"
+                : "border-2 border-bgGreenLight2"
             }`}
-            onClick={() => setIsSelected(!isSelected)}
           >
             <Image src={teacherImages.up} width={20} height={20} alt="up" />
           </span>
@@ -90,7 +136,7 @@ const GoodCharacterDialog = React.memo(
               <div className="flex flex-col gap-2 justify-center">
                 <span
                   className={`flex justify-center items-center p-2 h-10 w-10 rounded-full cursor-pointer ${
-                    isSelected
+                    character.good_characters.length > 0
                       ? "bg-bgGreenLight2"
                       : "border-2 border-bgGreenLight2"
                   }`}
@@ -107,31 +153,59 @@ const GoodCharacterDialog = React.memo(
             </div>
             <label>Select the options that apply:</label>
             <div className="h-[33%] overflow-y-scroll border-[1px] border-[#eee] p-2">
-              <MultiSelectList
-                allItems={characterList.flatMap((char) => char.name)}
-                allShouldBeSelected={false}
-                itemsAreLoading={false}
-                selectedItems={[]}
-                updateSelectedItems={handleSelectedCharacters}
-                withSheckbox={true}
-                alignment="col"
-              />
+              <div className={"flex flex-col gap-4"}>
+                {/* Select All Checkbox */}
+                <label className="flex items-center space-x-2">
+                  <>
+                    <input
+                      className="hidden"
+                      type="checkbox"
+                      checked={selectAll}
+                      onChange={handleSelectAllChange}
+                    />
+                    <span className="flex p-[2px] border-[2px] border-[#ff69b4] w-[20px] h-[20px] rounded-sm">
+                      <span
+                        className={`flex-1 rounded-xs ${
+                          selectAll ? "bg-[#ff69b4]" : ""
+                        }`}
+                      >
+                        {" "}
+                      </span>
+                    </span>
+                    <span>Select All</span>
+                  </>
+                </label>
 
-              {/* {characterList?.map(
-                (character: {
-                  id: number;
-                  name: string;
-                  description: string;
-                }) => (
-                  <label
-                    key={character.id}
-                    className="flex gap-4 w-fit"
-                    onClick={() => handleClick(character.name)}
-                  >
-                    <input type="checkbox" /> <span>{character.name}</span>
-                  </label>
-                )
-              )} */}
+                <div className={`flex flex-col gap-4 flex-wrap`}>
+                  {/* Item Checkboxes */}
+                  {allItems?.map((item, index) => (
+                    <label
+                      key={index}
+                      className={`flex items-center space-x-2`}
+                    >
+                      <>
+                        <input
+                          className="hidden"
+                          type="checkbox"
+                          checked={checkedItems[item]}
+                          onChange={() => handleItemChange(item)}
+                        />
+                        <span className="flex p-[2px] border-[2px] border-[#ff69b4] w-[20px] h-[20px] rounded-sm">
+                          <span
+                            className={`flex-1 rounded-xs ${
+                              checkedItems[item] ? "bg-[#ff69b4]" : ""
+                            }`}
+                          >
+                            {" "}
+                          </span>
+                        </span>
+                      </>
+
+                      <span>{item}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <textarea
@@ -151,10 +225,11 @@ const GoodCharacterDialog = React.memo(
                 Cancel
               </button>
               <button
+                disabled={isSubmitting}
                 type="submit"
                 className="flex-1 bg-blue-500 hover:bg-blue-600 text-white rounded-full px-4"
               >
-                Apply
+                {isSubmitting ? "Submitting..." : "Apply"}
               </button>
             </div>
           </form>
