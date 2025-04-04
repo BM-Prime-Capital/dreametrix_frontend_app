@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import StudentSeatingConditionsDialog from "./StudentSeatingConditionsDialog";
 import ClassSelect from "../ClassSelect";
 import { Key } from "lucide-react";
+import CrossCloseButton from "../ui/cross-close-button";
 
 type StudentArrangement = {
   seatNumber: number;
@@ -25,7 +26,7 @@ type StudentArrangementsWrapper = {
   arrangements: StudentArrangement[];
 };
 
-const totalCells = 144;
+const totalCells = 64;
 
 export default function Seating() {
   const [studentArrangements, setStudentArrangements] = useState<
@@ -142,6 +143,8 @@ export default function Seating() {
     useState<number>(-1);
   const [isSeatingArrangementAuto, setIsSeatingArrangementAuto] =
     useState(true);
+
+  const [displayStudentsList, setDisplayStudentsList] = useState<boolean>(true);
 
   const handleSeatClick = (targetSeatNumber: number) => {
     setFirstSelectedSeatNumber((prevSelectedseatNumber) => {
@@ -371,21 +374,57 @@ export default function Seating() {
               <PageTitleH2 title="ARRANGEMENT" />
               <label className="text-muted-foreground">BLACKBOARD</label>
             </div>
-            <div
-              id="arrangementGrid"
-              className="grid grid-cols-12 grid-row-12 border-2 gap-2 p-2 border-gray-200"
-            >
-              {currentStudentArrangements.arrangements.length > 0 ? (
-                <>
-                  {arrangementGrid.map((item: any, index) => (
-                    <div key={index}>{item}</div>
-                  ))}
-                </>
-              ) : (
-                <div className="flex items-center justify-center">
-                  <label className="text-muted-foreground">No Students</label>
-                </div>
-              )}
+            <div className="flex">
+              <div className="flex flex-col gap-2">
+                <span
+                  title="Students List"
+                  className="flex justify-center items-center h-[25px] w-[25px] bg-blue-500 p- text-white border-2 border-gray-200 rounded-md cursor-pointer"
+                  onClick={() => setDisplayStudentsList(!displayStudentsList)}
+                >
+                  {displayStudentsList ? <>&#128473;</> : <>☰</>}
+                </span>
+
+                {displayStudentsList && (
+                  <>
+                    {currentStudentArrangements.arrangements.map(
+                      (arrangement) => (
+                        <label
+                          className="whitespace-nowrap cursor-pointer border-b-2 border-gray-200 pr-2"
+                          onClick={() =>
+                            handleSeatClick(arrangement.seatNumber)
+                          }
+                        >
+                          <span className="text-muted-foreground">{`${arrangement.studentName} `}</span>
+                          (
+                          <span
+                            title="Seat number"
+                            className="text-secondaryBtn"
+                          >
+                            {arrangement.seatNumber}
+                          </span>
+                          )
+                        </label>
+                      )
+                    )}
+                  </>
+                )}
+              </div>
+              <div
+                id="arrangementGrid"
+                className="grid grid-cols-8 grid-row-8 border-2 gap-2 p-2 border-gray-200"
+              >
+                {currentStudentArrangements.arrangements.length > 0 ? (
+                  <>
+                    {arrangementGrid.map((item: any, index) => (
+                      <div key={index}>{item}</div>
+                    ))}
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center">
+                    <label className="text-muted-foreground">No Students</label>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <div className="w-full sm:w-fit min-w-[200px] flex flex-col gap-6 bg-[#dfecf1] p-4 pb-0 sm:pb-4 pl-0">
