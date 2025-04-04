@@ -2,7 +2,6 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { StudentSidebar } from "@/components/student/StudentSidebar";
 import { StudentRoutes } from "@/constants/routes";
-
 export default function SchoolAminDashboardLayout({
   children,
 }: {
