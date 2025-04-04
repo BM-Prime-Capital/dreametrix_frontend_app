@@ -26,7 +26,7 @@ type StudentArrangementsWrapper = {
   arrangements: StudentArrangement[];
 };
 
-const totalCells = 64;
+const totalSeats = 64;
 
 export default function Seating() {
   const [studentArrangements, setStudentArrangements] = useState<
@@ -186,7 +186,7 @@ export default function Seating() {
   };
 
   const ARRANGEMENT_INITIAL_STATE = Array.from(
-    { length: totalCells },
+    { length: totalSeats },
     (_, i) => (
       <div
         key={i}
@@ -214,10 +214,7 @@ export default function Seating() {
       ...currentStudentArrangements,
       arrangements: shuffleArrayData,
     };
-    console.log(
-      "newCurrenSeatingArrangement NOW => ",
-      newCurrenSeatingArrangement
-    );
+
     setCurrentStudentArrangements((prev) => newCurrenSeatingArrangement);
   };
 
@@ -260,12 +257,12 @@ export default function Seating() {
   }, [isSeatingArrangementAuto]);
 
   function assignRandomSeatNumbers(seats: any[]): any[] {
-    if (seats.length > 134) {
+    if (seats.length > totalSeats) {
       throw new Error("Cannot assign unique seat numbers. Too many seats!");
     }
 
     // Generate an array of unique seat numbers from 0 to 133
-    const availableNumbers = Array.from({ length: 144 }, (_, i) => i);
+    const availableNumbers = Array.from({ length: totalSeats }, (_, i) => i);
 
     // Shuffle the seat numbers
     for (let i = availableNumbers.length - 1; i > 0; i--) {
