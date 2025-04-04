@@ -5,7 +5,7 @@ import { AssignmentsTable } from "./assignments-table";
 import PageTitleH1 from "@/components/ui/page-title-h1";
 import AssignmentFiltersPopUp from "./AssignmentsFiltersPopUp";
 import { AddAssignmentDialog } from "./AddAssignmentDialog";
-import ContentViewType from "../layout/ContentViewType";
+
 import ClassSelect from "../ClassSelect";
 
 export default function Assignments() {
