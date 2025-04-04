@@ -85,7 +85,7 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
     setIsGeneratingPdf(true);
     try {
       // const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
-      const API_BASE_URL = 'http://localhost:3001';
+      const API_BASE_URL = 'https://dreametrix-app.com:3001';
       console.log('TestQuestion.tsx - API_BASE_URL:', API_BASE_URL); // Debug log
       const response = await fetch(`${API_BASE_URL}/api/testprep/generate-pdf`, {
         method: 'POST',
@@ -128,7 +128,7 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
       }));
 
       // 3. Envoi au serveur pour correction
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://dreametrix-app.com:3001';
       console.log('TestQuestion.tsx - API_BASE_URL:', API_BASE_URL); // Debug log
       const response = await fetch(`${API_BASE_URL}/api/testprep/correct`, {
         method: 'POST',
