@@ -105,7 +105,7 @@ export async function getCharractersList(
   return data;
 }
 
-export async function getGeneralView(
+export async function getCharacterGeneralView(
   tenantPrimaryDomain: string,
   accessToken: string,
   refreshToken: string

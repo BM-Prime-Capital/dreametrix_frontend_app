@@ -80,7 +80,8 @@ export default function AttendanceFocusedView({
               <Pencil className="text-[#25AAE1]" />
             </Button>
           ) : (
-            <Button className="flex gap-2 items-center text-lg bg-green-500 hover:bg-green-700 rounded-md  px-2 py-4 lg:px-4 lg:py-6">
+            <>
+              {/* <Button className="flex gap-2 items-center text-lg bg-green-500 hover:bg-green-700 rounded-md  px-2 py-4 lg:px-4 lg:py-6">
               <Image
                 src={teacherImages.save}
                 alt="report"
@@ -89,7 +90,8 @@ export default function AttendanceFocusedView({
                 className="w-8 h-8"
               />
               <span>Save</span>
-            </Button>
+            </Button> */}
+            </>
           )}
         </div>
         <Link

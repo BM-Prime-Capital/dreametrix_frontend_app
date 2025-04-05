@@ -8,6 +8,7 @@ import { useList } from "@/hooks/useList";
 import { getClasses } from "@/services/ClassService";
 import { ISchoolClass } from "@/types";
 import { Loader } from "../ui/loader";
+import { getAttendanceGeneralView } from "@/services/AttendanceService";
 
 type AttendanceStat = {
   className: string;
@@ -79,16 +80,18 @@ const attendanceStatistics: AttendanceStat[] = [
 ];
 
 function AttendanceGeneralView({ changeView }: { changeView: Function }) {
+  const { list: data, isLoading, error } = useList(getAttendanceGeneralView);
+  const allClasses = JSON.parse(
+    localStorage.getItem(localStorageKey.ALL_CLASSES)!
+  );
+
   const handleClick = (selectedClass: ISchoolClass) => {
     localStorage.setItem(
       localStorageKey.CURRENT_SELECTED_CLASS,
-      JSON.stringify(selectedClass)
+      JSON.stringify(allClasses.find((cl: any) => cl.id === selectedClass.id))
     );
     changeView(views.FOCUSED_VIEW);
   };
-  const { list: classes, isLoading, error } = useList(getClasses);
-
-  useEffect(() => {}, []);
 
   return (
     <div className="flex flex-col gap-8 w-full pb-4">
@@ -98,77 +101,79 @@ function AttendanceGeneralView({ changeView }: { changeView: Function }) {
           <StatisticItem
             title="Students"
             iconUrl={teacherImages.whole_class}
-            statNumber={"86"}
+            statNumber={`${
+              data?.student_sum_all_class ? data?.student_sum_all_class : "..."
+            }`}
           />
           <StatisticItem
             title="Presences"
             titleGgColor="bg-green-100"
             iconUrl={generalImages.attendance_ok}
-            statNumber={`${attendanceStatistics
-              .flatMap((as: AttendanceStat) => as.presences)
-              .reduce((as1: number, as2: number) => {
-                return as1 + as2;
-              }, 0)}`}
+            statNumber={`${
+              data?.status_present_sum_all_class
+                ? data?.status_present_sum_all_class
+                : "..."
+            }`}
           />
           <StatisticItem
             title="Absences"
             titleGgColor="bg-red-100"
             iconUrl={generalImages.red_cross}
-            statNumber={`${attendanceStatistics
-              .flatMap((as: AttendanceStat) => as.absences)
-              .reduce((as1: number, as2: number) => {
-                return as1 + as2;
-              }, 0)}`}
+            statNumber={`${
+              data?.status_absent_sum_all_class
+                ? data?.status_absent_sum_all_class
+                : "..."
+            }`}
           />
           <StatisticItem
             title="Lates"
             titleGgColor="bg-yellow-100"
             iconUrl={generalImages.question_mark}
-            statNumber={`${attendanceStatistics
-              .flatMap((as: AttendanceStat) => as.lates)
-              .reduce((as1: number, as2: number) => {
-                return as1 + as2;
-              }, 0)}`}
+            statNumber={`${
+              data?.status_late_sum_all_class
+                ? data?.status_late_sum_all_class
+                : "..."
+            }`}
           />
           <StatisticItem
             title="Classes"
             iconUrl={generalImages.classes}
-            statNumber={`${attendanceStatistics.length}`}
+            statNumber={`${data?.classes_sum ? data?.classes_sum : "..."}`}
           />
         </div>
 
         <div className="w-full overflow-scroll">
-          <table className="w-full" id="statisticTable">
-            <thead>
-              <tr>
-                <th>Class</th>
-                <th>Students</th>
-                <th>Presences</th>
-                <th>Absences</th>
-                <th>Lates</th>
-              </tr>
-            </thead>
+          {isLoading ? (
+            <Loader />
+          ) : (
+            <table className="w-full" id="statisticTable">
+              <thead>
+                <tr>
+                  <th>Class</th>
+                  <th>Students</th>
+                  <th>Presences</th>
+                  <th>Absences</th>
+                  <th>Lates</th>
+                </tr>
+              </thead>
 
-            <tbody>
-              {isLoading ? (
-                <Loader />
-              ) : (
-                classes?.map((as: any, index: number) => (
+              <tbody>
+                {data?.classes.map((as: any, index: number) => (
                   <tr
                     key={index}
                     className={`cursor-pointer`}
                     onClick={() => handleClick(as)}
                   >
                     <td>{as.name}</td>
-                    <td>{as.students.length || 1}</td>
-                    <td>{as.presences || 1}</td>
-                    <td>{as.absences || 1}</td>
-                    <td>{as.lates || 1}</td>
+                    <td>{as.student_sum}</td>
+                    <td>{as.present_status}</td>
+                    <td>{as.absent_status}</td>
+                    <td>{as.late_status}</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
