@@ -7,10 +7,10 @@ import { localStorageKey, views } from "@/constants/global";
 import { ISchoolClass } from "@/types";
 import { useList } from "@/hooks/useList";
 import { Loader } from "../ui/loader";
-import { getGeneralView } from "@/services/CharacterService";
+import { getCharacterGeneralView } from "@/services/CharacterService";
 
 function CharacterGeneralView({ changeView }: { changeView: Function }) {
-  const { list: data, isLoading, error } = useList(getGeneralView);
+  const { list: data, isLoading, error } = useList(getCharacterGeneralView);
   const allClasses = JSON.parse(
     localStorage.getItem(localStorageKey.ALL_CLASSES)!
   );
@@ -31,44 +31,54 @@ function CharacterGeneralView({ changeView }: { changeView: Function }) {
           <StatisticItem
             title="Students"
             iconUrl={teacherImages.whole_class}
-            statNumber={`${data.student_sum_all_class}`}
+            statNumber={`${
+              data?.student_sum_all_class ? data.student_sum_all_class : "..."
+            }`}
           />
           <StatisticItem
             title="Good Characters"
             titleGgColor="bg-green-100"
             iconUrl={teacherImages.up}
-            statNumber={`${data.good_character_sum_all_class}`}
+            statNumber={`${
+              data?.good_character_sum_all_class
+                ? data.good_character_sum_all_class
+                : "..."
+            }`}
           />
           <StatisticItem
             title="Bad Characters"
             titleGgColor="bg-red-100"
             iconUrl={teacherImages.down}
-            statNumber={`${data.bad_character_sum_all_class}`}
+            statNumber={`${
+              data?.bad_character_sum_all_class
+                ? data.bad_character_sum_all_class
+                : "..."
+            }`}
           />
 
           <StatisticItem
             title="Classes"
             iconUrl={generalImages.classes}
-            statNumber={`${data.classes_sum}`}
+            statNumber={`${data?.classes_sum ? data.classes_sum : "..."}`}
           />
         </div>
 
         <div className="w-full overflow-scroll">
-          <table className="w-full" id="statisticTable">
-            <thead>
-              <tr>
-                <th>Class</th>
-                <th>Students</th>
-                <th>Good Character</th>
-                <th>Bad Character</th>
-              </tr>
-            </thead>
+          {isLoading ? (
+            <Loader />
+          ) : (
+            <table className="w-full" id="statisticTable">
+              <thead>
+                <tr>
+                  <th>Class</th>
+                  <th>Students</th>
+                  <th>Good Character</th>
+                  <th>Bad Character</th>
+                </tr>
+              </thead>
 
-            <tbody>
-              {isLoading ? (
-                <Loader />
-              ) : (
-                data?.classes.map((as: any, index: number) => (
+              <tbody>
+                {data?.classes.map((as: any, index: number) => (
                   <tr
                     key={index}
                     className={`cursor-pointer`}
@@ -79,10 +89,10 @@ function CharacterGeneralView({ changeView }: { changeView: Function }) {
                     <td>{as.good_character}</td>
                     <td>{as.bad_character}</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
