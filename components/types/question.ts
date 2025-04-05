@@ -7,4 +7,8 @@ export interface Question {
     difficulty: string;
     page_count: number;
     preview_urls: string[];
+    // Add the missing properties here
+    questionNumber: number;
+    correctAnswer: string;
+    pointValue: number;
   }
