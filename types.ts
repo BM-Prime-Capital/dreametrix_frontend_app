@@ -66,6 +66,7 @@ interface SchoolClassSchedule {
   Friday: DaySchedule[];
 }
 export interface ISchoolClass {
+  id?: string;
   name: string;
   subject_in_all_letter: string;
   subject_in_short: string;
