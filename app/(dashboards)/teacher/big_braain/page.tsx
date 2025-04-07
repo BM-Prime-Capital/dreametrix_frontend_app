@@ -1,6 +1,7 @@
-import CommingSoon from "@/components/ui/comming-soon";
-import React from "react";
+"use client";
 
-export default function BigBraainPage() {
-  return <CommingSoon title="Big BraA.I.n" />;
+import CommingSoon from "@/components/ui/comming-soon";
+
+export default function BigBraAInPage() {
+  return <CommingSoon title="Big BraAIn" />;
 }

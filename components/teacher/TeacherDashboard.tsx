@@ -63,7 +63,7 @@ export default function TeacherDashboard() {
 
   useEffect(() => {
     console.log("classes ok ==> ", classes);
-    localStorage.setItem("classes", JSON.stringify(classes));
+    localStorage.setItem(localStorageKey.ALL_CLASSES, JSON.stringify(classes));
   }, [classes]);
 
   return (

@@ -1,9 +1,7 @@
 "use server";
 
-import { redirect } from "next/navigation";
-
 export async function getAttendances(
-  initAttendanceData: { date: string; class_id: number; teacher_id: number }, // "04.17.2025"
+  initAttendanceData: { date: string; class_id: number; teacher_id: number },
   tenantPrimaryDomain: string,
   accessToken: string,
   refreshToken: string
@@ -22,8 +20,6 @@ export async function getAttendances(
     body: JSON.stringify(initAttendanceData),
   });
 
-  console.log("ATTENDANCE INIT resp", response);
-
   if (!response.ok) {
     if (response.status === 403) {
       throw new Error("Vous n'avez pas la permission d'accéder aux data.");
@@ -33,8 +29,6 @@ export async function getAttendances(
   }
 
   const data = await response.json();
-
-  console.log("getAttendances => ", data);
 
   return data.attendances;
 }
@@ -46,27 +40,29 @@ export async function updateAttendance(
   refreshToken: string
 ) {
   try {
-    console.log("UPDATING Attendance => ", {
-      attendance,
-      tenantPrimaryDomain,
-      accessToken,
-      refreshToken,
-    });
-    const url = `${tenantPrimaryDomain}/attendances/${attendance.id}/`;
+    const data = {
+      updates: [
+        {
+          attendance_id: attendance.attendance_id,
+          status: attendance.status,
+          notes: "Not Applicable",
+        },
+      ],
+    };
+    const url = `${tenantPrimaryDomain}/attendances/update-attendances/`;
     let response = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({
-        ...attendance,
-      }),
+      body: JSON.stringify(data),
     });
 
     if (response.ok) {
       const data: any = await response.json();
       console.log("PUT Attendance data => ", data);
+      return "ok";
     } else {
       console.log("PUT Attendance Failed => ", response);
       throw new Error("Attendance modification failed");
@@ -74,4 +70,34 @@ export async function updateAttendance(
   } catch (error) {
     console.log("Error => ", error);
   }
+}
+
+export async function getAttendanceGeneralView(
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  refreshToken: string
+) {
+  if (!accessToken) {
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
+  }
+  const url = `${tenantPrimaryDomain}/attendances/general-view`;
+  let response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 403) {
+      throw new Error("Vous n'avez pas la permission d'accéder aux data.");
+    } else {
+      throw new Error("Erreur lors de la récupération des attendances.");
+    }
+  }
+
+  const data = await response.json();
+
+  return data;
 }

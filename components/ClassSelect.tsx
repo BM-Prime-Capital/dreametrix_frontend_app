@@ -1,11 +1,15 @@
 "use client";
 
+import { localStorageKey } from "@/constants/global";
 import { ISchoolClass } from "@/types";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 export default function ClassSelect({ className }: { className?: string }) {
   const loadedClasses = localStorage.getItem("classes");
-  const loadedSelectedClass = localStorage.getItem("selectedClass");
+  const loadedSelectedClass = localStorage.getItem(
+    localStorageKey.CURRENT_SELECTED_CLASS
+  );
 
   const [classes, setClasses] = useState<any[]>([]);
   const [selectedClass, setSelectedClass] = useState<ISchoolClass | null>(null);

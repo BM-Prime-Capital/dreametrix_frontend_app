@@ -1,5 +1,5 @@
 import Teach from "@/components/teach/Teach";
 
-export default function AssignmentsPage() {
+export default function TeachPage() {
   return <Teach />;
 }

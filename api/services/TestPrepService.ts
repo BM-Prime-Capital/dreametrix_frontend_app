@@ -1,7 +1,7 @@
 // api/services/TestPrepService.ts
 import { Answer, CorrectionResult, TestDetails } from '../types/testPrepTypes';
 
-const API_BASE_URL = 'http://localhost:3001'; 
+const API_BASE_URL = 'https://dreametrix-app.com:3001'; 
 console.log('TestPrepService.ts - API_BASE_URL:', API_BASE_URL); // Debug log
 export const submitTestAnswers = async (answers: Answer[]): Promise<CorrectionResult> => {
   const response = await fetch(`${API_BASE_URL}/api/testprep/correct`, {

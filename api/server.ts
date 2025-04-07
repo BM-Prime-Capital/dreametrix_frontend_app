@@ -3,11 +3,11 @@ import cors from 'cors';
 import testPrepRoutes from './routes/testPrep';
 
 const app = express();
-const PORT = process.env.API_PORT || 3001;
+const PORT = 3001;
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000', // Autorisez explicitement le frontend
+  origin: 'https://dreametrix-app.com', // Autorisez explicitement le frontend
   methods: ['GET', 'POST', 'OPTIONS'], // Ajoutez OPTIONS pour les preflight
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
