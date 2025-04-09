@@ -1,5 +1,5 @@
-import CommingSoon from "@/components/ui/comming-soon";
+import ParentDashboard from "@/components/parents/Dashboard"
 
 export default function ParentDashboardPage() {
-  return <CommingSoon title={"Parent"} />;
+  return <ParentDashboard />
 }
