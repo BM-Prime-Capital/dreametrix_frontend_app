@@ -1,3 +1,6 @@
+// Description: This module provides services for correcting test answers and generating PDF reports.
+// It includes functions to read answer keys from an Excel file, correct user answers, and generate a PDF report with charts and recommendations.
+
 import xlsx from 'xlsx';
 import path from 'path';
 import { chromium } from 'playwright-chromium';
