@@ -91,7 +91,24 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
       }
   
       const data = await response.json();
-      onStartTest(data.questions);
+    
+  
+      // Transformer les questions pour correspondre à l'interface attendue
+      const transformedQuestions = data.questions.map((question: any, index: number) => ({
+        id: question.id,
+        questionNumber: question.id, // Utilisez l'id comme numéro de question
+        correctAnswer: question.key, // La réponse correcte est dans 'key'
+        pointValue: 1, // Valeur par défaut ou à adapter
+        main_link: question.main_link,
+        preview_urls: question.preview_urls,
+        type: question.type,
+        standard: question.standard,
+        domain: question.domain
+      }));
+
+      console.log("Données brutes de l'API:",transformedQuestions);
+  
+      onStartTest(transformedQuestions);
     } catch (error) {
       console.error('Error fetching questions:', error);
     }
