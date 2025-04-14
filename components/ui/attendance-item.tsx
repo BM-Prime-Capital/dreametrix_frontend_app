@@ -26,7 +26,7 @@ export default function AttendanceItem({
       handleChange(attendanceLabel.toLowerCase());
     } else {
       alert(
-        "This is a past attendance list, please click edit button for any change.\nDon't forget to save you changes."
+        "This is a past attendance list, please click edit button for any change." // \nDon't forget to save you changes.
       );
     }
   }

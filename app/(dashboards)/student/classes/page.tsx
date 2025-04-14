@@ -1,5 +1,5 @@
-import Classes from "@/components/classes/ClassesPage";
+import StudentClassesTable from "@/components/student/classes/student-classes-page";
 
 export default function ClassesPage() {
-  return <Classes />;
+  return <StudentClassesTable />;
 }

@@ -1,5 +1,4 @@
 import React from "react";
-import { Card } from "@/components/ui/card";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TeacherRoutes } from "@/constants/routes";
 

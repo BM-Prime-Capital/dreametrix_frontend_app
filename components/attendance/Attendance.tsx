@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import AttendanceGeneralView from "./AttendanceGeneralView";
-import AttendanceFocusedView from "./AttendanceSpecificView";
+import AttendanceFocusedView from "./AttendanceFocusedView";
 import { views } from "@/constants/global";
 
 function Attendance() {

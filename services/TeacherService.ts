@@ -7,11 +7,6 @@ export async function getTeachers(
   accessToken: string,
   refreshToken: string
 ) {
-  console.log("Sending getTeachers payload => ", {
-    tenantPrimaryDomain,
-    accessToken,
-    refreshToken,
-  });
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
@@ -23,9 +18,7 @@ export async function getTeachers(
   });
 
   if (!response.ok) {
-    if (response.status === 401) {
-      return redirect("/");
-    } else if (response.status === 403) {
+    if (response.status === 403) {
       throw new Error(
         "Vous n'avez pas la permission d'accéder aux enseignants."
       );
@@ -35,8 +28,6 @@ export async function getTeachers(
   }
 
   const data = await response.json();
-
-  console.log("getTeachers => ", data);
 
   return data.results;
 }
@@ -73,11 +64,7 @@ export async function updateTeacher(
       console.log("PUT Teacher data => ", data);
     } else {
       console.log("PUT Teacher Failed => ", response);
-      if (response.status == 401) {
-        return redirect("/");
-      } else {
-        throw new Error("Teacher modification failed");
-      }
+      throw new Error("Teacher modification failed");
     }
   } catch (error) {
     console.log("Error => ", error);

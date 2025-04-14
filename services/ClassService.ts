@@ -31,7 +31,6 @@ export async function getClasses(
   }
 
   const data = await response.json();
-
   return data.results;
 }
 
@@ -42,60 +41,16 @@ export async function createClass(
   refreshToken: string
 ) {
   try {
-    console.log("CREATING Class => ", {
-      classData,
-      tenantPrimaryDomain,
-      accessToken,
-      refreshToken,
-    });
-
     const url = `${tenantPrimaryDomain}/classes/`;
-    const defautSchedule = {
-      Monday: [
-        {
-          date: "2023-09-04",
-          start_time: "09:00",
-          end_time: "10:30",
-        },
-        {
-          date: "2023-09-11",
-          start_time: "09:00",
-          end_time: "10:30",
-        },
-      ],
-      Wednesday: [
-        {
-          date: "2023-09-06",
-          start_time: "09:00",
-          end_time: "10:30",
-        },
-        {
-          date: "2023-09-13",
-          start_time: "15:00",
-          end_time: "16:30",
-        },
-      ],
-      Friday: [
-        {
-          date: "2023-09-08",
-          start_time: "11:00",
-          end_time: "12:30",
-        },
-        {
-          date: "2023-09-15",
-          start_time: "13:00",
-          end_time: "14:30",
-        },
-      ],
-    };
+
     const data = {
       ...classData,
-      hours_and_dates_of_course_schedule: defautSchedule, // TO update
       name: `Class ${classData.grade} - ${classData.subject_in_short}`,
-      students: [1, 2],
+      students: [1, 2], // TO UPDATE
       description: `Class ${classData.grade} - ${classData.subject_in_short}`,
     };
     console.log("CLASS PAYLOAD => ", data);
+
     let response = await fetch(url, {
       method: "POST",
       headers: {
@@ -110,11 +65,7 @@ export async function createClass(
       return "ok";
     } else {
       console.log("POST Class Failed => ", response);
-      if (response.status === 401) {
-        return redirect("/");
-      } else {
-        throw new Error("Class modification failed");
-      }
+      throw new Error("Class modification failed");
     }
   } catch (error) {
     console.log("Error => ", error);
@@ -128,36 +79,29 @@ export async function updateClass(
   refreshToken: string
 ) {
   try {
-    console.log("UPDATING Class => ", {
-      classData,
-      tenantPrimaryDomain,
-      accessToken,
-      refreshToken,
-    });
-    const url = `${tenantPrimaryDomain}/classes/${classData.id}/`;
+    const data = {
+      ...classData,
+      teacher: classData.teacher.id,
+      students: classData.students.map((student: any) => student.id),
+    };
+    console.log("UPDATING Class => ", data);
+    const url = `${tenantPrimaryDomain}/classes/${data.id}/`;
     let response = await fetch(url, {
-      method: "PUT", // replace by PUT
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({
-        ...classData,
-        course_id: 1,
-        notes: "good good",
-      }),
+      body: JSON.stringify(data),
     });
 
     if (response.ok) {
       const data: any = await response.json();
-      console.log("PUT Class data => ", data);
+
+      return "ok";
     } else {
       console.log("PUT Class Failed => ", response);
-      if (response.status === 401) {
-        return redirect("/");
-      } else {
-        throw new Error("Class modification failed");
-      }
+      throw new Error("Class modification failed");
     }
   } catch (error) {
     console.log("Error => ", error);

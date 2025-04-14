@@ -2,7 +2,6 @@
 
 import { Card } from "@/components/ui/card";
 import { ClassesTable } from "./classes-table";
-import { Button } from "@/components/ui/button";
 import AllClassFiltersPopUp from "./AllClassFiltersPopUp";
 import { AddClassDialog } from "./AddClassDialog";
 import { useState } from "react";

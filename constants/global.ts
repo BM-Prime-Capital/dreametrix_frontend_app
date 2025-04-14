@@ -333,4 +333,15 @@ export const localStorageKey = {
   REFRESH_TOKEN: "refreshToken",
   USER_DATA: "userData",
   TENANT_DATA: "tenantData",
+  CURRENT_SELECTED_CLASS: "selectedClass",
+  CHARACTERS_LIST: "charractersList",
+  ALL_CLASSES: "classes",
 };
+
+export const dayOfTheWeek = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+];

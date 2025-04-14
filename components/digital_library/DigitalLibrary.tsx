@@ -15,7 +15,7 @@ import {
 } from "@/services/DigitalLibraryService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { getClasses } from "@/services/ClassService";
-import { DigitalLibrarySheet } from "@/types";
+import { DigitalLibrarySheet, ISchoolClass } from "@/types";
 import { localStorageKey } from "@/constants/global";
 import { Button } from "../ui/button";
 import { LoaderDialog } from "../ui/loader-dialog";
@@ -37,6 +37,9 @@ export default function DigitalLibrary() {
     error: classesError,
   } = useList(getClasses);
 
+  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  const loadedSelectedClass = localStorage.getItem("selectedClass");
+
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
   const [questionsLinks, setQuestionsLinks] = useState<{
     links: string[];
@@ -47,6 +50,7 @@ export default function DigitalLibrary() {
 
   const [checkedClasses, setCheckedClasses] = useState<string[]>([]);
   const [checkedStandards, setCheckedStandards] = useState<string[]>([]);
+  const [selectedClass, setSelectedClass] = useState<ISchoolClass | null>(null);
 
   const [isDreaMetrixBankOfQuestion, setIsDreaMetrixBankOfQuestion] =
     useState(false);
@@ -70,8 +74,8 @@ export default function DigitalLibrary() {
   const [fileStream, setFileStream] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  const [isSubjectLoadAutomaticaly, setIsSubjectLoadAutomaticaly] =
+    useState<boolean>(false);
 
   const handleSubjectSelection = async (selectedSubject: string) => {
     setDigitalLibrarySheet({
@@ -278,12 +282,6 @@ export default function DigitalLibrary() {
     setIsLoading(false);
   };
 
-  useEffect(() => {
-    if (!classesIsLoading) {
-      setAllClasses(initialClasses);
-    }
-  }, [classesIsLoading]);
-
   async function handleQuestionsTypeChange(e: ChangeEvent<HTMLSelectElement>) {
     setDigitalLibrarySheet({
       ...digitalLibrarySheet,
@@ -335,6 +333,38 @@ export default function DigitalLibrary() {
       setQuestionsLinks(null);
     }
   }
+
+  useEffect(() => {
+    if (!classesIsLoading) {
+      setAllClasses(initialClasses);
+    }
+  }, [classesIsLoading]);
+
+  useEffect(() => {
+    if (loadedSelectedClass) {
+      const currentSelectedClass = JSON.parse(loadedSelectedClass);
+      setSelectedClass(currentSelectedClass);
+    }
+  }, [loadedSelectedClass]);
+
+  useEffect(() => {
+    const loadRelatedData = async () => {
+      if (selectedClass) {
+        await handleSubjectSelection(selectedClass.subject_in_short);
+        setIsSubjectLoadAutomaticaly(true);
+      }
+    };
+    loadRelatedData();
+  }, [selectedClass]);
+
+  useEffect(() => {
+    const loadRelatedData = async () => {
+      if (isSubjectLoadAutomaticaly && selectedClass) {
+        await handleGradeSelection(selectedClass.grade);
+      }
+    };
+    loadRelatedData();
+  }, [isSubjectLoadAutomaticaly]);
 
   return (
     <section className="flex flex-col gap-2 w-full">

@@ -18,9 +18,7 @@ export async function getSubjects(
   });
 
   if (!response.ok) {
-    if (response.status === 401) {
-      return redirect("/");
-    } else if (response.status === 403) {
+    if (response.status === 403) {
       throw new Error("Vous n'avez pas la permission d'accéder aux donnees.");
     } else {
       throw new Error("Erreur lors de la récupération des donnees.");
@@ -28,8 +26,6 @@ export async function getSubjects(
   }
 
   const data = await response.json();
-
-  console.log("Subjects => ", data); // Subjects =>  { subjects: [ 'Math', 'Language' ] }
 
   return data.subjects;
 }
@@ -51,9 +47,7 @@ export async function getGrades(
   });
 
   if (!response.ok) {
-    if (response.status === 401) {
-      return redirect("/");
-    } else if (response.status === 403) {
+    if (response.status === 403) {
       throw new Error("Vous n'avez pas la permission d'accéder aux donnees.");
     } else {
       throw new Error("Erreur lors de la récupération des donnees.");
@@ -61,8 +55,6 @@ export async function getGrades(
   }
 
   const data = await response.json();
-
-  console.log("Grades => ", data);
 
   return data.grades;
 }
@@ -84,9 +76,7 @@ export async function getDomains(
   });
 
   if (!response.ok) {
-    if (response.status === 401) {
-      return redirect("/");
-    } else if (response.status === 403) {
+    if (response.status === 403) {
       return [];
     } else {
       return [];
@@ -94,8 +84,6 @@ export async function getDomains(
   }
 
   const data = await response.json();
-
-  console.log("Domains => ", data);
 
   return data.domains;
 }
@@ -121,9 +109,7 @@ export async function getStandards(
   });
 
   if (!response.ok) {
-    if (response.status === 401) {
-      return redirect("/");
-    } else if (response.status === 403) {
+    if (response.status === 403) {
       throw new Error("Vous n'avez pas la permission d'accéder aux donnees.");
     } else {
       throw new Error("Erreur lors de la récupération des donnees.");
@@ -131,8 +117,6 @@ export async function getStandards(
   }
 
   const data = await response.json();
-
-  console.log("Standanrds => ", data);
 
   return data.standards;
 }
@@ -180,8 +164,6 @@ export async function getQuestionsLinks(
   }
 
   const data = await response.json();
-
-  console.log("Questions Links => ", data);
 
   return data;
 }

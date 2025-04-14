@@ -19,16 +19,17 @@ import { localStorageKey } from "@/constants/global";
 export function AttendanceTable({
   isAttendanceDatePast,
   currentDate,
-  currentClassId,
 }: {
   isAttendanceDatePast: boolean;
   currentDate: string;
-  currentClassId: number;
 }) {
   const [attendances, setAttendances] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
+  const { id: currentClassId } = JSON.parse(
+    localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
+  );
 
   const handleUpdateAttendance = async (attendance: any) => {
     if (accessToken && refreshToken && tenantDomain) {
@@ -44,6 +45,7 @@ export function AttendanceTable({
 
   useEffect(() => {
     const loadAttendances = async () => {
+      setIsLoading(true);
       if (tenantDomain && accessToken && refreshToken) {
         const data = await getAttendances(
           {
@@ -58,11 +60,12 @@ export function AttendanceTable({
 
         console.log("ATTENDANCES LOADED => ", data);
         setAttendances(data);
+        setIsLoading(false);
       }
     };
 
-    // loadAttendances();
-  }, [tenantDomain, accessToken, refreshToken]);
+    loadAttendances();
+  }, [tenantDomain, accessToken, refreshToken, currentDate]);
 
   return (
     <div className="w-full overflow-auto">
@@ -81,7 +84,7 @@ export function AttendanceTable({
               </TableHeader>
               <TableBody>
                 {attendances.map((attendance: any, index: any) => (
-                  <TableRow key={attendance.id}>
+                  <TableRow key={attendance.attendance_id}>
                     <TableCell>{attendance.student.user.username}</TableCell>
                     <TableCell>
                       <AttendanceItem

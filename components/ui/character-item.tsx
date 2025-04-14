@@ -1,24 +1,25 @@
-import { attendanceLabel } from "@/constants/global";
-import { teacherImages } from "@/constants/images";
-import Image from "next/image";
-import React, { useState } from "react";
+import React from "react";
 import GoodCharacterDialog from "../character/GoodCharacterDialog";
+import { Character } from "@/types";
 import BadCharacterDialog from "../character/BadCharacterDialog";
 
-export default function CharacterItem() {
-  const [isLiked, setIsLiked] = useState(false);
-  const [isUnLiked, setIsUnLiked] = useState(false);
-
+export default function CharacterItem({
+  character,
+  setShouldRefreshData,
+}: {
+  character: Character;
+  setShouldRefreshData: Function;
+}) {
   return (
     <div className="flex gap-2">
       <GoodCharacterDialog
-        studentName="Prince Bakenga"
-        studentClassName="Class 5 - Math"
+        character={character}
+        setShouldRefreshData={setShouldRefreshData}
       />
 
       <BadCharacterDialog
-        studentName="Prince Bakenga"
-        studentClassName="Class 5 - Math"
+        character={character}
+        setShouldRefreshData={setShouldRefreshData}
       />
     </div>
   );
