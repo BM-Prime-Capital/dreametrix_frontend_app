@@ -28,6 +28,8 @@ export function GradebookTable({
             <TableHead className="text-center">NUMBER OF EXAMS</TableHead>
             <TableHead className="text-center">NUMBER OF TESTS</TableHead>
             <TableHead className="text-center">NUMBER OF HOMEWORKS</TableHead>
+            <TableHead className="text-center">NUMBER OF PARTICIPATIONS</TableHead>
+            <TableHead className="text-center">NUMBER OF OTHERS</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -42,6 +44,8 @@ export function GradebookTable({
               <TableCell>{class_.noOfExams}</TableCell>
               <TableCell>{class_.noOfTests}</TableCell>
               <TableCell>{class_.noOfHomeworks}</TableCell>
+              <TableCell>{class_.noOfParticipation}</TableCell>
+              <TableCell>{class_.noOfOther}</TableCell>
             </TableRow>
           ))}
         </TableBody>
