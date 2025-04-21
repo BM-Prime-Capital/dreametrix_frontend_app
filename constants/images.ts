@@ -98,6 +98,7 @@ export const menuImages = {
   gradebook: `${MENU_IMAGES_BASE_PATH}/Gradebook.svg`,
   polls: `${MENU_IMAGES_BASE_PATH}/Polls.svg`,
   reports: `${MENU_IMAGES_BASE_PATH}/Reports.svg`,
+  rewards: `${MENU_IMAGES_BASE_PATH}/Rewards.svg`,
   seating: `${MENU_IMAGES_BASE_PATH}/Seating.svg`,
   teach: `${MENU_IMAGES_BASE_PATH}/Teach.svg`,
   big_braain: `${MENU_IMAGES_BASE_PATH}/BigBraain.svg`,

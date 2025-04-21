@@ -139,6 +139,11 @@ export const TeacherRoutes = [
     label: "REPORTS",
   },
   {
+    path: `${userPath.TEACHER_BASE_PATH}/rewards`,
+    icon: menuImages.rewards,
+    label: "REWARDS ",
+  },
+  {
     path: `${userPath.TEACHER_BASE_PATH}/plan`,
     icon: menuImages.plan,
     label: "PLAN",
