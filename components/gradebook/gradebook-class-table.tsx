@@ -8,144 +8,162 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, File, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, File } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import { RecordDialog } from "./RecordDialog";
 
-// This would typically come from your API
-const students = [
-  {
-    id: 1,
-    name: "Prince Ilunga",
-    average: "65%",
-    examGeneral: 13,
-    examPractical: 14,
-    quizGeneral: 15,
-    quizPop: 15,
-    quizUnit1: 15,
-    quizUnit2: 15,
-    homeWorkGeneral: 45,
-    homeWorkChapter: 45,
-    homeWorkProject: 45,
-  },
-  {
-    id: 2,
-    name: "Marry Jones",
-    average: "63%",
-    examGeneral: 13,
-    examPractical: 14,
-    quizGeneral: 15,
-    quizPop: 15,
-    quizUnit1: 15,
-    quizUnit2: 15,
-    homeWorkGeneral: 45,
-    homeWorkChapter: 45,
-    homeWorkProject: 45,
-  },
-  {
-    id: 3,
-    name: "Stephan lightman",
-    average: "72%",
-    examGeneral: 13,
-    examPractical: 14,
-    quizGeneral: 15,
-    quizPop: 15,
-    quizUnit1: 15,
-    quizUnit2: 15,
-    homeWorkGeneral: 45,
-    homeWorkChapter: 45,
-    homeWorkProject: 45,
-  },
-];
+interface Assessment {
+  name: string;
+  average: number;
+}
 
-export function GradebookClassTable() {
+interface AssessmentTypes {
+  Test: Assessment[];
+  homework: Assessment[];
+  quiz: Assessment[];
+  participation: Assessment[];
+  other: Assessment[];
+}
+
+interface Student {
+  student_name: string;
+  student_id: number;
+  average_grade: number;
+  assessment_types: AssessmentTypes;
+}
+
+export function GradebookClassTable({ students }: { students: Student[] }) {
+  // Détermine le nombre maximum d'évaluations par type pour créer les colonnes
+  const getMaxAssessments = () => {
+    let max = 0;
+    const types: (keyof AssessmentTypes)[] = ['Test', 'homework', 'quiz', 'participation', 'other'];
+    
+    types.forEach(type => {
+      students.forEach(student => {
+        if (student.assessment_types[type]?.length > max) {
+          max = student.assessment_types[type].length;
+        }
+      });
+    });
+    return max;
+  };
+
+  const maxAssessments = getMaxAssessments();
+
+  // Crée les en-têtes dynamiquement
+  const renderAssessmentHeaders = (type: keyof AssessmentTypes, displayName: string) => {
+    const assessments = students[0]?.assessment_types[type] || [];
+    const colSpan = assessments.length > 0 ? assessments.length : 1;
+
+    return (
+      <>
+        <TableHead colSpan={colSpan} className="text-center">
+          {displayName}
+        </TableHead>
+      </>
+    );
+  };
+
+  // Crée les sous-en-têtes dynamiquement
+  const renderSubHeaders = (type: keyof AssessmentTypes) => {
+    const assessments = students[0]?.assessment_types[type] || [];
+    
+    if (assessments.length === 0) {
+      return <TableHead>-</TableHead>;
+    }
+
+    return assessments.map((assessment, index) => (
+      <TableHead key={`${type}-${index}`}>
+        {assessment.name}
+      </TableHead>
+    ));
+  };
+
+  // Récupère la valeur d'une évaluation spécifique
+  const getAssessmentValue = (student: Student, type: keyof AssessmentTypes, index: number) => {
+    const assessments = student.assessment_types[type];
+    return assessments && assessments[index] ? assessments[index].average : '-';
+  };
+
   return (
     <div className="w-full overflow-auto">
       <Table>
         <TableHeader>
+          {/* Ligne principale des en-têtes */}
           <TableRow>
-            <TableHead rowSpan={2} className="text-center">
-              STUDENT
-            </TableHead>
-            <TableHead rowSpan={2} className="text-center">
-              AVERAGE
-            </TableHead>
-            <TableHead colSpan={2} className="text-center">
-              EXAM
-            </TableHead>
-            <TableHead colSpan={4} className="text-center">
-              QUIZ
-            </TableHead>
-            <TableHead colSpan={3} className="text-center">
-              HOMEWORK
-            </TableHead>
+            <TableHead rowSpan={2} className="text-center">STUDENT</TableHead>
+            <TableHead rowSpan={2} className="text-center">AVERAGE</TableHead>
+            {renderAssessmentHeaders('Test', 'TEST')}
+            {renderAssessmentHeaders('homework', 'HOMEWORK')}
+            {renderAssessmentHeaders('quiz', 'QUIZ')}
+            {renderAssessmentHeaders('participation', 'PARTICIPATION')}
+            {renderAssessmentHeaders('other', 'OTHER')}
             <TableHead rowSpan={2}>ACTIONS</TableHead>
           </TableRow>
+          
+          {/* Ligne des sous-en-têtes */}
           <TableRow>
-            <TableHead>General</TableHead>
-            <TableHead>Practical</TableHead>
-            <TableHead>General</TableHead>
-            <TableHead>Pop Quiz</TableHead>
-            <TableHead>Unit 1</TableHead>
-            <TableHead>Unit 2</TableHead>
-            <TableHead>Chapter 3</TableHead>
-            <TableHead>General</TableHead>
-            <TableHead>Project</TableHead>
+            {renderSubHeaders('Test')}
+            {renderSubHeaders('homework')}
+            {renderSubHeaders('quiz')}
+            {renderSubHeaders('participation')}
+            {renderSubHeaders('other')}
           </TableRow>
         </TableHeader>
+        
         <TableBody>
-          {students.map((class_, index) => (
-            <TableRow key={class_.id}>
-              <TableCell>{class_.name}</TableCell>
+          {students.map((student) => (
+            <TableRow key={student.student_id}>
+              <TableCell>{student.student_name}</TableCell>
               <TableCell>
-                {class_.average} <RecordDialog />
+                {student.average_grade.toFixed(2)}% <RecordDialog />
               </TableCell>
-              <TableCell>
-                <span className="flex gap-1 justify-center">
-                  {class_.examGeneral} <RecordDialog />
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="flex gap-1 justify-center">
-                  {class_.examPractical} <RecordDialog />
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="flex gap-1 justify-center">
-                  {class_.quizGeneral} <RecordDialog />
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="flex gap-1 justify-center">
-                  {class_.quizPop} <RecordDialog />
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="flex gap-1 justify-center">
-                  {class_.quizUnit1} <RecordDialog />
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="flex gap-1 justify-center">
-                  {class_.quizUnit2} <RecordDialog />
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="flex gap-1 justify-center">
-                  {class_.homeWorkChapter} <RecordDialog />
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="flex gap-1 justify-center">
-                  {class_.homeWorkGeneral} <RecordDialog />
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="flex gap-1 justify-center">
-                  {class_.homeWorkProject} <RecordDialog />
-                </span>
-              </TableCell>
+              
+              {/* Colonnes Test */}
+              {student.assessment_types.Test?.map((test, index) => (
+                <TableCell key={`test-${index}`}>
+                  <span className="flex gap-1 justify-center">
+                    {test.average} <RecordDialog />
+                  </span>
+                </TableCell>
+              )) || <TableCell>-</TableCell>}
+              
+              {/* Colonnes Homework */}
+              {student.assessment_types.homework?.map((hw, index) => (
+                <TableCell key={`hw-${index}`}>
+                  <span className="flex gap-1 justify-center">
+                    {hw.average} <RecordDialog />
+                  </span>
+                </TableCell>
+              )) || <TableCell>-</TableCell>}
+              
+              {/* Colonnes Quiz */}
+              {student.assessment_types.quiz?.map((quiz, index) => (
+                <TableCell key={`quiz-${index}`}>
+                  <span className="flex gap-1 justify-center">
+                    {quiz.average} <RecordDialog />
+                  </span>
+                </TableCell>
+              )) || <TableCell>-</TableCell>}
+              
+              {/* Colonnes Participation */}
+              {student.assessment_types.participation?.map((part, index) => (
+                <TableCell key={`part-${index}`}>
+                  <span className="flex gap-1 justify-center">
+                    {part.average} <RecordDialog />
+                  </span>
+                </TableCell>
+              )) || <TableCell>-</TableCell>}
+              
+              {/* Colonnes Other */}
+              {student.assessment_types.other?.map((other, index) => (
+                <TableCell key={`other-${index}`}>
+                  <span className="flex gap-1 justify-center">
+                    {other.average} <RecordDialog />
+                  </span>
+                </TableCell>
+              )) || <TableCell>-</TableCell>}
+              
               <TableCell>
                 <div className="flex gap-2">
                   <Button
