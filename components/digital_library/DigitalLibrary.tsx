@@ -19,6 +19,12 @@ import { DigitalLibrarySheet, ISchoolClass } from "@/types";
 import { localStorageKey } from "@/constants/global";
 import { Button } from "../ui/button";
 import { LoaderDialog } from "../ui/loader-dialog";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Checkbox } from "../ui/checkbox";
+import { Alert, AlertDescription } from "../ui/alert";
 
 const GRADEBOOK_SHEET_INIT_STATE = {
   subject: "",
@@ -52,6 +58,9 @@ export default function DigitalLibrary() {
   const [checkedStandards, setCheckedStandards] = useState<string[]>([]);
   const [selectedClass, setSelectedClass] = useState<ISchoolClass | null>(null);
 
+
+  
+
   const [isDreaMetrixBankOfQuestion, setIsDreaMetrixBankOfQuestion] =
     useState(false);
 
@@ -68,7 +77,7 @@ export default function DigitalLibrary() {
     error: errorSubjects,
   } = useList(getSubjects);
 
-  const [grades, setGrades] = useState<any[]>([]);
+  const [grades, setGrades] = useState<string[]>([]); // Au lieu de useState<any[]>([])
   const [standards, setStandards] = useState<any[]>([]);
   const [standardsAreLoading, setStandardsAreLoading] = useState<boolean>(true);
   const [fileStream, setFileStream] = useState<any>(null);
@@ -84,32 +93,28 @@ export default function DigitalLibrary() {
       grade: "",
       domain: "",
     });
-    const gradeData = await getGrades(
-      selectedSubject,
-      tenantDomain,
-      accessToken,
-      refreshToken
-    );
-
-    setGrades(gradeData);
-
-    setAllClasses(
-      initialClasses.filter(
+    
+    try {
+      const gradeData = await getGrades(
+        selectedSubject,
+        tenantDomain,
+        accessToken,
+        refreshToken
+      );
+      setGrades(gradeData || []); // Fallback à un tableau vide si gradeData est null/undefined
+  
+      const filteredClasses = initialClasses.filter(
         (cl: any) =>
           cl.subject_in_short === selectedSubject ||
           cl.subject_in_all_letter === selectedSubject
-      )
-    );
-
-    setCheckedClasses(
-      initialClasses
-        .filter(
-          (cl: any) =>
-            cl.subject_in_short === selectedSubject ||
-            cl.subject_in_all_letter === selectedSubject
-        )
-        ?.flatMap((cl: any) => cl.name)
-    );
+      );
+      
+      setAllClasses(filteredClasses);
+      setCheckedClasses(filteredClasses.map((cl: any) => cl.name));
+    } catch (error) {
+      console.error("Error loading grades:", error);
+      setGrades([]);
+    }
   };
 
   const handleGradeSelection = async (selectedGrade: string) => {
@@ -367,185 +372,215 @@ export default function DigitalLibrary() {
   }, [isSubjectLoadAutomaticaly]);
 
   return (
-    <section className="flex flex-col gap-2 w-full">
+    <section className="flex flex-col gap-6 w-full max-w-6xl mx-auto p-4 bg-gray-50">
       <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <PageTitleH1 title="CREATED SHEET" className="text-bgPurple" />
-        </div>
+        <PageTitleH1 
+          title="Create Assessment Sheet" 
+          className="text-primary bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg shadow-md" 
+        />
       </div>
 
-      <Card className="rounded-md flex">
-        <form
-          className="flex flex-col gap-4 p-4 w-full"
-          onSubmit={(e) => createDigitalLibrary(e)}
-        >
-          {error && <div className="p-2 text-red-500">{error}</div>}
-          <div className="flex flex-col gap-2">
-            <div className="flex-1">
-              <label
-                onClick={() => setIsDreaMetrixBankOfQuestion(true)}
-                className="flex gap-4 items-center font-bold"
-              >
-                <input className="h-4 min-w-4" type="radio" name="question" />
-                DreaMetrix Bank of questions
-              </label>
-              {isDreaMetrixBankOfQuestion && (
-                <label className="text-red-500">
-                  Functionality not yet available.{" "}
-                </label>
-              )}
-            </div>
+      <Card className="rounded-lg shadow-lg p-8 bg-white border border-gray-200">
+        <form className="flex flex-col gap-6" onSubmit={(e) => createDigitalLibrary(e)}>
+          {error && (
+            <Alert variant="destructive" className="border-red-500 bg-red-50">
+              <AlertDescription className="text-red-700 font-medium">
+                {error}
+              </AlertDescription>
+            </Alert>
+          )}
 
-            <label
-              onClick={() => setIsDreaMetrixBankOfQuestion(false)}
-              className="flex-1 flex gap-4 items-center font-bold"
+          <div className="space-y-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <h3 className="text-lg font-semibold text-blue-800">Question Source</h3>
+            <RadioGroup 
+              defaultValue="actual" 
+              className="flex gap-8"
+              onValueChange={(value) => setIsDreaMetrixBankOfQuestion(value === "dreaMetrix")}
             >
-              <input
-                className="h-4 min-w-4"
-                type="radio"
-                name="question"
-                checked={isDreaMetrixBankOfQuestion === false}
-                onChange={() => console.log("Checked")}
-              />
-              Or Actual release Questions
-            </label>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem 
+                  value="dreaMetrix" 
+                  id="dreaMetrix" 
+                  className="text-blue-600 border-blue-400"
+                />
+                <Label htmlFor="dreaMetrix" className="font-medium text-blue-800">
+                  DreaMetrix Bank of Questions
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem 
+                  value="actual" 
+                  id="actual" 
+                  className="text-purple-600 border-purple-400"
+                />
+                <Label htmlFor="actual" className="font-medium text-purple-800">
+                  Current Questions Library
+                </Label>
+              </div>
+            </RadioGroup>
+            
+            {isDreaMetrixBankOfQuestion && (
+              <Alert variant="default" className="mt-2 bg-blue-100 border-blue-300 text-blue-800">
+                <AlertDescription>
+                  DreaMetrix Bank of Questions functionality is coming soon.
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
 
-          <div className="flex gap-6 flex-wrap flex-1 ">
-            <div className="flex flex-col flex-1">
-              <label className="text-muted-foreground">Subject:</label>
-              <select
-                style={{ border: "solid 1px #eee" }}
-                className="px-2 py-1 bg-white rounded-full min-w-[300px] "
-                disabled={isDreaMetrixBankOfQuestion === true}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label className="text-gray-700 font-medium">Subject</Label>
+              <Select
+                disabled={isDreaMetrixBankOfQuestion}
                 value={digitalLibrarySheet.subject}
-                onChange={(e) => handleSubjectSelection(e.target.value)}
+                onValueChange={handleSubjectSelection}
               >
-                <option disabled value={""}>
-                  Select Subject
-                </option>
-                {subjects.map((subject: string, index: number) => (
-                  <option key={index} value={subject}>
-                    {subject}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full bg-gray-50 border-gray-300 hover:border-blue-400">
+                  <SelectValue placeholder="Select Subject" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                  {subjects.map((subject: string, index: number) => (
+                    <SelectItem 
+                      key={index} 
+                      value={subject}
+                      className="hover:bg-blue-50 focus:bg-blue-50"
+                    >
+                      {subject}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="flex flex-col flex-1">
-              <label className="text-muted-foreground">Grade:</label>
-              <select
-                style={{ border: "solid 1px #eee" }}
-                className="px-2 py-1 bg-white rounded-full min-w-[300px] "
-                disabled={isDreaMetrixBankOfQuestion === true}
-                value={digitalLibrarySheet.grade}
-                onChange={(e) => handleGradeSelection(e.target.value)}
-              >
-                <option disabled value={""}>
-                  Select Grade
-                </option>
-                {grades.map((grade, index) => (
-                  <option key={index} value={grade}>
-                    {grade}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+            <div className="space-y-2">
+  <Label className="text-gray-700 font-medium">Grade</Label>
+  <Select
+    disabled={isDreaMetrixBankOfQuestion || !digitalLibrarySheet.subject}
+    value={digitalLibrarySheet.grade}
+    onValueChange={async (value) => {
+      // Mettre à jour l'état immédiatement
+      setDigitalLibrarySheet(prev => ({...prev, grade: value}));
+      // Puis appeler la fonction asynchrone
+      await handleGradeSelection(value);
+    }}
+  >
+    <SelectTrigger className="w-full bg-gray-50 border-gray-300 hover:border-blue-400">
+      <SelectValue>
+        {digitalLibrarySheet.grade || "Select Grade"}
+      </SelectValue>
+    </SelectTrigger>
+    <SelectContent className="bg-white border border-gray-200 shadow-lg">
+      {grades.map((grade, index) => (
+        <SelectItem 
+          key={index} 
+          value={grade}
+          className="hover:bg-blue-50 focus:bg-blue-50"
+        >
+          {grade}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+</div>
 
-          <div className="flex gap-6 flex-wrap w-full">
-            <div className="flex flex-col flex-1">
-              <label className="text-muted-foreground">Domain:</label>
-              <select
-                style={{ border: "solid 1px #eee" }}
-                className="px-2 py-1 bg-white rounded-full min-w-[300px] "
-                disabled={isDreaMetrixBankOfQuestion === true}
+            <div className="space-y-2">
+              <Label className="text-gray-700 font-medium">Domain</Label>
+              <Select
+                disabled={isDreaMetrixBankOfQuestion || !digitalLibrarySheet.grade}
                 value={digitalLibrarySheet.domain}
-                onChange={(e) => handleDomainSelection(e.target.value)}
+                onValueChange={handleDomainSelection}
               >
-                <option disabled value={""}>
-                  Select Domain
-                </option>
-
-                {sheetDomains.map((domain, index) => (
-                  <option key={index}>{domain}</option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full bg-gray-50 border-gray-300 hover:border-blue-400">
+                  <SelectValue placeholder="Select Domain" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                  {sheetDomains.map((domain, index) => (
+                    <SelectItem 
+                      key={index} 
+                      value={domain}
+                      className="hover:bg-blue-50 focus:bg-blue-50"
+                    >
+                      {domain}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="flex flex-col flex-1">
-              <label className="text-muted-foreground">Question Type</label>
-              <select
-                style={{ border: "solid 1px #eee" }}
-                className="px-2 py-1 bg-white rounded-full min-w-[300px] "
-                disabled={isDreaMetrixBankOfQuestion === true}
+            <div className="space-y-2">
+              <Label className="text-gray-700 font-medium">Question Type</Label>
+              <Select
+                disabled={isDreaMetrixBankOfQuestion || !digitalLibrarySheet.domain}
                 value={digitalLibrarySheet.questionType}
-                onChange={(e) => handleQuestionsTypeChange(e)}
+                onValueChange={(value) => {
+                  setDigitalLibrarySheet({
+                    ...digitalLibrarySheet,
+                    questionType: value
+                  });
+                }}
               >
-                <option disabled>Select Question Type</option>
-                <option value={"MC"}>Multiple Choice(MC)</option>
-                <option value={"OP"}>Open Response(OP)</option>
-              </select>
+                <SelectTrigger className="w-full bg-gray-50 border-gray-300 hover:border-blue-400">
+                  <SelectValue placeholder="Select Question Type" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                  <SelectItem 
+                    value="MC"
+                    className="hover:bg-blue-50 focus:bg-blue-50"
+                  >
+                    Multiple Choice (MC)
+                  </SelectItem>
+                  <SelectItem 
+                    value="OP"
+                    className="hover:bg-blue-50 focus:bg-blue-50"
+                  >
+                    Open Response (OP)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           {digitalLibrarySheet.domain && (
-            <div className="flex gap-6 flex-wrap w-full">
-              <div className="flex flex-col flex-1">
-                <label className="text-muted-foreground">
-                  Specific Standards
-                </label>
-                <MultiSelectList
-                  selectedItems={[]}
-                  allItems={standards}
-                  itemsLabel="Standards"
-                  allShouldBeSelected={true}
-                  itemsAreLoading={standardsAreLoading}
-                  withSheckbox={true}
-                  updateSelectedItems={(items: string[]) =>
-                    handleStandardsChange(items)
-                  }
-                />
-              </div>
+            <div className="space-y-2 bg-purple-50 p-4 rounded-lg border border-purple-100">
+              <Label className="text-purple-800 font-medium">Specific Standards</Label>
+              <MultiSelectList
+                selectedItems={[]}
+                allItems={standards}
+                itemsLabel="Standards"
+                allShouldBeSelected={true}
+                itemsAreLoading={standardsAreLoading}
+                withSheckbox={true}
+                updateSelectedItems={(items: string[]) => handleStandardsChange(items)}
+              />
             </div>
           )}
 
-          <div className="flex gap-6 flex-wrap w-full">
-            <div className="flex flex-col flex-1">
-              <label className="text-muted-foreground">Class(es)</label>
-              <MultiSelectList
-                selectedItems={allClasses}
-                allItems={allClasses?.flatMap((cl: any) => cl.name)}
-                itemsLabel="Classes"
-                className={"border-[1px] border-bgPurple p-2 rounded-md"}
-                allShouldBeSelected={false}
-                itemsAreLoading={classesIsLoading}
-                withSheckbox={false}
-                updateSelectedItems={(items: string[]) =>
-                  setCheckedClasses(items)
-                }
-              />
-            </div>
+          <div className="space-y-2 bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+            <Label className="text-indigo-800 font-medium">Class(es)</Label>
+            <MultiSelectList
+              selectedItems={allClasses}
+              allItems={allClasses?.flatMap((cl: any) => cl.name)}
+              itemsLabel="Classes"
+              className="border border-indigo-200 bg-white p-3 rounded-md shadow-sm"
+              allShouldBeSelected={false}
+              itemsAreLoading={classesIsLoading}
+              withSheckbox={false}
+              updateSelectedItems={(items: string[]) => setCheckedClasses(items)}
+            />
           </div>
 
           {questionsLinks && (
-            <div className="text-muted-foreground">
-              Available questions : {questionsLinks.question_count} (Max:{" "}
-              {questionsLinks.question_count})
+            <div className="text-sm text-blue-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
+              Available questions: <span className="font-bold">{questionsLinks.question_count}</span> (Max: {questionsLinks.question_count})
             </div>
           )}
 
-          <div className="flex gap-6 flex-wrap items-center w-full">
-            <div className="flex flex-col flex-1">
-              <label className="text-muted-foreground whitespace-nowrap">
-                Number of Questions:
-              </label>
-              <input
-                style={{ border: "solid 1px #eee" }}
-                className="px-2 py-1 bg-white rounded-full min-w-[300px] "
-                disabled={
-                  isDreaMetrixBankOfQuestion || !questionsLinks ? true : false
-                }
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+            <div className="space-y-2">
+              <Label className="text-gray-700 font-medium">Number of Questions</Label>
+              <Input
+                disabled={isDreaMetrixBankOfQuestion || !questionsLinks}
                 type="number"
                 min={1}
                 max={questionsLinks ? questionsLinks.question_count : 1}
@@ -556,38 +591,54 @@ export default function DigitalLibrary() {
                     noOfQuestions: e.target.value,
                   })
                 }
-                placeholder={`${
+                className="bg-gray-50 border-gray-300 focus:border-blue-400"
+                placeholder={
                   questionsLinks
-                    ? "Enter number (1-" + questionsLinks.question_count + ")"
-                    : "..."
-                }`}
+                    ? `Enter number (1-${questionsLinks.question_count})`
+                    : "Select standards first"
+                }
               />
             </div>
-            <div className="flex flex-col flex-1">
-              <label className="flex gap-4 items-center font-bold">
+
+            <div className="flex items-center space-x-2 h-10 bg-green-50 p-3 rounded-lg border border-green-200">
+              <Checkbox
+                id="answerSheet"
+                checked={digitalLibrarySheet.generateAnswerSheet}
+                onCheckedChange={(checked) =>
+                  setDigitalLibrarySheet({
+                    ...digitalLibrarySheet,
+                    generateAnswerSheet: Boolean(checked),
+                  })
+                }
+                className="border-gray-400 data-[state=checked]:bg-green-600"
+              />
+              <Label htmlFor="answerSheet" className="font-medium text-green-800">
                 Generate Answer Sheets
-                <input
-                  className="h-4 min-w-4"
-                  type="checkbox"
-                  name="question"
-                  checked={digitalLibrarySheet.generateAnswerSheet}
-                  onChange={(e) =>
-                    setDigitalLibrarySheet({
-                      ...digitalLibrarySheet,
-                      generateAnswerSheet: e.target.checked,
-                    })
-                  }
-                />
-              </label>
+              </Label>
             </div>
           </div>
 
           <Button
             type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 rounded-full mt-2"
+            className="w-full md:w-auto mt-4 px-8 py-4 text-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md transition-all"
             disabled={isLoading}
           >
-            {isLoading ? "Generating the sheet..." : "GENERATE"}
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Generating Sheet...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                </svg>
+                Generate Assessment Sheet
+              </span>
+            )}
           </Button>
 
           <GenerateAssessmentDialog fileStream={fileStream} />
@@ -596,4 +647,6 @@ export default function DigitalLibrary() {
       </Card>
     </section>
   );
+
+
 }
