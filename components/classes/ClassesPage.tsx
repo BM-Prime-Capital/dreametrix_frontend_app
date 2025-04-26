@@ -20,7 +20,7 @@ export default function ClassesPage() {
         <AddClassDialog setRefreshTime={setRefreshTime} />
       </div>
       <Card className="rounded-lg shadow-sm">
-        <ClassesTable refreshTime={refreshTime} />
+        <ClassesTable refreshTime={refreshTime} setRefreshTime={setRefreshTime} />
       </Card>
     </section>
   );

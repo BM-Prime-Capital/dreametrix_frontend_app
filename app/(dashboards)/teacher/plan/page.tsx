@@ -1,7 +1,8 @@
 "use client";
 
-import CommingSoon from "@/components/ui/comming-soon";
+import Plan from "@/components/plan/Plan";
+import React from "react";
 
-export default function PlanPage() {
-  return <CommingSoon title="Plan" />;
+export default function ReportsPage() {
+  return <Plan />;
 }
