@@ -5,7 +5,40 @@ import { ChevronLeft, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRigh
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Toggle } from "@/components/ui/toggle";
 
-export default function PlanGeneralView() {
+type LessonPlanField = 
+  | 'teacher' | 'subject' | 'grade' | 'students' 
+  | 'standards' | 'overview' | 'objectives' | 'aim' 
+  | 'hook' | 'hits' | 'bloom1' | 'minutesOfGlory' 
+  | 'firstTransition' | 'bloom2' | 'secondTransition' | 'closing';
+
+type Section = LessonPlanField | 'header';
+
+interface PlanGeneralViewProps {
+    changeView: (viewName: string, plan?: any) => void;
+  }
+
+interface LessonPlan {
+    teacher: string;
+    subject: string;
+    grade: string;
+    students: string;
+    standards: string;
+    overview: string;
+    objectives: string;
+    aim: string;
+    hook: string;
+    hits: string;
+    bloom1: string;
+    minutesOfGlory: string;
+    firstTransition: string;
+    bloom2: string;
+    secondTransition: string;
+    closing: string;
+  }
+  
+  type SectionKey = Exclude<keyof LessonPlan, 'teacher' | 'subject' | 'grade' | 'students'> | 'header';
+
+export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
   // États pour les contrôles d'édition
   const [fontFamily, setFontFamily] = useState('Calibri');
   const [fontSize, setFontSize] = useState('11');
@@ -15,7 +48,7 @@ export default function PlanGeneralView() {
   const [textAlign, setTextAlign] = useState('left');
   
   // États pour le contenu éditable et les modes d'édition par section
-  const [editingSection, setEditingSection] = useState(null);
+  const [editingSection, setEditingSection] = useState<keyof typeof lessonPlan | 'header' | null>(null);
   const [lessonPlan, setLessonPlan] = useState({
     teacher: "Mr. Messavussu",
     subject: "MATH",
@@ -34,26 +67,38 @@ export default function PlanGeneralView() {
     secondTransition: "Students will work through the Bronze, Silver and Gold problem sets. T will circulate and support.",
     closing: "T will collect exit ticket and thank class. \"Some music please!\" Sound Machine master will hit the melody button. All students will clap ☺"
   });
+// Update these functions with proper types
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: keyof LessonPlan, value: string) => {
     setLessonPlan(prev => ({ ...prev, [field]: value }));
   };
 
-  const startEditing = (section) => {
+  const startEditing = (section: SectionKey) => {
     setEditingSection(section);
   };
-
+  
   const cancelEditing = () => {
     setEditingSection(null);
   };
-
+  
   const saveSection = () => {
-    // Ici vous pourriez ajouter la logique pour sauvegarder dans une API
-    console.log("Section saved:", editingSection, lessonPlan[editingSection]);
-    setEditingSection(null);
+    if (editingSection) {
+      if (editingSection === 'header') {
+        // Handle header save (all header fields are already updated via handleInputChange)
+        console.log("Header saved:", {
+          teacher: lessonPlan.teacher,
+          subject: lessonPlan.subject,
+          grade: lessonPlan.grade,
+          students: lessonPlan.students
+        });
+      } else {
+        console.log("Section saved:", editingSection, lessonPlan[editingSection]);
+      }
+      setEditingSection(null);
+    }
   };
-
-  const applyTextStyle = (content) => {
+  
+  const applyTextStyle = (content?: string) => {
     let style = "";
     if (isBold) style += "font-bold ";
     if (isItalic) style += "italic ";
