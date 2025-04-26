@@ -120,6 +120,7 @@ export function AddClassDialog({
   const handleDeleteClassDay = (id: number) => {
     setClassDays(classDays.filter((day) => day.id !== id));
   };
+  
 
   const resetForm = () => {
     setSchoolClass(schoolClassInit);
@@ -466,7 +467,7 @@ export function AddClassDialog({
                 Class Schedule
               </label>
 
-              {classDays.map((schedule) => (
+              {/* {classDays.map((schedule) => (
                 <div key={schedule.id} className="grid grid-cols-4 gap-2">
                   <Select
                     value={schedule.day}
@@ -506,7 +507,52 @@ export function AddClassDialog({
                     </Button>
                   )}
                 </div>
-              ))}
+              ))} */}
+
+              {/* Dans la partie Class Schedule */}
+{classDays.map((schedule) => (
+  <div key={schedule.id} className="grid grid-cols-4 gap-2 items-center">
+    <Select
+      value={schedule.day}
+      onValueChange={(value) => handleClassDayChange(schedule.id, "day", value)}
+    >
+      <SelectTrigger>
+        <SelectValue placeholder="Day" />
+      </SelectTrigger>
+      <SelectContent>
+        {dayOfTheWeek.map((d) => (
+          <SelectItem key={d} value={d}>{d}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+
+    <Input
+      type="text"
+      value={schedule.start_time}
+      onChange={(e) => handleClassDayChange(schedule.id, "start_time", e.target.value)}
+      placeholder="09:00 AM"
+    />
+
+    <Input
+      type="text"
+      value={schedule.end_time}
+      onChange={(e) => handleClassDayChange(schedule.id, "end_time", e.target.value)}
+      placeholder="01:00 PM"
+    />
+
+    <Button
+      variant="ghost"
+      className="text-red-500 hover:text-red-600 hover:bg-red-50"
+      onClick={(e) => {
+        e.preventDefault(); // Ajout de cette ligne
+        handleDeleteClassDay(schedule.id);
+      }}
+      type="button" // Important pour éviter la soumission du formulaire
+    >
+      Remove
+    </Button>
+  </div>
+))}
 
               <Button
                 variant="outline"

@@ -140,71 +140,6 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
     };
   }, [refreshTime, tenantDomain, accessToken, refreshToken]);
 
-  // return (
-  //   <div className="w-full">
-  //     {isLoading ? (
-  //       <Loader />
-  //     ) : (
-  //       <>
-  //         {allClasses && allClasses.length > 0 ? (
-  //           <Table>
-  //             <TableHeader>
-  //               <TableRow className="hover:bg-transparent">
-  //                 <TableHead className="font-bold">CLASS</TableHead>
-  //                 <TableHead className="font-bold">SUBJECT</TableHead>
-  //                 <TableHead className="font-bold">GRADE</TableHead>
-  //                 <TableHead className="font-bold">TEACHER</TableHead>
-  //                 <TableHead className="font-bold">STUDENTS</TableHead>
-  //                 <TableHead>ACTIONS</TableHead>
-  //               </TableRow>
-  //             </TableHeader>
-  //             <TableBody>
-  //               {allClasses.map((class_) => (
-  //                 <TableRow key={class_.id}>
-  //                   <TableCell className="font-medium">{class_.name}</TableCell>
-  //                   <TableCell>{class_.subject_in_short}</TableCell>
-  //                   <TableCell>{class_.grade}</TableCell>
-  //                   <TableCell>{class_.teacher.full_name}</TableCell>
-  //                   <TableCell>
-  //                     <div className="flex items-center gap-2 ">
-  //                       {class_.students.length}
-  //                       <Button
-  //                         variant="ghost"
-  //                         size="icon"
-  //                         className="h-8 w-8 hover:bg-blue-50"
-  //                         onClick={() => handleViewDetails(class_)}
-  //                       >
-  //                         <Eye className="h-4 w-4 text-[#25AAE1]" />
-  //                       </Button>
-  //                     </div>
-  //                   </TableCell>
-  //                   <TableCell>
-  //                     <div className="flex gap-2">
-  //                       <AddClassDialog
-  //                         setRefreshTime={setRefreshTime}
-  //                         existingClass={class_}
-  //                       />
-  //                       <Button
-  //                         variant="ghost"
-  //                         size="icon"
-  //                         className="h-8 w-8 hover:bg-red-50"
-  //                         onClick={() => handleDeleteClass(class_.id)}
-  //                       >
-  //                         <Trash2 className="h-4 w-4 text-red-500" />
-  //                       </Button>
-  //                     </div>
-  //                   </TableCell>
-  //                 </TableRow>
-  //               ))}
-  //             </TableBody>
-  //           </Table>
-  //         ) : (
-  //           <NoData />
-  //         )}
-  //       </>
-  //     )}
-  //   </div>
-  // );
 
   return (
     <div className="w-full">
@@ -213,61 +148,77 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
       ) : (
         <>
           {allClasses && allClasses.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="font-bold">CLASS</TableHead>
-                  <TableHead className="font-bold">SUBJECT</TableHead>
-                  <TableHead className="font-bold">GRADE</TableHead>
-                  <TableHead className="font-bold">TEACHER</TableHead>
-                  <TableHead className="font-bold">STUDENTS</TableHead>
-                  <TableHead>ACTIONS</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {allClasses.map((class_) => (
-                  <TableRow key={class_.id}>
-                    <TableCell className="font-medium">{class_.name}</TableCell>
-                    <TableCell>{class_.subject_in_short}</TableCell>
-                    <TableCell>{class_.grade}</TableCell>
-                    <TableCell>{class_.teacher.full_name}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {class_.students.length}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-blue-50"
-                          onClick={() => handleViewDetails(class_)}
-                        >
-                          <Eye className="h-4 w-4 text-[#25AAE1]" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <AddClassDialog
-                          setRefreshTime={setRefreshTime}
-                          existingClass={class_}
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-red-50"
-                          onClick={() => handleDeleteClass(class_.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className="rounded-lg border shadow-sm overflow-hidden">
+              <Table>
+                <TableHeader className="bg-[#f8fafc]">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="font-bold text-gray-700 py-4 w-[25%]">CLASS</TableHead>
+                    <TableHead className="font-bold text-gray-700 py-4 w-[20%]">SUBJECT</TableHead>
+                    <TableHead className="font-bold text-gray-700 py-4 w-[10%]">GRADE</TableHead>
+                    <TableHead className="font-bold text-gray-700 py-4 w-[20%]">TEACHER</TableHead>
+                    <TableHead className="font-bold text-gray-700 py-4 w-[15%] text-center">STUDENTS</TableHead>
+                    <TableHead className="font-bold text-gray-700 py-4 w-[10%] text-center">ACTIONS</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {allClasses.map((class_) => (
+                    <TableRow key={class_.id} className="border-t hover:bg-[#f8fafc] transition-colors">
+                      <TableCell className="py-4">
+                        <span className="bg-primary-50 text-indigo-700 rounded-full text-sm font-medium whitespace-nowrap">
+                          {class_.name}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-4 text-gray-600">{class_.subject_in_short}</TableCell>
+                      <TableCell className="py-4">
+                        <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium inline-flex items-center justify-center min-w-[40px]">
+                          {class_.grade}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-4">
+                        <span className="px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-sm font-medium whitespace-nowrap">
+                          {class_.teacher.full_name}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">
+                            {class_.students.length}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 hover:bg-blue-50 rounded-full"
+                            onClick={() => handleViewDetails(class_)}
+                          >
+                            <Eye className="h-3.5 w-3.5 text-[#25AAE1]" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4">
+                        <div className="flex gap-1 justify-center">
+                          <AddClassDialog
+                            setRefreshTime={setRefreshTime}
+                            existingClass={class_}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 hover:bg-red-50 rounded-full"
+                            onClick={() => handleDeleteClass(class_.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-red-500" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           ) : (
             <NoData />
           )}
-
+  
           <ClassDetailsDialog
             classData={selectedClass}
             open={detailsOpen}

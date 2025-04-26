@@ -56,6 +56,8 @@ export default function Gradebook() {
       try {
         const data = await getGradeBookList(tenantPrimaryDomain, accessToken, refreshToken);
 
+        console.log("GradeBookList data: ", data)
+
         // Mapper vers le format attendu par GradebookTable
         const formatted = data.map((item: any) => ({
           id: item.class_id,
@@ -64,6 +66,8 @@ export default function Gradebook() {
           noOfExams: item.test,
           noOfTests: item.quiz,
           noOfHomeworks: item.homework,
+          noOfParticipation: item.participation,
+          noOfOther: item.other,
           totalWork:
             item.homework +
             item.test +
@@ -116,7 +120,7 @@ export default function Gradebook() {
 
       <Card className="rounded-md p-4">
         {loading ? (
-          <p className="text-center">Chargement en cours...</p>
+          <p className="text-center">Loading...</p>
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
         ) : currentClass ? (
@@ -127,7 +131,7 @@ export default function Gradebook() {
               onClick={handleBackToList}
               className="mb-4"
             >
-              ← Retour à la liste des classes
+              ← Back to class list
             </Button>
             <GradebookClassTable 
               classData={currentClass}  // Ajout de la prop classData

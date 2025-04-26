@@ -103,3 +103,11 @@
 .swal2-cancel {
   @apply text-sm px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white;
 }
+
+.visible-scrollbar::-webkit-scrollbar {
+  height: 10px;
+}
+.visible-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 5px;
+}
