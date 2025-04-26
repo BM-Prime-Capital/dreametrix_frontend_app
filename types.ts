@@ -89,3 +89,28 @@ export interface Character {
   create_at: string;
   update_at: string;
 }
+
+export interface IUser {
+  id: number;
+  first_name: string;
+  last_name: string;
+  // autres propriétés utilisateur...
+}
+
+
+
+  export interface ITeacher {
+    id: number;
+    full_name?: string;
+    user: IUser;
+    // autres propriétés teacher...
+  }
+  
+  export interface IStudent {
+    id: number;
+    first_name?: string;
+    last_name?: string;
+    user: IUser;
+    grade?: string;
+    // autres propriétés student...
+  }

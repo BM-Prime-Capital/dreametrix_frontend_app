@@ -3,6 +3,16 @@
 import { ISchoolClass } from "@/types";
 import { redirect } from "next/navigation";
 
+interface ScheduleItem {
+  date?: string;
+  start_time: string;
+  end_time: string;
+}
+
+interface ClassSchedule {
+  [key: string]: ScheduleItem[];
+}
+
 export async function getClasses(
   tenantPrimaryDomain: string,
   accessToken: string,
@@ -12,7 +22,7 @@ export async function getClasses(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
   const url = `${tenantPrimaryDomain}/classes/`;
-  let response = await fetch(url, {
+  const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
@@ -22,11 +32,9 @@ export async function getClasses(
     if (response.status === 401) {
       return redirect("/");
     } else if (response.status === 403) {
-      throw new Error(
-        "Vous n'avez pas la permission d'accéder aux enseignants."
-      );
+      throw new Error("Vous n'avez pas la permission d'accéder aux classes.");
     } else {
-      throw new Error("Erreur lors de la récupération des enseignants.");
+      throw new Error("Erreur lors de la récupération des classes.");
     }
   }
 
@@ -43,15 +51,29 @@ export async function createClass(
   try {
     const url = `${tenantPrimaryDomain}/classes/`;
 
-    const data = {
-      ...classData,
-      name: `Class ${classData.grade} - ${classData.subject_in_short}`,
-      students: [1, 2], // TO UPDATE
-      description: `Class ${classData.grade} - ${classData.subject_in_short}`,
-    };
-    console.log("CLASS PAYLOAD => ", data);
+    // Format schedule data
+    const formattedSchedule: ClassSchedule = {};
+    Object.entries(classData.hours_and_dates_of_course_schedule).forEach(([day, schedules]) => {
+      const scheduleArray = Array.isArray(schedules) ? schedules : [schedules];
+      formattedSchedule[day] = scheduleArray.map((schedule: any) => ({
+        date: schedule.date || new Date().toISOString().split('T')[0],
+        start_time: schedule.start_time,
+        end_time: schedule.end_time,
+      }));
+    });
 
-    let response = await fetch(url, {
+    const data = {
+      name: classData.name || `Class ${classData.grade} - ${classData.subject_in_short}`,
+      subject_in_all_letter: classData.subject_in_all_letter,
+      subject_in_short: classData.subject_in_short,
+      hours_and_dates_of_course_schedule: formattedSchedule,
+      description: classData.description || `Class ${classData.grade} - ${classData.subject_in_short}`,
+      grade: classData.grade,
+      teacher: classData.teacher,
+      students: classData.students,
+    };
+
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -61,14 +83,14 @@ export async function createClass(
     });
 
     if (response.ok) {
-      const data: any = await response.json();
-      return "ok";
+      return await response.json();
     } else {
-      console.log("POST Class Failed => ", response);
-      throw new Error("Class modification failed");
+      console.error("POST Class Failed:", await response.json());
+      return null;
     }
   } catch (error) {
-    console.log("Error => ", error);
+    console.error("Error creating class:", error);
+    return null;
   }
 }
 
@@ -79,14 +101,36 @@ export async function updateClass(
   refreshToken: string
 ) {
   try {
+    // Vérifier et formater les étudiants
+    const students = Array.isArray(classData.students) 
+      ? classData.students
+          .map((student: any) => {
+            if (typeof student === 'number') return student;
+            if (student?.id) return student.id;
+            return null;
+          })
+          .filter((id: any) => id !== null)
+      : [];
+
+    // Vérifier le teacher
+    const teacher = typeof classData.teacher === 'number' 
+      ? classData.teacher 
+      : classData.teacher?.id;
+
+    if (!teacher) {
+      throw new Error("Teacher ID is required");
+    }
+
     const data = {
       ...classData,
-      teacher: classData.teacher.id,
-      students: classData.students.map((student: any) => student.id),
+      teacher: teacher,
+      students: students,
     };
-    console.log("UPDATING Class => ", data);
-    const url = `${tenantPrimaryDomain}/classes/${data.id}/`;
-    let response = await fetch(url, {
+
+    console.log("UPDATING Class payload => ", data);
+    
+    const url = `${tenantPrimaryDomain}/classes/${classData.id}/`;
+    const response = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -95,15 +139,53 @@ export async function updateClass(
       body: JSON.stringify(data),
     });
 
-    if (response.ok) {
-      const data: any = await response.json();
-
-      return "ok";
-    } else {
-      console.log("PUT Class Failed => ", response);
-      throw new Error("Class modification failed");
+    if (!response.ok) {
+      const errorData = await response.json(); // Utilisez .json() au lieu de .text()
+      console.error("PUT Class Failed - Detailed Error:", {
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url,
+        error: errorData,
+      });
+      throw new Error(JSON.stringify(errorData));
     }
+
+    return await response.json();
   } catch (error) {
-    console.log("Error => ", error);
+    console.error("Unhandled Error in updateClass:", error);
+    throw error;
+  }
+}
+
+
+
+export async function deleteClass(
+  classId: number,
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  refreshToken: string
+) {
+  try {
+    const url = `${tenantPrimaryDomain}/classes/${classId}/`;
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const responseData = await response.json(); // Toujours parser la réponse JSON
+
+    if (!response.ok) {
+      console.error("DELETE Class Failed:", response.status, responseData);
+      throw new Error(responseData.message || "Failed to delete class");
+    }
+
+    // Retourner true si le message indique un succès
+    return responseData.message === "Class deleted successfully.";
+  } catch (error) {
+    console.error("Error deleting class:", error);
+    throw error;
   }
 }

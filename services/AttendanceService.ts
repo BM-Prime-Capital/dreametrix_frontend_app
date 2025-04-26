@@ -21,6 +21,7 @@ export async function getAttendances(
   });
 
   if (!response.ok) {
+    console.log("Error response => ", response);
     if (response.status === 403) {
       throw new Error("Vous n'avez pas la permission d'accéder aux data.");
     } else {
@@ -90,6 +91,7 @@ export async function getAttendanceGeneralView(
   });
 
   if (!response.ok) {
+    console.log("Error response => ", response);
     if (response.status === 403) {
       throw new Error("Vous n'avez pas la permission d'accéder aux data.");
     } else {
