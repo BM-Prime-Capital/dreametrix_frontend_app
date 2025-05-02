@@ -166,25 +166,13 @@ export function GradebookClassTable({ students }: { students: Student[] }) {
               
               <TableCell>
                 <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 hover:bg-blue-50"
-                  >
+                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-blue-50">
                     <Pencil className="h-4 w-4 text-[#25AAE1]" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 hover:bg-red-50"
-                  >
+                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-50">
                     <Trash2 className="h-4 w-4 text-red-500" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 hover:bg-red-50"
-                  >
+                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-50">
                     <File className="h-4 w-4 text-green-500" />
                   </Button>
                 </div>

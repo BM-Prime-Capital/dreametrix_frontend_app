@@ -10,14 +10,20 @@ import {
 } from "@/components/ui/table";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ClassData, ClassType } from "../types/gradebook";
 
-export function GradebookTable({
-  classes,
-  setCurrentClass,
-}: {
-  classes: any[];
-  setCurrentClass: Function;
-}) {
+
+
+
+
+interface GradebookTableProps {
+  classes: ClassData[];
+  onClassSelect: (selectedClass: ClassData) => void; // Nom cohérent
+}
+
+
+export function GradebookTable({ classes, onClassSelect }: GradebookTableProps) {
+  
   return (
     <div className="w-full overflow-auto text-center">
       <Table>
@@ -35,9 +41,9 @@ export function GradebookTable({
         <TableBody>
           {classes.map((class_, index) => (
             <TableRow
-              key={class_.id}
-              className={"cursor-pointer"}
-              onClick={() => setCurrentClass(class_)}
+            key={class_.id}
+            className="cursor-pointer hover:bg-gray-50"
+            onClick={() => onClassSelect(class_)} // Utiliser le nouveau nom
             >
               <TableCell>{class_.name}</TableCell>
               <TableCell>{class_.average}</TableCell>
