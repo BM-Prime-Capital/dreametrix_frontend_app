@@ -107,26 +107,26 @@ export default function Gradebook() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getGradeBookList(
-          tenantPrimaryDomain, 
-          accessToken || '', 
-          refreshToken || ''
-        );
+        const data = await getGradeBookList(tenantPrimaryDomain, accessToken, refreshToken);
 
+        console.log("GradeBookList data: ", data)
+
+        // Mapper vers le format attendu par GradebookTable
         const formatted = data.map((item: any) => ({
           id: item.class_id,
-          name: item.class_name || `Class ${item.class_id}`,
-          average: item.average || 0,
-          noOfExams: item.test || 0,
-          noOfTests: item.quiz || 0,
-          noOfHomeworks: item.homework || 0,
-          noOfParticipation: item.participation || 0,
-          noOfOther: item.other || 0,
-          totalWork: (item.homework || 0) + 
-                   (item.test || 0) + 
-                   (item.quiz || 0) + 
-                   (item.participation || 0) + 
-                   (item.other || 0),
+          name: `Class ${item.class_id}`,
+          average: `${item.average}%`,
+          noOfExams: item.test,
+          noOfTests: item.quiz,
+          noOfHomeworks: item.homework,
+          noOfParticipation: item.participation,
+          noOfOther: item.other,
+          totalWork:
+            item.homework +
+            item.test +
+            item.quiz +
+            item.participation +
+            item.other,
         }));
 
         setGradebookData(formatted);
@@ -172,7 +172,7 @@ export default function Gradebook() {
 
       <Card className="rounded-md p-4">
         {loading ? (
-          <p className="text-center">Chargement en cours...</p>
+          <p className="text-center">Loading...</p>
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
         ) : currentClass ? (
@@ -182,7 +182,7 @@ export default function Gradebook() {
               onClick={handleBackToList}
               className="mb-4"
             >
-              ← Retour à la liste des classes
+              ← Back to class list
             </Button>
             {currentClass.students ? (
               <GradebookClassTable students={currentClass.students} />

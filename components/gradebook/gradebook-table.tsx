@@ -13,12 +13,9 @@ import { Button } from "@/components/ui/button";
 import { ClassData, ClassType } from "../types/gradebook";
 
 
-
-
-
 interface GradebookTableProps {
   classes: ClassData[];
-  onClassSelect: (selectedClass: ClassData) => void; // Nom cohérent
+  onClassSelect: (selectedClass: ClassData) => void; 
 }
 
 
@@ -31,11 +28,11 @@ export function GradebookTable({ classes, onClassSelect }: GradebookTableProps) 
           <TableRow>
             <TableHead className="text-center">CLASS</TableHead>
             <TableHead className="text-center">AVERAGE</TableHead>
-            <TableHead className="text-center">NUMBER OF EXAMS</TableHead>
-            <TableHead className="text-center">NUMBER OF TESTS</TableHead>
-            <TableHead className="text-center">NUMBER OF HOMEWORKS</TableHead>
-            <TableHead className="text-center">NUMBER OF PARTICIPATIONS</TableHead>
-            <TableHead className="text-center">NUMBER OF OTHERS</TableHead>
+            <TableHead className="text-center"># EXAMS</TableHead>
+            <TableHead className="text-center"># TESTS</TableHead>
+            <TableHead className="text-center"># HOMEWORKS</TableHead>
+            <TableHead className="text-center"># PARTICIPATIONS</TableHead>
+            <TableHead className="text-center"># OTHERS</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

@@ -119,3 +119,35 @@ td {
   padding: 4px;
   opacity: 80%;
 }
+
+.swal2-styled.swal2-confirm {
+  background-color: #3085d6 !important;
+  color: white !important;
+}
+
+.swal2-styled.swal2-cancel {
+  background-color: #d33 !important;
+  color: white !important;
+}
+
+/* Dans votre fichier CSS global */
+.swal2-title {
+  @apply text-lg font-semibold;
+}
+.swal2-html-container {
+  @apply text-sm;
+}
+.swal2-confirm {
+  @apply text-sm px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white;
+}
+.swal2-cancel {
+  @apply text-sm px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white;
+}
+
+.visible-scrollbar::-webkit-scrollbar {
+  height: 10px;
+}
+.visible-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 5px;
+}

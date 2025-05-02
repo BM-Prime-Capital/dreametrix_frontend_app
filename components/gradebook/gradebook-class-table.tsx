@@ -8,179 +8,294 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2, File } from "lucide-react";
+import { AlertCircle, Eye, File, Mic, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RecordDialog } from "./RecordDialog";
+import { getGradeBookFocusList } from "@/services/GradebooksService";
+import { localStorageKey } from "@/constants/global";
+import { ClassData } from "../types/gradebook";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
-interface Assessment {
-  name: string;
-  average: number;
+interface GradebookClassTableProps {
+  classData: ClassData;
+  onBack: () => void;
 }
 
-interface AssessmentTypes {
-  Test: Assessment[];
-  homework: Assessment[];
-  quiz: Assessment[];
-  participation: Assessment[];
-  other: Assessment[];
-}
-
-interface Student {
+interface ApiStudent {
   student_name: string;
   student_id: number;
   average_grade: number;
-  assessment_types: AssessmentTypes;
+  assessment_types: {
+    test: number[];
+    homework: number[];
+    quiz: number[];
+    participation: number[];
+    other: number[];
+  };
 }
 
-export function GradebookClassTable({ students }: { students: Student[] }) {
-  // Détermine le nombre maximum d'évaluations par type pour créer les colonnes
-  const getMaxAssessments = () => {
-    let max = 0;
-    const types: (keyof AssessmentTypes)[] = ['Test', 'homework', 'quiz', 'participation', 'other'];
-    
-    types.forEach(type => {
-      students.forEach(student => {
-        if (student.assessment_types[type]?.length > max) {
-          max = student.assessment_types[type].length;
+interface StudentGrade {
+  id: string;
+  name: string;
+  average: number;
+  assessments: {
+    test: number[];
+    homework: number[];
+    quiz: number[];
+    participation: number[];
+    other: number[];
+  };
+}
+
+export function GradebookClassTable({ classData, onBack }: GradebookClassTableProps) {
+  const [students, setStudents] = useState<StudentGrade[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const accessToken: any = localStorage.getItem(localStorageKey.ACCESS_TOKEN);
+  const refreshToken: any = localStorage.getItem(
+    localStorageKey.REFRESH_TOKEN
+  );
+
+  const currentClassStr = localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS);
+  const currentClass = currentClassStr ? JSON.parse(currentClassStr) : null;
+  
+  console.log("currentClass", currentClass);
+
+  const tenantData: any = localStorage.getItem(localStorageKey.TENANT_DATA);
+  const { primary_domain } = JSON.parse(tenantData);
+  const tenantPrimaryDomain = `https://${primary_domain}`;
+
+  useEffect(() => {
+    async function fetchStudents() {
+      try {
+        const response = await getGradeBookFocusList(
+          tenantPrimaryDomain,
+          accessToken,
+          classData.id,
+          refreshToken
+        );
+
+        console.log("STUDENTS LOADED => ", response);
+
+        if (!Array.isArray(response)) {
+          throw new Error("Invalid API response structure: Expected array");
         }
-      });
-    });
-    return max;
-  };
 
-  const maxAssessments = getMaxAssessments();
+        const apiData = response as ApiStudent[];
+        
+        const formattedStudents = apiData.map((student) => {
+          if (!student?.student_name || !student?.assessment_types) {
+            console.warn("Invalid student data:", student);
+            return null;
+          }
+          return {
+            id: student.student_id?.toString() || 'unknown-id',
+            name: student.student_name,
+            average: student.average_grade || 0,
+            assessments: {
+              test: student.assessment_types.test || [],
+              homework: student.assessment_types.homework || [],
+              quiz: student.assessment_types.quiz || [],
+              participation: student.assessment_types.participation || [],
+              other: student.assessment_types.other || []
+            }
+          };
+        }).filter(Boolean) as StudentGrade[];
 
-  // Crée les en-têtes dynamiquement
-  const renderAssessmentHeaders = (type: keyof AssessmentTypes, displayName: string) => {
-    const assessments = students[0]?.assessment_types[type] || [];
-    const colSpan = assessments.length > 0 ? assessments.length : 1;
-
-    return (
-      <>
-        <TableHead colSpan={colSpan} className="text-center">
-          {displayName}
-        </TableHead>
-      </>
-    );
-  };
-
-  // Crée les sous-en-têtes dynamiquement
-  const renderSubHeaders = (type: keyof AssessmentTypes) => {
-    const assessments = students[0]?.assessment_types[type] || [];
-    
-    if (assessments.length === 0) {
-      return <TableHead>-</TableHead>;
+        setStudents(formattedStudents);
+        setLoading(false);
+      } catch (err: any) {
+        console.error("Fetch error details:", {
+          error: err,
+        });
+        setError(err.message || "Erreur de chargement");
+        setLoading(false);
+      }
     }
 
-    return assessments.map((assessment, index) => (
-      <TableHead key={`${type}-${index}`}>
-        {assessment.name}
-      </TableHead>
-    ));
-  };
+    fetchStudents();
+  }, [classData.id, tenantPrimaryDomain, accessToken, refreshToken]);
 
-  // Récupère la valeur d'une évaluation spécifique
-  const getAssessmentValue = (student: Student, type: keyof AssessmentTypes, index: number) => {
-    const assessments = student.assessment_types[type];
-    return assessments && assessments[index] ? assessments[index].average : '-';
-  };
+  if (loading) return (
+    <div className="space-y-4">
+      {[...Array(5)].map((_, i) => (
+        <Skeleton key={i} className="h-12 w-full rounded-md" />
+      ))}
+    </div>
+  );
+
+  if (error) return (
+    <div className="bg-red-50 p-4 rounded-md border border-red-200 text-red-600 flex items-center gap-3">
+      <AlertCircle className="w-5 h-5" />
+      <div>
+        <p className="font-medium">Error loading data</p>
+        <p className="text-sm">{error}</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="w-full overflow-auto">
-      <Table>
-        <TableHeader>
-          {/* Ligne principale des en-têtes */}
-          <TableRow>
-            <TableHead rowSpan={2} className="text-center">STUDENT</TableHead>
-            <TableHead rowSpan={2} className="text-center">AVERAGE</TableHead>
-            {renderAssessmentHeaders('Test', 'TEST')}
-            {renderAssessmentHeaders('homework', 'HOMEWORK')}
-            {renderAssessmentHeaders('quiz', 'QUIZ')}
-            {renderAssessmentHeaders('participation', 'PARTICIPATION')}
-            {renderAssessmentHeaders('other', 'OTHER')}
-            <TableHead rowSpan={2}>ACTIONS</TableHead>
-          </TableRow>
-          
-          {/* Ligne des sous-en-têtes */}
-          <TableRow>
-            {renderSubHeaders('Test')}
-            {renderSubHeaders('homework')}
-            {renderSubHeaders('quiz')}
-            {renderSubHeaders('participation')}
-            {renderSubHeaders('other')}
-          </TableRow>
-        </TableHeader>
+    <TooltipProvider>
+      <div className="w-full">
+        {/* Conteneur principal avec bordure et ombre */}
+        <div className="rounded-lg border shadow-sm bg-white">
+          {/* Conteneur de scroll avec padding-bottom pour la barre de défilement */}
+          <div className="overflow-x-auto pb-2">
+            {/* Tableau avec largeur fixe adaptée à votre contenu */}
+            
+            <Table>
+                <TableHeader className="bg-gray-50">
+                  <TableRow>
+                    <TableHead rowSpan={2} className="w-[120px] sticky left-0 bg-gray-50 z-10 text-center font-semibold text-gray-700">STUDENT</TableHead>
+                    <TableHead rowSpan={2} className="w-[90px] text-center font-semibold text-gray-700">AVERAGE</TableHead>
+                    <TableHead colSpan={2} className="text-center font-semibold text-gray-700">EXAMS</TableHead>
+                    <TableHead colSpan={4} className="text-center font-semibold text-gray-700">QUIZZES</TableHead>
+                    <TableHead colSpan={3} className="text-center font-semibold text-gray-700">HOMEWORK</TableHead>
+                    <TableHead rowSpan={2} className="w-[150px] font-semibold text-gray-700">ACTIONS</TableHead>
+                  </TableRow>
+                  <TableRow className="bg-gray-50">
+                    {['General', 'Practical', 'General', 'Pop Quiz', 'Unit 1', 'Unit 2', 'Chapter 3', 'General', 'Project'].map((header, i) => (
+                      <TableHead key={i} className="text-xs font-medium text-gray-500">{header}</TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+              <TableBody>
+                            {students.map((student) => (
+                              <TableRow key={student.id} className="hover:bg-gray-50/50">
+                                <TableCell className="font-medium sticky left-0 bg-white z-10 w-[120px] truncate">{student.name}</TableCell>
+                                
+                                <TableCell className="text-center w-[90px]">
+                                  <Badge 
+                                    variant={
+                                      student.average >= 70 ? 'default' : 
+                                      student.average >= 50 ? 'secondary' : 
+                                      'destructive'
+                                    }
+                                    className={
+                                      student.average >= 70 ? 'bg-green-100 text-green-800' : 
+                                      student.average >= 50 ? 'bg-yellow-100 text-yellow-800' : 
+                                      ''
+                                    }
+                                  >
+                                    {student.average.toFixed(1)}
+                                  </Badge>
+                                </TableCell>
+              
+                                {/* Exam Cells */}
+                                <TableCell className="text-center">
+                                  <GradeCell value={student.assessments.test[0]} />
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  <GradeCell value={student.assessments.test[1]} />
+                                </TableCell>
+              
+                                {/* Quiz Cells */}
+                                {[0, 1, 2, 3].map((i) => (
+                                  <TableCell key={`quiz-${i}`} className="text-center">
+                                    <GradeCell value={student.assessments.quiz[i]} />
+                                  </TableCell>
+                                ))}
+              
+                                {/* Homework Cells */}
+                                <TableCell className="text-center">
+                                  <GradeCell value={student.assessments.homework[0]} />
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  <GradeCell value={student.assessments.homework[1]} />
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  <GradeCell value={student.assessments.homework[2]} />
+                                </TableCell>
+              
+                                <TableCell className="w-[150px]">
+                                  <div className="flex gap-1 justify-center">
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-blue-50">
+                                          <Pencil className="h-3.5 w-3.5 text-blue-600" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Edit grades</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+              
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-red-50">
+                                          <Trash2 className="h-3.5 w-3.5 text-red-600" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Delete record</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+              
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-green-50">
+                                          <File className="h-3.5 w-3.5 text-green-600" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>View details</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+            </Table>
         
-        <TableBody>
-          {students.map((student) => (
-            <TableRow key={student.student_id}>
-              <TableCell>{student.student_name}</TableCell>
-              <TableCell>
-                {student.average_grade.toFixed(2)}% <RecordDialog />
-              </TableCell>
-              
-              {/* Colonnes Test */}
-              {student.assessment_types.Test?.map((test, index) => (
-                <TableCell key={`test-${index}`}>
-                  <span className="flex gap-1 justify-center">
-                    {test.average} <RecordDialog />
-                  </span>
-                </TableCell>
-              )) || <TableCell>-</TableCell>}
-              
-              {/* Colonnes Homework */}
-              {student.assessment_types.homework?.map((hw, index) => (
-                <TableCell key={`hw-${index}`}>
-                  <span className="flex gap-1 justify-center">
-                    {hw.average} <RecordDialog />
-                  </span>
-                </TableCell>
-              )) || <TableCell>-</TableCell>}
-              
-              {/* Colonnes Quiz */}
-              {student.assessment_types.quiz?.map((quiz, index) => (
-                <TableCell key={`quiz-${index}`}>
-                  <span className="flex gap-1 justify-center">
-                    {quiz.average} <RecordDialog />
-                  </span>
-                </TableCell>
-              )) || <TableCell>-</TableCell>}
-              
-              {/* Colonnes Participation */}
-              {student.assessment_types.participation?.map((part, index) => (
-                <TableCell key={`part-${index}`}>
-                  <span className="flex gap-1 justify-center">
-                    {part.average} <RecordDialog />
-                  </span>
-                </TableCell>
-              )) || <TableCell>-</TableCell>}
-              
-              {/* Colonnes Other */}
-              {student.assessment_types.other?.map((other, index) => (
-                <TableCell key={`other-${index}`}>
-                  <span className="flex gap-1 justify-center">
-                    {other.average} <RecordDialog />
-                  </span>
-                </TableCell>
-              )) || <TableCell>-</TableCell>}
-              
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-blue-50">
-                    <Pencil className="h-4 w-4 text-[#25AAE1]" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-50">
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-50">
-                    <File className="h-4 w-4 text-green-500" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+        </div>
+      </div>
+      </div>
+    </TooltipProvider>
+  );
+}
+
+function GradeCell({ value }: { value?: number }) {
+  if (value === undefined || value === null) {
+    return (
+      <div className="flex justify-center items-center gap-1">
+        <span className="text-gray-400">-</span>
+        <RecordDialog>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-6 w-6 hover:bg-gray-100"
+            aria-label="Add voice note"
+          >
+            <Mic className="h-4 w-4 text-gray-500" />
+          </Button>
+        </RecordDialog>
+      </div>
+    );
+  }
+
+  const colorClass = value >= 70 
+    ? 'text-green-600 font-medium' 
+    : value >= 50 
+      ? 'text-yellow-600' 
+      : 'text-red-600';
+
+  return (
+    <div className="flex justify-center items-center gap-1">
+      <span className={`${colorClass}`}>{value}</span>
+      <RecordDialog>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-6 w-6 hover:bg-gray-100"
+          aria-label="Add voice note"
+        >
+          <Mic className="h-4 w-4 text-gray-500 hover:text-blue-500" />
+        </Button>
+      </RecordDialog>
     </div>
   );
 }
