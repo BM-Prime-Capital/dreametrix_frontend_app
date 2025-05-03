@@ -8,13 +8,7 @@ import { Button } from "../ui/button";
 import { ChevronLeft } from "lucide-react";
 import { useSelector } from "react-redux";
 import LineChartComponent from "../ui/line-chart";
-import { localStorageKey, views } from "@/constants/global";
-import { useEffect, useState } from "react";
-import { useRequestInfo } from "@/hooks/useRequestInfo";
-import { Loader } from "../ui/loader"; 
-import NoDataPersonalized from "../ui/no-data-personalized";
-
-import { getRewardsFocusView } from "@/services/RewardsService";
+import { views } from "@/constants/global";
 
 export default function RewardsFocusedView({
   student,
@@ -24,89 +18,6 @@ export default function RewardsFocusedView({
   changeView: (viewName: string) => void;
 }) {
   const { selectedClass } = useSelector((state: any) => state.generalInfo);
-  const [studentData, setStudentData] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  //space
-  const { tenantDomain: tenantPrimaryDomain, accessToken, refreshToken } = useRequestInfo();
-  const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
-  const currentClass = JSON.parse(
-    localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
-  );
-  
-  const [isLoading, setIsLoading] = useState(false);
-  const [rewards, setRewards] = useState<any[]>([]);
-  const [rewardsCount, setRewardsCount] = useState(0);
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
-
-  // In FocusView component
-// Dans FocusView (correct)
-  useEffect(() => {
-    const loadStudentDetails = async () => {
-      setIsLoading(true);
-      console.log("FocusView received student prop:", student);
-      try {
-        if (!tenantPrimaryDomain || !accessToken || !refreshToken) {
-          console.error("Missing authentication credentials");
-          return;
-        }
-        
-        // Vérifiez la structure attendue (student.student.id)
-        if (!student?.student?.id) {
-          throw new Error(`Missing student ID. Received data: ${JSON.stringify(student)}`);
-        }
-
-        const data = await getRewardsFocusView(
-          tenantPrimaryDomain,
-          accessToken,
-          refreshToken,
-          "",
-          "",
-          student.student.id // ← Utilisez student.student.id
-        );
-
-        setStudentData(data);
-      } catch (err) {
-        console.error("Failed to load student details:", err);
-        setError(err instanceof Error ? err.message : "Failed to load student details");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadStudentDetails();
-  }, [tenantPrimaryDomain, accessToken, refreshToken, student?.student?.id]); // ← Dépendance sur student.student.id
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Loader />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
-       <NoDataPersonalized message={error} />
-        <Button onClick={() => changeView(views.GENERAL_VIEW)}>
-          Back to General View
-        </Button>
-      </div>
-    );
-  }
-
-  if (!studentData) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <NoDataPersonalized message="No student data available" />
-        <Button onClick={() => changeView(views.GENERAL_VIEW)}>
-          Back to General View
-        </Button>
-      </div>
-    );
-  }
 
   return (
     <section className="flex flex-col gap-2 w-full">
@@ -120,7 +31,7 @@ export default function RewardsFocusedView({
           >
             <ChevronLeft className="h-6 w-6" />
           </Button>
-          <PageTitleH1 title="Student Details" />
+          <PageTitleH1 title="Student" />
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -132,14 +43,17 @@ export default function RewardsFocusedView({
             <span>Back</span>
           </Button>
         </div>
+
       </div>
 
       <Card className="rounded-md">
         <div className="flex flex-col p-4">
           {/* Ligne avec les 3 blocs principaux */}
+         
           <div className="flex flex-col gap-6 mb-8 lg:flex-row lg:items-start">
             {/* Bloc Photo + Infos étudiant */}
             <div className="flex flex-col items-center gap-4 min-w-[200px] bg-white p-5 rounded-xl shadow-xs border border-gray-100">
+            
               <div className="relative">
                 <Image
                   src={generalImages.student}
@@ -161,17 +75,15 @@ export default function RewardsFocusedView({
 
               <div className="flex flex-col items-center text-center w-full">
                 <h2 className="font-bold text-xl text-gray-800 break-words max-w-full">
-                  {studentData.studentName}
+                  Prince Ilunga
                 </h2>
                 <div className="mt-2 bg-indigo-50 px-4 py-2 rounded-full">
-                  <span className="font-semibold text-indigo-700">
-                    Total: {studentData.totalPoints} points
-                  </span>
+                  <span className="font-semibold text-indigo-700">Total: 84 points</span>
                 </div>
               </div>
             </div>
 
-            {/* Bloc Domaines */} 
+            {/* Bloc Domaines */}
             <div className="flex flex-col gap-5 w-full max-w-[280px]">
               {/* Domains I did well in */}
               <div className="bg-white p-0 rounded-xl shadow-xs border border-emerald-100 overflow-hidden">
@@ -183,15 +95,11 @@ export default function RewardsFocusedView({
                 </div>
                 <div className="p-4">
                   <div className="flex flex-col gap-3">
-                    {studentData.goodDomains.length > 0 ? (
-                      studentData.goodDomains.map((domain: string) => (
-                        <div key={domain} className="flex items-center bg-emerald-50 px-3 py-2 rounded-lg">
-                          <span className="text-emerald-800 font-medium">{domain}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center text-gray-500 py-2">No domains found</div>
-                    )}
+                    {["Emotional Intelligence", "Integrity", "Optimism"].map((domain) => (
+                      <div key={domain} className="flex items-center bg-emerald-50 px-3 py-2 rounded-lg">
+                        <span className="text-emerald-800 font-medium">{domain}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -206,21 +114,16 @@ export default function RewardsFocusedView({
                 </div>
                 <div className="p-4">
                   <div className="flex flex-wrap gap-3">
-                    {studentData.focusDomains.length > 0 ? (
-                      studentData.focusDomains.map((domain: string) => (
-                        <div key={domain} className="flex items-center bg-rose-50 px-3 py-2 rounded-lg">
-                          <span className="text-rose-800 font-medium">{domain}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center text-gray-500 py-2">No focus domains</div>
-                    )}
+                    <div className="flex items-center bg-rose-50 px-3 py-2 rounded-lg">
+                      <span className="text-rose-800 font-medium">Self-Control</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Bloc Score History */}
+          
             <div className="flex-1 bg-white p-5 rounded-xl shadow-xs border border-gray-100 min-w-0">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold text-lg text-gray-700 flex items-center">
@@ -241,6 +144,7 @@ export default function RewardsFocusedView({
           </div>
 
           {/* Deuxième ligne - 3 blocs horizontaux */}
+
           <div className="bg-gray-50 p-5 rounded-lg mb-6 shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {/* Bloc Attendance Balance */}
@@ -254,27 +158,11 @@ export default function RewardsFocusedView({
                 <div className="space-y-3">
                   <div className="flex justify-between items-center bg-indigo-50 px-3 py-2 rounded">
                     <span className="text-gray-600">Present</span>
-                    <span className="font-bold text-indigo-700 bg-white px-2 py-1 rounded">
-                      {studentData.attendanceBalance.present}
-                    </span>
+                    <span className="font-bold text-indigo-700 bg-white px-2 py-1 rounded">56</span>
                   </div>
                   <div className="flex justify-between items-center bg-indigo-50 px-3 py-2 rounded">
                     <span className="text-gray-600">Absent</span>
-                    <span className="font-bold text-indigo-700 bg-white px-2 py-1 rounded">
-                      {studentData.attendanceBalance.absent}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center bg-indigo-50 px-3 py-2 rounded">
-                    <span className="text-gray-600">Late</span>
-                    <span className="font-bold text-indigo-700 bg-white px-2 py-1 rounded">
-                      {studentData.attendanceBalance.late}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center bg-indigo-50 px-3 py-2 rounded">
-                    <span className="text-gray-600">Half Day</span>
-                    <span className="font-bold text-indigo-700 bg-white px-2 py-1 rounded">
-                      {studentData.attendanceBalance.half_day}
-                    </span>
+                    <span className="font-bold text-indigo-700 bg-white px-2 py-1 rounded">12</span>
                   </div>
                 </div>
               </div>
@@ -283,26 +171,27 @@ export default function RewardsFocusedView({
               <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-xs">
                 <h3 className="font-bold mb-4 text-lg text-emerald-600 border-b-2 border-emerald-100 pb-2">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                   Good Character
                 </h3>
                 <div className="space-y-2">
-                  {Object.entries(studentData.goodCharacter).length > 0 ? (
-                    Object.entries(studentData.goodCharacter).map(([domain, points]) => (
-                      <div key={domain} className="flex justify-between items-center hover:bg-emerald-50 px-2 py-1 rounded transition-colors">
-                        <span className="text-gray-700 capitalize">
-                          {domain}
-                        </span>
-                        <span className="font-bold text-emerald-600 bg-white px-2 rounded-full border border-emerald-100">
-                          +{typeof points === "number" ? points : 0}
-                        </span>
-
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center text-gray-500 py-2">No good character data</div>
-                  )}
+                  {[
+                    { name: "Integrity", value: 9, max: 4 },
+                    { name: "Grit", value: 5, max: 5 },
+                    { name: "Emotional Intelligence", value: 7, max: 4 },
+                    { name: "Positivity", value: 14, max: 3 },
+                    { name: "Self-control", value: 4, max: 5 },
+                  ].map((item) => (
+                    <div key={item.name} className="flex justify-between items-center hover:bg-emerald-50 px-2 py-1 rounded transition-colors">
+                      <span className="text-gray-700">
+                        {item.name} <span className="text-gray-400 text-xs">({item.max})</span>
+                      </span>
+                      <span className="font-bold text-emerald-600 bg-white px-2 rounded-full border border-emerald-100">
+                        +{item.value}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -315,21 +204,22 @@ export default function RewardsFocusedView({
                   Bad Character
                 </h3>
                 <div className="space-y-2">
-                  {Object.entries(studentData.badCharacter).length > 0 ? (
-                    Object.entries(studentData.badCharacter).map(([domain, points]) => (
-                      <div key={domain} className="flex justify-between items-center hover:bg-rose-50 px-2 py-1 rounded transition-colors">
-                        <span className="text-gray-700 capitalize">
-                          {domain}
-                        </span>
-                        <span className="font-bold text-rose-600 bg-white px-2 rounded-full border border-rose-100">
-                          {typeof points === "number" ? points : 0}
-                        </span>
-
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center text-gray-500 py-2">No bad character data</div>
-                  )}
+                  {[
+                    { name: "Integrity", value: 2, max: 4 },
+                    { name: "Grit", value: 1, max: 5 },
+                    { name: "Emotional Intelligence", value: 0, max: 4 },
+                    { name: "Positivity", value: 1, max: 3 },
+                    { name: "Self-control", value: 4, max: 5 },
+                  ].map((item) => (
+                    <div key={item.name} className="flex justify-between items-center hover:bg-rose-50 px-2 py-1 rounded transition-colors">
+                      <span className="text-gray-700">
+                        {item.name} <span className="text-gray-400 text-xs">({item.max})</span>
+                      </span>
+                      <span className="font-bold text-rose-600 bg-white px-2 rounded-full border border-rose-100">
+                        -{item.value}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -358,6 +248,7 @@ export default function RewardsFocusedView({
                       <th className="p-2 text-left">Date</th>
                       <th className="p-2 text-left">Period</th>
                       <th className="p-2 text-left">Class</th>
+                      <th className="p-2 text-left">Staff</th>
                       <th className="p-2 text-left">News & Comment</th>
                       <th className="p-2 text-left">Sanctions</th>
                       <th className="p-2 text-left">Points</th>
@@ -365,50 +256,42 @@ export default function RewardsFocusedView({
                     </tr>
                   </thead>
                   <tbody>
-                    {studentData.latestNews.length > 0 ? (
-                      studentData.latestNews.map((news: any, index: number) => (
-                        <tr key={index} className="border-b">
-                          <td className="p-2">{news.date ? new Date(news.date).toLocaleDateString() : 'N/A'}</td>
-                          <td className="p-2">{news.period || 'N/A'}</td>
-                          <td className="p-2">{news.class || 'N/A'}</td>
-                          <td className="p-2">{news.newsAndComment || 'N/A'}</td>
-                          <td className="p-2">{news.sanctions || 'None'}</td>
-                          <td className={`p-2 font-bold ${news.points > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                            {news.points > 0 ? `+${news.points}` : news.points}
-                          </td>
-                          <td className="p-2">
-                            <div className="flex gap-2 items-center">
-                              {news.followUp?.edit && (
-                                <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                                  </svg>
-                                </button>
-                              )}
-                              {news.followUp?.delete && (
-                                <button className="flex items-center gap-1 text-rose-600 hover:text-rose-800">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                  </svg>
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={7} className="p-4 text-center text-gray-500">
-                          No news available
-                        </td>
-                      </tr>
-                    )}
+                    <tr className="border-b">
+                      <td className="p-2">Wed 9 Apr 2025</td>
+                      <td className="p-2">After school</td>
+                      <td className="p-2">Class 6 - Math</td>
+                      <td className="p-2"></td>
+                      <td className="p-2">Smoking (3) Too bad to Smock</td>
+                      <td className="p-2">Contacted home</td>
+                      <td className="p-2 text-red-600 font-bold">-3</td>
+                      <td className="p-2">
+                        <div className="flex gap-2 items-center">
+                          <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                            </svg>
+                          </button>
+                          <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                          </button>
+                          <button className="flex items-center gap-1 text-red-600 hover:text-red-800">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="3 6 5 6 21 6"></polyline>
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
             </Card>
           </div>
+
         </div>
       </Card>
     </section>

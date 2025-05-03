@@ -1,3 +1,7 @@
+"use server";
+
+const characterPath = "/characters/initialize-class/";
+
 
 export async function getGradeBookList(
     tenantPrimaryDomain: string,
@@ -30,7 +34,7 @@ export async function getGradeBookList(
   
     return data;
   }
-
+  
 
 export async function getGradeBookFocusList(
     tenantPrimaryDomain: string,
@@ -41,7 +45,6 @@ export async function getGradeBookFocusList(
     if (!accessToken) {
       throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
     }
-
     const url = `${tenantPrimaryDomain}/gradebooks/${id}`;
     let response = await fetch(url, {
       method: "GET",
