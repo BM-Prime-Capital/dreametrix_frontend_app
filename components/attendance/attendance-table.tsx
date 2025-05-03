@@ -43,29 +43,56 @@ export function AttendanceTable({
     }
   };
 
+  // useEffect(() => {
+  //   const loadAttendances = async () => {
+  //     setIsLoading(true);
+  //     if (tenantDomain && accessToken && refreshToken) {
+  //       const data = await getAttendances(
+  //         {
+  //           date: currentDate,
+  //           class_id: currentClassId,
+  //           teacher_id: userData.owner_id,
+  //         },
+  //         tenantDomain,
+  //         accessToken,
+  //         refreshToken
+  //       );
+
+  //       console.log("ATTENDANCES LOADED => ", data);
+  //       setAttendances(data);
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  //   loadAttendances();
+  // }, [tenantDomain, accessToken, refreshToken, currentDate]);
+
   useEffect(() => {
     const loadAttendances = async () => {
       setIsLoading(true);
       if (tenantDomain && accessToken && refreshToken) {
-        const data = await getAttendances(
-          {
-            date: currentDate,
-            class_id: currentClassId,
-            teacher_id: userData.owner_id,
-          },
-          tenantDomain,
-          accessToken,
-          refreshToken
-        );
-
-        console.log("ATTENDANCES LOADED => ", data);
-        setAttendances(data);
-        setIsLoading(false);
+        try {
+          const data = await getAttendances(
+            {
+              date: currentDate,
+              class_id: currentClassId,
+              teacher_id: userData.owner_id,
+            },
+            tenantDomain,
+            accessToken,
+            refreshToken
+          );
+          setAttendances(data);
+        } catch (error) {
+          console.error("Failed to load attendances:", error);
+        } finally {
+          setIsLoading(false);
+        }
       }
     };
-
+  
     loadAttendances();
-  }, [tenantDomain, accessToken, refreshToken, currentDate]);
+  }, [tenantDomain, accessToken, refreshToken, currentDate, currentClassId]);
 
   return (
     <div className="w-full overflow-auto">
