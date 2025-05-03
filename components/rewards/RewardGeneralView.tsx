@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import NoData from "../ui/no-data";
@@ -18,57 +18,79 @@ import PageTitleH1 from "../ui/page-title-h1";
 import ClassSelect from "../ClassSelect";
 import { Card } from "@/components/ui/card";
 import AllRewardFiltersPopUp from "./AllRewardFiltersPopUp";
+import { getRewardsGeneralView } from "@/services/RewardsService";
+import { useRequestInfo } from "@/hooks/useRequestInfo";
+import { localStorageKey } from "@/constants/global";
 
 interface RewardsGeneralViewProps {
   changeView: (viewName: string, student?: any) => void;
 }
 
-const rewardsData = [
-  {
-    id: 1,
-    student: "Thomas Niandu",
-    attendance: { present: 5, absent: 3, late: 1, half_day: 0 },
-    pointGained: 6,
-    pointLost: 6,
-    total: 4,
-  },
-  {
-    id: 2,
-    student: "Odelia BARAKAEL",
-    attendance: { present: 4, absent: 1, late: 0, half_day: 3 },
-    pointGained: 2,
-    pointLost: 9,
-    total: 3,
-  },
-  {
-    id: 3,
-    student: "Joshua Niandu",
-    attendance: { present: 3, absent: 2, late: 2, half_day: 0 },
-    pointGained: 4,
-    pointLost: 6,
-    total: 2,
-  },
-];
-
 export default function RewardsGeneralView({ changeView }: RewardsGeneralViewProps) {
+  const { tenantDomain: tenantPrimaryDomain, accessToken, refreshToken } = useRequestInfo();
+  const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
+  const currentClass = JSON.parse(
+    localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
+  );
+  
   const [isLoading, setIsLoading] = useState(false);
   const [rewards, setRewards] = useState<any[]>([]);
   const [rewardsCount, setRewardsCount] = useState(0);
-  const [refreshTime, setRefreshTime] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   useEffect(() => {
     const loadRewards = async () => {
       setIsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setRewards(rewardsData);
-      setRewardsCount(rewardsData.length);
-      setIsLoading(false);
-    };
-    loadRewards();
-  }, [refreshTime]);
+      try {
+        if (!tenantPrimaryDomain || !accessToken || !refreshToken) {
+          console.error("Missing authentication credentials");
+          return;
+        }
 
+        const apiData = await getRewardsGeneralView(
+          tenantPrimaryDomain,
+          accessToken,
+          refreshToken,
+          fromDate,
+          toDate,
+          currentClass?.id // Ajout de l'ID de la classe courante
+        );
+
+        const transformedData = apiData.classes.flatMap((classItem: any) => 
+          classItem.students.map((studentItem: any) => ({
+            id: studentItem.student.id,
+            student: studentItem.student.name,
+            class: classItem.className,
+            attendance: studentItem.attendance,
+            pointGained: studentItem.pointGained,
+            pointLost: studentItem.pointLost,
+            total: studentItem.total,
+            rawData: studentItem
+          }))
+        );
+
+        setRewards(transformedData);
+        setRewardsCount(apiData.results);
+      } catch (error) {
+        console.error("Failed to load rewards:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadRewards();
+  }, [tenantPrimaryDomain, accessToken, refreshToken, fromDate, toDate, currentClass?.id]);
+
+  // In GeneralView component
+  // Dans GeneralView (correct)
   const handleViewDetails = (student: any) => {
-    changeView("FOCUSED_VIEW", student);
+    if (!student?.rawData?.student?.id) {
+      console.log("Student data being passed to FocusView:", student.rawData);
+      console.error("Invalid student data structure:", student);
+      return;
+    }
+    changeView("FOCUSED_VIEW", student.rawData); // ← Passez l'objet complet
   };
 
   return (
@@ -91,7 +113,7 @@ export default function RewardsGeneralView({ changeView }: RewardsGeneralViewPro
             <input
               className="bg-white border rounded-md p-1 text-sm cursor-pointer"
               type="date"
-              onChange={(e) => setRefreshTime(e.target.value)}
+              onChange={(e) => setFromDate(e.target.value)}
             />
           </label>
 
@@ -100,7 +122,7 @@ export default function RewardsGeneralView({ changeView }: RewardsGeneralViewPro
             <input
               className="bg-white border rounded-md p-1 text-sm cursor-pointer"
               type="date"
-              onChange={(e) => setRefreshTime(e.target.value)}
+              onChange={(e) => setToDate(e.target.value)}
             />
           </label>
           <AllRewardFiltersPopUp />
@@ -118,6 +140,7 @@ export default function RewardsGeneralView({ changeView }: RewardsGeneralViewPro
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className="font-bold">Students</TableHead>
+                <TableHead className="font-bold text-center">Class</TableHead>
                 <TableHead className="font-bold text-center">Attendance</TableHead>
                 <TableHead className="font-bold text-center">Point Gained</TableHead>
                 <TableHead className="font-bold text-center">Point Lost</TableHead>
@@ -130,6 +153,7 @@ export default function RewardsGeneralView({ changeView }: RewardsGeneralViewPro
                 rewards.map((reward) => (
                   <TableRow key={reward.id}>
                     <TableCell className="font-medium">{reward.student}</TableCell>
+                    <TableCell className="text-center">{reward.class}</TableCell>
                     <TableCell>
                       <AttendanceDisplay attendance={reward.attendance} />
                     </TableCell>
@@ -146,14 +170,13 @@ export default function RewardsGeneralView({ changeView }: RewardsGeneralViewPro
                         >
                           <Eye className="h-4 w-4 text-[#25AAE1]" />
                         </Button>
-
                       </div>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
+                  <TableCell colSpan={7} className="text-center">
                     <NoData />
                   </TableCell>
                 </TableRow>
