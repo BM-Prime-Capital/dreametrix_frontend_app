@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/table";
 import { AlertCircle, Eye, File, Mic, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
 import { RecordDialog } from "./RecordDialog";
 import { getGradeBookFocusList } from "@/services/GradebooksService";
 import { localStorageKey } from "@/constants/global";
