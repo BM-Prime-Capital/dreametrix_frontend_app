@@ -29,6 +29,38 @@ export async function getAttendances(
   return responseData.attendances; // Retourne uniquement le tableau des présences
 }
 
+export async function initializeAttendances(
+  params: { 
+    date: string; 
+    class_id: number; 
+    teacher_id: number;
+    status: string; // 'present' | 'absent' | 'late' | 'half_day'
+  },
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  refreshToken: string
+) {
+  const url = `${tenantPrimaryDomain}/attendances/initialize-attendance/`;
+  
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(params)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    console.error("Erreur du backend:", errorData);
+    throw new Error(errorData.error || "Erreur lors de la création des présences");
+  }
+
+  const responseData = await response.json();
+  return responseData; // Retourne la liste des présences créées
+}
+
 export async function updateAttendance(
   attendance: any,
   tenantPrimaryDomain: string,

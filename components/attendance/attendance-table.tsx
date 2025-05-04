@@ -19,9 +19,11 @@ import { localStorageKey } from "@/constants/global";
 export function AttendanceTable({
   isAttendanceDatePast,
   currentDate,
+  onAttendancesLoaded,
 }: {
   isAttendanceDatePast: boolean;
   currentDate: string;
+  onAttendancesLoaded?: (attendances: any[]) => void;
 }) {
   const [attendances, setAttendances] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,39 +35,19 @@ export function AttendanceTable({
 
   const handleUpdateAttendance = async (attendance: any) => {
     if (accessToken && refreshToken && tenantDomain) {
-      const response = await updateAttendance(
-        attendance,
-        tenantDomain!,
-        accessToken!,
-        refreshToken!
-      );
-      alert("Attendance updated with success !");
+      try {
+        await updateAttendance(
+          attendance,
+          tenantDomain!,
+          accessToken!,
+          refreshToken!
+        );
+        alert("Attendance updated with success !");
+      } catch (error) {
+        alert("Failed to update attendance");
+      }
     }
   };
-
-  // useEffect(() => {
-  //   const loadAttendances = async () => {
-  //     setIsLoading(true);
-  //     if (tenantDomain && accessToken && refreshToken) {
-  //       const data = await getAttendances(
-  //         {
-  //           date: currentDate,
-  //           class_id: currentClassId,
-  //           teacher_id: userData.owner_id,
-  //         },
-  //         tenantDomain,
-  //         accessToken,
-  //         refreshToken
-  //       );
-
-  //       console.log("ATTENDANCES LOADED => ", data);
-  //       setAttendances(data);
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   loadAttendances();
-  // }, [tenantDomain, accessToken, refreshToken, currentDate]);
 
   useEffect(() => {
     const loadAttendances = async () => {
@@ -83,16 +65,29 @@ export function AttendanceTable({
             refreshToken
           );
           setAttendances(data);
+          if (onAttendancesLoaded) {
+            onAttendancesLoaded(data);
+          }
         } catch (error) {
           console.error("Failed to load attendances:", error);
+          if (onAttendancesLoaded) {
+            onAttendancesLoaded([]);
+          }
         } finally {
           setIsLoading(false);
         }
       }
     };
-  
+
     loadAttendances();
-  }, [tenantDomain, accessToken, refreshToken, currentDate, currentClassId]);
+  }, [
+    tenantDomain,
+    accessToken,
+    refreshToken,
+    currentDate,
+    currentClassId,
+    onAttendancesLoaded,
+  ]);
 
   return (
     <div className="w-full overflow-auto">
@@ -128,7 +123,7 @@ export function AttendanceTable({
                     <TableCell>
                       <div className="flex gap-8">
                         <span className="border-b-4 border-bgGreenLight2">
-                          {0} {/* TODO : attendance.presentAttendanceCount */}
+                          {0}
                         </span>
                         <span className="border-b-4 border-bgPinkLight2">
                           {0}
@@ -141,7 +136,8 @@ export function AttendanceTable({
               </TableBody>
             </Table>
           ) : (
-            <NoData />
+            <NoData/>
+            
           )}
         </>
       )}
