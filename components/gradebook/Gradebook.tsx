@@ -5,98 +5,45 @@ import { Card } from "@/components/ui/card";
 import { GradebookTable } from "./gradebook-table";
 import PageTitleH1 from "@/components/ui/page-title-h1";
 import { AddGradebookItemDialog } from "./AddGradebookItemDialog";
+
 import { GradebookClassTable } from "./gradebook-class-table";
+
 import { Button } from "../ui/button";
 import Image from "next/image";
 import { generalImages } from "@/constants/images";
 import ClassSelect from "../ClassSelect";
-import { getGradeBookFocusList, getGradeBookList } from "@/services/GradebooksService";
+import { getGradeBookList } from "@/services/GradebooksService";
 import { localStorageKey } from "@/constants/global";
 import { ClassData } from "../types/gradebook";
 
-interface Student {
-  student_name: string;
-  student_id: number;
-  average_grade: number;
-  assessment_types: {
-    Test: Array<{ name: string; average: number }>;
-    homework: Array<{ name: string; average: number }>;
-    quiz: Array<{ name: string; average: number }>;
-    participation: Array<{ name: string; average: number }>;
-    other: Array<{ name: string; average: number }>;
-  };
-}
 
-interface ExtendedClassData extends ClassData {
-  students?: Student[];
+
+interface GradebookTableProps {
+  classes: ClassData[];
+  setCurrentClass: (selectedClass: ClassData) => void;
 }
 
 export default function Gradebook() {
-  const [currentClass, setCurrentClass] = useState<ExtendedClassData | null>(null);
-  const [gradebookData, setGradebookData] = useState<ClassData[]>([]);
+
+  const [currentClass, setCurrentClass] = useState<ClassData | null>(null);
+  const [gradebookData, setGradebookData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const accessToken = localStorage.getItem(localStorageKey.ACCESS_TOKEN);
-  const refreshToken = localStorage.getItem(localStorageKey.REFRESH_TOKEN);
-  const tenantData = localStorage.getItem(localStorageKey.TENANT_DATA);
-  const { primary_domain } = JSON.parse(tenantData || '{}');
+  
+  const accessToken: any = localStorage.getItem(localStorageKey.ACCESS_TOKEN);
+  const refreshToken: any = localStorage.getItem(
+        localStorageKey.REFRESH_TOKEN
+      );
+
+  const tenantData: any = localStorage.getItem(localStorageKey.TENANT_DATA);
+
+  const { primary_domain } = JSON.parse(tenantData);
   const tenantPrimaryDomain = `https://${primary_domain}`;
 
-  const transformStudentData = (data: any): Student[] => {
-    return data.map((student: any) => ({
-      student_name: student.name || `Student ${student.id}`,
-      student_id: student.id,
-      average_grade: student.average || 0,
-      assessment_types: {
-        Test: student.tests?.map((test: any) => ({
-          name: test.name || "Test",
-          average: test.grade || 0
-        })) || [],
-        homework: student.homeworks?.map((hw: any) => ({
-          name: hw.name || "Homework",
-          average: hw.grade || 0
-        })) || [],
-        quiz: student.quizzes?.map((quiz: any) => ({
-          name: quiz.name || "Quiz",
-          average: quiz.grade || 0
-        })) || [],
-        participation: student.participations?.map((part: any) => ({
-          name: part.name || "Participation",
-          average: part.grade || 0
-        })) || [],
-        other: student.others?.map((other: any) => ({
-          name: other.name || "Other",
-          average: other.grade || 0
-        })) || []
-      }
-    }));
-  };
-
-  const handleClassSelect = async (selectedClass: ClassData) => {
-    try {
-      setLoading(true);
-      const studentData = await getGradeBookFocusList(
-        tenantPrimaryDomain,
-        accessToken || '',
-        selectedClass.id.toString(),
-        refreshToken || ''
-      );
-      
-      const transformedStudents = transformStudentData(studentData);
-      
-      const updatedClass: ExtendedClassData = {
-        ...selectedClass,
-        students: transformedStudents
-      };
-      
-      setCurrentClass(updatedClass);
-      localStorage.setItem(localStorageKey.CURRENT_SELECTED_CLASS, JSON.stringify(updatedClass));
-    } catch (err: any) {
-      setError(err.message || "Failed to load class data");
-    } finally {
-      setLoading(false);
-    }
+  const handleClassSelect = (selectedClass: ClassData) => {
+    setCurrentClass(selectedClass);
+    localStorage.setItem(localStorageKey.CURRENT_SELECTED_CLASS, JSON.stringify(selectedClass));
   };
 
   const handleBackToList = () => {
@@ -131,7 +78,7 @@ export default function Gradebook() {
 
         setGradebookData(formatted);
       } catch (err: any) {
-        setError(err.message || "Failed to load gradebook data");
+        setError(err.message || "Erreur inconnue");
       } finally {
         setLoading(false);
       }
@@ -151,13 +98,14 @@ export default function Gradebook() {
             </h1>
           )}
         </div>
+
         {currentClass && <ClassSelect />}
       </div>
 
       <div className="flex gap-2">
         <AddGradebookItemDialog />
         {currentClass && (
-          <Button className="flex gap-2 items-center text-lg bg-yellow-500 hover:bg-yellow-600 rounded-md px-2 py-4 lg:px-4 lg:py-6">
+          <Button className="flex gap-2 items-center text-lg bg-yellow-500 hover:bg-yellow-600 rounded-md  px-2 py-4 lg:px-4 lg:py-6">
             <Image
               src={generalImages.layout}
               alt="add"
@@ -176,6 +124,7 @@ export default function Gradebook() {
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
         ) : currentClass ? (
+          // VOICI LA PARTIE MODIFIÉE 👇
           <div className="space-y-4">
             <Button 
               variant="outline" 
@@ -184,16 +133,15 @@ export default function Gradebook() {
             >
               ← Back to class list
             </Button>
-            {currentClass.students ? (
-              <GradebookClassTable students={currentClass.students} />
-            ) : (
-              <p>No student data available</p>
-            )}
+            <GradebookClassTable 
+              classData={currentClass}  // Ajout de la prop classData
+              onBack={handleBackToList}  // Ajout de la prop onBack
+            />
           </div>
         ) : (
           <GradebookTable
-            classes={gradebookData}
-            onClassSelect={handleClassSelect}
+          classes={gradebookData}
+          onClassSelect={handleClassSelect}
           />
         )}
       </Card>
