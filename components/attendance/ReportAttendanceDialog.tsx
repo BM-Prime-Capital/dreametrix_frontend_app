@@ -1,41 +1,28 @@
 "use client";
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import Image from "next/image";
 import { teacherImages } from "@/constants/images";
 import SelectedUsersPopUp from "../SelectedUsersPopUp";
 
-export function ReportAttendanceDialog() {
-  const [open, setOpen] = useState(false);
+interface ReportAttendanceDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
 
+export function ReportAttendanceDialog({
+  open,
+  onOpenChange,
+}: ReportAttendanceDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="flex gap-2 items-center text-lg bg-[#c586d1] hover:bg-[#A36EAD] rounded-md  px-2 py-4 lg:px-4 lg:py-6">
-          <Image
-            src={teacherImages.report}
-            alt="report"
-            width={100}
-            height={100}
-            className="w-8 h-8"
-          />
-          <span>Report</span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[300px]">
-        <h2
-          className="pb-2 font-bold"
-          style={{ borderBottom: "solid 1px #eee;" }}
-        >
-          Report
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <h2 className="pb-2 font-bold border-b border-gray-200">
+          Attendance Report
         </h2>
-        <div className="flex flex-col gap-2 text-gray-600">
-          <select
-            style={{ border: "solid 1px #eee" }}
-            className="px-2 py-1 bg-white rounded-full"
-          >
+        <div className="flex flex-col gap-4 text-gray-600">
+          <select className="px-3 py-2 bg-white rounded-md border border-gray-200">
             <option>Class 5 - Math</option>
             <option>Class 6 - Math</option>
             <option>Class 7 - Math</option>
@@ -43,48 +30,44 @@ export function ReportAttendanceDialog() {
 
           <SelectedUsersPopUp selectedUsers={[]} usersLabel="Students" />
 
-          <div
-            className="relative p-2 mt-2 rounded-md"
-            style={{ border: "solid 1px #eee" }}
-          >
-            <label className="absolute -top-3 bg-white text-sm">
-              Time-Frame
+          <div className="relative p-4 mt-2 rounded-md border border-gray-200">
+            <label className="absolute -top-3 left-3 px-1 bg-white text-sm text-gray-500">
+              Time Frame
             </label>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <label className="flex items-center justify-between gap-2">
-                <span className="text-muted-foreground">From: </span>
+                <span className="text-muted-foreground">From:</span>
                 <input
-                  className="bg-white hover:bg-gray-50 rounded-md p-0.5 cursor-pointer"
+                  className="bg-white rounded-md p-2 border border-gray-200"
                   type="date"
                 />
               </label>
               <label className="flex items-center justify-between gap-2">
-                <span className="text-muted-foreground">To: </span>
+                <span className="text-muted-foreground">To:</span>
                 <input
-                  className="bg-white hover:bg-gray-50 rounded-md p-0.5 cursor-pointer"
+                  className="bg-white rounded-md p-2 border border-gray-200"
                   type="date"
                 />
               </label>
             </div>
           </div>
         </div>
-        <div className="flex flex-col justify-between gap-2">
-          <button className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2">
+        <div className="flex flex-col gap-2 mt-4">
+          <Button className="flex items-center justify-center gap-2">
             <Image
               src={teacherImages.save}
-              height={100}
-              width={100}
-              className="h-6 w-6"
+              height={24}
+              width={24}
               alt="save"
             />
-            <label className="cursor-pointer">SAVE REPORT</label>
-          </button>
-          <button
-            className="rounded-full px-4 py-2 hover:bg-gray-100"
-            onClick={() => setOpen(false)}
+            <span>SAVE REPORT</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
           >
             Cancel
-          </button>
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
