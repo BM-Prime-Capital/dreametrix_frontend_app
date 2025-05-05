@@ -61,6 +61,67 @@ export async function initializeAttendances(
   return responseData; // Retourne la liste des présences créées
 }
 
+export const updateAttendances = async (
+  data: {
+    date: string;
+    student_ids: string[];
+    status: 'present' | 'absent' | 'late' | 'excused';
+  },
+  tenantDomain: string,
+  accessToken: string,
+  refreshToken: string
+) => {
+  const response = await fetch(
+    `${tenantDomain}/api/attendances/bulk-update`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+        'X-Refresh-Token': refreshToken,
+      },
+      body: JSON.stringify(data),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error('Failed to update attendances');
+  }
+
+  return response.json();
+};
+
+export async function updateMultipleAttendances(
+  data: { updates: Array<{ attendance_id: number; status: string; notes: string }> },
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  refreshToken: string
+) {
+  try {
+    const url = `${tenantPrimaryDomain}/attendances/update-attendances/`;
+    let response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (response.ok) {
+      const data: any = await response.json();
+      console.log("PUT Multiple Attendances data => ", data);
+      return "ok";
+    } else {
+      console.log("PUT Multiple Attendances Failed => ", response);
+      throw new Error("Multiple attendances modification failed");
+    }
+  } catch (error) {
+    console.log("Error => ", error);
+    throw error;
+  }
+}
+
 export async function updateAttendance(
   attendance: any,
   tenantPrimaryDomain: string,
