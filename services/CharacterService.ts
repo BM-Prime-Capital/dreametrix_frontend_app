@@ -12,7 +12,14 @@ export async function getCharracters(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
-  console.log("initCharaterData => ", initCharaterData);
+  // Add current date to the request
+  const today = new Date().toISOString().split('T')[0];
+  const requestData = {
+    ...initCharaterData,
+    date: today
+  };
+
+  console.log("initCharaterData => ", requestData);
   const url = `${tenantPrimaryDomain}${characterPath}`;
   let response = await fetch(url, {
     method: "POST",
@@ -20,7 +27,7 @@ export async function getCharracters(
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
-    body: JSON.stringify(initCharaterData),
+    body: JSON.stringify(requestData),
   });
 
   if (!response.ok) {

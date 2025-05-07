@@ -158,31 +158,31 @@ export const TeacherRoutes = [
     icon: menuImages.polls,
     label: "POLLS",
   },
-  // {
-  //   path: `${userPath.TEACHER_BASE_PATH}/big_braain`,
-  //   icon: menuImages.big_braain,
-  //   label: "BIG BRAA.I.N",
-  // },
-  // {
-  //   path: `${userPath.TEACHER_BASE_PATH}/test_prep`,
-  //   icon: menuImages.test_prep,
-  //   label: "TEST PREP",
-  // },
-  // {
-  //   path: `${userPath.TEACHER_BASE_PATH}/child_study`,
-  //   icon: menuImages.child_study,
-  //   label: "CHILD STUDY",
-  // },
-  // {
-  //   path: `${userPath.TEACHER_BASE_PATH}/dream_arcade`,
-  //   icon: menuImages.dream_arcade,
-  //   label: "DREAM ARCADE",
-  // },
-  // {
-  //   path: `${userPath.TEACHER_BASE_PATH}/report_card`,
-  //   icon: menuImages.report_card,
-  //   label: "REPORT CARD",
-  // },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/big_braain`,
+    icon: menuImages.big_braain,
+    label: "BIG BRAA.I.N",
+  },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/test_prep`,
+    icon: menuImages.test_prep,
+    label: "TEST PREP",
+  },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/child_study`,
+    icon: menuImages.child_study,
+    label: "CHILD STUDY",
+  },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/dream_arcade`,
+    icon: menuImages.dream_arcade,
+    label: "DREAM ARCADE",
+  },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/report_card`,
+    icon: menuImages.report_card,
+    label: "REPORT CARD",
+  },
 ];
 
 export const ParentRoutes = [
