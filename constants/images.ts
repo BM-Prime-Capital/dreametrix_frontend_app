@@ -28,6 +28,8 @@ export const generalImages = {
   print: `${GENERAL_IMAGES_BASE_PATH}/print.svg`,
   filter: `${GENERAL_IMAGES_BASE_PATH}/filter.svg`,
   status: `${GENERAL_IMAGES_BASE_PATH}/status.svg`,
+  published: `${GENERAL_IMAGES_BASE_PATH}/published.svg`, // Ajouté
+  draft: `${GENERAL_IMAGES_BASE_PATH}/draft.svg`, // Ajouté
   arrow_down: `${GENERAL_IMAGES_BASE_PATH}/arrow_down.png`,
   student: `${GENERAL_IMAGES_BASE_PATH}/student.png`,
   student2: `${GENERAL_IMAGES_BASE_PATH}/student2.png`,
@@ -53,6 +55,8 @@ export const teacherImages = {
   profile: `${TEACHER_DASHBOARD_IMAGES_BASE_PATH}/profile.svg`,
   settings: `${TEACHER_DASHBOARD_IMAGES_BASE_PATH}/settings.svg`,
   upload: `${TEACHER_DASHBOARD_IMAGES_BASE_PATH}/upload.svg`,
+  published: `${GENERAL_IMAGES_BASE_PATH}/published.svg`, // Ajouté
+  draft: `${GENERAL_IMAGES_BASE_PATH}/draft.svg`, // Ajouté
   feedback: `${TEACHER_ASSIGNMENT_IMAGES_BASE_PATH}/feedback.svg`,
   files: `${TEACHER_ASSIGNMENT_IMAGES_BASE_PATH}/files.svg`,
   report: `${TEACHER_ATTENDANCE_IMAGES_BASE_PATH}/report.svg`,
