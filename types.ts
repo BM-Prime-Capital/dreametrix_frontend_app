@@ -10,6 +10,19 @@ export interface MenuRoute {
   label: string;
 }
 
+export interface Assignment {
+  id: number;
+  name: string;
+  file: string;
+  due_date: string;
+  weight: string;
+  kind: string;
+  published: boolean;
+  course: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ClassDay {
   id: number;
   day: string;
@@ -17,6 +30,14 @@ export interface ClassDay {
   munite: string;
   dayPart: string;
 }
+
+export interface Class {
+  id: number;
+  name: string;
+  // Ajouter d'autres propriétés si nécessaire
+}
+
+
 
 type FileRecord = {
   name: string;

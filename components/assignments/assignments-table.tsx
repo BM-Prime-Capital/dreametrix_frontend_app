@@ -10,66 +10,62 @@ import {
 } from "@/components/ui/table";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { generalImages } from "@/constants/images";
+import { useList } from "@/hooks/useList";
+import { getAssignments } from "@/services/AssignmentService";
+import { Loader } from "../ui/loader";
 import Image from "next/image";
+import { generalImages } from "@/constants/images";
 import AssignmentStudentsDialog from "./AssignmentStudentsDialog";
-
-// This would typically come from your API
-const classes = [
-  {
-    id: 1,
-    name: "Class 5 - Sci",
-    subject: "Science",
-    grade: "Grade 5",
-    teacher: "Samantha Brown",
-    students: 15,
-  },
-  {
-    id: 2,
-    name: "Class 5 - Math",
-    subject: "Mathematics",
-    grade: "Grade 5",
-    teacher: "Joe Smith",
-    students: 15,
-  },
-  // Add more sample data...
-];
+import { Assignment } from "@/types";
 
 export function AssignmentsTable() {
+  const { list: assignments, isLoading, error } = useList(getAssignments);
+
+  if (isLoading) return <Loader />;
+  
+  if (error) return (
+    <div className="text-red-500 p-4">
+      Error loading assignments: {error}
+    </div>
+  );
+
   return (
     <div className="w-full overflow-auto">
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>NAME</TableHead>
             <TableHead>TYPE</TableHead>
-            <TableHead>AGV. SCORE</TableHead>
-            <TableHead>GEN. FEEDBACK</TableHead>
-            <TableHead>NO. OF SPECIFIC FEEDBACK</TableHead>
-            <TableHead>STUDENTS</TableHead>
+            <TableHead>DUE DATE</TableHead>
+            <TableHead>WEIGHT</TableHead>
             <TableHead>STATUS</TableHead>
             <TableHead className="w-[100px]">ACTIONS</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {classes.map((class_, index) => (
-            <TableRow key={class_.id}>
-              <TableCell>{class_.name}</TableCell>
-              <TableCell>{class_.students}</TableCell>
-              <TableCell>{class_.students}</TableCell>
-              <TableCell>{class_.students}</TableCell>
-              <TableCell className="flex items-center">
-                {class_.students}
-                <AssignmentStudentsDialog studentClassName={class_.name} />
+          {assignments.map((assignment: Assignment) => (
+            <TableRow key={assignment.id}>
+              <TableCell className="font-medium">{assignment.name}</TableCell>
+              <TableCell>{assignment.kind}</TableCell>
+              <TableCell>
+                {new Date(assignment.due_date).toLocaleDateString()}
               </TableCell>
               <TableCell>
-                <span className="flex justify-center">
+                {Number(assignment.weight).toLocaleString(undefined, {
+                  maximumFractionDigits: 2,
+                  minimumFractionDigits: 0
+                })}%
+              </TableCell>
+              <TableCell>
+                <span className="flex items-center gap-2">
                   <Image
-                    src={generalImages.status}
-                    className="h-4 w-4 align-middle"
+                    src={assignment.published ? generalImages.published : generalImages.draft}
+                    className="h-4 w-4"
                     alt="status"
-                    width={100}
-                    height={100}
+                    width={16}
+                    height={16}
                   />
+                  {assignment.published ? "Published" : "Draft"}
                 </span>
               </TableCell>
               <TableCell>
