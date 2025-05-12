@@ -1,18 +1,18 @@
 import React from 'react';
 import { Button } from '../../ui/Button';
 import { Edit } from 'lucide-react';
-import { TextStyles } from '../../types/lessonPlan';
+import { SectionKey, TextStyles } from '../../types/lessonPlan';
 
 interface EditableSectionProps {
   title?: string;
   content: string;
   styles: TextStyles;
   isEditing: boolean;
-  sectionKey: string;
+  sectionKey: SectionKey; // Changé de string à SectionKey
   titleNumber?: number;
   titleUnderline?: boolean;
-  onStartEditing: (section: string) => void;
   onContentChange: (value: string) => void;
+  onStartEditing: (section: SectionKey) => void;
 }
 
 const EditableSection: React.FC<EditableSectionProps> = ({

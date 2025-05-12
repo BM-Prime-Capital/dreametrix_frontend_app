@@ -26,7 +26,7 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ children }) => {
     // Only enhance the first child (the trigger)
     if (index === 0 && React.isValidElement(child)) {
       return React.cloneElement(child, {
-        onClick: (e: React.MouseEvent) => {
+        onClick: (e: React.MouseEvent<HTMLElement>) => {
           e.preventDefault();
           setIsOpen(!isOpen);
           // Call the original onClick if it exists
@@ -34,7 +34,7 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ children }) => {
             child.props.onClick(e);
           }
         },
-      });
+      } as React.HTMLAttributes<HTMLElement>);
     }
     return child;
   });
