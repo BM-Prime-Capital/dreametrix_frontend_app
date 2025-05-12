@@ -152,7 +152,7 @@ const LessonPlanView: React.FC = () => {
           students={lessonPlan.students}
           isEditing={editingSection === 'header'}
           onStartEditing={() => startEditing('header')}
-          onInputChange={handleInputChange}
+          onInputChange={(field: string, value: string) => handleInputChange(field as keyof LessonPlan, value)}
         />
 
         {/* Standards section */}

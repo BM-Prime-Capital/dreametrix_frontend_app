@@ -31,4 +31,6 @@ export interface LessonPlan {
   closing: LessonPlanContent;
 }
 
-export type SectionKey = Exclude<keyof LessonPlan, 'teacher' | 'subject' | 'grade' | 'students'> | 'header';
+
+export type EditableSectionKey = Exclude<keyof LessonPlan, 'teacher' | 'subject' | 'grade' | 'students'>;
+export type SectionKey = EditableSectionKey | 'header';
