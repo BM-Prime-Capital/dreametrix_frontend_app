@@ -7,7 +7,30 @@ const nextConfig = {
     pagesBufferLength: 2,
   },
   images: {
-    domains: ['images.unsplash.com', 'upload.wikimedia.org', 'https://via.placeholder.com/60'],
+    domains: ['images.unsplash.com', 'upload.wikimedia.org', 'via.placeholder.com'],
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { 
+            key: 'Access-Control-Allow-Origin',
+            value: process.env.NODE_ENV === 'development' 
+              ? '*' // Autoriser toutes les origines en développement
+              : 'https://votre-domaine.com' // Restreindre en production
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PUT, DELETE, OPTIONS'
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type, Authorization'
+          }
+        ],
+      },
+    ];
   },
 };
 
