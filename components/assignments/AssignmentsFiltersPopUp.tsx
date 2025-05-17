@@ -4,16 +4,17 @@ import { generalImages } from "@/constants/images";
 import Image from "next/image";
 import React, { useState } from "react";
 import CrossCloseButton from "../ui/cross-close-button";
-import ClassSelect from "../ClassSelect";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function AssignmentFiltersPopUp() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex flex-col relative">
+    <div className="relative">
       <div className="flex items-center gap-8">
-        <button
-          className="flex justify-center items-center bg-white p-1 rounded-md w-7 h-7"
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          className="flex justify-center items-center bg-white p-1 rounded-md w-7 h-7 shadow-sm hover:shadow-md transition-shadow"
           onClick={() => setOpen(!open)}
         >
           {open ? (
@@ -21,59 +22,78 @@ export default function AssignmentFiltersPopUp() {
           ) : (
             <Image
               src={generalImages.filter}
-              alt="add"
+              alt="filter"
               width={100}
               height={100}
               className="w-5 h-5"
             />
           )}
-        </button>
+        </motion.button>
       </div>
-      {open ? (
-        <div className="flex flex-col bg-white shadow-md rounded-md p-4 gap-4 w-fit absolute top-8 -left-5 z-10">
-          <h2 className="pb-2" style={{ borderBottom: "solid 1px #eee" }}>
-            Filter by
-          </h2>
-          <div className="flex flex-col gap-2 text-gray-600">
-            <select
-              style={{ border: "solid 1px #eee" }}
-              className="px-2 py-1 bg-white rounded-full"
-            >
-              <option selected disabled>
-                Type of Assignment
-              </option>
-              <option>A1</option>
-              <option>A2</option>
-              <option>A3</option>
-            </select>
 
-            <select
-              style={{ border: "solid 1px #eee" }}
-              className="px-2 py-1 bg-white rounded-full"
-            >
-              <option selected disabled>
-                Student
-              </option>
-              <option>S1</option>
-              <option>S2</option>
-              <option>S3</option>
-            </select>
-          </div>
-          <div className="flex justify-between gap-2">
-            <button
-              className="max-w-fit rounded-full px-4 hover:bg-gray-100"
+      <AnimatePresence>
+        {open && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/10 z-[999]"
               onClick={() => setOpen(false)}
+            />
+            
+            {/* Popup */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="fixed top-[calc(50px+var(--header-height))] right-4 z-[1000] w-64 bg-white rounded-lg shadow-xl border border-gray-100 p-4"
             >
-              Cancel
-            </button>
-            <button className="max-w-fit bg-blue-500 hover:bg-blue-600 text-white rounded-full px-4">
-              Apply
-            </button>
-          </div>
-        </div>
-      ) : (
-        ""
-      )}
+              <h2 className="font-semibold text-gray-900 pb-3 border-b">
+                Filter by
+              </h2>
+
+              <div className="flex flex-col gap-3 mt-3">
+                <select
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option selected disabled>
+                    Type of Assignment
+                  </option>
+                  <option>A1</option>
+                  <option>A2</option>
+                  <option>A3</option>
+                </select>
+
+                <select
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option selected disabled>
+                    Student
+                  </option>
+                  <option>S1</option>
+                  <option>S2</option>
+                  <option>S3</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2 mt-4 pt-3 border-t">
+                <button
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-50"
+                  onClick={() => setOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600">
+                  Apply
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -15,7 +15,7 @@ export default function AllClassFiltersPopUp() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex flex-col relative">
+    <div className="relative">
       <div className="flex items-center gap-4">
         <span className="text-gray-600">Filter by</span>
         <Button
@@ -29,53 +29,62 @@ export default function AllClassFiltersPopUp() {
       </div>
 
       {open && (
-        <div className="absolute top-12 right-0 z-50 w-64 bg-white rounded-lg shadow-lg border p-4">
-          <h2 className="font-semibold text-gray-900 pb-3 border-b">
-            Filter by
-          </h2>
+        <>
+          {/* Overlay pour couvrir le reste de la page */}
+          <div 
+            className="fixed inset-0 bg-black/10 z-[999]" 
+            onClick={() => setOpen(false)}
+          />
+          
+          {/* Popup de filtres */}
+          <div className="fixed top-[calc(12px+var(--header-height))] right-4 z-[1000] w-64 bg-white rounded-lg shadow-lg border p-4">
+            <h2 className="font-semibold text-gray-900 pb-3 border-b">
+              Filter by
+            </h2>
 
-          <div className="flex flex-col gap-3 mt-3">
-            <Select>
-              <SelectTrigger>
-                <SelectValue placeholder="Class" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="c1">Class 5N</SelectItem>
-                <SelectItem value="c2">Class 5M</SelectItem>
-                <SelectItem value="c3">Class 6A</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col gap-3 mt-3">
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Class" />
+                </SelectTrigger>
+                <SelectContent className="z-[1001]">
+                  <SelectItem value="c1">Class 5N</SelectItem>
+                  <SelectItem value="c2">Class 5M</SelectItem>
+                  <SelectItem value="c3">Class 6A</SelectItem>
+                </SelectContent>
+              </Select>
 
-            <Select>
-              <SelectTrigger>
-                <SelectValue placeholder="Subject" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="s1">Science</SelectItem>
-                <SelectItem value="s2">Mathematics</SelectItem>
-                <SelectItem value="s3">English</SelectItem>
-              </SelectContent>
-            </Select>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Subject" />
+                </SelectTrigger>
+                <SelectContent className="z-[1001]">
+                  <SelectItem value="s1">Science</SelectItem>
+                  <SelectItem value="s2">Mathematics</SelectItem>
+                  <SelectItem value="s3">English</SelectItem>
+                </SelectContent>
+              </Select>
 
-            <Select>
-              <SelectTrigger>
-                <SelectValue placeholder="Grade" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="g1">Grade 5</SelectItem>
-                <SelectItem value="g2">Grade 6</SelectItem>
-                <SelectItem value="g3">Grade 7</SelectItem>
-              </SelectContent>
-            </Select>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Grade" />
+                </SelectTrigger>
+                <SelectContent className="z-[1001]">
+                  <SelectItem value="g1">Grade 5</SelectItem>
+                  <SelectItem value="g2">Grade 6</SelectItem>
+                  <SelectItem value="g3">Grade 7</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-4 pt-3 border-t">
+              <Button variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button>Apply</Button>
+            </div>
           </div>
-
-          <div className="flex justify-end gap-2 mt-4 pt-3 border-t">
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button>Apply</Button>
-          </div>
-        </div>
+        </>
       )}
     </div>
   );
