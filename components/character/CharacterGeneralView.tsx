@@ -36,7 +36,7 @@ function CharacterGeneralView({ changeView }: { changeView: Function }) {
             }`}
           />
           <StatisticItem
-            title="Good Characters"
+            title="Positives"
             titleGgColor="bg-green-100"
             iconUrl={teacherImages.up}
             statNumber={`${
@@ -46,7 +46,7 @@ function CharacterGeneralView({ changeView }: { changeView: Function }) {
             }`}
           />
           <StatisticItem
-            title="Bad Characters"
+            title="Areas of Growth"
             titleGgColor="bg-red-100"
             iconUrl={teacherImages.down}
             statNumber={`${
@@ -72,8 +72,8 @@ function CharacterGeneralView({ changeView }: { changeView: Function }) {
                 <tr>
                   <th>Class</th>
                   <th>Students</th>
-                  <th>Good Character</th>
-                  <th>Bad Character</th>
+                  <th>Positives</th>
+                  <th>Areas of Growth</th>
                 </tr>
               </thead>
 

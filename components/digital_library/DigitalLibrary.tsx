@@ -375,7 +375,7 @@ export default function DigitalLibrary() {
     <section className="flex flex-col gap-6 w-full max-w-6xl mx-auto p-4 bg-gray-50">
       <div className="flex items-center justify-between">
         <PageTitleH1 
-          title="Create Assessment Sheet" 
+          title="Create Worksheet" 
           className="text-primary bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg shadow-md" 
         />
       </div>

@@ -2,27 +2,70 @@
 
 import { Card } from "@/components/ui/card";
 import { AssignmentsTable } from "./assignments-table";
-import PageTitleH1 from "@/components/ui/page-title-h1";
 import AssignmentFiltersPopUp from "./AssignmentsFiltersPopUp";
 import { AddAssignmentDialog } from "./AddAssignmentDialog";
-
 import ClassSelect from "../ClassSelect";
+import { motion } from "framer-motion";
 
 export default function Assignments() {
   return (
-    <section className="flex flex-col gap-2 w-full">
-      <div className="flex justify-between items-center">
-        <PageTitleH1 title="ASSIGNMENTS" />
-        <ClassSelect />
+    <section className="flex flex-col gap-6 w-full">
+      {/* Elegant Header */}
+      <div className="relative group overflow-hidden rounded-xl bg-white dark:bg-gray-950 p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-300">
+        {/* Subtle light effect */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-blue-100/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 dark:from-blue-900/20" />
+        
+        <div className="relative z-10">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <motion.div
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <h1 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">
+                  Assignments
+                </h1>
+                <p className="mt-1 text-gray-600 dark:text-gray-300">
+                  Centralized management of your assignments and work
+                </p>
+              </motion.div>
+            </div>
+            
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <ClassSelect />
+            </motion.div>
+          </div>
+
+          <div className="flex items-center justify-between mt-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <AddAssignmentDialog />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              <AssignmentFiltersPopUp />
+            </motion.div>
+          </div>
+        </div>
+        
+        {/* Accent bar */}
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400/0 via-blue-400/40 to-blue-400/0 dark:via-blue-500/30" />
       </div>
 
-      <div className="flex items-center justify-between">
-        <AddAssignmentDialog />
-
-        <AssignmentFiltersPopUp />
-      </div>
-
-      <Card className="rounded-md">
+      {/* Content */}
+      <Card className="rounded-lg border border-gray-200 dark:border-gray-700 shadow-xs overflow-hidden">
         <AssignmentsTable />
       </Card>
     </section>
