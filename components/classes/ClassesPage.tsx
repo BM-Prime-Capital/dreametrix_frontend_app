@@ -11,6 +11,7 @@ export default function ClassesPage() {
   const [refreshTime, setRefreshTime] = useState<string>("");
   
   return (
+<<<<<<< HEAD
     <section className="flex flex-col gap-6 w-full">
       {/* Header Élégant */}
       <div className="relative group overflow-hidden rounded-xl bg-white dark:bg-gray-950 p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow duration-300">
@@ -48,6 +49,14 @@ export default function ClassesPage() {
         
         {/* Barre d'accentuation */}
         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400/0 via-blue-400/40 to-blue-400/0 dark:via-blue-500/30" />
+=======
+    <section className="flex flex-col gap-2 w-full">
+
+      {/* Première ligne : Titre à gauche, filtre à droite */}
+      <div className="flex justify-between items-center bg-[#3e81d4] px-4 py-3 rounded-md">
+        <PageTitleH1 title="CLasses" className="text-white" />
+        <AllClassFiltersPopUp />
+>>>>>>> 5239bfd
       </div>
 
       {/* Contenu */}
