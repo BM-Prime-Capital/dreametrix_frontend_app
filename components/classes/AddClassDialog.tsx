@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ISchoolClass } from "@/types";
+import { Class, ISchoolClass} from "@/types";
 import { useList } from "@/hooks/useList";
 import { getTeachers } from "@/services/TeacherService";
 import { dayOfTheWeek, localStorageKey } from "@/constants/global";
@@ -50,7 +50,7 @@ interface Student {
   grade: number;
 }
 
-const schoolClassInit = {
+const schoolClassInit: ISchoolClass = {
   name: "",
   subject_in_all_letter: "",
   subject_in_short: "",
@@ -66,7 +66,7 @@ export function AddClassDialog({
   existingClass,
 }: {
   setRefreshTime: Function;
-  existingClass?: ISchoolClass;
+  existingClass?: typeof schoolClassInit;
 }) {
   const [open, setOpen] = useState(false);
   const { list: teachers } = useList(getTeachers);
@@ -87,7 +87,9 @@ export function AddClassDialog({
   //   existingClass ? existingClass : schoolClassInit
   // );
 
+  // const [schoolClass, setSchoolClass] = useState<ISchoolClass>(schoolClassInit);
   const [schoolClass, setSchoolClass] = useState<ISchoolClass>(schoolClassInit);
+  
 
   const [classDays, setClassDays] = useState<ClassDay[]>([]);
 
@@ -104,6 +106,8 @@ export function AddClassDialog({
       },
     ]);
   };
+
+
 
   const handleClassDayChange = (
     classDayId: number,
@@ -325,9 +329,34 @@ export function AddClassDialog({
             <Pencil className="h-4 w-4 text-[#25AAE1]" />
           </Button>
         ) : (
-          <Button className="gap-2 text-base bg-blue-500 hover:bg-blue-600">
-            <Plus className="h-5 w-5" />
-            Add New Class
+          <Button className="gap-2 text-base bg-[#f59e0b] hover:bg-[#f59e0b]/90 text-white rounded-xl px-5 py-4 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] group">
+            <div className="relative flex items-center justify-center">
+                 <svg 
+                  width="24" 
+                  height="24" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  className="w-7 h-7 transform group-hover:rotate-180 transition-transform duration-300"
+                >
+                  <path 
+                    d="M12 5V19M5 12H19" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                  <path 
+                    d="M12 5V19M5 12H19" 
+                    stroke="white" 
+                    strokeWidth="1.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    className="opacity-30"
+                  />
+                </svg>
+              </div>
+              <span className="font-semibold tracking-wide">Add New Class</span>
+
           </Button>
         )}
       </DialogTrigger>

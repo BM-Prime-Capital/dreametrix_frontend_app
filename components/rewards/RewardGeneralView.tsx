@@ -96,9 +96,9 @@ export default function RewardsGeneralView({ changeView }: RewardsGeneralViewPro
   return (
     <section className="flex flex-col gap-4 w-full">
       {/* Première ligne : Titre à gauche, filtre à droite */}
-      <div className="flex justify-between items-center bg-[#A36EAD] px-4 py-3 rounded-md">
+      <div className="flex justify-between items-center bg-[#3e81d4] px-4 py-3 rounded-md">
         <PageTitleH1 title="Student Rewards" className="text-white" />
-        <ClassSelect className="text-white bg-[#8a5a93] hover:bg-[#7a4d83]" />
+        <ClassSelect className="text-white bg-[#3e81d4] hover:bg-[#3e81d4]" />
       </div>
 
       {/* Deuxième ligne : "Results found" à gauche, dates à droite */}
