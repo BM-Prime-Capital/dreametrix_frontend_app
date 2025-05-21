@@ -160,8 +160,9 @@ export default function Communicate() {
 
   return (
     <section className="flex flex-col gap-2 w-full">
-      <div className="flex items-center">
-        <PageTitleH1 title="COMMUNICATE" />
+
+      <div className="flex justify-between items-center bg-[#3e81d4] px-4 py-3 rounded-md">
+          <PageTitleH1 title="Communicate" className="text-white" />
       </div>
       
       <div className="flex gap-4 justify-start">

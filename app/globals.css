@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -15,6 +17,22 @@
     --background-end-rgb: 0, 0, 0;
   }
 }
+
+@keyframes wave {
+  0% { transform: rotate(0deg); }
+  20% { transform: rotate(15deg); }
+  40% { transform: rotate(-10deg); }
+  60% { transform: rotate(10deg); }
+  80% { transform: rotate(-5deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.animate-waving-hand {
+  display: inline-block;
+  animation: wave 1.5s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
 
 @layer base {
   :root {

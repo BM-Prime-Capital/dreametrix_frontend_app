@@ -1,4 +1,5 @@
 import { title } from "node:process";
+import { Student } from "./components/attendance/AttendanceFocusedView";
 export interface UserNavigationInfo {
   label: string;
   basePath: string;
@@ -31,12 +32,42 @@ export interface ClassDay {
   dayPart: string;
 }
 
+// export interface Class {
+//   id: number;
+//   name: string;
+//   // Ajouter d'autres propriétés si nécessaire
+// }
+
 export interface Class {
   id: number;
   name: string;
-  // Ajouter d'autres propriétés si nécessaire
+  subject_in_all_letter: string;
+  subject_in_short: string;
+  hours_and_dates_of_course_schedule: Record<
+    string,
+    { start_time: string; end_time: string }
+  >;
+  description: string;
+  grade: string;
+  teacher: number | { id: number; full_name: string };
+  students: number[];
 }
 
+export interface ISchoolClass {
+  id?: number;
+  name: string;
+  subject_in_all_letter: string;
+  subject_in_short: string;
+  hours_and_dates_of_course_schedule: Record<
+    string,
+    { start_time: string; end_time: string }
+  >;
+  description: string;
+  grade: string;
+  // teacher: number | { id: number; full_name: string };
+  teacher: number;
+  students: number[];
+}
 
 
 type FileRecord = {
@@ -88,20 +119,20 @@ interface SchoolClassSchedule {
   Wednesday: DaySchedule[];
   Friday: DaySchedule[];
 }
-export interface ISchoolClass {
-  id?: string;
-  name: string;
-  subject_in_all_letter: string;
-  subject_in_short: string;
-  hours_and_dates_of_course_schedule: Record<
-    string,
-    { start_time: string; end_time: string }
-  >;
-  description: string;
-  grade: string;
-  teacher: number;
-  students: number[];
-}
+// export interface ISchoolClass {
+//   id?: string;
+//   name: string;
+//   subject_in_all_letter: string;
+//   subject_in_short: string;
+//   hours_and_dates_of_course_schedule: Record<
+//     string,
+//     { start_time: string; end_time: string }
+//   >;
+//   description: string;
+//   grade: string;
+//   teacher: number;
+//   students: number[];
+// }
 
 export interface Character {
   character_id: number;

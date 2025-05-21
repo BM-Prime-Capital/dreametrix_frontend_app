@@ -1,15 +1,15 @@
-import { activityType } from "@/components/constants/activityTypes"
+import { activityType } from "@/components/constants/activityTypes";
 import { Card } from "@/components/ui/card";
 import ActivityFeedItem from "../ui/activity-feed-item";
 
 export function ActivityFeed() {
   return (
-    <Card className="w-full lg:w-[300px]">
-      <div className="flex flex-col gap-4 p-4">
-        <h2 className="text-xl font-semibold">Activity</h2>
+    <Card className="w-full lg:w-[320px] h-fit sticky top-4">
+      <div className="flex flex-col gap-4 p-5">
+        <h2 className="text-xl font-semibold text-gray-800">Recent Activity</h2>
         
         <div className="space-y-4">
-          <div className="text-xs text-gray-500">TODAY</div>
+          <div className="text-xs text-gray-500 font-medium uppercase tracking-wider">Today</div>
           <ActivityFeedItem
             type={activityType.DONE}
             userName="Darika Samak"
@@ -30,8 +30,8 @@ export function ActivityFeed() {
           />
         </div>
 
-        <div className="space-y-4">
-          <div className="text-xs text-gray-500">YESTERDAY</div>
+        <div className="space-y-4 pt-2">
+          <div className="text-xs text-gray-500 font-medium uppercase tracking-wider">Yesterday</div>
           <ActivityFeedItem
             type={activityType.UPLOAD}
             userName="Darika Samak"

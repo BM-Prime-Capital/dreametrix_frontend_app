@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
  import useDomains  from "@/hooks/Teacher/useDomains"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
 import { Question } from "@/components/types/question"
+import PageTitleH1 from "../ui/page-title-h1"
 
 interface TestPrepProps {
   onStartTest: (questions: Question[]) => void;
@@ -116,10 +117,12 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
 
   return (
     <section className="flex flex-col gap-2 w-full">
-      <div className="">
-        <h1 className="text-2xl font-bold mb-2">TEST PREPARATION</h1>
-        <p className="pl-3">Question Simplar</p>
+
+      <div className="flex justify-between items-center bg-[#3e81d4] px-4 py-3 rounded-md">
+        <PageTitleH1 title="Test Preparation" className="text-white" />
+        
       </div>
+      <p className="pl-3">Question Simplar</p>
       <div className="flex gap-4 justify-start">
         <div className="px-3 w-full">
           <div className="flex justify-between items-center py-5">
