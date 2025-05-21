@@ -25,16 +25,34 @@ export function AddTeachDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="flex gap-2 items-center text-lg bg-blue-500 hover:bg-blue-600 rounded-md  px-2 py-4 lg:px-4 lg:py-6">
-          <Image
-            src={generalImages.add}
-            alt="add"
-            width={100}
-            height={100}
-            className="w-8 h-8"
-          />
-          <span>Add New</span>
-        </Button>
+          <Button className="flex gap-3 items-center text-lg bg-[#f59e0b] hover:bg-[#f59e0b]/90 text-white rounded-xl px-5 py-4 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] group">
+            <div className="relative flex items-center justify-center">
+              <svg 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                className="w-7 h-7 transform group-hover:rotate-180 transition-transform duration-300"
+              >
+                <path 
+                  d="M12 5V19M5 12H19" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+                <path 
+                  d="M12 5V19M5 12H19" 
+                  stroke="white" 
+                  strokeWidth="1.5" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className="opacity-30"
+                />
+              </svg>
+            </div>
+            <span className="font-semibold tracking-wide">Add New</span>
+          </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>

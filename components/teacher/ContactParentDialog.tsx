@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import { teacherImages } from "@/constants/images";
+import { Button } from "../ui/button";
 
 export default function ContactParentDialog({
   childrenName,
@@ -26,31 +27,35 @@ export default function ContactParentDialog({
           alt="info"
           width={100}
           height={100}
-          className="h-4 w-4"
-          title="info"
+          className="h-5 w-5 opacity-70 hover:opacity-100 transition-opacity"
+          title="Contact parent"
         />
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader
-          className="pb-4"
-          style={{ borderBottom: "solid 1px #eee" }}
-        >
-          <DialogTitle className="opacity-80">Contact their Parent</DialogTitle>
+      <DialogContent className="sm:max-w-[600px] rounded-lg">
+        <DialogHeader className="pb-4 border-b border-gray-200">
+          <DialogTitle className="text-gray-700 font-semibold">
+            Contact Parent
+          </DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col gap-4">
-          <p>
-            <h2 className="opacity-75">{childrenName}</h2>
-            <label className="text-muted-foreground">
-              is having issues with her submissions, she's not completing her
-              homework assignments
-            </label>
-          </p>
-          <p className="flex justify-between">
-            <button>Ok</button>
-            <button className="bg-blue-500 hover:bg-blue-600 rounded-full px-6 text-white">
+        <div className="flex flex-col gap-6 py-4">
+          <div>
+            <h2 className="text-lg font-medium text-gray-800">{childrenName}</h2>
+            <p className="text-gray-600 mt-1">
+              is having issues with homework completion and submissions.
+            </p>
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setOpen(false)}
+              className="px-6 rounded-full"
+            >
+              Cancel
+            </Button>
+            <Button className="bg-blue-600 hover:bg-blue-700 px-6 rounded-full">
               CONTACT
-            </button>
-          </p>
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
