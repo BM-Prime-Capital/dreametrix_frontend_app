@@ -52,7 +52,7 @@ export function PollsTable() {
               <TableCell>{class_.subject}</TableCell>
               <TableCell>{class_.name}</TableCell>
               <TableCell>file.pdf</TableCell>
-              <TableCell className="flex items-center">11/03</TableCell>
+              <TableCell className="text-center">11/03</TableCell>
 
               <TableCell>
                 <span

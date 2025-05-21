@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SendHorizonal, History, CalendarDays } from "lucide-react";
 import { format } from 'date-fns';
+import PageTitleH1 from '../ui/page-title-h1';
 
 type Message = {
   id: string;
@@ -174,7 +175,10 @@ export default function BigBraain() {
   const currentMessages = conversations.find(c => c.id === activeConversation)?.messages || [];
 
   return (
+    
     <div className="flex h-screen bg-gray-50">
+      
+     
       {/* Main Chat Area - Largeur fixe */}
       <div className="flex flex-col flex-[2] min-w-[600px] border-r">
         <div className="border-b p-4 bg-white">

@@ -95,7 +95,10 @@ function AttendanceGeneralView({ changeView }: { changeView: Function }) {
 
   return (
     <div className="flex flex-col gap-8 w-full pb-4">
-      <PageTitleH1 title="ATTENDANCE GENERAL VIEW " />
+      <div className="flex justify-between items-center bg-[#3e81d4] px-4 py-3 rounded-md">
+          <PageTitleH1 title="Attendance General View" className="text-white" />
+      </div>
+
       <div className="flex flex-col gap-8 bg-white p-4 rounded-md">
         <div className="flex flex-wrap justify-evenly gap-2">
           <StatisticItem

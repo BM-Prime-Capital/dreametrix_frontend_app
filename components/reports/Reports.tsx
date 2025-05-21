@@ -16,8 +16,12 @@ export default function Reports() {
 
   return (
     <section className="flex flex-col gap-2 w-full">
+      <div className="flex justify-between items-center bg-[#3e81d4] px-4 py-3 rounded-md">
+        <PageTitleH1 title="Reports" className="text-white" />
+      </div>
       <div className="flex justify-between items-center">
-        <PageTitleH1 title="REPORTS" />
+
+        
         <div className="flex flex-wrap items-center justify-end gap-2">
           <label className="flex items-center gap-2">
             <span className="text-muted-foreground">From: </span>

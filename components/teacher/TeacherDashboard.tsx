@@ -15,6 +15,7 @@ import UserAvatar from "../ui/user-avatar";
 import { useList } from "@/hooks/useList";
 import { getClasses } from "@/services/ClassService";
 import { ActivityFeed } from "../layout/ActivityFeed";
+import { MinusIcon, PlusIcon } from "lucide-react";
 
 export default function TeacherDashboard() {
   const [feedbackDuration, setFeedbackDuration] = useState<number>(2);
@@ -67,265 +68,203 @@ export default function TeacherDashboard() {
   }, [classes]);
 
   return (
-    <section className="flex flex-col  w-full">
-      <PageTitleH1 title="Dashboard" />
+    <section className="flex flex-col w-full gap-6">
+      {/* Header amélioré */}
+      <div className="flex justify-between items-center bg-[#3e81d4] px-6 py-4 rounded-lg shadow-sm">
+        <PageTitleH1 title="Teacher Dashboard" className="text-white font-semibold" />
+        <div className="flex items-center gap-2">
+          <span className="text-white/90 text-sm flex items-center">
+            Welcome back, {userData.full_name.split(' ')[0]}
+            <span className="ml-2 animate-waving-hand">👋</span>
+          </span>
+        </div>
+      </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 p-4 sm:p-6">
-        <div className="flex-1 space-y-6">
-          <Card className="p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 pl-0 sm:pl-16">
-              <UserAvatar className="h-16 w-16" />
-              <div className="text-center sm:text-left">
-                <PageTitleH2 title={userData.full_name} />
-
-                <div className="flex gap-2 justify-center sm:justify-start">
-                  <Image
-                    src={teacherImages.ai}
-                    alt="ai"
-                    width={100}
-                    height={100}
-                    className="h-6 w-6"
-                    title="ai"
-                  />
-                  <Image
-                    src={teacherImages.profile}
-                    alt="profile"
-                    width={100}
-                    height={100}
-                    className="h-6 w-6"
-                    title="profile"
-                  />
-                  <Image
-                    src={teacherImages.settings}
-                    alt="settings"
-                    width={100}
-                    height={100}
-                    className="h-6 w-6"
-                    title="settings"
-                  />
+      {/* Grid principale améliorée */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 px-4 sm:px-6">
+        <div className="space-y-6">
+          {/* Carte de profil améliorée */}
+          <Card className="p-6">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <UserAvatar className="h-20 w-20 border-2 border-white shadow-md" />
+              <div className="text-center sm:text-left space-y-2">
+                <PageTitleH2 title={userData.full_name} className="text-gray-800" />
+                <p className="text-gray-600 text-sm">{tenantData.name}</p>
+                <div className="flex gap-3 justify-center sm:justify-start pt-2">
+                  {[teacherImages.ai, teacherImages.profile, teacherImages.settings].map((img, i) => (
+                    <button key={i} className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+                      <Image src={img} alt="" width={20} height={20} className="opacity-70" />
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
           </Card>
 
-          <Card className="p-4 sm:p-6 bg-[#DFECF2]">
-            <div className="flex flex-col pl-4 sm:pl-16">
-              <PageTitleH2 title="AI Teacher Assistance" />
-              <div className="flex flex-col pl-1 gap-4 mt-4">
-                <div className="flex gap-4">
+          {/* Section AI Assistant améliorée */}
+          <Card className="p-6 bg-[#f0f9ff] border-[#bfdbfe]">
+            <div className="flex items-center gap-3 mb-4">
+              <Image
+                src={teacherImages.ai}
+                alt="AI Assistant"
+                width={24}
+                height={24}
+                className="opacity-90"
+              />
+              <PageTitleH2
+                title="AI Teacher Assistance"
+                className="text-[#1e40af]"
+              />
+            </div>
+
+            <div className="space-y-5 pl-2">
+              {/* Item 1 */}
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 pt-1">
                   <Image
                     src={teacherImages.ai1}
-                    alt="ai1"
-                    width={100}
-                    height={100}
-                    className="h-6 w-6"
-                    title="ai"
+                    alt="Alert"
+                    width={24}
+                    height={24}
+                    className="opacity-80"
                   />
-                  <div>
-                    Students who needs you to{" "}
-                    <span className="font-bold opacity-80">
+                </div>
+                <div>
+                  <p className="text-gray-800">
+                    Students who need you to{" "}
+                    <span className="font-semibold text-[#1e40af]">
                       contact their parents
                     </span>
-                    <ul className="list-none pl-6">
-                      <li className="flex gap-2 items-center font-bold opacity-80">
-                        <label>Marta Sae</label>
-                        <ContactParentDialog childrenName="Marta Sae" />
+                  </p>
+                  <ul className="mt-2 space-y-2 pl-1">
+                    {["Marta Sae", "John Smith"].map((name) => (
+                      <li key={name} className="flex items-center gap-2">
+                        <span className="font-medium text-gray-700">{name}</span>
+                        <ContactParentDialog childrenName={name} />
                       </li>
-
-                      <li className="flex gap-2 items-center font-bold opacity-80">
-                        <label>John Smith</label>
-                        <ContactParentDialog childrenName="John Smith" />
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <Image
-                    src={teacherImages.ai2}
-                    alt="ai2"
-                    width={100}
-                    height={100}
-                    className="h-6 w-6"
-                    title="ai"
-                  />
-                  <div>
-                    Reminder that tomorrow{" "}
-                    <span className="font-bold opacity-80">
-                      Class 5 - Math has exam
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <Image
-                    src={teacherImages.ai2}
-                    alt="ai2"
-                    width={100}
-                    height={100}
-                    className="h-6 w-6"
-                    title="ai"
-                  />
-                  <div>
-                    Reminder that tomorrow{" "}
-                    <span className="font-bold opacity-80">
-                      Class 5 - Sci has exam
-                    </span>
-                  </div>
+                    ))}
+                  </ul>
                 </div>
               </div>
+
+              {/* Items 2 et 3 */}
+              {[
+                {
+                  icon: teacherImages.ai2,
+                  text: "Reminder that tomorrow",
+                  highlight: "Class 5 - Math has exam"
+                },
+                {
+                  icon: teacherImages.ai2,
+                  text: "Reminder that tomorrow",
+                  highlight: "Class 5 - Science has exam"
+                }
+              ].map((item, index) => (
+                <div key={index} className="flex gap-4">
+                  <div className="flex-shrink-0 pt-1">
+                    <Image
+                      src={item.icon}
+                      alt="Reminder"
+                      width={24}
+                      height={24}
+                      className="opacity-80"
+                    />
+                  </div>
+                  <p className="text-gray-800">
+                    {item.text}{" "}
+                    <span className="font-semibold text-[#1e40af]">
+                      {item.highlight}
+                    </span>
+                  </p>
+                </div>
+              ))}
             </div>
           </Card>
 
-          <Card className="p-4 sm:py-6 sm:px-24">
+          <Card className="p-6">
             <div className="space-y-6">
-              <PageTitleH2 title="Profile" />
-              <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
-                <UserAvatar />
-                <PageTitleH2 title={userData.full_name} />
-                {/* <div className="text-sm text-muted-foreground">Change</div> */}
+              {/* En-tête */}
+              <div className="flex items-center gap-3 border-b pb-4 border-gray-200">
+                <Image
+                  src={teacherImages.settings}
+                  alt="Settings"
+                  width={24}
+                  height={24}
+                  className="opacity-80"
+                />
+                <PageTitleH2 title="Settings" className="text-gray-800" />
               </div>
-              <div className="grid gap-8 max-w-xl mx-auto sm:mx-0">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm" htmlFor="username">
-                      Username
-                    </label>
-                    <Input
-                      id="username"
-                      placeholder="User name"
-                      className="bg-[#e7e7e5] rounded-full"
-                      readOnly
-                      value={userData.username}
+
+              {/* Section Subjects */}
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700">Subjects</label>
+                <div className="flex flex-wrap gap-2 p-3 bg-gray-100 rounded-xl">
+                  {subjects.map((subject, index) => (
+                    <MultiSelectionItem
+                      key={index}
+                      title={subject}
+                      deleteCallback={() => deleteSubject(subject)}
                     />
-                  </div>
-                  <div>
-                    <label className="text-sm" htmlFor="email">
-                      Email
-                    </label>
+                  ))}
+                  <div className="flex items-center w-full">
                     <Input
-                      id="email"
-                      placeholder="sarah@school.edu"
-                      className="bg-[#e7e7e5] rounded-full"
-                      readOnly
-                      value={userData.email}
+                      value={newSubject}
+                      onChange={(e) => setNewSubject(e.target.value)}
+                      placeholder="Add subject"
+                      className="flex-1 rounded-l-full bg-white border-r-0 focus:ring-2 focus:ring-blue-500"
                     />
+                    <Button
+                      onClick={() => addSubject(newSubject)}
+                      className="rounded-r-full bg-blue-600 hover:bg-blue-700 px-4"
+                    >
+                      <PlusIcon className="h-5 w-5 text-white" />
+                    </Button>
                   </div>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm" htmlFor="school">
-                      School
-                    </label>
-                    <Input
-                      id="school"
-                      placeholder="School1"
-                      className="bg-[#e7e7e5] rounded-full"
-                      readOnly
-                      value={tenantData.name}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm" htmlFor="role">
-                      Role
-                    </label>
-                    <Input
-                      id="role"
-                      placeholder="Teacher"
-                      className="bg-[#e7e7e5] rounded-full"
-                      readOnly
-                      value={userData.role}
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Button className="w-full bg-blue-500 hover:bg-blue-600 rounded-full">
-                    Update Profile Picture
-                  </Button>
-                  <Button variant="ghost" className="w-full rounded-full">
-                    Cancel
-                  </Button>
                 </div>
               </div>
-            </div>
-          </Card>
 
-          <Card className="p-4 sm:py-6 sm:px-24">
-            <div className="space-y-6">
-              <PageTitleH2 title="Seattings" />
-
-              <div className="grid gap-8 mx-auto sm:mx-0">
-                <div className="flex flex-col gap-4">
-                  <div className="">
-                    <label className="text-sm" htmlFor="subject">
-                      Add subjects
-                    </label>
-                    <div className="flex flex-wrap items-center gap-2 bg-gray-200 rounded-full text-sm p-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        {subjects.map((subject, index) => (
-                          <MultiSelectionItem
-                            key={index}
-                            title={subject}
-                            deleteCallback={() => deleteSubject(subject)}
-                          />
-                        ))}
-                      </div>
-                      {/* <div className="flex items-center">
-                        <input
-                          value={newSubject}
-                          onChange={(e) => setNewSubject(e.target.value)}
-                          className="p-1 h-fit w-full flex-1 rounded-l-full bg-gray-100 focus:bg-gray-50 focus:outline-none focus:border-transparent focus:shadow-none active:outline-none active:border-transparent active:shadow-none"
-                          placeholder="Add subject"
-                        />
-                        <label
-                          className="text-blue-500 text-lg rounded-r-full bg-gray-100 hover:text-white hover:border-white hover:bg-blue-600 active:bg-blue-700 px-2 font-bold cursor-pointer"
-                          onClick={() => addSubject(newSubject)}
-                        >
-                          &#43;
-                        </label>
-                      </div> */}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-sm" htmlFor="email">
-                      Maximun duration for feedback audio (minutes)
-                    </label>
-                    <div className="flex">
-                      <span
-                        className="flex justify-center items-center border w-10 h-10 text-lg text-blue-500 hover:bg-gray-50 active:bg-gray-100 cursor-pointer font-bold rounded-l-md"
-                        onClick={() => decrementFeedbackDuration()}
-                      >
-                        &#8722;
-                      </span>
-                      <span className="flex justify-center items-center border w-10 h-10 text-lg font-bold">
-                        {feedbackDuration < 10 ? 0 : ""}
-                        {feedbackDuration}
-                      </span>
-                      <span
-                        className="flex justify-center items-center border w-10 h-10 text-lg bg-blue-500 text-white font-bold rounded-r-md hover:bg-blue-600 active:bg-blue-700 cursor-pointer"
-                        onClick={() => incrementFeedbackDuration()}
-                      >
-                        {" "}
-                        &#43;
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Button className="w-full bg-blue-500 hover:bg-blue-600 rounded-full">
-                    UPDATE
+              {/* Section Feedback Duration */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Maximum duration for feedback audio (minutes)
+                </label>
+                <div className="flex items-center">
+                  <Button
+                    variant="outline"
+                    onClick={decrementFeedbackDuration}
+                    disabled={feedbackDuration <= 2}
+                    className="h-10 w-10 rounded-r-none border-r-0"
+                  >
+                    <MinusIcon className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" className="w-full rounded-full">
-                    Cancel
+                  <div className="flex items-center justify-center h-10 w-12 border-y border-gray-300 bg-white text-gray-800 font-medium">
+                    {feedbackDuration.toString().padStart(2, '0')}
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={incrementFeedbackDuration}
+                    disabled={feedbackDuration >= 9}
+                    className="h-10 w-10 rounded-l-none border-l-0"
+                  >
+                    <PlusIcon className="h-4 w-4" />
                   </Button>
                 </div>
+              </div>
+
+              {/* Boutons d'action */}
+              <div className="flex gap-3 pt-4">
+                <Button className="flex-1 bg-blue-600 hover:bg-blue-700 rounded-full">
+                  Save Changes
+                </Button>
+                <Button variant="outline" className="flex-1 rounded-full">
+                  Cancel
+                </Button>
               </div>
             </div>
           </Card>
         </div>
 
+        {/* Activity Feed à droite */}
         <ActivityFeed />
       </div>
     </section>
