@@ -29,7 +29,8 @@ export default function ClassSelect({ className }: { className?: string }) {
 
   useEffect(() => {
     if (loadedSelectedClass) {
-      const selectedClass = JSON.parse(loadedSelectedClass);
+      console.log("loadedSelectedClass", loadedSelectedClass)
+      //const selectedClass = JSON.parse(loadedSelectedClass);
       setSelectedClass(selectedClass);
     }
   }, [loadedSelectedClass]);
