@@ -12,7 +12,7 @@ export default function TeachFiltersPopUp() {
   return (
     <div className="flex flex-col relative">
       <div className="flex items-center gap-8">
-        <label>All Dates - All Subjects - All Classes - All Types</label>
+        {/* <label>All Dates - All Subjects - All Classes - All Types</label> */}
         <button
           className="flex justify-center items-center bg-white p-1 rounded-md w-7 h-7"
           onClick={() => setOpen(!open)}

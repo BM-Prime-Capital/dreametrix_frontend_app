@@ -26,16 +26,34 @@ export function PrintTeachDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="flex gap-2 items-center text-lg bg-blue-500 hover:bg-blue-600 rounded-md  px-2 py-4 lg:px-4 lg:py-6">
-          <Image
-            src={generalImages.print}
-            alt="print"
-            width={100}
-            height={100}
-            className="w-8 h-8"
-          />
-          <span>Print</span>
-        </Button>
+<Button className="flex gap-3 items-center text-lg bg-[#3e81d4] hover:bg-[#3e81d4]/90 text-white rounded-xl px-5 py-4 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] group">
+  <div className="relative flex items-center justify-center">
+    <svg 
+      width="24" 
+      height="18" 
+      viewBox="0 0 18 18" 
+      fill="none" 
+      className="w-5 h-5 transform group-hover:rotate-12 transition-transform duration-300"
+    >
+      <path 
+        d="M6 9V2H18V9M6 18H4C2.89543 18 2 17.1046 2 16V11C2 9.89543 2.89543 9 4 9H20C21.1046 9 22 9.89543 22 11V16C22 17.1046 21.1046 18 20 18H18M18 14H6V22H18V14Z" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+      />
+      <path 
+        d="M6 9V2H18V9M6 18H4C2.89543 18 2 17.1046 2 16V11C2 9.89543 2.89543 9 4 9H20C21.1046 9 22 9.89543 22 11V16C22 17.1046 21.1046 18 20 18H18M18 14H6V22H18V14Z" 
+        stroke="white" 
+        strokeWidth="1.5" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+        className="opacity-30"
+      />
+    </svg>
+  </div>
+  <span className="font-semibold tracking-wide">Print</span>
+</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>

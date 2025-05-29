@@ -89,11 +89,11 @@ export default function Gradebook() {
 
   return (
     <section className="flex flex-col gap-2 w-full">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center bg-[#3e81d4] px-4 py-3 rounded-md">
         <div className="flex items-center">
-          <PageTitleH1 title="GRADEBOOK" className="text-[#e91e63]" />
+          <PageTitleH1 title="Gradebook" className="text-white" />
           {currentClass && (
-            <h1 className="text-[#e91e63] text-2xl font-bold px-2">
+            <h1 className="text-white text-2xl font-bold px-2">
               : {currentClass.name}
             </h1>
           )}
@@ -101,6 +101,7 @@ export default function Gradebook() {
 
         {currentClass && <ClassSelect />}
       </div>
+
 
       <div className="flex gap-2">
         <AddGradebookItemDialog />
