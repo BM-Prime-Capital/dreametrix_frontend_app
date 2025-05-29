@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -19,12 +17,24 @@
 }
 
 @keyframes wave {
-  0% { transform: rotate(0deg); }
-  20% { transform: rotate(15deg); }
-  40% { transform: rotate(-10deg); }
-  60% { transform: rotate(10deg); }
-  80% { transform: rotate(-5deg); }
-  100% { transform: rotate(0deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(15deg);
+  }
+  40% {
+    transform: rotate(-10deg);
+  }
+  60% {
+    transform: rotate(10deg);
+  }
+  80% {
+    transform: rotate(-5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 .animate-waving-hand {
@@ -32,7 +42,6 @@
   animation: wave 1.5s ease-in-out infinite;
   transform-origin: center bottom;
 }
-
 
 @layer base {
   :root {
@@ -97,6 +106,12 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Custom utility classes */
+.text-xxs {
+  font-size: 0.625rem;
+  line-height: 0.75rem;
 }
 
 #subjectInput,
