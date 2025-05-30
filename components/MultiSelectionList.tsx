@@ -47,11 +47,13 @@ const MultiSelectList = React.memo(
       const updatingData: string[] = Object.keys(updatedItems).filter(
         (key) => updatedItems[key as keyof typeof updatedItems] === true
       );
-       updateSelectedItems(updatingData);
+      updateSelectedItems(updatingData);
     };
 
     // Handle Select All change
     const handleSelectAllChange = () => {
+      if (!Array.isArray(allItems)) return;
+
       const newCheckedState = !selectAll;
       const updatedItems = Object.fromEntries(
         allItems?.map((item) => [item, newCheckedState])
@@ -68,7 +70,7 @@ const MultiSelectList = React.memo(
     };
 
     useEffect(() => {
-      if (allItems?.length > 1) {
+      if (Array.isArray(allItems) && allItems?.length > 1) {
         const updatedItems = Object.fromEntries(
           allItems?.map((item) => [item, selectAll])
         ); // All inputs checked by default
@@ -113,36 +115,37 @@ const MultiSelectList = React.memo(
               } gap-4 flex-wrap`}
             >
               {/* Item Checkboxes */}
-              {allItems?.map((item, index) => (
-                <label
-                  key={index}
-                  className={`flex items-center space-x-2 ${className}`}
-                >
-                  {withSheckbox ? (
-                    <>
-                      <input
-                        className="hidden"
-                        type="checkbox"
-                        checked={checkedItems[item]}
-                        onChange={() => handleItemChange(item)}
-                      />
-                      <span className="flex p-[2px] border-[2px] border-[#ff69b4] w-[20px] h-[20px] rounded-sm">
-                        <span
-                          className={`flex-1 rounded-xs ${
-                            checkedItems[item] ? "bg-[#ff69b4]" : ""
-                          }`}
-                        >
-                          {" "}
+              {Array.isArray(allItems) &&
+                allItems?.map((item, index) => (
+                  <label
+                    key={index}
+                    className={`flex items-center space-x-2 ${className}`}
+                  >
+                    {withSheckbox ? (
+                      <>
+                        <input
+                          className="hidden"
+                          type="checkbox"
+                          checked={checkedItems[item]}
+                          onChange={() => handleItemChange(item)}
+                        />
+                        <span className="flex p-[2px] border-[2px] border-[#ff69b4] w-[20px] h-[20px] rounded-sm">
+                          <span
+                            className={`flex-1 rounded-xs ${
+                              checkedItems[item] ? "bg-[#ff69b4]" : ""
+                            }`}
+                          >
+                            {" "}
+                          </span>
                         </span>
-                      </span>
-                    </>
-                  ) : (
-                    ""
-                  )}
+                      </>
+                    ) : (
+                      ""
+                    )}
 
-                  <span>{item}</span>
-                </label>
-              ))}
+                    <span>{item}</span>
+                  </label>
+                ))}
             </div>
           </div>
         ) : (
