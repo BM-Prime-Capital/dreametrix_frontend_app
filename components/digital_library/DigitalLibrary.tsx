@@ -13,7 +13,11 @@ import {
   getStandards,
   getSubjects,
 } from "@/services/DigitalLibraryService";
-import { fetchElaData, fetchElaDomains } from "@/services/ElaService";
+import {
+  fetchElaStandards,
+  fetchElaStrands,
+  fetchElaSpecificStandards,
+} from "@/services/ElaService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { getClasses } from "@/services/ClassService";
 import { DigitalLibrarySheet, ISchoolClass } from "@/types";
@@ -165,19 +169,18 @@ export default function DigitalLibrary() {
       setIsLoadingElaData(true);
 
       try {
-        // Fetch ELA data using the fake API
-        const { standards, strands, specificStandards } = await fetchElaData(
+        // Fetch ELA standards using the real API
+        const elaStandardsData = await fetchElaStandards(
           digitalLibrarySheet.subject,
-          selectedGrade
+          selectedGrade,
+          tenantDomain,
+          accessToken,
+          refreshToken
         );
-        setElaStandards(standards);
-        setElaStrands(strands);
-        setElaSpecificStandards(specificStandards);
+        setElaStandards(elaStandardsData || []);
       } catch (error) {
-        console.error("Error loading ELA data:", error);
+        console.error("Error loading ELA standards:", error);
         setElaStandards([]);
-        setElaStrands([]);
-        setElaSpecificStandards([]);
       } finally {
         setIsLoadingElaData(false);
       }
@@ -258,34 +261,56 @@ export default function DigitalLibrary() {
   };
 
   // ELA handler functions
-  const handleElaStandardSelect = (selectedStandard: string) => {
+  const handleElaStandardSelect = async (selectedStandard: string) => {
     setSelectedElaStandard(selectedStandard);
+
+    // Reset strand and specific standards when standard changes
+    setSelectedElaStrand("");
+    setElaStrands([]);
+    setElaSpecificStandards([]);
+
+    // Fetch strands for the selected standard
+    if (selectedStandard) {
+      setIsLoadingElaData(true);
+      try {
+        const strandsData = await fetchElaStrands(
+          digitalLibrarySheet.subject,
+          digitalLibrarySheet.grade,
+          selectedStandard,
+          tenantDomain,
+          accessToken,
+          refreshToken
+        );
+        setElaStrands(strandsData || []);
+      } catch (error) {
+        console.error("Error loading ELA strands:", error);
+        setElaStrands([]);
+      } finally {
+        setIsLoadingElaData(false);
+      }
+    }
   };
 
   const handleElaStrandSelect = async (selectedStrand: string) => {
     setSelectedElaStrand(selectedStrand);
 
-    // Once both ELA fields are selected, proceed to load domains and specific standards
+    // Once both ELA fields are selected, proceed to load specific standards and domains
     if (selectedElaStandard && selectedStrand) {
+      setIsLoadingElaData(true);
       try {
-        // Use ELA-specific domains service
-        const domainsData = await fetchElaDomains(
+        // Fetch specific standards using the real API
+        const specificStandardsData = await fetchElaSpecificStandards(
           digitalLibrarySheet.subject,
           digitalLibrarySheet.grade,
           selectedElaStandard,
           selectedStrand,
-          "" // No specific standard needed
+          tenantDomain,
+          accessToken,
+          refreshToken
         );
+        setElaSpecificStandards(specificStandardsData || []);
 
-        setSheetDomains(domainsData);
-
-        // Set the specific standards for the MultiSelectList
-        setStandards(elaSpecificStandards);
-        setCheckedStandards(elaSpecificStandards);
-        setStandardsAreLoading(false);
-      } catch (error) {
-        console.error("Error loading ELA domains:", error);
-        // Fallback to regular domains if ELA domains fail
+        // Fetch domains using regular domains API (no ELA-specific domains API exists)
         const domainsData = await getDomains(
           {
             subject: digitalLibrarySheet.subject,
@@ -296,6 +321,33 @@ export default function DigitalLibrary() {
           refreshToken
         );
         setSheetDomains(domainsData);
+
+        // Set the specific standards for the MultiSelectList
+        setStandards(specificStandardsData || []);
+        setCheckedStandards(specificStandardsData || []);
+        setStandardsAreLoading(false);
+      } catch (error) {
+        console.error(
+          "Error loading ELA specific standards and domains:",
+          error
+        );
+        // Fallback to regular domains if API call fails
+        try {
+          const domainsData = await getDomains(
+            {
+              subject: digitalLibrarySheet.subject,
+              grade: Number.parseInt(digitalLibrarySheet.grade),
+            },
+            tenantDomain,
+            accessToken,
+            refreshToken
+          );
+          setSheetDomains(domainsData);
+        } catch (domainError) {
+          console.error("Error loading fallback domains:", domainError);
+        }
+      } finally {
+        setIsLoadingElaData(false);
       }
     }
   };
@@ -684,7 +736,7 @@ export default function DigitalLibrary() {
 
                 {isLoadingElaData && (
                   <div className="md:col-span-2 text-sm text-yellow-700 bg-yellow-100 p-2 rounded">
-                    Loading ELA-specific options...
+                    Loading ELA options...
                   </div>
                 )}
               </>

@@ -1,112 +1,179 @@
-// ELA Service - Fake API for ELA-specific data
-// This will be replaced with real API calls later
+"use server";
 
-export interface ElaData {
-  standards: string[];
-  strands: string[];
-  specificStandards: string[];
-}
-
-export async function fetchElaData(
+export async function fetchElaStandards(
   subject: string,
-  grade: string
-): Promise<ElaData> {
+  grade: string,
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  refreshToken: string
+) {
+  if (!accessToken) {
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
+  }
+
+  const url = `${tenantPrimaryDomain}/digital_library/standards_ela/${subject}/${grade}/`;
+
+  console.log("🚀 Fetching ELA Standards:", {
+    url,
+    subject,
+    grade,
+    hasAccessToken: !!accessToken,
+  });
+
   try {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-    // Grade-specific ELA data
-    const gradeInt = parseInt(grade);
+    console.log("📥 ELA Standards Response:", {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+    });
 
-    const baseData: ElaData = {
-      standards: [
-        "Reading Literature",
-        "Reading Informational Text",
-        "Writing",
-        "Speaking and Listening",
-        "Language",
-      ],
-      strands: [
-        "Key Ideas and Details",
-        "Craft and Structure",
-        "Integration of Knowledge and Ideas",
-        "Range of Reading and Level of Text Complexity",
-      ],
-      specificStandards: [],
-    };
-
-    // Generate grade-appropriate specific standards
-    if (gradeInt <= 2) {
-      baseData.specificStandards = [
-        `RL.${grade}.1 - Ask and answer questions about key details`,
-        `RL.${grade}.2 - Retell stories and demonstrate understanding`,
-        `RL.${grade}.3 - Describe characters, settings, and major events`,
-        `RI.${grade}.1 - Ask and answer questions about key details in text`,
-        `RI.${grade}.2 - Identify the main topic and retell key details`,
-        `W.${grade}.1 - Write opinion pieces`,
-        `W.${grade}.2 - Write informative texts`,
-        `SL.${grade}.1 - Participate in collaborative conversations`,
-      ];
-    } else if (gradeInt <= 5) {
-      baseData.specificStandards = [
-        `RL.${grade}.1 - Quote accurately when explaining text`,
-        `RL.${grade}.2 - Determine theme and summarize text`,
-        `RL.${grade}.3 - Compare and contrast characters`,
-        `RI.${grade}.1 - Quote accurately when explaining text`,
-        `RI.${grade}.2 - Determine main ideas and supporting details`,
-        `W.${grade}.1 - Write opinion pieces with clear structure`,
-        `W.${grade}.2 - Write informative texts with facts and details`,
-        `SL.${grade}.1 - Engage effectively in collaborative discussions`,
-      ];
-    } else {
-      baseData.specificStandards = [
-        `RL.${grade}.1 - Cite textual evidence to support analysis`,
-        `RL.${grade}.2 - Determine central theme and analyze development`,
-        `RL.${grade}.3 - Analyze how characters develop over course of text`,
-        `RI.${grade}.1 - Cite textual evidence to support analysis`,
-        `RI.${grade}.2 - Determine central ideas and analyze development`,
-        `W.${grade}.1 - Write arguments to support claims with reasoning`,
-        `W.${grade}.2 - Write informative texts with relevant evidence`,
-        `SL.${grade}.1 - Engage effectively in range of collaborative discussions`,
-      ];
+    if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error("Vous n'avez pas la permission d'accéder aux données.");
+      } else {
+        throw new Error("Erreur lors de la récupération des standards ELA.");
+      }
     }
 
-    console.log(`Fake ELA API call for ${subject} grade ${grade}:`, baseData);
-    return baseData;
+    const data = await response.json();
+    console.log("✅ ELA Standards Data:", data);
+
+    // Extract the standards array from the response object
+    const standards = data.standards || [];
+    console.log("📋 Extracted Standards:", standards);
+
+    return standards;
   } catch (error) {
-    console.error("Error in fake ELA API call:", error);
-    return { standards: [], strands: [], specificStandards: [] };
+    console.error("❌ Error fetching ELA standards:", error);
+    throw error;
   }
 }
 
-export async function fetchElaDomains(
+export async function fetchElaStrands(
   subject: string,
   grade: string,
-  standard: string,
-  strand: string,
-  specificStandard: string
-): Promise<string[]> {
+  standardsEla: string,
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  refreshToken: string
+) {
+  if (!accessToken) {
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
+  }
+
+  const url = `${tenantPrimaryDomain}/digital_library/strands/${subject}/${grade}/${encodeURIComponent(
+    standardsEla
+  )}/`;
+
+  console.log("🚀 Fetching ELA Strands:", {
+    url,
+    subject,
+    grade,
+    standardsEla,
+    hasAccessToken: !!accessToken,
+  });
+
   try {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-    // Generate domains based on the selected ELA components
-    const domains = [
-      "Reading Comprehension",
-      "Literary Analysis",
-      "Text Structure and Organization",
-      "Vocabulary and Language Use",
-      "Writing Process and Techniques",
-      "Research and Inquiry",
-    ];
+    console.log("📥 ELA Strands Response:", {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+    });
 
-    console.log(
-      `Fake ELA domains for grade ${grade}, standard: ${standard}:`,
-      domains
-    );
-    return domains;
+    if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error("Vous n'avez pas la permission d'accéder aux données.");
+      } else {
+        throw new Error("Erreur lors de la récupération des strands ELA.");
+      }
+    }
+
+    const data = await response.json();
+    console.log("✅ ELA Strands Data:", data);
+
+    // Extract the strands array from the response object
+    const strands = data.strands || [];
+    console.log("📋 Extracted Strands:", strands);
+
+    return strands;
   } catch (error) {
-    console.error("Error fetching ELA domains:", error);
-    return [];
+    console.error("❌ Error fetching ELA strands:", error);
+    throw error;
+  }
+}
+
+export async function fetchElaSpecificStandards(
+  subject: string,
+  grade: string,
+  standardsEla: string,
+  strand: string,
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  refreshToken: string
+) {
+  if (!accessToken) {
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
+  }
+
+  const url = `${tenantPrimaryDomain}/digital_library/specific_standards/${subject}/${grade}/${encodeURIComponent(
+    standardsEla
+  )}/${encodeURIComponent(strand)}/`;
+
+  console.log("🚀 Fetching ELA Specific Standards:", {
+    url,
+    subject,
+    grade,
+    standardsEla,
+    strand,
+    hasAccessToken: !!accessToken,
+  });
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    console.log("📥 ELA Specific Standards Response:", {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+    });
+
+    if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error("Vous n'avez pas la permission d'accéder aux données.");
+      } else {
+        throw new Error(
+          "Erreur lors de la récupération des standards spécifiques ELA."
+        );
+      }
+    }
+
+    const data = await response.json();
+    console.log("✅ ELA Specific Standards Data:", data);
+
+    // Extract the specific standards from the response object
+    // This might be an array of standards or an object with domains/standards
+    const specificStandards = data.specific_standards || data.standards || data;
+    console.log("📋 Extracted Specific Standards:", specificStandards);
+
+    return specificStandards;
+  } catch (error) {
+    console.error("❌ Error fetching ELA specific standards:", error);
+    throw error;
   }
 }
