@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Card } from "@/components/ui/card";
@@ -29,13 +30,13 @@ export default function ReportCard() {
 
   return (
     <section className="flex flex-col gap-4 w-full">
-      {/* Header */}
+      
       <div className="flex justify-between items-center bg-[#3e81d4] px-4 py-3 rounded-md">
         <PageTitleH1 title="Academic Report Card" className="text-white" />
         <span className="text-white font-medium">Term 2 • 2023-2024</span>
       </div>
 
-      {/* Filters */}
+     
       <div className="flex justify-between items-center">
         <div className="flex flex-wrap items-center gap-4">
           <ClassSelect />
@@ -47,7 +48,7 @@ export default function ReportCard() {
         </div>
       </div>
 
-      {/* Action Bar */}
+    
       <div className="flex justify-between items-center">
       <div className="flex gap-4">
           <Button className="flex gap-2 items-center text-lg bg-[#c586d1] hover:bg-[#A36EAD] rounded-md  px-2 py-4 lg:px-4 lg:py-6">
@@ -83,9 +84,9 @@ export default function ReportCard() {
         </select>
       </div>
 
-      {/* Main Report Card */}
+      
       <Card className="rounded-lg p-6">
-        {/* Student Header */}
+        
         <div className="flex flex-wrap justify-between items-center border-b pb-6 mb-6">
           <div className="flex items-center gap-4">
             <Image
@@ -120,7 +121,7 @@ export default function ReportCard() {
           </div>
         </div>
 
-        {/* Academic Performance */}
+        
         <div className="mb-8">
           <h3 className="text-lg font-bold mb-4">Subject Performance</h3>
           <div className="overflow-x-auto">
@@ -130,7 +131,7 @@ export default function ReportCard() {
                   <th className="p-3">Subject</th>
                   <th className="p-3 text-center">Grade</th>
                   <th className="p-3 text-center">Score</th>
-                  <th className="p-3">Teacher's Comments</th>
+                  <th className="p-3">Teacher&apos;s Comments</th>
                 </tr>
               </thead>
               <tbody>
@@ -147,7 +148,7 @@ export default function ReportCard() {
           </div>
         </div>
 
-        {/* Visual Analytics */}
+       
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white p-4 rounded-lg border">
             <h4 className="font-bold mb-3">Grade Trend</h4>
@@ -167,7 +168,7 @@ export default function ReportCard() {
           </div>
         </div>
 
-        {/* Key Assessments */}
+        
         <div className="mb-8">
           <h3 className="text-lg font-bold mb-4">Key Assessments</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -195,9 +196,9 @@ export default function ReportCard() {
           </div>
         </div>
 
-        {/* Teacher Remarks */}
+        
         <div className="border-t pt-6">
-          <h3 className="text-lg font-bold mb-3">Teacher's Remarks</h3>
+          <h3 className="text-lg font-bold mb-3">Teacher&apos;s Remarks</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
               <h4 className="font-bold text-blue-700 mb-2">Strengths</h4>
@@ -218,7 +219,7 @@ export default function ReportCard() {
           </div>
         </div>
 
-        {/* Official Section */}
+       
         <div className="flex justify-between items-end mt-8">
           <div className="text-[10px] text-gray-800">
             <p>Report generated on: {new Date().toLocaleDateString()}</p>
