@@ -13,7 +13,7 @@ export async function fetchElaStandards(
 
   const url = `${tenantPrimaryDomain}/digital_library/standards_ela/${subject}/${grade}/`;
 
-  console.log("🚀 Fetching ELA Standards:", {
+  console.log("Fetching ELA Standards:", {
     url,
     subject,
     grade,
@@ -27,7 +27,7 @@ export async function fetchElaStandards(
       },
     });
 
-    console.log("📥 ELA Standards Response:", {
+    console.log("ELA Standards Response:", {
       status: response.status,
       statusText: response.statusText,
       ok: response.ok,
@@ -42,15 +42,15 @@ export async function fetchElaStandards(
     }
 
     const data = await response.json();
-    console.log("✅ ELA Standards Data:", data);
+    console.log("ELA Standards Data:", data);
 
     // Extract the standards array from the response object
     const standards = data.standards || [];
-    console.log("📋 Extracted Standards:", standards);
+    console.log("Extracted Standards:", standards);
 
     return standards;
   } catch (error) {
-    console.error("❌ Error fetching ELA standards:", error);
+    console.error("Error fetching ELA standards:", error);
     throw error;
   }
 }
@@ -71,7 +71,7 @@ export async function fetchElaStrands(
     standardsEla
   )}/`;
 
-  console.log("🚀 Fetching ELA Strands:", {
+  console.log("Fetching ELA Strands:", {
     url,
     subject,
     grade,
@@ -86,7 +86,7 @@ export async function fetchElaStrands(
       },
     });
 
-    console.log("📥 ELA Strands Response:", {
+    console.log("ELA Strands Response:", {
       status: response.status,
       statusText: response.statusText,
       ok: response.ok,
@@ -101,15 +101,15 @@ export async function fetchElaStrands(
     }
 
     const data = await response.json();
-    console.log("✅ ELA Strands Data:", data);
+    console.log("ELA Strands Data:", data);
 
     // Extract the strands array from the response object
     const strands = data.strands || [];
-    console.log("📋 Extracted Strands:", strands);
+    console.log("Extracted Strands:", strands);
 
     return strands;
   } catch (error) {
-    console.error("❌ Error fetching ELA strands:", error);
+    console.error("Error fetching ELA strands:", error);
     throw error;
   }
 }
@@ -131,7 +131,7 @@ export async function fetchElaSpecificStandards(
     standardsEla
   )}/${encodeURIComponent(strand)}/`;
 
-  console.log("🚀 Fetching ELA Specific Standards:", {
+  console.log("Fetching ELA Specific Standards:", {
     url,
     subject,
     grade,
@@ -147,7 +147,7 @@ export async function fetchElaSpecificStandards(
       },
     });
 
-    console.log("📥 ELA Specific Standards Response:", {
+    console.log("ELA Specific Standards Response:", {
       status: response.status,
       statusText: response.statusText,
       ok: response.ok,
@@ -164,16 +164,17 @@ export async function fetchElaSpecificStandards(
     }
 
     const data = await response.json();
-    console.log("✅ ELA Specific Standards Data:", data);
+    console.log("ELA Specific Standards Data:", data);
 
     // Extract the specific standards from the response object
     // This might be an array of standards or an object with domains/standards
-    const specificStandards = data.specific_standards || data.standards || data;
-    console.log("📋 Extracted Specific Standards:", specificStandards);
+    const specificStandards =
+      data.specifique_standards || data.standards || data;
+    console.log("Extracted Specific Standards:", specificStandards);
 
     return specificStandards;
   } catch (error) {
-    console.error("❌ Error fetching ELA specific standards:", error);
+    console.error("Error fetching ELA specific standards:", error);
     throw error;
   }
 }

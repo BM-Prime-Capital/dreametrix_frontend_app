@@ -107,6 +107,11 @@ export default function DigitalLibrary() {
     useState<boolean>(false);
 
   const handleSubjectSelection = async (selectedSubject: string) => {
+    console.log("🔄 Subject Selection:", {
+      selectedSubject,
+      currentSubject: digitalLibrarySheet.subject,
+    });
+
     setDigitalLibrarySheet({
       ...digitalLibrarySheet,
       subject: selectedSubject,
@@ -132,6 +137,15 @@ export default function DigitalLibrary() {
       setSelectedElaStrand("");
       setElaSpecificStandards([]);
     }
+
+    // Reset general standards state when switching subjects
+    setStandards([]);
+    setCheckedStandards([]);
+    setStandardsAreLoading(true);
+    setSheetDomains([]);
+    setQuestionsLinks(null);
+
+    console.log("✅ Reset all states for subject change");
 
     try {
       const gradeData = await getGrades(
@@ -162,6 +176,12 @@ export default function DigitalLibrary() {
       grade: selectedGrade,
       domain: "",
     });
+
+    // Reset standards-related state when changing grade
+    setStandards([]);
+    setCheckedStandards([]);
+    setStandardsAreLoading(true);
+    setQuestionsLinks(null);
 
     // Handle ELA-specific flow
     if (isElaSubjectSelected) {
@@ -310,18 +330,6 @@ export default function DigitalLibrary() {
         );
         setElaSpecificStandards(specificStandardsData || []);
 
-        // Fetch domains using regular domains API (no ELA-specific domains API exists)
-        const domainsData = await getDomains(
-          {
-            subject: digitalLibrarySheet.subject,
-            grade: Number.parseInt(digitalLibrarySheet.grade),
-          },
-          tenantDomain,
-          accessToken,
-          refreshToken
-        );
-        setSheetDomains(domainsData);
-
         // Set the specific standards for the MultiSelectList
         setStandards(specificStandardsData || []);
         setCheckedStandards(specificStandardsData || []);
@@ -331,21 +339,6 @@ export default function DigitalLibrary() {
           "Error loading ELA specific standards and domains:",
           error
         );
-        // Fallback to regular domains if API call fails
-        try {
-          const domainsData = await getDomains(
-            {
-              subject: digitalLibrarySheet.subject,
-              grade: Number.parseInt(digitalLibrarySheet.grade),
-            },
-            tenantDomain,
-            accessToken,
-            refreshToken
-          );
-          setSheetDomains(domainsData);
-        } catch (domainError) {
-          console.error("Error loading fallback domains:", domainError);
-        }
       } finally {
         setIsLoadingElaData(false);
       }
@@ -364,12 +357,16 @@ export default function DigitalLibrary() {
         checkedClasses.length < 1
       ) {
         alert(
-          "For ELA: You must select a subject, grade, standard, strand, domain and at least one specific standard"
+          "For ELA: You must select a subject, grade, standard, strand and at least one specific standard"
         );
         return;
       }
     } else {
-      if (checkedStandards.length < 1 || checkedClasses.length < 1) {
+      if (
+        !digitalLibrarySheet.domain ||
+        checkedStandards.length < 1 ||
+        checkedClasses.length < 1
+      ) {
         alert(
           "You have to select a subject, a grade, a domain and at least one standard"
         );
@@ -412,7 +409,7 @@ export default function DigitalLibrary() {
     const data = {
       subject: digitalLibrarySheet.subject,
       grade: digitalLibrarySheet.grade,
-      domain: digitalLibrarySheet.domain,
+      domain: isElaSubjectSelected ? "" : digitalLibrarySheet.domain, // Use empty domain for ELA subjects
       standards: standards,
       kind: digitalLibrarySheet.questionType,
       selected_class: selected_class,
@@ -467,7 +464,7 @@ export default function DigitalLibrary() {
       const data = {
         subject: digitalLibrarySheet.subject,
         grade: digitalLibrarySheet.grade,
-        domain: digitalLibrarySheet.domain,
+        domain: isElaSubjectSelected ? "" : digitalLibrarySheet.domain, // Use empty domain for ELA subjects
         questionsType: e.target.value,
         standards: checkedStandards,
       };
@@ -491,7 +488,7 @@ export default function DigitalLibrary() {
       const data = {
         subject: digitalLibrarySheet.subject,
         grade: digitalLibrarySheet.grade,
-        domain: digitalLibrarySheet.domain,
+        domain: isElaSubjectSelected ? "" : digitalLibrarySheet.domain, // Use empty domain for ELA subjects
         questionsType: digitalLibrarySheet.questionType,
         standards: items,
       };
@@ -742,19 +739,13 @@ export default function DigitalLibrary() {
               </>
             )}
 
-            {/* Domain section - show for non-ELA subjects or when both ELA fields are selected */}
-            {(!elaStepActive ||
-              (isElaSubjectSelected &&
-                selectedElaStandard &&
-                selectedElaStrand)) && (
+            {/* Domain section - hide completely for ELA subjects, show for non-ELA subjects only */}
+            {!isElaSubjectSelected && (
               <div className="space-y-2">
                 <Label className="text-gray-700 font-medium">Domain</Label>
                 <Select
                   disabled={
-                    isDreaMetrixBankOfQuestion ||
-                    !digitalLibrarySheet.grade ||
-                    (isElaSubjectSelected &&
-                      !(selectedElaStandard && selectedElaStrand))
+                    isDreaMetrixBankOfQuestion || !digitalLibrarySheet.grade
                   }
                   value={digitalLibrarySheet.domain}
                   onValueChange={handleDomainSelection}
@@ -777,11 +768,11 @@ export default function DigitalLibrary() {
               </div>
             )}
 
-            {/* Question Type section - show for non-ELA subjects or when both ELA fields are selected */}
-            {(!elaStepActive ||
-              (isElaSubjectSelected &&
-                selectedElaStandard &&
-                selectedElaStrand)) && (
+            {/* Question Type section - show for non-ELA subjects (when domain is selected) or for ELA subjects (when both standard and strand are selected) */}
+            {(!isElaSubjectSelected && digitalLibrarySheet.domain) ||
+            (isElaSubjectSelected &&
+              selectedElaStandard &&
+              selectedElaStrand) ? (
               <div className="space-y-2">
                 <Label className="text-gray-700 font-medium">
                   Question Type
@@ -789,7 +780,7 @@ export default function DigitalLibrary() {
                 <Select
                   disabled={
                     isDreaMetrixBankOfQuestion ||
-                    !digitalLibrarySheet.domain ||
+                    (!isElaSubjectSelected && !digitalLibrarySheet.domain) ||
                     (isElaSubjectSelected &&
                       !(selectedElaStandard && selectedElaStrand))
                   }
@@ -820,10 +811,12 @@ export default function DigitalLibrary() {
                   </SelectContent>
                 </Select>
               </div>
-            )}
+            ) : null}
           </div>
 
-          {digitalLibrarySheet.domain && (
+          {/* Specific Standards section - show for non-ELA subjects (when domain is selected) or for ELA subjects (when both standard and strand are selected) */}
+          {(!isElaSubjectSelected && digitalLibrarySheet.domain) ||
+          (isElaSubjectSelected && selectedElaStandard && selectedElaStrand) ? (
             <div className="space-y-2 bg-purple-50 p-4 rounded-lg border border-purple-100">
               <Label className="text-purple-800 font-medium">
                 Specific Standards
@@ -840,7 +833,7 @@ export default function DigitalLibrary() {
                 }
               />
             </div>
-          )}
+          ) : null}
 
           <div className="space-y-2 bg-indigo-50 p-4 rounded-lg border border-indigo-100">
             <Label className="text-indigo-800 font-medium">Class(es)</Label>
