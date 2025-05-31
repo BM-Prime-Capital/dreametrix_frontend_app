@@ -88,6 +88,7 @@ export const teacherImages = {
   new_group: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/new_group.svg`,
   individual_student: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/individual_student.svg`,
   attachement: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/attachement.svg`,
+  reactivate: `${TEACHER_COMMUNICATE_IMAGES_BASE_PATH}/attachement.svg`,
 };
 
 export const menuImages = {
