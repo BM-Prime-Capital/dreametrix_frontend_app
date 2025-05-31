@@ -4,24 +4,46 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { X, Paperclip } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState } from "react"
+//import { StudentSelector } from "@/components/ui/student-selector"
 
 interface ParentComposeDialogProps {
   isOpen: boolean
   onClose: () => void
+  selectedStudents: number[]
 }
 
-export function ParentComposeDialog({ isOpen, onClose }: ParentComposeDialogProps) {
+// Define the Student interface
+interface Student {
+  id: number
+  name: string
+  class: string
+}
+
+const mockStudents: Student[] = [
+  { id: 1, name: "John Smith", class: "Grade 1" },
+  { id: 2, name: "Emma Smith", class: "Grade 2" },
+]
+
+export function ParentComposeDialog({ 
+  isOpen, 
+  onClose, 
+  selectedStudents 
+}: ParentComposeDialogProps) {
   const [message, setMessage] = useState("")
   const [showPreview, setShowPreview] = useState(false)
   const [selectedTeacher, setSelectedTeacher] = useState("")
-  const [selectedChild, setSelectedChild] = useState("")
   const [subject, setSubject] = useState("")
 
   const handleUploadClick = () => {
     setShowPreview(true)
   }
+
+  // Get names of selected students
+  const selectedStudentNames = selectedStudents
+    .map(id => mockStudents.find(s => s.id === id)?.name)
+    .filter(Boolean)
+    .join(", ")
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -38,40 +60,40 @@ export function ParentComposeDialog({ isOpen, onClose }: ParentComposeDialogProp
           <div className="border-t pt-4" />
 
           <div className="space-y-4 mt-4">
-            <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
-              <SelectTrigger className="rounded-full">
-                <SelectValue placeholder="Select recipient" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="eva-parker">Eva Parker (Math)</SelectItem>
-                <SelectItem value="sam-burke">Sam Burke (Science)</SelectItem>
-                <SelectItem value="anna-blake">Anna Blake (Literature)</SelectItem>
-                <SelectItem value="principal">Principal Johnson</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">To:</span>
+              <select 
+                value={selectedTeacher}
+                onChange={(e) => setSelectedTeacher(e.target.value)}
+                className="flex-1 p-2 border rounded-full text-sm"
+              >
+                <option value="">Select recipient</option>
+                <option value="eva-parker">Eva Parker (Math)</option>
+                <option value="sam-burke">Sam Burke (Science)</option>
+                <option value="anna-blake">Anna Blake (Literature)</option>
+                <option value="principal">Principal Johnson</option>
+              </select>
+            </div>
 
-            <Select value={selectedChild} onValueChange={setSelectedChild}>
-              <SelectTrigger className="rounded-full">
-                <SelectValue placeholder="Regarding child" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="john">John Smith</SelectItem>
-                <SelectItem value="emma">Emma Smith</SelectItem>
-                <SelectItem value="both">Both children</SelectItem>
-                <SelectItem value="general">General inquiry</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <div className="text-sm font-medium text-blue-800">Regarding:</div>
+              <div className="text-sm text-blue-600 mt-1">
+                {selectedStudents.length > 0 
+                  ? selectedStudentNames 
+                  : "All children"}
+              </div>
+            </div>
 
             <input
               type="text"
               placeholder="Subject"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="w-full p-3 border rounded-full"
+              className="w-full p-3 border rounded-full text-sm"
             />
 
             <div
-              className="rounded-full border px-4 py-2 flex items-center text-gray-500 cursor-pointer"
+              className="rounded-full border px-4 py-2 flex items-center text-gray-500 cursor-pointer text-sm"
               onClick={handleUploadClick}
             >
               <Paperclip className="h-4 w-4 mr-2" />
@@ -81,7 +103,7 @@ export function ParentComposeDialog({ isOpen, onClose }: ParentComposeDialogProp
             <Textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="min-h-[200px] resize-none rounded-xl"
+              className="min-h-[200px] resize-none rounded-xl text-sm"
               placeholder="Type your message here..."
             />
 
@@ -89,7 +111,9 @@ export function ParentComposeDialog({ isOpen, onClose }: ParentComposeDialogProp
               <Button variant="ghost" onClick={onClose}>
                 Cancel
               </Button>
-              <Button className="bg-[#25AAE1] hover:bg-[#1D8CB3] text-white rounded-full px-8">SEND</Button>
+              <Button className="bg-[#25AAE1] hover:bg-[#1D8CB3] text-white rounded-full px-8">
+                SEND
+              </Button>
             </div>
           </div>
         </div>
