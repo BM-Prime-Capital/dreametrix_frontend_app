@@ -4,7 +4,6 @@ import Plan from "@/components/plan/Plan";
 import React, {useState} from "react";
 import {Button} from "@/components/ui/button";
 import {ChevronLeft, BrickWall, ChartGantt, Calendar} from "lucide-react";
-import {   } from "@radix-ui/react-accordion";
 
 import PlanAccordion from "@/components/ui/planAccordion";
 
@@ -20,8 +19,7 @@ export default function ReportsPage() {
         { label: 'Unit Two', href: '/page2' },
         { label: 'Unit Three', href: '/page3' },
     ];
-
-
+    
 
   return (
       <div>
@@ -45,7 +43,7 @@ export default function ReportsPage() {
                   </div>
 
           }
-          
+
       </div>
   )
 }
