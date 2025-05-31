@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -26,12 +27,21 @@ interface Course {
 
 interface CreateArrangementDialogProps {
   onSuccess: () => void;
+
+  tenantPrimaryDomain: string;
+
+  accessToken: string;
+
+  refreshToken: string;
+
+  courses: any[];
+
 }
 
 export function CreateArrangementDialog({ onSuccess }: CreateArrangementDialogProps) {
   const { tenantDomain: tenantPrimaryDomain, accessToken, refreshToken } = useRequestInfo();
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA) || "{}");
-  const teacherId = userData.id; // Retrieve the teacher ID from user data
+  const teacherId = userData.owner_id; // Retrieve the teacher ID from user data
 
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");

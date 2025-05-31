@@ -40,10 +40,14 @@ export default function Seating({
   const loadArrangements = async (courseId?: number) => {
     try {
       setLoading(true);
+      console.log("tenantPrimaryDomain",tenantPrimaryDomain)
+      console.log("accessToken", accessToken)
+      console.log("courseId",courseId)
       const data = await getSeatingArrangements(tenantPrimaryDomain, accessToken, courseId);
       const formattedArrangements = formatArrangements(data);
       setArrangements(formattedArrangements);
 
+        console.log("formattedArrangements", formattedArrangements)
       if (formattedArrangements.length > 0) {
         setCurrentArrangement(formattedArrangements[0]);
       }
