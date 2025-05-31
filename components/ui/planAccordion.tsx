@@ -5,7 +5,6 @@ import {ReactNode, useState} from 'react';
 import Link from 'next/link';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
-
 type Item = {
     label: string;
     href: string;
