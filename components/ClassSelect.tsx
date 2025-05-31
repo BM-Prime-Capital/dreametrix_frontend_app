@@ -16,10 +16,11 @@ export default function ClassSelect({ className }: { className?: string }) {
 
   const handleClassChange = (value: string) => {
     const foundClass = classes.find((cl) => cl.name === value);
-    if (foundClass) {
-      localStorage.setItem("selectedClass", JSON.stringify(foundClass));
-      setSelectedClass(foundClass);
-    }
+    localStorage.setItem(
+      localStorageKey.CURRENT_SELECTED_CLASS,
+      JSON.stringify(foundClass)
+    );
+    setSelectedClass(foundClass);
   };
 
   useEffect(() => {
@@ -28,19 +29,23 @@ export default function ClassSelect({ className }: { className?: string }) {
         const allClasses = JSON.parse(loadedClasses);
         setClasses(allClasses);
       } catch (error) {
-        console.error("Failed to parse classes from localStorage", error);
+        console.error("Failed to parse classes from localStorage:", error);
+        localStorage.removeItem("classes");
       }
     }
   }, [loadedClasses]);
 
   useEffect(() => {
     if (loadedSelectedClass) {
-      try {
-        const selectedClass = JSON.parse(loadedSelectedClass);
-        setSelectedClass(selectedClass);
-      } catch (error) {
-        console.error("Failed to parse selected class from localStorage", error);
-      }
+        // First check if it's the string "undefined"
+        if (loadedSelectedClass === "undefined") {
+          localStorage.removeItem(localStorageKey.CURRENT_SELECTED_CLASS);
+          return;
+        }
+        const parsed = JSON.parse(loadedSelectedClass);
+          setSelectedClass(parsed);
+        
+      
     }
   }, [loadedSelectedClass]);
 

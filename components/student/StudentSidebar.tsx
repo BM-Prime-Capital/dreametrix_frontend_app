@@ -15,7 +15,7 @@ export function StudentSidebar({ routes }: { routes: MenuRoute[] }) {
       <div className="p-4 flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible">
         {routes.map((route) => {
           const isActive = pathname === route.path;
-
+        const iconSrc = typeof route.icon === 'string' ? route.icon : ""
           return (
             <Link
               key={route.path}
@@ -27,7 +27,7 @@ export function StudentSidebar({ routes }: { routes: MenuRoute[] }) {
               )}
             >
               <Image
-                src={route.icon}
+                src={iconSrc}
                 alt={route.label}
                 width={20}
                 height={20}
