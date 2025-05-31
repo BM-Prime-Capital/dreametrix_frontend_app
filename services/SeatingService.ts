@@ -93,7 +93,6 @@ export async function createArrangementEvent(
   }
 }
 
-
 export async function updateSeatingArrangement(
   tenantPrimaryDomain: string,
   accessToken: string,
