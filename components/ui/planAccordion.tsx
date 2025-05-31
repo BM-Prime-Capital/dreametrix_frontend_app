@@ -10,6 +10,7 @@ type Item = {
     href: string;
 };
 
+
 type AccordionProps = {
     title: string;
     items: Item[];
