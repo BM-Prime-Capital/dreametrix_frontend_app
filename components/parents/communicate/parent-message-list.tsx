@@ -43,7 +43,7 @@ const initialMessages: Message[] = [
       "https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
       "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=1099&q=80",
     ],
-    isRead: true,
+    isRead: false,
   },
   {
     id: 2,
@@ -94,7 +94,7 @@ const initialMessages: Message[] = [
     avatar: "/placeholder.svg",
     regarding: "John Smith",
     regardingIds: [1],
-    isRead: true,
+    isRead: false,
   },
   {
     id: 6,
@@ -107,7 +107,7 @@ const initialMessages: Message[] = [
     avatar: "/placeholder.svg",
     regarding: "John Smith",
     regardingIds: [1],
-    isRead: true,
+    isRead: false,
   },
 ]
 
