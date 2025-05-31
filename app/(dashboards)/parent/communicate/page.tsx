@@ -5,11 +5,21 @@ import { Card } from "@/components/ui/card"
 import { ParentMessageList } from "@/components/parents/communicate/parent-message-list"
 import { ParentComposeDialog } from "@/components/parents/communicate/parent-compose-dialog"
 import { MessageCircle, Users, UserPlus } from 'lucide-react'
+import { StudentSelector } from "@/components/ui/student-selector"
+
+// Mock data -
+const mockStudents = [
+  { id: 1, name: "John Doe", class: "Grade 1" },
+  { id: 2, name: "Jane Smith", class: "Grade 2" },
+  { id: 3, name: "Michael Johnson", class: "Grade 1" },
+  { id: 4, name: "Emily Davis", class: "Grade 3" },
+]
 
 export default function ParentCommunicatePage() {
   const [activeTab, setActiveTab] = useState<"teachers" | "school-admin" | "other-parents">("teachers")
   const [isComposeOpen, setIsComposeOpen] = useState(false)
   const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null)
+  const [selectedStudents, setSelectedStudents] = useState<number[]>([])
 
   const handleMessageClick = (messageId: number) => {
     setSelectedMessageId(messageId === selectedMessageId ? null : messageId)
@@ -21,15 +31,27 @@ export default function ParentCommunicatePage() {
         <h1 className="text-[#25AAE1] text-xl font-bold">COMMUNICATE</h1>
       </div>
 
-      <div className="flex gap-4">
-        <button
-          className="bg-[#25AAE1] text-white px-6 py-3 rounded-md flex items-center gap-2"
-          onClick={() => setIsComposeOpen(true)}
-        >
-          <MessageCircle className="h-5 w-5" />
-          <span>Compose</span>
-        </button>
-      </div>
+      <div className="flex items-center">
+  <button
+    className="bg-[#25AAE1] text-white px-6 py-3 rounded-md flex items-center gap-2 whitespace-nowrap"
+    onClick={() => setIsComposeOpen(true)}
+  >
+    <MessageCircle className="h-5 w-5" />
+    <span>Compose</span>
+  </button>
+
+  <div className="flex-grow flex justify-end">
+    <StudentSelector
+      students={mockStudents}
+      selectedStudents={selectedStudents}
+      onSelect={setSelectedStudents}
+      placeholder="Filter by student..."
+      multiple={true}
+      className="w-[300px]"
+    />
+  </div>
+</div>
+
 
       <div className="flex">
         <button
@@ -66,10 +88,15 @@ export default function ParentCommunicatePage() {
           activeTab={activeTab}
           selectedMessageId={selectedMessageId}
           onMessageClick={handleMessageClick}
+          selectedStudents={selectedStudents}
         />
       </Card>
 
-      <ParentComposeDialog isOpen={isComposeOpen} onClose={() => setIsComposeOpen(false)} />
+      <ParentComposeDialog 
+        isOpen={isComposeOpen} 
+        onClose={() => setIsComposeOpen(false)}
+        selectedStudents={selectedStudents}
+      />
     </section>
   )
 }
