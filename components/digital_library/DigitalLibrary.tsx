@@ -17,6 +17,8 @@ import {
   fetchElaStandards,
   fetchElaStrands,
   fetchElaSpecificStandards,
+  fetchElaQuestionLinks,
+  generateElaPdf,
 } from "@/services/ElaService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { getClasses } from "@/services/ClassService";
@@ -185,6 +187,12 @@ export default function DigitalLibrary() {
 
     // Handle ELA-specific flow
     if (isElaSubjectSelected) {
+      // Reset ELA-specific state when changing grade
+      setSelectedElaStandard("");
+      setSelectedElaStrand("");
+      setElaStrands([]);
+      setElaSpecificStandards([]);
+
       setElaStepActive(true);
       setIsLoadingElaData(true);
 
@@ -334,6 +342,34 @@ export default function DigitalLibrary() {
         setStandards(specificStandardsData || []);
         setCheckedStandards(specificStandardsData || []);
         setStandardsAreLoading(false);
+
+        // Automatically fetch question links with default question type
+        if (
+          isElaSubjectSelected &&
+          specificStandardsData &&
+          specificStandardsData.length > 0
+        ) {
+          console.log(
+            "Auto-fetching ELA question links with default question type:",
+            digitalLibrarySheet.questionType
+          );
+          const formattedStandards =
+            specificStandardsData.length > 1
+              ? specificStandardsData.join(",")
+              : specificStandardsData[0];
+          const questionsLinksData = await fetchElaQuestionLinks(
+            digitalLibrarySheet.subject,
+            digitalLibrarySheet.grade,
+            selectedElaStandard,
+            selectedStrand,
+            formattedStandards,
+            digitalLibrarySheet.questionType,
+            tenantDomain,
+            accessToken,
+            refreshToken
+          );
+          setQuestionsLinks(questionsLinksData);
+        }
       } catch (error) {
         console.error(
           "Error loading ELA specific standards and domains:",
@@ -353,8 +389,7 @@ export default function DigitalLibrary() {
       if (
         !selectedElaStandard ||
         !selectedElaStrand ||
-        checkedStandards.length < 1 ||
-        checkedClasses.length < 1
+        checkedStandards.length < 1
       ) {
         alert(
           "For ELA: You must select a subject, grade, standard, strand and at least one specific standard"
@@ -362,11 +397,7 @@ export default function DigitalLibrary() {
         return;
       }
     } else {
-      if (
-        !digitalLibrarySheet.domain ||
-        checkedStandards.length < 1 ||
-        checkedClasses.length < 1
-      ) {
+      if (!digitalLibrarySheet.domain || checkedStandards.length < 1) {
         alert(
           "You have to select a subject, a grade, a domain and at least one standard"
         );
@@ -424,27 +455,60 @@ export default function DigitalLibrary() {
     console.log("DIGITAL LIBRARY POST data => ", data);
 
     try {
-      const url = `${tenantDomain}/digital_library/generate-pdf/`;
-      let response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(data),
-      });
+      let blob: Blob;
 
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setFileStream(url);
+      if (isElaSubjectSelected) {
+        // Use ELA-specific PDF generation API
+        const elaPdfData = {
+          subject: digitalLibrarySheet.subject,
+          grade: digitalLibrarySheet.grade,
+          standards_ela: selectedElaStandard,
+          strands: selectedElaStrand,
+          specifique_standards: standards,
+          kind: digitalLibrarySheet.questionType,
+          selected_class: selected_class,
+          generate_answer_sheet: digitalLibrarySheet.generateAnswerSheet,
+          teacher_name: userData.username,
+          student_id: [1, 2],
+          assignment_type: "Exam",
+          number_of_questions: Number.parseInt(
+            digitalLibrarySheet.noOfQuestions
+          ),
+        };
 
-        document.getElementById("openFileModalButton")?.click(); // We open the Modal to display the Generated File
+        console.log("ELA PDF Generation data => ", elaPdfData);
+
+        blob = await generateElaPdf(
+          elaPdfData,
+          tenantDomain,
+          accessToken,
+          refreshToken
+        );
       } else {
-        console.log("POST DigitalLibrary Failed => ", response);
+        // Use regular PDF generation API for non-ELA subjects
+        const url = `${tenantDomain}/digital_library/generate-pdf/`;
+        let response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(data),
+        });
 
-        throw new Error("DigitalLibrary creation failed");
+        if (response.ok) {
+          blob = await response.blob();
+        } else {
+          console.log("POST DigitalLibrary Failed => ", response);
+          throw new Error("DigitalLibrary creation failed");
+        }
       }
+
+      // Handle the PDF blob for both ELA and non-ELA subjects
+      const url = URL.createObjectURL(blob);
+      setFileStream(url);
+
+      document.getElementById("openFileModalButton")?.click(); // We open the Modal to display the Generated File
     } catch (error) {
       setError(
         "There is a server or internet issue, please try again, if this persits, contact you admin."
@@ -461,21 +525,42 @@ export default function DigitalLibrary() {
     });
 
     if (checkedStandards.length > 0) {
-      const data = {
-        subject: digitalLibrarySheet.subject,
-        grade: digitalLibrarySheet.grade,
-        domain: isElaSubjectSelected ? "" : digitalLibrarySheet.domain, // Use empty domain for ELA subjects
-        questionsType: e.target.value,
-        standards: checkedStandards,
-      };
-      console.log("SENDING DATA => ", data);
-      const questionsLinksData = await getQuestionsLinks(
-        data,
-        tenantDomain,
-        accessToken,
-        refreshToken
-      );
-      setQuestionsLinks(questionsLinksData);
+      if (isElaSubjectSelected) {
+        // Use ELA-specific API for question links
+        const formattedStandards =
+          checkedStandards.length > 1
+            ? checkedStandards.join(",")
+            : checkedStandards[0];
+        const questionsLinksData = await fetchElaQuestionLinks(
+          digitalLibrarySheet.subject,
+          digitalLibrarySheet.grade,
+          selectedElaStandard,
+          selectedElaStrand,
+          formattedStandards,
+          e.target.value,
+          tenantDomain,
+          accessToken,
+          refreshToken
+        );
+        setQuestionsLinks(questionsLinksData);
+      } else {
+        // Use regular API for Math subjects
+        const data = {
+          subject: digitalLibrarySheet.subject,
+          grade: digitalLibrarySheet.grade,
+          domain: digitalLibrarySheet.domain,
+          questionsType: e.target.value,
+          standards: checkedStandards,
+        };
+        console.log("SENDING DATA => ", data);
+        const questionsLinksData = await getQuestionsLinks(
+          data,
+          tenantDomain,
+          accessToken,
+          refreshToken
+        );
+        setQuestionsLinks(questionsLinksData);
+      }
     } else {
       setQuestionsLinks(null);
       setDigitalLibrarySheet({ ...digitalLibrarySheet, noOfQuestions: "" });
@@ -485,22 +570,40 @@ export default function DigitalLibrary() {
   async function handleStandardsChange(items: string[]) {
     setCheckedStandards(items);
     if (items.length > 0) {
-      const data = {
-        subject: digitalLibrarySheet.subject,
-        grade: digitalLibrarySheet.grade,
-        domain: isElaSubjectSelected ? "" : digitalLibrarySheet.domain, // Use empty domain for ELA subjects
-        questionsType: digitalLibrarySheet.questionType,
-        standards: items,
-      };
+      if (isElaSubjectSelected) {
+        // Use ELA-specific API for question links
+        const specificStandards = items.length > 1 ? items.join(",") : items[0];
+        const questionsLinksData = await fetchElaQuestionLinks(
+          digitalLibrarySheet.subject,
+          digitalLibrarySheet.grade,
+          selectedElaStandard,
+          selectedElaStrand,
+          specificStandards,
+          digitalLibrarySheet.questionType,
+          tenantDomain,
+          accessToken,
+          refreshToken
+        );
+        setQuestionsLinks(questionsLinksData);
+      } else {
+        // Use regular API for Math subjects
+        const data = {
+          subject: digitalLibrarySheet.subject,
+          grade: digitalLibrarySheet.grade,
+          domain: digitalLibrarySheet.domain,
+          questionsType: digitalLibrarySheet.questionType,
+          standards: items,
+        };
 
-      const questionsLinksData = await getQuestionsLinks(
-        data,
-        tenantDomain,
-        accessToken,
-        refreshToken
-      );
+        const questionsLinksData = await getQuestionsLinks(
+          data,
+          tenantDomain,
+          accessToken,
+          refreshToken
+        );
 
-      setQuestionsLinks(questionsLinksData);
+        setQuestionsLinks(questionsLinksData);
+      }
     } else {
       setQuestionsLinks(null);
     }
@@ -789,11 +892,50 @@ export default function DigitalLibrary() {
                       !(selectedElaStandard && selectedElaStrand))
                   }
                   value={digitalLibrarySheet.questionType}
-                  onValueChange={(value) => {
+                  onValueChange={async (value) => {
                     setDigitalLibrarySheet({
                       ...digitalLibrarySheet,
                       questionType: value,
                     });
+
+                    // Update question links when question type changes
+                    if (checkedStandards.length > 0) {
+                      if (isElaSubjectSelected) {
+                        // Use ELA-specific API for question links
+                        const specificStandards =
+                          checkedStandards.length > 1
+                            ? checkedStandards.join(",")
+                            : checkedStandards[0];
+                        const questionsLinksData = await fetchElaQuestionLinks(
+                          digitalLibrarySheet.subject,
+                          digitalLibrarySheet.grade,
+                          selectedElaStandard,
+                          selectedElaStrand,
+                          specificStandards,
+                          value,
+                          tenantDomain,
+                          accessToken,
+                          refreshToken
+                        );
+                        setQuestionsLinks(questionsLinksData);
+                      } else {
+                        // Use regular API for Math subjects
+                        const data = {
+                          subject: digitalLibrarySheet.subject,
+                          grade: digitalLibrarySheet.grade,
+                          domain: digitalLibrarySheet.domain,
+                          questionsType: value,
+                          standards: checkedStandards,
+                        };
+                        const questionsLinksData = await getQuestionsLinks(
+                          data,
+                          tenantDomain,
+                          accessToken,
+                          refreshToken
+                        );
+                        setQuestionsLinks(questionsLinksData);
+                      }
+                    }
                   }}
                 >
                   <SelectTrigger className="w-full bg-gray-50 border-gray-300 hover:border-blue-400">
