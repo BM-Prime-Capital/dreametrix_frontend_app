@@ -15,6 +15,7 @@ type Section = LessonPlanField | 'header';
 
 interface PlanGeneralViewProps {
     changeView: (viewName: string, plan?: any) => void;
+    selectedDate: Date;
 }
 
 interface TextStyles {
