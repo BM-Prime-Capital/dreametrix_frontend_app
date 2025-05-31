@@ -3,7 +3,7 @@
 import Plan from "@/components/plan/Plan";
 import React, {useState} from "react";
 import {Button} from "@/components/ui/button";
-import {ChevronDown, ChevronLeft, BrickWall, ChartGantt, Calendar} from "lucide-react";
+import {ChevronLeft, BrickWall, ChartGantt, Calendar} from "lucide-react";
 import {   } from "@radix-ui/react-accordion";
 
 import PlanAccordion from "@/components/ui/planAccordion";
@@ -45,15 +45,7 @@ export default function ReportsPage() {
                   </div>
 
           }
-
-          {/*<div className="w-full flex justify-between gap-2 items-start mb-5">*/}
-          {/*    <PlanAccordion title="Scope and Sequence" icon={<BrickWall/>} callback={planTemplateHandler}*/}
-          {/*                   items={unitsList}/>*/}
-          {/*    <PlanAccordion title="Unit Plans" icon={<ChartGantt/>} callback={planTemplateHandler} items={unitsList}/>*/}
-          {/*    <PlanAccordion title="Lesson Plans" icon={<Calendar/>} callback={planTemplateHandler} items={unitsList}/>*/}
-          {/*</div>*/}
-
-        {/*<Plan/>;*/}
+          
       </div>
   )
 }
