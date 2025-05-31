@@ -1,0 +1,1 @@
+export const BASE_URL = 'https://saint-agustin.backend-dreametrix.com';
