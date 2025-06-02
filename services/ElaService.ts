@@ -192,11 +192,7 @@ export async function fetchElaQuestionLinks(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
-  const url = `${tenantPrimaryDomain}/digital_library/links_ela/${subject}/${grade}/${encodeURIComponent(
-    standardsEla
-  )}/${encodeURIComponent(strands)}/${encodeURIComponent(
-    specificStandards
-  )}/${kind}/`;
+  const url = `${tenantPrimaryDomain}/digital_library/links_ela/${subject}/${grade}/${standardsEla}/${strands}/${specificStandards}/${kind}/`;
 
   console.log("Fetching ELA Question Links:", {
     url,
