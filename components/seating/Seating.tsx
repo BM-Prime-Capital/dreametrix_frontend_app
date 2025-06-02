@@ -309,7 +309,7 @@ export default function Seating({
               </div>
               {isModified && (
                 <span className="text-[10px] text-yellow-600 bg-yellow-100 px-3 py-2 rounded-sm">
-                  You have some unsaved changes
+                  You have unsaved changes.
                 </span>
               )}
 
