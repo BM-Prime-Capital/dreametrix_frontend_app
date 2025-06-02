@@ -1,6 +1,6 @@
 "use server";
 
-import { redirect } from "next/navigation";
+//import { redirect } from "next/navigation";
 
 export async function getSeatingArrangements(
   tenantPrimaryDomain: string,
@@ -100,6 +100,10 @@ export async function updateSeatingArrangement(
   siteNumber: number
 ) {
   const url = `${tenantPrimaryDomain}/seatings/update-seating/${seatingId}/`;
+  console.log("tenantPrimaryDomain", tenantPrimaryDomain);
+  console.log("accessToken", accessToken)
+  console.log("seatingId", seatingId)
+  console.log("siteNumber", siteNumber)
   const response = await fetch(url, {
     method: "PUT",
     headers: {
@@ -110,7 +114,7 @@ export async function updateSeatingArrangement(
   });
 
   if (!response.ok) {
-    throw new Error("Erreur lors de la mise à jour du placement.");
+    throw new Error(`Request failed with status ${response.status}: ${response.statusText}`);
   }
 
   return await response.json();

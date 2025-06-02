@@ -18,14 +18,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { Eye, Pencil, Trash2 } from "lucide-react";
+//import { Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { teacherImages } from "@/constants/images";
 import Image from "next/image";
 
 export default function StudentSeatingConditionsDialog({
-  studentClassName,
+ // studentClassName,
 }: {
   studentClassName: string;
 }) {
@@ -34,13 +34,13 @@ export default function StudentSeatingConditionsDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild className="cursor-pointer">
-        <Button className="flex gap-2 items-center text-lg bg-[#F5C358] hover:bg-[#eeb53b] rounded-md  px-2 py-4 lg:px-4 lg:py-6">
+        <Button className="flex gap-2 items-center text-lg bg-[#F5C358] hover:bg-[#eeb53b] rounded-md">
           <Image
             src={teacherImages.conditions}
             alt="conditions"
             width={100}
             height={100}
-            className="w-8 h-8"
+            className="w-4 h-4"
           />
           <span>Conditions</span>
         </Button>

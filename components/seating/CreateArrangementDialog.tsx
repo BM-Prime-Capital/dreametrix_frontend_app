@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DatePicker } from "../ui/date-picker";
+//import { DatePicker } from "../ui/date-picker";
 import { teacherImages, generalImages } from "@/constants/images";
 import Image from "next/image";
 import { useState, useEffect } from "react";
@@ -41,12 +41,12 @@ interface CreateArrangementDialogProps {
 export function CreateArrangementDialog({ onSuccess }: CreateArrangementDialogProps) {
   const { tenantDomain: tenantPrimaryDomain, accessToken, refreshToken } = useRequestInfo();
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA) || "{}");
-  const teacherId = userData.owner_id; // Retrieve the teacher ID from user data
+  const teacherId = userData.owner_id;
 
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [courseId, setCourseId] = useState<number | null>(null);
-  const [date, setDate] = useState<Date>(new Date());
+  const [, setDate] = useState<Date>(new Date());
   const [courses, setCourses] = useState<Course[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -132,7 +132,7 @@ export function CreateArrangementDialog({ onSuccess }: CreateArrangementDialogPr
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="flex gap-2 items-center text-lg bg-green-500 hover:bg-green-600 rounded-md px-2 py-4 lg:px-4 lg:py-6">
+        <Button className="flex gap-2 items-center text-lg bg-green-500 hover:bg-green-600 rounded-md px-2 py-4 lg:px-4 lg:py-4">
           <Image
             src={generalImages.add || teacherImages.upload}
             alt="add"
