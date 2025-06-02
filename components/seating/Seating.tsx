@@ -13,6 +13,7 @@ import StudentSeatingConditionsDialog from "./StudentSeatingConditionsDialog";
 import { assignRandomSeatNumbers } from "@/libs/utils";
 import { CreateArrangementDialog } from "./CreateArrangementDialog";
 import { SeatingHistory } from "./SeatingHistory";
+import { useCallback } from 'react';
 //import { CourseSelect } from "../CourseSelect";
 import ClassSelect from "../ClassSelect";
 import { getSeatingArrangements, updateSeatingArrangement, deactivateArrangementEvent } from "@/services/SeatingService";
@@ -38,10 +39,11 @@ export default function Seating({
   const [isSeatingArrangementAuto, setIsSeatingArrangementAuto] = useState(true);
   const [displayStudentsList, setDisplayStudentsList] = useState(true);
   const [isModified, setIsModified] = useState(false);
+  
   //const [currentClass, setCurrentClass] = useState<string | null>(null);
   const [currentClassId, setCurrentClassId] = useState<string | null>(null);
 
-  const loadArrangements = async (courseId?: number) => {
+  const loadArrangements = useCallback(async (courseId?: number) => {
     try {
       setLoading(true);
       const data = await getSeatingArrangements(tenantPrimaryDomain, accessToken, courseId);
@@ -56,9 +58,9 @@ export default function Seating({
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenantPrimaryDomain, accessToken]);
 
-  const formatArrangements = (apiData: any) => {
+  const formatArrangements = useCallback((apiData: any) => {
     const result: any[] = [];
 
     for (const courseName in apiData) {
@@ -90,9 +92,9 @@ export default function Seating({
     }
 
     return result;
-  };
+  }, []);
 
-  const handleSeatClick = async (targetSeatNumber: number) => {
+  const handleSeatClick = useCallback(async (targetSeatNumber: number) => {
     const targetStudent = currentArrangement.arrangements.find(
       (s: any) => s.seatNumber === targetSeatNumber
     );
@@ -152,9 +154,9 @@ export default function Seating({
     } finally {
       setFirstSelectedSeatNumber(-1);
     }
-  };
+  }, [currentArrangement, firstSelectedSeatNumber, arrangements, tenantPrimaryDomain, accessToken]);
 
-  const handleSeatingArrangementAuto = () => {
+  const handleSeatingArrangementAuto = useCallback(() => {
     if (!currentArrangement) return;
 
     const shuffledArrangements = assignRandomSeatNumbers(
@@ -174,9 +176,9 @@ export default function Seating({
       );
       setIsSeatingArrangementAuto(true);
       setIsModified(true);
-  };
+    }, [currentArrangement, arrangements]);
 
-  const handleSave = async () => {
+    const handleSave = useCallback(async () => {
     if (!currentArrangement || !isModified) return;
 
     console.log("currentArrangement", currentArrangement.arrangements);
@@ -200,29 +202,31 @@ export default function Seating({
     } catch (error) {
       console.error("Error saving arrangement:", error);
     }
-  };
+  }, [currentArrangement, isModified, tenantPrimaryDomain, accessToken, selectedCourse, loadArrangements]);
 
   // const handleCourseChange = (courseId: number) => {
   //   setSelectedCourse(courseId);
   //   loadArrangements(courseId);
   // };
 
-  const handleDeactivateEvent = async (eventId: number) => {
+  const handleDeactivateEvent = useCallback(async (eventId: number) => {
     try {
       await deactivateArrangementEvent(tenantPrimaryDomain, accessToken, eventId);
       loadArrangements(selectedCourse || undefined);
     } catch (error) {
       console.error("Error deactivating event:", error);
     }
-  };
+  }, [tenantPrimaryDomain, accessToken, selectedCourse, loadArrangements]);
 
   useEffect(() => {
     loadArrangements();
   }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const handleClassChange = useCallback((classId: string) => {
+    setCurrentClassId(classId);
+    loadArrangements(classId ? parseInt(classId) : undefined);
+  }, [loadArrangements]);
+
 
   return (
     <section className="flex flex-col gap-2 w-full">
@@ -300,7 +304,21 @@ export default function Seating({
         
       </div>
       <Card className="rounded-md">
-        <div className="flex flex-wrap-reverse">
+      {loading ? (
+          <div className="flex items-center justify-center ">
+            <div className="flex flex-col items-center p-4 gap-1">
+              <video
+                src="/assets/videos/general/drea_metrix_loader.mp4"
+                autoPlay
+                loop
+                muted
+                className="w-[150px] h-[150px] object-contain"
+              />
+              <label className="mt-0 text-sm text-slate-500">Loading data...</label>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-wrap-reverse">
           <div className="flex flex-col gap-6 flex-1 py-4 px-4">
           <div className="flex justify-between items-center pb-4 border-b-[1px] border-[#eee]">
               <div>
@@ -453,6 +471,8 @@ export default function Seating({
           />
           </div>
         </div>
+        )}
+        
       </Card>
     </section>
   );
