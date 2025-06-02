@@ -148,7 +148,7 @@ export default function DigitalLibrary() {
     setSheetDomains([]);
     setQuestionsLinks(null);
 
-    console.log("✅ Reset all states for subject change");
+    console.log("[COMPLETE] Reset all states for subject change");
 
     try {
       const gradeData = await getGrades(

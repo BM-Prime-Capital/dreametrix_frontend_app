@@ -3,7 +3,7 @@ import { userPath } from "./userConstants";
 
 export const StudentRoutes = [
   {
-    path: "",
+    path: `${userPath.STUDENT_BASE_PATH}`,
     icon: generalImages.home,
     label: "HOME",
   },
@@ -51,6 +51,11 @@ export const StudentRoutes = [
     path: `${userPath.STUDENT_BASE_PATH}/tutor`,
     icon: generalImages.tutor,
     label: "TUTOR",
+  },
+  {
+    path: `${userPath.STUDENT_BASE_PATH}/profile`,
+    icon: `/assets/images/teacher/dashboard/profile.svg`,
+    label: "STUDENT PROFILE",
   },
 ];
 
@@ -211,16 +216,13 @@ export const ParentRoutes = [
     icon: menuImages.attendance,
     label: "ATTENDANCE",
   },
-  
- 
+
   {
     path: `${userPath.PARENT_BASE_PATH}/communicate`,
     icon: menuImages.communicate,
     label: "COMMUNICATE",
   },
- 
- 
- 
+
   {
     path: `${userPath.PARENT_BASE_PATH}/library`,
     icon: menuImages.report_card,
