@@ -325,11 +325,11 @@ export default function Seating({
                 <PageTitleH2 title="ARRANGEMENT" />
                 <label className="text-muted-foreground">BLACKBOARD</label>
               </div>
-              {isModified && (
+              {/* {isModified && (
                 <span className="text-[10px] text-yellow-600 bg-yellow-100 px-3 py-2 rounded-sm">
                   You have unsaved changes.
                 </span>
-              )}
+              )} */}
 
             <div className="flex flex-col items-end">
               <div>
@@ -357,106 +357,106 @@ export default function Seating({
             </div>
             </div>
             <div className="flex">
-              <div>
-                <div className="flex flex-col gap-2">
-                  <span
-                    title="Students List"
-                    className="flex justify-center items-center h-[25px] w-[25px] bg-blue-500 p- text-white border-2 border-gray-200 rounded-md cursor-pointer"
-                    onClick={() => setDisplayStudentsList(!displayStudentsList)}
-                  >
-                    {displayStudentsList ? <>&#128473;</> : <>☰</>}
-                  </span>
+            <div className="w-[30%] flex flex-col gap-2 pr-4">
+              <span
+                title="Students List"
+                className="flex justify-center items-center h-[25px] w-[25px] bg-blue-500 p- text-white border-2 border-gray-200 rounded-md cursor-pointer"
+                onClick={() => setDisplayStudentsList(!displayStudentsList)}
+              >
+                {displayStudentsList ? <>&#128473;</> : <>☰</>}
+              </span>
 
-                  {displayStudentsList && currentArrangement && (
-                    <div className="w-[100px] flex flex-col overflow-auto mr-3">
-                      {currentArrangement.arrangements.map((arrangement: any) => (
-                        <label
-                          key={arrangement.studentId}
-                          className={`whitespace-nowrap text-[12px] cursor-pointer border-b-2 pr-2 ${
-                            firstSelectedSeatNumber === arrangement.seatNumber 
-                              ? "border-blue-500 bg-blue-50" 
-                              : "border-gray-200"
-                          }`}
-                          onClick={() => {
-                            if (firstSelectedSeatNumber === arrangement.seatNumber) {
-                              setFirstSelectedSeatNumber(-1);
-                            } else {
-                              setFirstSelectedSeatNumber(arrangement.seatNumber);
-                            }
-                          }}
-                        >
-                          <span className="text-muted-foreground">{arrangement.studentName}</span>
-                          (<span className="text-secondaryBtn">{arrangement.seatNumber}</span>)
-                        </label>
-                      ))}
-                    </div>
-                  )}
-
-                </div>
-                <div className="mt-8">
-                  {currentArrangement && (
-                    <Button
-                      className="flex gap-2 items-center w-[100px] h-[25px] text-[12px] bg-red-500 hover:bg-red-700 text-white rounded-md px-4 py-0 shadow-md transition-all"
-                      onClick={() => handleDeactivateEvent(currentArrangement.id)}
+              {displayStudentsList && currentArrangement && (
+                <div className="flex-1 overflow-auto">
+                  {currentArrangement.arrangements.map((arrangement: any) => (
+                    <label
+                      key={arrangement.studentId}
+                      className={`block whitespace-nowrap text-[12px] cursor-pointer border-b-2 py-1 ${
+                        firstSelectedSeatNumber === arrangement.seatNumber 
+                          ? "border-blue-500 bg-blue-50" 
+                          : "border-gray-200"
+                      }`}
+                      onClick={() => {
+                        if (firstSelectedSeatNumber === arrangement.seatNumber) {
+                          setFirstSelectedSeatNumber(-1);
+                        } else {
+                          setFirstSelectedSeatNumber(arrangement.seatNumber);
+                        }
+                      }}
                     >
-                      <Image
-                        src={teacherImages.delete}
-                        alt="delete"
-                        width={20}
-                        height={5}
-                        className="w-3 h-3"
-                      />
-                      <span>Deactivate</span>
-                    </Button>
-                  )}
-                </div>
-              </div>
-              <div id="arrangementGrid" className="grid grid-cols-8 grid-row-8 border-2 gap-2 p-2 border-gray-200">
-                {currentArrangement?.arrangements?.length > 0 ? (
-                  <>
-                    {Array.from({ length: totalSeats }).map((_, index) => {
-                      if (index === 0) return null;
-
-                      const student = currentArrangement.arrangements.find(
-                        (s: any) => s.seatNumber === index
-                      );
-
-                      return student ? (
-                        <StudentArrangementItem
-                          key={`student-${student.studentId}-${index}`}
-                          id={index}
-                          studentImageUrl={student.studentImageUrl}
-                          studentName={student.studentName}
-                          className={`order-${index}`}
-                          handleSeatClick={() => handleSeatClick(index)}
-                          maxSeatNumber={currentArrangement.arrangements.length}
-                          isSeatingArrangementAuto={isSeatingArrangementAuto}
-                          isSelected={firstSelectedSeatNumber === index}
-                        />
-                      ) : (
-                        <div
-                          key={`empty-${index}`}
-                          onClick={() => handleSeatClick(index)}
-                          className="seat w-full h-full p-5 bg-gray-200 border-[1px] border-[#eee] hover:border-[1px] hover:border-bgPink relative"
-                        >
-                          <label className="seat-number font-bold text-xs text-bgPurple absolute top-1 left-1">
-                            {index}
-                          </label>
-                        </div>
-                      );
-                    })}
-                  </>
-                ) : (
-                  <div className="flex items-center justify-center col-span-8 row-span-8">
-                    <label className="text-muted-foreground">
-                      {arrangements.length === 0
-                        ? "No arrangements found. Create one!"
-                        : "No students in this arrangement"}
+                      <span className="text-muted-foreground">{arrangement.studentName}</span>
+                      (<span className="text-secondaryBtn">{arrangement.seatNumber}</span>)
                     </label>
-                  </div>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
+
+              {currentArrangement && (
+                <Button
+                  className="flex gap-2 items-center h-[25px] text-[12px] bg-red-500 hover:bg-red-700 text-white rounded-md px-4 py-0 shadow-md transition-all mt-4"
+                  onClick={() => handleDeactivateEvent(currentArrangement.id)}
+                >
+                  <Image
+                    src={teacherImages.delete}
+                    alt="delete"
+                    width={20}
+                    height={5}
+                    className="w-3 h-3"
+                  />
+                  <span>Deactivate</span>
+                </Button>
+              )}
             </div>
+
+            <div className="w-[70%]">
+            <div className="grid grid-cols-8 gap-2 p-2 border-2 border-gray-200"> 
+              {currentArrangement?.arrangements?.length > 0 ? (
+                <>
+                  {Array.from({ length: totalSeats }).map((_, index) => {
+                    if (index === 0) return null; 
+
+                    const student = currentArrangement.arrangements.find(
+                      (s: any) => s.seatNumber === index
+                    );
+
+                    return student ? (
+                      <StudentArrangementItem
+                        key={`student-${student.studentId}-${index}`}
+                        id={index}
+                        studentImageUrl={student.studentImageUrl}
+                        studentName={student.studentName}
+                        className={`w-full h-[50px]`} 
+                        handleSeatClick={() => handleSeatClick(index)}
+                        maxSeatNumber={currentArrangement.arrangements.length}
+                        isSeatingArrangementAuto={isSeatingArrangementAuto}
+                        isSelected={firstSelectedSeatNumber === index}
+                      />
+                    ) : (
+                      <div
+                        key={`empty-${index}`}
+                        onClick={() => handleSeatClick(index)}
+                        className={`w-full h-[50px] bg-gray-200 border-[1px] border-[#eee] hover:border-[1px] hover:border-bgPink relative
+                          ${firstSelectedSeatNumber === -1 ? 'cursor-pointer' : 'cursor-move'}`}
+                      >
+                        <label className="seat-number font-bold text-xs text-bgPurple absolute top-1 left-1">
+                          {index}
+                        </label>
+                      </div>
+                    );
+                  })}
+                </>
+              ) : (
+                <div className="col-span-8 flex items-center justify-center h-[400px]">
+                  <label className="text-muted-foreground">
+                    {arrangements.length === 0
+                      ? "No arrangements found. Create one!"
+                      : "No students in this arrangement"}
+                  </label>
+                </div>
+              )}
+            </div>
+          </div>
+          </div>
           </div>
           <div className="w-[150px]">
           <SeatingHistory
