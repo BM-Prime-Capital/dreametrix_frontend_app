@@ -92,6 +92,7 @@ export default function DigitalLibrary() {
     []
   );
   const [isLoadingElaData, setIsLoadingElaData] = useState(false);
+  const [isLoadingQuestionLinks, setIsLoadingQuestionLinks] = useState(false);
 
   const {
     list: subjects,
@@ -276,6 +277,7 @@ export default function DigitalLibrary() {
       standards: standardsData,
     };
 
+    setIsLoadingQuestionLinks(true);
     const questionsLinksData = await getQuestionsLinks(
       data,
       tenantDomain,
@@ -286,6 +288,7 @@ export default function DigitalLibrary() {
     console.log("questionsLinksData DT => ", questionsLinksData);
 
     setQuestionsLinks(questionsLinksData);
+    setIsLoadingQuestionLinks(false);
   };
 
   // ELA handler functions
@@ -353,6 +356,7 @@ export default function DigitalLibrary() {
             "Auto-fetching ELA question links with default question type:",
             digitalLibrarySheet.questionType
           );
+          setIsLoadingQuestionLinks(true);
           const formattedStandards =
             specificStandardsData.length > 1
               ? specificStandardsData.join(",")
@@ -369,6 +373,7 @@ export default function DigitalLibrary() {
             refreshToken
           );
           setQuestionsLinks(questionsLinksData);
+          setIsLoadingQuestionLinks(false);
         }
       } catch (error) {
         console.error(
@@ -525,6 +530,7 @@ export default function DigitalLibrary() {
     });
 
     if (checkedStandards.length > 0) {
+      setIsLoadingQuestionLinks(true);
       if (isElaSubjectSelected) {
         // Use ELA-specific API for question links
         const formattedStandards =
@@ -561,6 +567,7 @@ export default function DigitalLibrary() {
         );
         setQuestionsLinks(questionsLinksData);
       }
+      setIsLoadingQuestionLinks(false);
     } else {
       setQuestionsLinks(null);
       setDigitalLibrarySheet({ ...digitalLibrarySheet, noOfQuestions: "" });
@@ -570,6 +577,7 @@ export default function DigitalLibrary() {
   async function handleStandardsChange(items: string[]) {
     setCheckedStandards(items);
     if (items.length > 0) {
+      setIsLoadingQuestionLinks(true);
       if (isElaSubjectSelected) {
         // Use ELA-specific API for question links
         const specificStandards = items.length > 1 ? items.join(",") : items[0];
@@ -604,6 +612,7 @@ export default function DigitalLibrary() {
 
         setQuestionsLinks(questionsLinksData);
       }
+      setIsLoadingQuestionLinks(false);
     } else {
       setQuestionsLinks(null);
     }
@@ -945,10 +954,10 @@ export default function DigitalLibrary() {
                       Multiple Choice (MC)
                     </SelectItem>
                     <SelectItem
-                      value="OP"
+                      value="OR"
                       className="hover:bg-blue-50 focus:bg-blue-50"
                     >
-                      Open Response (OP)
+                      Open Response (OR)
                     </SelectItem>
                   </SelectContent>
                 </Select>
