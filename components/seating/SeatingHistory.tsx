@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,8 +12,8 @@ export function SeatingHistory({
   setCurrentArrangement,
   tenantPrimaryDomain,
   accessToken,
-  refreshToken,
   onReactivate,
+  currentClass,
 }: {
   arrangements: any[];
   currentArrangement: any;
@@ -21,9 +22,22 @@ export function SeatingHistory({
   accessToken: string;
   refreshToken: string;
   onReactivate: () => void;
+  currentClass: string | null; 
 }) {
   const [showDeactivated, setShowDeactivated] = useState(false);
   const [deactivatedEvents, setDeactivatedEvents] = useState<any[]>([]);
+  const [filteredArrangements, setFilteredArrangements] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (currentClass) {
+      const filtered = arrangements.filter(arr => 
+        arr.courseName.includes(currentClass)
+      );
+      setFilteredArrangements(filtered);
+    } else {
+      setFilteredArrangements(arrangements);
+    }
+  }, [arrangements, currentClass]);
 
   const loadDeactivatedEvents = async () => {
     try {
@@ -41,7 +55,14 @@ export function SeatingHistory({
       }
 
       const data = await response.json();
-      setDeactivatedEvents(data);
+      if (currentClass) {
+        const filtered = data.filter((event: any) => 
+          event.name.includes(currentClass)
+        );
+        setDeactivatedEvents(filtered);
+      } else {
+        setDeactivatedEvents(data);
+      }
     } catch (error) {
       console.error("Error loading deactivated events:", error);
     }
@@ -71,8 +92,8 @@ export function SeatingHistory({
   };
 
   return (
-    <div className="w-full sm:w-fit min-w-[200px] flex flex-col gap-6 bg-[#dfecf1] p-4 pb-0 sm:pb-4 pl-0">
-      <div className="flex justify-between items-center pl-4">
+    <div className="w-fit sm:w-[150px] flex flex-col gap-6 bg-[#dfecf1] p-4 pb-0 sm:pb-4 pl-0 overflow-hidden">
+      <div className="flex flex-col items-center pl-4">
         <h2 className="text-lg font-semibold">HISTORY</h2>
         <Button
           variant="ghost"
@@ -116,7 +137,7 @@ export function SeatingHistory({
             </div>
           )
         ) : (
-          arrangements.map((arrangement) => (
+          filteredArrangements.map((arrangement) => (
             <div
               key={arrangement.id}
               className={`text-[#55b4f1] whitespace-nowrap cursor-pointer p-2 sm:p-0 ${
@@ -126,7 +147,10 @@ export function SeatingHistory({
               }`}
               onClick={() => setCurrentArrangement(arrangement)}
             >
-              {arrangement.name}
+              {arrangement.title}
+              <div className="text-xs text-gray-500">
+                {arrangement.courseName}
+              </div>
             </div>
           ))
         )}
