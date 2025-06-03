@@ -13,7 +13,15 @@ import StudentSeatingConditionsDialog from "./StudentSeatingConditionsDialog";
 import { assignRandomSeatNumbers } from "@/libs/utils";
 import { CreateArrangementDialog } from "./CreateArrangementDialog";
 import { SeatingHistory } from "./SeatingHistory";
-import { useCallback } from 'react';
+import { useCallback,useMemo } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 //import { CourseSelect } from "../CourseSelect";
 import ClassSelect from "../ClassSelect";
 import { getSeatingArrangements, updateSeatingArrangement, deactivateArrangementEvent } from "@/services/SeatingService";
@@ -34,11 +42,16 @@ export default function Seating({
   const [arrangements, setArrangements] = useState<any[]>([]);
   const [currentArrangement, setCurrentArrangement] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
+  const [selectedCourse,] = useState<number | null>(null);
   const [firstSelectedSeatNumber, setFirstSelectedSeatNumber] = useState(-1);
   const [isSeatingArrangementAuto, setIsSeatingArrangementAuto] = useState(true);
   const [displayStudentsList, setDisplayStudentsList] = useState(true);
   const [isModified, setIsModified] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [eventToDeactivate, setEventToDeactivate] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   
   //const [currentClass, setCurrentClass] = useState<string | null>(null);
   const [currentClassId, setCurrentClassId] = useState<string | null>(null);
@@ -76,7 +89,7 @@ export default function Seating({
             studentImageUrl: eventData[siteNumber].student_profile_picture || generalImages.student,
             studentName: eventData[siteNumber].full_name,
             studentId: eventData[siteNumber].student_id,
-            seatingId: eventData[siteNumber].site_number,
+            seatingId: eventData[siteNumber].seating_arrangement_id,
           });
         }
 
@@ -93,6 +106,15 @@ export default function Seating({
 
     return result;
   }, []);
+
+  const filteredStudents = useMemo(() => {
+    if (!currentArrangement) return [];
+    if (!searchTerm) return currentArrangement.arrangements;
+  
+    return currentArrangement.arrangements.filter((student: any) =>
+      student.studentName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [currentArrangement, searchTerm]);
 
   const handleSeatClick = useCallback(async (targetSeatNumber: number) => {
     const targetStudent = currentArrangement.arrangements.find(
@@ -118,7 +140,7 @@ export default function Seating({
     const firstStudent = currentArrangement.arrangements.find(
       (s: any) => s.seatNumber === firstSelectedSeatNumber
     );
-    
+
     if (!firstStudent) {
       setFirstSelectedSeatNumber(-1);
       return;
@@ -179,30 +201,29 @@ export default function Seating({
     }, [currentArrangement, arrangements]);
 
     const handleSave = useCallback(async () => {
-    if (!currentArrangement || !isModified) return;
-
-    console.log("currentArrangement", currentArrangement.arrangements);
+      if (!currentArrangement || !isModified) return;
     
-    try {
-      await Promise.all(
-        currentArrangement.arrangements.map((student: any) =>
-          updateSeatingArrangement(
-            tenantPrimaryDomain,
-            accessToken,
-            student.seatingId,
-            student.seatNumber
-          )
-        )
-      );
-      
-      setIsModified(false);
-      
-      await loadArrangements(selectedCourse || undefined);
-      
-    } catch (error) {
-      console.error("Error saving arrangement:", error);
-    }
-  }, [currentArrangement, isModified, tenantPrimaryDomain, accessToken, selectedCourse, loadArrangements]);
+      try {
+        setIsSaving(true);
+        const updates = currentArrangement.arrangements.map((student: any) => ({
+          seating_id: student.seatingId,
+          site_number: student.seatNumber
+        }));
+        
+        await updateSeatingArrangement(
+          tenantPrimaryDomain,
+          accessToken,
+          updates
+        );
+        
+        setIsModified(false);
+        await loadArrangements(selectedCourse || undefined);
+      } catch (error) {
+        console.error("Error saving arrangement:", error);
+      } finally {
+        setIsSaving(false);
+      }
+    }, [currentArrangement, isModified, tenantPrimaryDomain, accessToken, selectedCourse, loadArrangements]);
 
   // const handleCourseChange = (courseId: number) => {
   //   setSelectedCourse(courseId);
@@ -210,22 +231,34 @@ export default function Seating({
   // };
 
   const handleDeactivateEvent = useCallback(async (eventId: number) => {
+    setEventToDeactivate(eventId);
+    setIsConfirmDialogOpen(true);
+  }, []);
+  
+  const confirmDeactivation = useCallback(async () => {
+    if (!eventToDeactivate) return;
+  
     try {
-      await deactivateArrangementEvent(tenantPrimaryDomain, accessToken, eventId);
-      loadArrangements(selectedCourse || undefined);
+      setIsDeactivating(true);
+      await deactivateArrangementEvent(tenantPrimaryDomain, accessToken, eventToDeactivate);
+      await loadArrangements(selectedCourse || undefined);
     } catch (error) {
       console.error("Error deactivating event:", error);
+    } finally {
+      setIsDeactivating(false);
+      setIsConfirmDialogOpen(false);
+      setEventToDeactivate(null);
     }
-  }, [tenantPrimaryDomain, accessToken, selectedCourse, loadArrangements]);
+  }, [eventToDeactivate, tenantPrimaryDomain, accessToken, selectedCourse, loadArrangements]);
 
   useEffect(() => {
     loadArrangements();
   }, []);
 
-  const handleClassChange = useCallback((classId: string) => {
-    setCurrentClassId(classId);
-    loadArrangements(classId ? parseInt(classId) : undefined);
-  }, [loadArrangements]);
+  // const handleClassChange = useCallback((classId: string) => {
+  //   setCurrentClassId(classId);
+  //   loadArrangements(classId ? parseInt(classId) : undefined);
+  // }, [loadArrangements]);
 
 
   return (
@@ -333,31 +366,32 @@ export default function Seating({
 
             <div className="flex flex-col items-end">
               <div>
-                <Button
-                  onClick={handleSave}
-                  disabled={!isModified}
-                  className={`flex gap-2 items-center text-lg h-[35px] rounded-md px-4 py-2 transition-all ${
-                    isModified 
-                      ? "bg-green-500 hover:bg-green-700 text-white shadow-md"
-                      : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  }`}
-                >
-                  <Image
-                    src={teacherImages.save}
-                    alt="save"
-                    width={24}
-                    height={24}
-                    className="w-5 h-5"
-                  />
-                  <span>Save</span>
-                </Button>
+              <Button
+                onClick={handleSave}
+                disabled={!isModified || isSaving}
+                className={`flex gap-2 items-center text-lg h-[35px] rounded-md px-4 py-2 transition-all ${
+                  isModified 
+                    ? "bg-green-500 hover:bg-green-700 text-white shadow-md"
+                    : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                }`}
+                isLoading={isSaving}
+              >
+                <Image
+                  src={teacherImages.save}
+                  alt="save"
+                  width={24}
+                  height={24}
+                  className="w-5 h-5"
+                />
+                <span>Save</span>
+              </Button>
               </div>
 
               
             </div>
             </div>
             <div className="flex">
-            <div className="w-[30%] flex flex-col gap-2 pr-4">
+            <div className="w-[20%] flex flex-col gap-2 pr-4">
               <span
                 title="Students List"
                 className="flex justify-center items-center h-[25px] w-[25px] bg-blue-500 p- text-white border-2 border-gray-200 rounded-md cursor-pointer"
@@ -368,47 +402,64 @@ export default function Seating({
 
               {displayStudentsList && currentArrangement && (
                 <div className="flex-1 overflow-auto">
-                  {currentArrangement.arrangements.map((arrangement: any) => (
-                    <label
-                      key={arrangement.studentId}
-                      className={`block whitespace-nowrap text-[14px] cursor-pointer border-b-2 py-1 ${
-                        firstSelectedSeatNumber === arrangement.seatNumber 
-                          ? "border-blue-500 bg-blue-50" 
-                          : "border-gray-200"
-                      }`}
-                      onClick={() => {
-                        if (firstSelectedSeatNumber === arrangement.seatNumber) {
-                          setFirstSelectedSeatNumber(-1);
-                        } else {
-                          setFirstSelectedSeatNumber(arrangement.seatNumber);
-                        }
-                      }}
-                    >
-                      <span className="text-muted-foreground">{arrangement.studentName}</span>
-                      (<span className="text-secondaryBtn">{arrangement.seatNumber}</span>)
-                    </label>
-                  ))}
+                  <div className="mb-3">
+                    <input
+                      type="text"
+                      placeholder="Search students..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                    />
+                  </div>
+                  
+                  {filteredStudents.length > 0 ? (
+                    filteredStudents.map((arrangement: any) => (
+                      <label
+                        key={arrangement.studentId}
+                        className={`block whitespace-nowrap text-[14px] cursor-pointer border-b-2 py-1 ${
+                          firstSelectedSeatNumber === arrangement.seatNumber 
+                            ? "border-blue-500 bg-blue-50" 
+                            : "border-gray-200"
+                        }`}
+                        onClick={() => {
+                          if (firstSelectedSeatNumber === arrangement.seatNumber) {
+                            setFirstSelectedSeatNumber(-1);
+                          } else {
+                            setFirstSelectedSeatNumber(arrangement.seatNumber);
+                          }
+                        }}
+                      >
+                        <span className="text-muted-foreground">{arrangement.studentName}</span>
+                        (<span className="text-secondaryBtn">{arrangement.seatNumber}</span>)
+                      </label>
+                    ))
+                  ) : (
+                    <div className="text-center text-sm text-gray-500 py-4">
+                      No students found matching &quot;{searchTerm}&quot;
+                    </div>
+                  )}
                 </div>
-              )}
+                )}
 
               {currentArrangement && (
                 <Button
-                  className="flex gap-2 items-center h-[25px] text-lg bg-red-500 hover:bg-red-700 text-white rounded-md px-4 py-5 w-[150px] shadow-md transition-all mt-4"
-                  onClick={() => handleDeactivateEvent(currentArrangement.id)}
-                >
-                  <Image
-                    src={teacherImages.delete}
-                    alt="delete"
-                    width={20}
-                    height={24}
-                    className="w-5 h-5"
-                  />
-                  <span>Deactivate</span>
-                </Button>
+                className="flex gap-2 items-center h-[25px] text-lg bg-red-500 hover:bg-red-700 text-white rounded-md px-4 py-5  shadow-md transition-all mt-4"
+                onClick={() => handleDeactivateEvent(currentArrangement.id)}
+                isLoading={isDeactivating}
+                  >
+                    <Image
+                      src={teacherImages.delete}
+                      alt="delete"
+                      width={20}
+                      height={24}
+                      className="w-5 h-5"
+                    />
+                    <span>Deactivate</span>
+                  </Button>
               )}
             </div>
 
-            <div className="w-[70%]">
+            <div className="w-[80%]">
             <div className="grid grid-cols-8 gap-2 p-2 border-2 border-gray-200"> 
               {currentArrangement?.arrangements?.length > 0 ? (
                 <>
@@ -458,7 +509,7 @@ export default function Seating({
           </div>
           </div>
           </div>
-          <div className="w-[200px]">
+          <div className="">
           <SeatingHistory
             arrangements={arrangements}
             currentArrangement={currentArrangement}
@@ -474,6 +525,32 @@ export default function Seating({
         )}
         
       </Card>
+
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Deactivation</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to deactivate this seating arrangement? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsConfirmDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive"
+                onClick={confirmDeactivation}
+                isLoading={isDeactivating}
+              >
+                Confirm Deactivation
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
     </section>
   );
 }
