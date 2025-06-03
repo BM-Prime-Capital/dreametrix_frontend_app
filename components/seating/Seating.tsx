@@ -458,7 +458,7 @@ export default function Seating({
           </div>
           </div>
           </div>
-          <div className="w-[150px]">
+          <div className="w-[200px]">
           <SeatingHistory
             arrangements={arrangements}
             currentArrangement={currentArrangement}
