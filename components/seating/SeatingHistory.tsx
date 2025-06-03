@@ -92,7 +92,7 @@ export function SeatingHistory({
   };
 
   return (
-    <div className="w-fit sm:w-[150px] flex flex-col gap-6 bg-[#dfecf1] p-4 pb-0 sm:pb-4 pl-0 overflow-hidden">
+    <div className="w-fit sm:w-[200px] flex flex-col gap-6 bg-[#dfecf1] p-4 pb-0 sm:pb-4 pl-0 overflow-hidden">
       <div className="flex flex-col items-center pl-4">
         <h2 className="text-lg font-semibold">HISTORY</h2>
         <Button
