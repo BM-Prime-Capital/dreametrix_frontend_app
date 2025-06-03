@@ -1,6 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
-
-//import { redirect } from "next/navigation";
 
 export async function getSeatingArrangements(
   tenantPrimaryDomain: string,
@@ -45,15 +44,11 @@ export async function createArrangementEvent(
     throw new Error("No access token provided");
   }
 
-  // Vérifier que l'URL est valide
   if (!tenantPrimaryDomain || !tenantPrimaryDomain.startsWith('http')) {
     throw new Error("Invalid tenant domain");
   }
 
   const url = `${tenantPrimaryDomain}/seatings/arrangement-events/create/`;
-
-  // Log the data to ensure it's correct
-  console.log("Data to be sent:", data);
 
   try {
     const response = await fetch(url, {
@@ -68,27 +63,18 @@ export async function createArrangementEvent(
     const responseData = await response.json();
 
     if (!response.ok) {
-      // Ajouter les détails de l'erreur si disponibles
       const errorDetails = responseData.details
         ? ` Details: ${JSON.stringify(responseData.details)}`
         : '';
-
       throw new Error(responseData.message || `Request failed with status ${response.status}${errorDetails}`);
     }
 
     return responseData;
   } catch (error: any) {
-    console.error("API call failed:", {
-      url,
-      error: error.message,
-      data,
-    });
-
-    // Améliorer le message d'erreur pour les problèmes réseau
+    console.error("API call failed:", error);
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
       throw new Error("Network error. Please check your connection.");
     }
-
     throw error;
   }
 }
@@ -96,28 +82,39 @@ export async function createArrangementEvent(
 export async function updateSeatingArrangement(
   tenantPrimaryDomain: string,
   accessToken: string,
-  seatingId: number,
-  siteNumber: number
+  updates: Array<{seating_id: number, site_number: number}>
 ) {
-  const url = `${tenantPrimaryDomain}/seatings/update-seating/${seatingId}/`;
-  console.log("tenantPrimaryDomain", tenantPrimaryDomain);
-  console.log("accessToken", accessToken)
-  console.log("seatingId", seatingId)
-  console.log("siteNumber", siteNumber)
-  const response = await fetch(url, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({ site_number: siteNumber }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}: ${response.statusText}`);
+  const url = `${tenantPrimaryDomain}/seatings/update-seatings/`;
+  if (!accessToken) {
+    throw new Error("No access token provided");
   }
+  const payload = JSON.stringify({ updates })
+  console.log("PAYLOAD",payload)
+  
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: payload,
+    });
 
-  return await response.json();
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Request failed with status ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error("Error updating seating arrangements:", {
+      url,
+      error: error.message,
+      updates,
+    });
+    throw error;
+  }
 }
 
 export async function deactivateArrangementEvent(
@@ -126,18 +123,29 @@ export async function deactivateArrangementEvent(
   eventId: number
 ) {
   const url = `${tenantPrimaryDomain}/seatings/deactivate-event/${eventId}/`;
-  const response = await fetch(url, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  
+  try {
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error("Erreur lors de la désactivation de l'événement.");
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Erreur lors de la désactivation de l'événement.");
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error("Error deactivating event:", {
+      url,
+      error: error.message,
+      eventId,
+    });
+    throw error;
   }
-
-  return await response.json();
 }
 
 export async function getDeactivatedEvents(
@@ -145,17 +153,26 @@ export async function getDeactivatedEvents(
   accessToken: string
 ) {
   const url = `${tenantPrimaryDomain}/seatings/deactivated-events/`;
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error("Erreur lors de la récupération des événements désactivés.");
+    if (!response.ok) {
+      throw new Error("Erreur lors de la récupération des événements désactivés.");
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error("Error fetching deactivated events:", {
+      url,
+      error: error.message,
+    });
+    throw error;
   }
-
-  return await response.json();
 }
 
 export async function reactivateArrangementEvent(
@@ -164,16 +181,26 @@ export async function reactivateArrangementEvent(
   eventId: number
 ) {
   const url = `${tenantPrimaryDomain}/seatings/reactivate-event/${eventId}/`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error("Erreur lors de la réactivation de l'événement.");
+    if (!response.ok) {
+      throw new Error("Erreur lors de la réactivation de l'événement.");
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error("Error reactivating event:", {
+      url,
+      error: error.message,
+      eventId,
+    });
+    throw error;
   }
-
-  return await response.json();
 }
