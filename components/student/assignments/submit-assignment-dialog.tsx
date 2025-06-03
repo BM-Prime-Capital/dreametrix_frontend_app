@@ -5,15 +5,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { X, Upload } from "lucide-react"
+import { Assignment } from "@/app/api/student/assignment/assignment.model"
 
 interface SubmitAssignmentDialogProps {
   isOpen: boolean
   onClose: () => void
 
-  assignment: {
-    class?: string
-    type?: string
-  }
+  assignment: Assignment | null;
 }
 
 export function SubmitAssignmentDialog({ isOpen, onClose, assignment }: SubmitAssignmentDialogProps) {
@@ -35,9 +33,9 @@ export function SubmitAssignmentDialog({ isOpen, onClose, assignment }: SubmitAs
 
           <div className="space-y-4">
             <div className="text-gray-500 text-sm">
-              {assignment?.class}
+              {assignment?.name}
               <br />
-              {assignment?.type}
+              {assignment?.kind}
             </div>
 
             <div className="rounded-full border px-4 py-2 flex items-center text-gray-500">

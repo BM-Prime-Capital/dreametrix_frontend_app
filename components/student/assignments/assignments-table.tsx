@@ -1,110 +1,115 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { FileIcon, FileTextIcon } from "lucide-react"
 import { SubmitAssignmentDialog } from "./submit-assignment-dialog"
 import { ViewAssignmentDialog } from "./view-assignment-dialog"
 import { ViewSubmissionDialog } from "./view-submission-dialog"
-
-// Sample assignments data
-const assignments = [
-  {
-    id: 1,
-    class: "Class 5 - Sci",
-    day: "TODAY",
-    type: "Homework",
-    hasSubmitted: true,
-    teacher: "Eva Parker",
-  },
-  {
-    id: 2,
-    class: "Class 5 - Math",
-    day: "11:21",
-    type: "Test",
-    hasSubmitted: false,
-    teacher: "Eva Parker",
-  },
-  {
-    id: 3,
-    class: "Class 5 - Bio",
-    day: "11:25",
-    type: "Homework",
-    hasSubmitted: false,
-    teacher: "Sam Burke",
-  },
-  {
-    id: 4,
-    class: "Class 5 - Lit",
-    day: "11:25",
-    type: "Homework",
-    hasSubmitted: true,
-    teacher: "Anna Blake",
-  },
-  {
-    id: 5,
-    class: "Class 5 - Che",
-    day: "11:29",
-    type: "Test",
-    hasSubmitted: false,
-    teacher: "Sam Burke",
-  },
-  {
-    id: 6,
-    class: "Class 5 - Spa",
-    day: "12:05",
-    type: "Test",
-    hasSubmitted: false,
-    teacher: "Anna Blake",
-  },
-  {
-    id: 7,
-    class: "Class 5 - Phy",
-    day: "12:05",
-    type: "Test",
-    hasSubmitted: false,
-    teacher: "Eva Parker",
-  },
-]
+import { getAssignments } from "@/app/api/student/assignment/assignment.controller"
+import { getClassById } from "@/app/api/student/class/classController"
+import { useRequestInfo } from "@/hooks/useRequestInfo"
+import { Assignment } from "@/app/api/student/assignment/assignment.model"
 
 export function AssignmentsTable() {
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [teacherNames, setTeacherNames] = useState<{[key: number]: string}>({});
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const [isViewAssignmentModalOpen, setIsViewAssignmentModalOpen] = useState(false)
   const [isViewSubmissionModalOpen, setIsViewSubmissionModalOpen] = useState(false)
-  const [selectedAssignment, setSelectedAssignment] = useState<{
-    id: number
-    class: string
-    day: string
-    type: string
-    hasSubmitted: boolean
-    teacher: string
-  } | null>(null)
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null)
+  const { accessToken } = useRequestInfo();
+  
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      setLoading(true);
+      setError(null);
+  
+      if (!accessToken) {
+        setError("Authentification requise.");
+        setLoading(false);
+        setAssignments([]);
+        return;
+      }
+      try {
+        const res = await getAssignments(accessToken);
 
-  const handleAssignmentClick = (assignment: {
-    id: number
-    class: string
-    day: string
-    type: string
-    hasSubmitted: boolean
-    teacher: string
-  }) => {
+        if (res && res.data && Array.isArray(res.data.results)) {
+          // Ensure the fetched data conforms to the Assignment interface
+          const fetchedAssignments: Assignment[] = res.data.results.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            file: item.file,
+            due_date: item.due_date,
+            weight: item.weight,
+            kind: item.kind,
+            published: item.published,
+            created_at: item.created_at,
+            updated_at: item.updated_at,
+            published_at: item.published_at,
+            course: item.course,
+          })
+        );
+
+          setAssignments(fetchedAssignments);
+
+          // Fetch teacher names for each assignment's course
+          const courseIds = fetchedAssignments.map(assignment => assignment.course).filter(courseId => typeof courseId === 'number'); // Ensure courseId is a number
+          const uniqueCourseIds = [...new Set(courseIds)]; // Get unique course IDs
+          const fetchedTeacherNames: {[key: number]: string} = {};
+
+          for (const courseId of uniqueCourseIds) {
+            try {
+              const classRes = await getClassById(courseId, accessToken);
+              if (classRes && classRes.data && classRes.data.teacher) {
+                fetchedTeacherNames[courseId] = classRes.data.teacher.full_name;
+              } else {
+                fetchedTeacherNames[courseId] = "Inconnu";
+              }
+            } catch (classError) {
+              fetchedTeacherNames[courseId] = "Erreur";
+            }
+          }
+          setTeacherNames(fetchedTeacherNames);
+        } else {
+          setAssignments([]);
+          setError("Format de données inattendu reçu de l'API.");
+        }
+      } catch (err) {
+        setError('Failed to load assignments.');
+        setAssignments([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (accessToken) {
+      fetchAssignments();
+    }
+  }, [accessToken]);
+
+  const handleAssignmentClick = (assignment: Assignment) => {
     setSelectedAssignment(assignment)
     setIsViewAssignmentModalOpen(true)
   }
 
-  const handleSubmissionClick = (assignment: {
-    id: number
-    class: string
-    day: string
-    type: string
-    hasSubmitted: boolean
-    teacher: string
-  }) => {
+  const handleSubmissionClick = (assignment: Assignment) => {
     setSelectedAssignment(assignment)
-    if (assignment.hasSubmitted) {
-      setIsViewSubmissionModalOpen(true)    } else {
+    if (assignment.published) {
+      setIsViewSubmissionModalOpen(true)
+    } else {
       setIsSubmitModalOpen(true)
     }
+  }
+
+  if (loading) {
+    return <div>Loading assignments...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
   }
 
   return (
@@ -121,23 +126,17 @@ export function AssignmentsTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {assignments.map((assignment, index) => (
+          {assignments.map((assignment, index) => {
+            console.log("Rendering teacher name for course ID", assignment.course, ":", teacherNames[assignment.course]);
+            return (
             <TableRow key={assignment.id} className={index % 2 === 0 ? "bg-[#EDF6FA]" : ""}>
-              <TableCell className="font-medium text-gray-500">{assignment.class}</TableCell>
+              <TableCell className="font-medium text-gray-500">{assignment.course}</TableCell>
               <TableCell className="text-gray-500">
-                <span
-                  className={
-                    assignment.day === "TODAY"
-                      ? "text-[#25AAE1] underline"
-                      : assignment.day === "YESTERDAY"
-                        ? "text-orange-400 underline"
-                        : ""
-                  }
-                >
-                  {assignment.day}
+                <span>
+                  {assignment.due_date}
                 </span>
               </TableCell>
-              <TableCell className="text-gray-500">{assignment.type}</TableCell>
+              <TableCell className="text-gray-500">{assignment.kind}</TableCell>
               <TableCell>
                 <div className="flex items-center justify-center">
                   <button
@@ -151,7 +150,8 @@ export function AssignmentsTable() {
               <TableCell>
                 <div className="flex items-center justify-center">
                   <button
-                    className={`${assignment.hasSubmitted ? "text-[#4CAF50]" : "text-gray-400"} hover:opacity-80`}
+                    // Adjust logic based on assignment property indicating submission if needed
+                    className={`${assignment.published ? "text-[#4CAF50]" : "text-gray-400"} hover:opacity-80`}
                     onClick={() => handleSubmissionClick(assignment)}
                   >
                     <FileIcon className="h-5 w-5" />
@@ -160,11 +160,11 @@ export function AssignmentsTable() {
               </TableCell>
               <TableCell className="text-gray-500">
                 <div className="flex items-center">
-                  {assignment.teacher} <MessageIcon />
+                  {teacherNames[assignment.course] || "Chargement..."} <MessageIcon />
                 </div>
               </TableCell>
             </TableRow>
-          ))}
+          );})}
         </TableBody>
       </Table>
 

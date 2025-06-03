@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "set NODE_OPTIONS=--experimental-vm-modules && next dev",
+    "dev": "next dev",
     "dev:api": "ts-node --project api/tsconfig.api.json api/server.ts",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:api\"",
     "build": "next build",

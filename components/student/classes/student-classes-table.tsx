@@ -13,39 +13,29 @@ export function StudentClassesTable() {
   const [studentClasses, setStudentClasses] = useState<CourseRead[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null);
-  const { accessToken, tenantDomain, refreshToken } = useRequestInfo();
+  const { accessToken } = useRequestInfo();
   
-  console.log("Token::::::", accessToken);
-  console.log("État de chargement:", loading);
-  console.log("Classes actuelles (avant rendu):", studentClasses);
-
   useEffect(() => {
     const fetchClasses = async () => {
       setLoading(true);
       setError(null);
   
       if (!accessToken) {
-        console.error("Aucun token d'authentification n'est disponible (accessToken est vide ou null).");
         setError("Authentification requise.");
         setLoading(false);
         setStudentClasses([]);
         return;
       }
-      console.log("Token2::::::", accessToken);
       try {
         const res = await getAllClasses(accessToken); // Passe le token
-  
-        console.log("Réponse complète de getAllClasses:", res);
   
         if (res && res.data && Array.isArray(res.data.results)) {
           setStudentClasses(res.data.results);
         } else {
-          console.warn("La réponse de l'API n'a pas la structure attendue (res.data.results n'est pas un tableau):", res);
           setStudentClasses([]);
           setError("Format de données inattendu reçu de l'API.");
         }
       } catch (err: any) {
-        console.error("Erreur lors de la récupération des classes:", err);
         setError(`Échec du chargement des classes: ${err.message || 'Erreur inconnue'}`);
         setStudentClasses([]);
       } finally {
