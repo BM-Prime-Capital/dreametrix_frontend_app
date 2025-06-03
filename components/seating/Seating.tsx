@@ -393,7 +393,7 @@ export default function Seating({
 
               {currentArrangement && (
                 <Button
-                  className="flex gap-2 items-center h-[25px] text-lg bg-red-500 hover:bg-red-700 text-white rounded-md px-4 py-0 shadow-md transition-all mt-4"
+                  className="flex gap-2 items-center h-[25px] text-lg bg-red-500 hover:bg-red-700 text-white rounded-md px-4 py-5 w-[150px] shadow-md transition-all mt-4"
                   onClick={() => handleDeactivateEvent(currentArrangement.id)}
                 >
                   <Image

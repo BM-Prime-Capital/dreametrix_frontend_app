@@ -40,11 +40,11 @@ export default function StudentArrangementItem({
         <Image 
           src={studentImageUrl} 
           alt="student" 
-          width={20} 
-          height={20} 
+          width={25} 
+          height={25} 
           className="rounded-full"
         />
-        <label className="text-[8px] truncate max-w-full px-0">
+        <label className="text-[10px] truncate max-w-full px-0">
           {studentName}
         </label>
       </div>
