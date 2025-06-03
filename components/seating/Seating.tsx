@@ -336,7 +336,7 @@ export default function Seating({
                 <Button
                   onClick={handleSave}
                   disabled={!isModified}
-                  className={`flex gap-2 items-center text-[16px] h-[35px] rounded-md px-4 py-2 transition-all ${
+                  className={`flex gap-2 items-center text-lg h-[35px] rounded-md px-4 py-2 transition-all ${
                     isModified 
                       ? "bg-green-500 hover:bg-green-700 text-white shadow-md"
                       : "bg-gray-200 text-gray-500 cursor-not-allowed"
@@ -345,9 +345,9 @@ export default function Seating({
                   <Image
                     src={teacherImages.save}
                     alt="save"
-                    width={15}
-                    height={5}
-                    className="w-3 h-3"
+                    width={24}
+                    height={24}
+                    className="w-5 h-5"
                   />
                   <span>Save</span>
                 </Button>
@@ -371,7 +371,7 @@ export default function Seating({
                   {currentArrangement.arrangements.map((arrangement: any) => (
                     <label
                       key={arrangement.studentId}
-                      className={`block whitespace-nowrap text-[12px] cursor-pointer border-b-2 py-1 ${
+                      className={`block whitespace-nowrap text-[14px] cursor-pointer border-b-2 py-1 ${
                         firstSelectedSeatNumber === arrangement.seatNumber 
                           ? "border-blue-500 bg-blue-50" 
                           : "border-gray-200"
@@ -393,15 +393,15 @@ export default function Seating({
 
               {currentArrangement && (
                 <Button
-                  className="flex gap-2 items-center h-[25px] text-[12px] bg-red-500 hover:bg-red-700 text-white rounded-md px-4 py-0 shadow-md transition-all mt-4"
+                  className="flex gap-2 items-center h-[25px] text-lg bg-red-500 hover:bg-red-700 text-white rounded-md px-4 py-0 shadow-md transition-all mt-4"
                   onClick={() => handleDeactivateEvent(currentArrangement.id)}
                 >
                   <Image
                     src={teacherImages.delete}
                     alt="delete"
                     width={20}
-                    height={5}
-                    className="w-3 h-3"
+                    height={24}
+                    className="w-5 h-5"
                   />
                   <span>Deactivate</span>
                 </Button>
