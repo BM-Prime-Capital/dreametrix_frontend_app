@@ -93,6 +93,37 @@ export interface Student {
   first_name: string; 
   last_name: string 
 }
+
+export type EducationalCondition = 
+  | 'NEAR_TEACHER' 
+  | 'EXTRA_SPACE' 
+  | 'ATTENTION_DIFFICULTIES'
+  | 'VISION_IMPAIRED'
+  | 'HEARING_IMPAIRED'
+  | 'LEFT_HANDED'
+  | 'GROUP_WORK'
+  | 'NONE';
+
+export type StudentCondition = {
+  studentId: string;
+  condition: EducationalCondition;
+  pairedStudentId?: string; 
+  separatedStudentId?: string; 
+};
+
+export type ClassroomSeat = {
+  row: number;
+  column: number;
+  isNearTeacher: boolean;
+  isFrontRow: boolean;
+  hasExtraSpace: boolean;
+  isQuietArea: boolean;
+};
+
+export interface SeatingCondition {
+  studentId: string;
+  condition: string;
+}
 export interface Character {
   character_id: number;
   student:Student;

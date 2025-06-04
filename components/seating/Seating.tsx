@@ -22,9 +22,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-//import { CourseSelect } from "../CourseSelect";
-import ClassSelect from "../ClassSelect";
+//import ClassSelect from "../ClassSelect";
 import { getSeatingArrangements, updateSeatingArrangement, deactivateArrangementEvent } from "@/services/SeatingService";
+import { ClassSelector } from "../ui/class-selector";
 
 const totalSeats = 64;
 
@@ -52,9 +52,9 @@ export default function Seating({
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [eventToDeactivate, setEventToDeactivate] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  
-  //const [currentClass, setCurrentClass] = useState<string | null>(null);
-  const [currentClassId, setCurrentClassId] = useState<string | null>(null);
+  const [currentClassId,] = useState<string | null>(null);
+  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
+  //const [seatingConditions, setSeatingConditions] = useState<SeatingCondition[]>([]);
 
   const loadArrangements = useCallback(async (courseId?: number) => {
     try {
@@ -74,8 +74,9 @@ export default function Seating({
   }, [tenantPrimaryDomain, accessToken]);
 
   const formatArrangements = useCallback((apiData: any) => {
+    console.log()
     const result: any[] = [];
-
+    
     for (const courseName in apiData) {
       const courseData = apiData[courseName];
 
@@ -83,23 +84,27 @@ export default function Seating({
         const eventData = courseData[eventName];
         const students = [];
 
-        for (const siteNumber in eventData) {
-          students.push({
-            seatNumber: parseInt(siteNumber),
-            studentImageUrl: eventData[siteNumber].student_profile_picture || generalImages.student,
-            studentName: eventData[siteNumber].full_name,
-            studentId: eventData[siteNumber].student_id,
-            seatingId: eventData[siteNumber].seating_arrangement_id,
-          });
+        // Check if seating_data exists and is not empty
+        if (eventData.seating_data && Object.keys(eventData.seating_data).length > 0) {
+          for (const siteNumber in eventData.seating_data) {
+            const studentData = eventData.seating_data[siteNumber];
+            students.push({
+              seatNumber: parseInt(siteNumber),
+              studentImageUrl: studentData.student_profile_picture || generalImages.student,
+              studentName: studentData.full_name,
+              studentId: studentData.student_id,
+              seatingId: studentData.seating_arrangement_id,
+            });
+          }
         }
 
-        console.log('eventData', eventData)
-
         result.push({
-          id: `${courseName}-${eventName}`,
-          title: eventName,
+          id: eventData.arrangement_event_id.toString(),
+          title: eventData.name,
           courseName,
           arrangements: students,
+          is_active: eventData.is_active,
+          course_id: eventData.course_id,
         });
       }
     }
@@ -201,34 +206,28 @@ export default function Seating({
     }, [currentArrangement, arrangements]);
 
     const handleSave = useCallback(async () => {
-      if (!currentArrangement || !isModified) return;
-    
-      try {
-        setIsSaving(true);
-        const updates = currentArrangement.arrangements.map((student: any) => ({
-          seating_id: student.seatingId,
-          site_number: student.seatNumber
-        }));
-        
-        await updateSeatingArrangement(
-          tenantPrimaryDomain,
-          accessToken,
-          updates
-        );
-        
-        setIsModified(false);
-        await loadArrangements(selectedCourse || undefined);
-      } catch (error) {
-        console.error("Error saving arrangement:", error);
-      } finally {
-        setIsSaving(false);
-      }
-    }, [currentArrangement, isModified, tenantPrimaryDomain, accessToken, selectedCourse, loadArrangements]);
+  if (!currentArrangement || !isModified) return;
 
-  // const handleCourseChange = (courseId: number) => {
-  //   setSelectedCourse(courseId);
-  //   loadArrangements(courseId);
-  // };
+  try {
+    setIsSaving(true);
+    const updates = currentArrangement.arrangements.map((student: any) => ({
+      seating_id: student.seatingId,
+      site_number: student.seatNumber
+    }));
+    
+    await updateSeatingArrangement(
+      tenantPrimaryDomain,
+      accessToken,
+      updates
+    );
+    
+    setIsModified(false);
+  } catch (error) {
+    console.error("Error saving arrangement:", error);
+  } finally {
+    setIsSaving(false);
+  }
+}, [currentArrangement, isModified, tenantPrimaryDomain, accessToken]);
 
   const handleDeactivateEvent = useCallback(async (eventId: number) => {
     setEventToDeactivate(eventId);
@@ -251,26 +250,78 @@ export default function Seating({
     }
   }, [eventToDeactivate, tenantPrimaryDomain, accessToken, selectedCourse, loadArrangements]);
 
+  const GridComponent = useMemo(() => (
+    <div className="grid grid-cols-8 gap-2 p-2 border-2 border-gray-200"> 
+      {currentArrangement?.arrangements?.length > 0 ? (
+        <>
+          {Array.from({ length: totalSeats }).map((_, index) => {
+            if (index === 0) return null;
+  
+            const student = currentArrangement.arrangements.find(
+              (s: any) => s.seatNumber === index
+            );
+  
+            return student ? (
+              <StudentArrangementItem
+                key={`student-${student.studentId}-${index}`}
+                id={index}
+                studentImageUrl={student.studentImageUrl}
+                studentName={student.studentName}
+                className={`w-full h-[50px]`} 
+                handleSeatClick={() => handleSeatClick(index)}
+                maxSeatNumber={currentArrangement.arrangements.length}
+                isSeatingArrangementAuto={isSeatingArrangementAuto}
+                isSelected={firstSelectedSeatNumber === index}
+              />
+            ) : (
+              <div
+                key={`empty-${index}`}
+                onClick={() => handleSeatClick(index)}
+                className={`w-full h-[50px] bg-gray-200 border-[1px] border-[#eee] hover:border-[1px] hover:border-bgPink relative
+                  ${firstSelectedSeatNumber === -1 ? 'cursor-pointer' : 'cursor-move'}`}
+              >
+                <label className="seat-number font-bold text-xs text-bgPurple absolute top-1 left-1">
+                  {index}
+                </label>
+              </div>
+            );
+          })}
+        </>
+      ) : (
+        <div className="col-span-8 flex items-center justify-center h-[400px]">
+          <label className="text-muted-foreground">
+            {arrangements.length === 0
+              ? "No arrangements found. Create one!"
+              : "No students in this arrangement"}
+          </label>
+        </div>
+      )}
+    </div>
+  ), [currentArrangement, firstSelectedSeatNumber, isSeatingArrangementAuto, handleSeatClick]);
+    
+
   useEffect(() => {
     loadArrangements();
   }, []);
-
-  // const handleClassChange = useCallback((classId: string) => {
-  //   setCurrentClassId(classId);
-  //   loadArrangements(classId ? parseInt(classId) : undefined);
-  // }, [loadArrangements]);
-
 
   return (
     <section className="flex flex-col gap-2 w-full">
       <div className="flex justify-between items-center">
         <PageTitleH1 title="SEATING" />
-          <ClassSelect 
-            className=""
-            onClassChange={(classId) => {
-              setCurrentClassId(classId);
-              loadArrangements(classId ? parseInt(classId) : undefined);
+
+        
+        <ClassSelector
+            classes={Array.from(new Set(arrangements.map(arr => arr.courseName))).map(courseName => ({
+              id: courseName,
+              name: courseName
+            }))}
+            selectedClasses={selectedClasses}
+            onSelect={(classIds) => {
+              setSelectedClasses(classIds);
             }}
+            placeholder="Select classes..."
+            multiple={true}
+            className="w-[250px] "
           />
       </div>
 
@@ -358,11 +409,6 @@ export default function Seating({
                 <PageTitleH2 title="ARRANGEMENT" />
                 <label className="text-muted-foreground">BLACKBOARD</label>
               </div>
-              {/* {isModified && (
-                <span className="text-[10px] text-yellow-600 bg-yellow-100 px-3 py-2 rounded-sm">
-                  You have unsaved changes.
-                </span>
-              )} */}
 
             <div className="flex flex-col items-end">
               <div>
@@ -444,7 +490,7 @@ export default function Seating({
               {currentArrangement && (
                 <Button
                 className="flex gap-2 items-center h-[25px] text-lg bg-red-500 hover:bg-red-700 text-white rounded-md px-4 py-5  shadow-md transition-all mt-4"
-                onClick={() => handleDeactivateEvent(currentArrangement.id)}
+                onClick={() => handleDeactivateEvent(parseInt(currentArrangement.id))}
                 isLoading={isDeactivating}
                   >
                     <Image
@@ -460,58 +506,15 @@ export default function Seating({
             </div>
 
             <div className="w-[80%]">
-            <div className="grid grid-cols-8 gap-2 p-2 border-2 border-gray-200"> 
-              {currentArrangement?.arrangements?.length > 0 ? (
-                <>
-                  {Array.from({ length: totalSeats }).map((_, index) => {
-                    if (index === 0) return null; 
-
-                    const student = currentArrangement.arrangements.find(
-                      (s: any) => s.seatNumber === index
-                    );
-
-                    return student ? (
-                      <StudentArrangementItem
-                        key={`student-${student.studentId}-${index}`}
-                        id={index}
-                        studentImageUrl={student.studentImageUrl}
-                        studentName={student.studentName}
-                        className={`w-full h-[50px]`} 
-                        handleSeatClick={() => handleSeatClick(index)}
-                        maxSeatNumber={currentArrangement.arrangements.length}
-                        isSeatingArrangementAuto={isSeatingArrangementAuto}
-                        isSelected={firstSelectedSeatNumber === index}
-                      />
-                    ) : (
-                      <div
-                        key={`empty-${index}`}
-                        onClick={() => handleSeatClick(index)}
-                        className={`w-full h-[50px] bg-gray-200 border-[1px] border-[#eee] hover:border-[1px] hover:border-bgPink relative
-                          ${firstSelectedSeatNumber === -1 ? 'cursor-pointer' : 'cursor-move'}`}
-                      >
-                        <label className="seat-number font-bold text-xs text-bgPurple absolute top-1 left-1">
-                          {index}
-                        </label>
-                      </div>
-                    );
-                  })}
-                </>
-              ) : (
-                <div className="col-span-8 flex items-center justify-center h-[400px]">
-                  <label className="text-muted-foreground">
-                    {arrangements.length === 0
-                      ? "No arrangements found. Create one!"
-                      : "No students in this arrangement"}
-                  </label>
-                </div>
-              )}
-            </div>
+            {GridComponent}
           </div>
           </div>
           </div>
           <div className="">
           <SeatingHistory
-            arrangements={arrangements}
+            arrangements={arrangements.filter(arr => 
+              selectedClasses.length === 0 || selectedClasses.includes(arr.courseName)
+            )}
             currentArrangement={currentArrangement}
             setCurrentArrangement={setCurrentArrangement}
             tenantPrimaryDomain={tenantPrimaryDomain}
