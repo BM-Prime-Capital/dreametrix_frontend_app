@@ -180,6 +180,13 @@ export async function reactivateArrangementEvent(
   accessToken: string,
   eventId: number
 ) {
+
+  console.log("accessToken", accessToken);
+  console.log("tenantPrimaryDomain", tenantPrimaryDomain);
+  console.log("eventId", eventId)
+  if (!accessToken) {
+    throw new Error("No access token provided");
+  }
   const url = `${tenantPrimaryDomain}/seatings/reactivate-event/${eventId}/`;
   
   try {

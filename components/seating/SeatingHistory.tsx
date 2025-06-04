@@ -3,7 +3,8 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { teacherImages } from "@/constants/images";
+//import { teacherImages } from "@/constants/images";
+import reactivate from "@/public/assets/images/reactivate.png";
 import Image from "next/image";
 
 export function SeatingHistory({
@@ -27,6 +28,7 @@ export function SeatingHistory({
   const [showDeactivated, setShowDeactivated] = useState(false);
   const [deactivatedEvents, setDeactivatedEvents] = useState<any[]>([]);
   const [filteredArrangements, setFilteredArrangements] = useState<any[]>([]);
+  const [reactivatingId, setReactivatingId] = useState<number | null>(null);
 
   useEffect(() => {
     if (currentClass) {
@@ -70,6 +72,7 @@ export function SeatingHistory({
 
   const handleReactivate = async (eventId: number) => {
     try {
+      setReactivatingId(eventId);
       const response = await fetch(
         `${tenantPrimaryDomain}/seatings/reactivate-event/${eventId}/`,
         {
@@ -79,15 +82,17 @@ export function SeatingHistory({
           },
         }
       );
-
+  
       if (!response.ok) {
         throw new Error("Failed to reactivate event");
       }
-
+  
       onReactivate();
       setShowDeactivated(false);
     } catch (error) {
       console.error("Error reactivating event:", error);
+    } finally {
+      setReactivatingId(null);
     }
   };
 
@@ -118,16 +123,24 @@ export function SeatingHistory({
               >
                 <span>{event.name}</span>
                 <button
-                  onClick={() => handleReactivate(event.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleReactivate(event.id);
+                  }}
                   className="text-green-500 hover:text-green-700"
                   title="Reactivate"
+                  disabled={reactivatingId === event.id}
                 >
-                  <Image
-                    src={teacherImages.reactivate}
-                    alt="reactivate"
-                    width={20}
-                    height={20}
-                  />
+                  {reactivatingId === event.id ? (
+                    <span className="loading-spinner"></span> 
+                  ) : (
+                    <Image
+                      src={reactivate}
+                      alt="reactivate"
+                      width={20}
+                      height={20}
+                    />
+                  )}
                 </button>
               </div>
             ))
