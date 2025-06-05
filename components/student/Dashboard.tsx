@@ -34,7 +34,7 @@ export default function StudentDashboard() {
   return (
     <section className="flex flex-col gap-6 w-full min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-6 rounded-lg shadow-lg">
+      <div className="bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 p-6 rounded-lg shadow-lg">
         <div className="flex flex-col md:flex-row items-center justify-between text-white">
           <div className="flex items-center gap-4 mb-4 md:mb-0">
             <Avatar className="h-16 w-16 border-4 border-white/20 shadow-lg">
@@ -57,7 +57,7 @@ export default function StudentDashboard() {
               className="h-10 w-10 bg-white/10 hover:bg-white/20 text-white border-white/20 relative"
             >
               <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-red-400 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                 2
               </span>
             </Button>
@@ -83,7 +83,7 @@ export default function StudentDashboard() {
         <div className="flex-1 space-y-6">
           {/* Quick Stats Section */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="p-4 bg-gradient-to-br from-green-400 to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <Card className="p-4 bg-gradient-to-br from-green-200 to-green-400 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-white/20 rounded-lg">
                   <Trophy className="h-6 w-6" />
@@ -95,7 +95,7 @@ export default function StudentDashboard() {
               </div>
             </Card>
 
-            <Card className="p-4 bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <Card className="p-4 bg-gradient-to-br from-blue-200 to-blue-400 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-white/20 rounded-lg">
                   <BookOpen className="h-6 w-6" />
@@ -107,7 +107,7 @@ export default function StudentDashboard() {
               </div>
             </Card>
 
-            <Card className="p-4 bg-gradient-to-br from-purple-400 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <Card className="p-4 bg-gradient-to-br from-purple-200 to-purple-400 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-white/20 rounded-lg">
                   <Clock className="h-6 w-6" />
@@ -119,7 +119,7 @@ export default function StudentDashboard() {
               </div>
             </Card>
 
-            <Card className="p-4 bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <Card className="p-4 bg-gradient-to-br from-amber-200 to-orange-300 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-white/20 rounded-lg">
                   <Star className="h-6 w-6" />
@@ -133,35 +133,35 @@ export default function StudentDashboard() {
           </div>
 
           {/* Quick Actions */}
-          <Card className="p-6 shadow-lg border-l-4 border-blue-500">
+          <Card className="p-6 shadow-lg border-l-4 border-blue-300">
             <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <Zap className="h-5 w-5 text-blue-500" />
+              <Zap className="h-5 w-5 text-blue-300" />
               Quick Actions
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <Button
-                className="h-auto flex-col gap-2 p-4 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
+                className="h-auto flex-col gap-2 p-4 bg-gradient-to-br from-blue-300 to-blue-400 hover:from-blue-400 hover:to-blue-500 transition-all duration-300 transform hover:scale-105"
                 onClick={() => console.log("Navigate to Schedule")}
               >
                 <Calendar className="h-6 w-6" />
                 <span className="text-sm">Schedule</span>
               </Button>
               <Button
-                className="h-auto flex-col gap-2 p-4 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105"
+                className="h-auto flex-col gap-2 p-4 bg-gradient-to-br from-green-300 to-green-400 hover:from-green-400 hover:to-green-500 transition-all duration-300 transform hover:scale-105"
                 onClick={() => console.log("Navigate to Assignments")}
               >
                 <BookOpen className="h-6 w-6" />
                 <span className="text-sm">Assignments</span>
               </Button>
               <Button
-                className="h-auto flex-col gap-2 p-4 bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
+                className="h-auto flex-col gap-2 p-4 bg-gradient-to-br from-purple-300 to-purple-400 hover:from-purple-400 hover:to-purple-500 transition-all duration-300 transform hover:scale-105"
                 onClick={() => console.log("Navigate to Grades")}
               >
                 <GraduationCap className="h-6 w-6" />
                 <span className="text-sm">Grades</span>
               </Button>
               <Button
-                className="h-auto flex-col gap-2 p-4 bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 transition-all duration-300 transform hover:scale-105"
+                className="h-auto flex-col gap-2 p-4 bg-gradient-to-br from-amber-300 to-orange-300 hover:from-amber-400 hover:to-orange-400 transition-all duration-300 transform hover:scale-105"
                 onClick={() => console.log("Navigate to Goals")}
               >
                 <Target className="h-6 w-6" />
@@ -174,17 +174,18 @@ export default function StudentDashboard() {
           <StudentProgress />
 
           {/* Recent Achievements Section */}
-          <Card className="p-6 shadow-lg border-l-4 border-yellow-400 bg-gradient-to-br from-yellow-50 to-amber-50">
+          <Card className="p-6 shadow-lg border-l-4 border-yellow-300 bg-gradient-to-br from-yellow-25 to-amber-25">
             <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <div className="p-2 bg-yellow-100 rounded-lg">
-                <Trophy className="h-5 w-5 text-yellow-600" />
+                {" "}
+                <Trophy className="h-5 w-5 text-yellow-400" />
               </div>
               Recent Achievements
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center gap-3 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105">
                 <div className="p-3 bg-green-100 rounded-full">
-                  <Trophy className="h-6 w-6 text-green-600" />
+                  <Trophy className="h-6 w-6 text-green-400" />
                 </div>
                 <div>
                   <p className="font-semibold text-gray-800">Perfect Score!</p>
@@ -193,7 +194,7 @@ export default function StudentDashboard() {
               </div>
               <div className="flex items-center gap-3 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105">
                 <div className="p-3 bg-blue-100 rounded-full">
-                  <Star className="h-6 w-6 text-blue-600" />
+                  <Star className="h-6 w-6 text-blue-400" />
                 </div>
                 <div>
                   <p className="font-semibold text-gray-800">
@@ -206,16 +207,16 @@ export default function StudentDashboard() {
           </Card>
 
           {/* Today's Schedule Quick View */}
-          <Card className="p-6 shadow-lg border-l-4 border-purple-500 bg-gradient-to-br from-purple-50 to-indigo-50">
+          <Card className="p-6 shadow-lg border-l-4 border-purple-300 bg-gradient-to-br from-purple-50 to-indigo-50">
             <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <div className="p-2 bg-purple-100 rounded-lg">
-                <Calendar className="h-5 w-5 text-purple-600" />
+                <Calendar className="h-5 w-5 text-purple-400" />
               </div>
               Today's Schedule
             </h2>
             <div className="space-y-3">
               <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-blue-300 rounded-full"></div>
                 <div className="flex-1">
                   <p className="font-medium text-gray-800">Mathematics</p>
                   <p className="text-sm text-gray-600">
@@ -224,7 +225,7 @@ export default function StudentDashboard() {
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-green-300 rounded-full"></div>
                 <div className="flex-1">
                   <p className="font-medium text-gray-800">Science Lab</p>
                   <p className="text-sm text-gray-600">
@@ -233,7 +234,7 @@ export default function StudentDashboard() {
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
-                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-purple-300 rounded-full"></div>
                 <div className="flex-1">
                   <p className="font-medium text-gray-800">
                     English Literature
@@ -247,7 +248,7 @@ export default function StudentDashboard() {
           </Card>
 
           {/* Enhanced AI Assistance Card */}
-          <Card className="p-6 shadow-lg bg-gradient-to-br from-yellow-50 to-amber-50 border-l-4 border-amber-400">
+          <Card className="p-6 shadow-lg bg-gradient-to-br from-yellow-50 to-amber-50 border-l-4 border-amber-300">
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                 <div className="p-2 bg-amber-100 rounded-lg">
@@ -256,9 +257,9 @@ export default function StudentDashboard() {
                 AI Student Assistant
               </h2>
               <div className="space-y-3">
-                <div className="flex items-start gap-3 p-4 bg-white rounded-lg shadow-sm border-l-4 border-red-400">
+                <div className="flex items-start gap-3 p-4 bg-white rounded-lg shadow-sm border-l-4 border-red-200">
                   <div className="p-2 bg-red-100 rounded-full mt-1">
-                    <Bell className="h-4 w-4 text-red-600" />
+                    <Bell className="h-4 w-4 text-red-400" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm text-gray-700 font-medium">
@@ -266,21 +267,21 @@ export default function StudentDashboard() {
                     </p>
                     <p className="text-sm text-gray-600 mt-1">
                       Tomorrow:{" "}
-                      <span className="font-semibold text-red-600">
+                      <span className="font-semibold text-red-400">
                         Class 5 - Math Exam
                       </span>
                     </p>
                     <Button
                       size="sm"
-                      className="mt-2 text-xs bg-red-500 hover:bg-red-600 transform hover:scale-105 transition-all duration-200"
+                      className="mt-2 text-xs bg-red-300 hover:bg-red-400 transform hover:scale-105 transition-all duration-200"
                     >
                       Study Now
                     </Button>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 p-4 bg-white rounded-lg shadow-sm border-l-4 border-blue-400">
+                <div className="flex items-start gap-3 p-4 bg-white rounded-lg shadow-sm border-l-4 border-blue-200">
                   <div className="p-2 bg-blue-100 rounded-full mt-1">
-                    <Bell className="h-4 w-4 text-blue-600" />
+                    <Bell className="h-4 w-4 text-blue-400" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm text-gray-700 font-medium">
@@ -288,13 +289,13 @@ export default function StudentDashboard() {
                     </p>
                     <p className="text-sm text-gray-600 mt-1">
                       Tomorrow:{" "}
-                      <span className="font-semibold text-blue-600">
+                      <span className="font-semibold text-blue-400">
                         Class 5 - Science Exam
                       </span>
                     </p>
                     <Button
                       size="sm"
-                      className="mt-2 text-xs bg-blue-500 hover:bg-blue-600 transform hover:scale-105 transition-all duration-200"
+                      className="mt-2 text-xs bg-blue-300 hover:bg-blue-400 transform hover:scale-105 transition-all duration-200"
                     >
                       Study Now
                     </Button>
@@ -305,10 +306,10 @@ export default function StudentDashboard() {
           </Card>
 
           {/* Profile Summary Card */}
-          <Card className="p-6 shadow-lg border-t-4 border-gradient-to-r from-blue-500 to-purple-500">
+          <Card className="p-6 shadow-lg border-t-4 border-gradient-to-r from-blue-300 to-purple-300">
             <div className="flex flex-col items-center text-center">
               <div className="flex items-center gap-4 mb-6 w-full justify-center">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
+                <div className="p-3 bg-gradient-to-br from-blue-300 to-purple-400 rounded-lg">
                   <GraduationCap className="h-6 w-6 text-white" />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-800">
@@ -318,13 +319,13 @@ export default function StudentDashboard() {
 
               <div className="flex flex-col items-center gap-4 mb-6">
                 <div className="relative">
-                  <Avatar className="h-20 w-20 border-4 border-gradient-to-br from-blue-400 to-purple-500 shadow-lg">
+                  <Avatar className="h-20 w-20 border-4 border-gradient-to-br from-blue-300 to-purple-300 shadow-lg">
                     <AvatarImage src="/placeholder.svg" />
                     <AvatarFallback className="text-xl font-bold">
                       JS
                     </AvatarFallback>
                   </Avatar>
-                  <div className="absolute -bottom-1 -right-1 p-1.5 bg-blue-500 rounded-full shadow-lg">
+                  <div className="absolute -bottom-1 -right-1 p-1.5 bg-blue-300 rounded-full shadow-lg">
                     <GraduationCap className="h-3 w-3 text-white" />
                   </div>
                 </div>
@@ -339,7 +340,7 @@ export default function StudentDashboard() {
               </div>
 
               <Button
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                className="w-full bg-gradient-to-r from-blue-300 to-purple-400 hover:from-blue-400 hover:to-purple-500 h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 onClick={() => {
                   router.push("/student/profile");
                 }}

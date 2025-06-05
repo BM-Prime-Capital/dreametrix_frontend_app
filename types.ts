@@ -69,7 +69,6 @@ export interface ISchoolClass {
   students: number[];
 }
 
-
 type FileRecord = {
   name: string;
   url: string;
@@ -98,9 +97,8 @@ export interface DigitalLibrarySheet {
   studentsClass: string[];
   noOfQuestions: string;
   generateAnswerSheet: boolean;
+  includeAnswerKey: boolean;
 }
-
-
 
 export interface SheetDomain {
   subject: string;
@@ -151,22 +149,18 @@ export interface IUser {
   // autres propriétés utilisateur...
 }
 
+export interface ITeacher {
+  id: number;
+  full_name?: string;
+  user: IUser;
+  // autres propriétés teacher...
+}
 
-
-  export interface ITeacher {
-    id: number;
-    full_name?: string;
-    user: IUser;
-    // autres propriétés teacher...
-  }
-  
-  export interface IStudent {
-    id: number;
-    first_name?: string;
-    last_name?: string;
-    user: IUser;
-    grade?: string;
-    // autres propriétés student...
-  }
-
-  
+export interface IStudent {
+  id: number;
+  first_name?: string;
+  last_name?: string;
+  user: IUser;
+  grade?: string;
+  // autres propriétés student...
+}

@@ -47,6 +47,7 @@ const GRADEBOOK_SHEET_INIT_STATE = {
   studentsClass: [],
   noOfQuestions: "",
   generateAnswerSheet: false,
+  includeAnswerKey: false,
 };
 
 export default function DigitalLibrary() {
@@ -450,6 +451,7 @@ export default function DigitalLibrary() {
       kind: digitalLibrarySheet.questionType,
       selected_class: selected_class,
       generate_answer_sheet: digitalLibrarySheet.generateAnswerSheet,
+      include_answer_key: digitalLibrarySheet.includeAnswerKey,
       teacher_name: userData.username,
       student_id: 1,
       assignment_type: "Homework",
@@ -473,6 +475,7 @@ export default function DigitalLibrary() {
           kind: digitalLibrarySheet.questionType,
           selected_class: selected_class,
           generate_answer_sheet: digitalLibrarySheet.generateAnswerSheet,
+          include_answer_key: digitalLibrarySheet.includeAnswerKey,
           teacher_name: userData.username,
           student_id: [1, 2],
           assignment_type: "Exam",
@@ -701,7 +704,7 @@ export default function DigitalLibrary() {
                   className="text-purple-600 border-purple-400"
                 />
                 <Label htmlFor="actual" className="font-medium text-purple-800">
-                  Current Questions Library
+                  Actual Released Questions
                 </Label>
               </div>
             </RadioGroup>
@@ -1086,6 +1089,26 @@ export default function DigitalLibrary() {
                 className="font-medium text-green-800"
               >
                 Generate Answer Sheets
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2 h-10 bg-blue-50 p-3 rounded-lg border border-blue-200">
+              <Checkbox
+                id="includeAnswerKey"
+                checked={digitalLibrarySheet.includeAnswerKey}
+                onCheckedChange={(checked) =>
+                  setDigitalLibrarySheet({
+                    ...digitalLibrarySheet,
+                    includeAnswerKey: Boolean(checked),
+                  })
+                }
+                className="border-gray-400 data-[state=checked]:bg-blue-600"
+              />
+              <Label
+                htmlFor="includeAnswerKey"
+                className="font-medium text-blue-800"
+              >
+                Include Answer Key
               </Label>
             </div>
           </div>
