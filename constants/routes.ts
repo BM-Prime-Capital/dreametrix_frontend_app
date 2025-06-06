@@ -92,6 +92,7 @@ export const TeacherRoutes = [
     path: userPath.TEACHER_DASHBOARD_PATH,
     icon: generalImages.home,
     label: "HOME",
+    exact: true
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/classes`,
@@ -211,16 +212,16 @@ export const ParentRoutes = [
     icon: menuImages.attendance,
     label: "ATTENDANCE",
   },
-  
- 
+
+
   {
     path: `${userPath.PARENT_BASE_PATH}/communicate`,
     icon: menuImages.communicate,
     label: "COMMUNICATE",
   },
- 
- 
- 
+
+
+
   {
     path: `${userPath.PARENT_BASE_PATH}/library`,
     icon: menuImages.report_card,

@@ -9,6 +9,7 @@ export interface MenuRoute {
   path: string;
   icon: any;
   label: string;
+  exact?: boolean;
 }
 
 export interface Assignment {
@@ -159,7 +160,7 @@ export interface IUser {
     user: IUser;
     // autres propriétés teacher...
   }
-  
+
   export interface IStudent {
     id: number;
     first_name?: string;
@@ -169,4 +170,3 @@ export interface IUser {
     // autres propriétés student...
   }
 
-  
