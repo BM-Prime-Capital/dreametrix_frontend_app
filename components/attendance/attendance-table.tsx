@@ -19,6 +19,8 @@ import { Checkbox } from "../ui/checkbox";
 import { Button } from "../ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import toast from "react-hot-toast";
+import { Plus, Pencil } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface AttendanceStats {
   present: number;
@@ -67,10 +69,14 @@ export function AttendanceTable({
   isAttendanceDatePast,
   currentDate,
   onAttendancesLoaded,
+  onInitializeAttendances,
+  onEditAttendance,
 }: {
   isAttendanceDatePast: boolean;
   currentDate: string;
   onAttendancesLoaded?: (attendances: any[]) => void;
+  onInitializeAttendances?: () => void;
+  onEditAttendance?: () => void;
 }) {
   const [attendances, setAttendances] = useState<EnhancedAttendance[]>([]);
   const [stats, setStats] = useState<Record<number, AttendanceStats>>({});
@@ -84,46 +90,48 @@ export function AttendanceTable({
   );
   const [isUpdating, setIsUpdating] = useState(false);
   const [updatingStudentId, setUpdatingStudentId] = useState<number | null>(null);
+  const [showInitModal, setShowInitModal] = useState(false);
+  const isToday = new Date().toISOString().split("T")[0] === currentDate;
+
+  const loadData = async () => {
+    setIsLoading(true);
+    if (tenantDomain && accessToken && refreshToken) {
+      try {
+        const data = await getAttendances(
+          {
+            date: currentDate,
+            class_id: currentClassId,
+            teacher_id: userData.owner_id,
+          },
+          tenantDomain,
+          accessToken,
+          refreshToken
+        );
+
+        setAttendances(data);
+
+        // Load statistics for each student
+        const statsPromises = data.map((attendance: any) =>
+          loadStudentStats(attendance.student.id)
+        );
+        await Promise.all(statsPromises);
+
+        if (onAttendancesLoaded) {
+          onAttendancesLoaded(data);
+        }
+      } catch (error) {
+        console.error("Failed to load attendances:", error);
+        toast.error("Failed to load attendances");
+        if (onAttendancesLoaded) {
+          onAttendancesLoaded([]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
 
   useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      if (tenantDomain && accessToken && refreshToken) {
-        try {
-          const data = await getAttendances(
-            {
-              date: currentDate,
-              class_id: currentClassId,
-              teacher_id: userData.owner_id,
-            },
-            tenantDomain,
-            accessToken,
-            refreshToken
-          );
-          
-          setAttendances(data);
-          
-          // Load statistics for each student
-          const statsPromises = data.map((attendance: any) => 
-            loadStudentStats(attendance.student.id)
-          );
-          await Promise.all(statsPromises);
-          
-          if (onAttendancesLoaded) {
-            onAttendancesLoaded(data);
-          }
-        } catch (error) {
-          console.error("Failed to load attendances:", error);
-          toast.error("Failed to load attendances");
-          if (onAttendancesLoaded) {
-            onAttendancesLoaded([]);
-          }
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-
     loadData();
   }, [currentDate, currentClassId, tenantDomain, accessToken, refreshToken, onAttendancesLoaded]);
 
@@ -247,15 +255,9 @@ export function AttendanceTable({
           : a
       ));
 
-      // Reload stats for all affected students
-      const affectedStudentIds = [...new Set(
-        attendances
-          .filter(a => selectedStudents.includes(a.attendance_id))
-          .map(a => a.student.id)
-      )];
+      // Reload all data after bulk update
+      await loadData();
 
-      await Promise.all(affectedStudentIds.map(id => loadStudentStats(id)));
-      
       setSelectedStudents([]);
       toast.success("Attendances updated successfully!", { id: toastId });
     } catch (error) {
@@ -411,7 +413,60 @@ export function AttendanceTable({
               </Table>
             </>
           ) : (
-            <NoData/>
+            <div className="flex flex-col items-center justify-center py-12 gap-4">
+              <div className="flex flex-wrap gap-2 justify-center">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border-emerald-200"
+                  onClick={() => setShowInitModal(true)}
+                  title="Create new attendance"
+                  disabled={isLoading}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+
+                <Dialog open={showInitModal} onOpenChange={setShowInitModal}>
+                  <DialogContent className="max-w-md">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 rounded-full bg-emerald-100 text-emerald-600">
+                          <Plus className="h-5 w-5" />
+                        </div>
+                        <h2 className="text-lg font-semibold">Create Attendance</h2>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        This will initialize a new attendance sheet for {currentDate}.
+                      </p>
+                      <div className="flex gap-2 justify-end pt-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowInitModal(false)}
+                          disabled={isLoading}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            if (onInitializeAttendances) {
+                              onInitializeAttendances();
+                            }
+                            setShowInitModal(false);
+                          }}
+                          className="bg-emerald-600 hover:bg-emerald-700"
+                          disabled={isLoading}
+                        >
+                          {isLoading ? "Processing..." : "Confirm"}
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+              <p className="text-sm text-gray-500">
+                No attendance records found for this date. Click the plus button to create a new attendance sheet.
+              </p>
+            </div>
           )}
         </>
       )}
