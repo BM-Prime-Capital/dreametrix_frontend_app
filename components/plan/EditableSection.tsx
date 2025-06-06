@@ -8,7 +8,7 @@ interface EditableSectionProps {
   content: string;
   styles: TextStyles;
   isEditing: boolean;
-  sectionKey: SectionKey; // Changé de string à SectionKey
+  sectionKey: SectionKey; 
   titleNumber?: number;
   titleUnderline?: boolean;
   onContentChange: (value: string) => void;
