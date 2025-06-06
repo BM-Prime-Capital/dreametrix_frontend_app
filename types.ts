@@ -125,11 +125,18 @@ export interface SeatingCondition {
   studentId: string;
   condition: string;
 }
+export interface CharacterObservationEntry {
+  id: string;
+  trait: string;
+  timestamp: string;
+  comment?: string;
+}
+
 export interface Character {
   character_id: number;
   student: Student;
-  bad_characters: string[];
-  good_characters: string[];
+  bad_characters: string[] | CharacterObservationEntry[];
+  good_characters: string[] | CharacterObservationEntry[];
   teacher_comment: string;
   create_at: string;
   update_at: string;
