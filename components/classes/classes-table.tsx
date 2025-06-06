@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -14,6 +14,7 @@ import {
   type FilterFn
 } from "@tanstack/react-table";
 import { Eye, Trash2, ChevronDown, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { ClassRosterDialog } from "./roster-management";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,7 +37,8 @@ import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { AddClassDialog } from "./AddClassDialog";
 import Swal from 'sweetalert2';
 import { ClassDetailsDialog } from "./ClassDetailsDialog";
-import { Class } from "@/types";
+import { Class, Student } from "@/types";
+import { getStudents } from "@/services/student-service";
 
 const globalFilterFn: FilterFn<Class> = (row, columnId, filterValue) => {
   const value = row.getValue(columnId);
@@ -52,15 +54,49 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [rosterOpen, setRosterOpen] = useState(false);
+  const [selectedClassForRoster, setSelectedClassForRoster] = useState<Class | null>(null);
+  const [allStudents, setAllStudents] = useState<Student[]>([]);
 
-  const columns: ColumnDef<Class>[] = [
+  const transformClassData = useCallback((classData: Class): { id: number; name: string; students: Student[] } => {
+    return {
+      id: classData.id,
+      name: classData.name,
+      students: Array.isArray(classData.students) 
+        ? classData.students.map(s => typeof s === 'number' 
+            ? { id: s, full_name: `Student ${s}` } 
+            : s)
+        : []
+    };
+  }, []);
+
+  const teacherColors = [
+    'bg-blue-100 text-blue-800', 
+    'bg-green-100 text-green-800',
+    'bg-yellow-100 text-yellow-800',
+    'bg-purple-100 text-purple-800',
+    'bg-pink-100 text-pink-800',
+  ];
+  
+  const getTeacherColor = (index: number) => {
+    return teacherColors[index % teacherColors.length];
+  };
+
+
+  const columns = useMemo<ColumnDef<Class>[]>(() => [
     {
       accessorKey: "name",
       header: "Class",
       cell: ({ row }) => (
-        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-3 py-1 text-sm font-medium">
+        <button 
+          className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-3 py-1 text-sm font-medium hover:bg-[#3e81d4]/20 transition-colors"
+          onClick={() => {
+            setSelectedClassForRoster(row.original);
+            setRosterOpen(true);
+          }}
+        >
           {row.getValue("name")}
-        </span>
+        </button>
       ),
     },
     {
@@ -77,32 +113,26 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
       ),
     },
     {
-      accessorKey: "teacher.full_name",
+      accessorKey: "teacher",
       header: "Teacher",
-      cell: ({ row }) => (
-        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-3 py-1 text-sm font-medium">
-          {row.getValue("teacher.full_name")}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "students",
-      header: "Students",
-      cell: ({ row }) => (
-        <div className="flex items-center justify-center gap-2">
-          <span className="px-2.5 py-1 bg-[#3e81d4]/10 text-[#3e81d4] rounded-full text-xs font-medium">
-            {(row.getValue("students") as unknown[]).length}
-          </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 hover:bg-[#3e81d4]/10"
-            onClick={() => handleViewDetails(row.original)}
-          >
-            <Eye className="h-3.5 w-3.5 text-[#3e81d4]" />
-          </Button>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const teacher = row.original.teacher;
+        const teacherName = typeof teacher === 'object' ? teacher.full_name : 'Unknown';
+        const initials = teacherName.split(' ')
+          .filter(part => part.length > 0)
+          .map(part => part[0].toUpperCase())
+          .join('')
+          .substring(0, 2);
+        
+        return (
+          <div className="flex items-center gap-2">
+            <div className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium ${getTeacherColor(row.index)}`}>
+              {initials || '??'}
+            </div>
+            <span className="text-sm text-gray-700">{teacherName}</span>
+          </div>
+        );
+      },
     },
     {
       id: "actions",
@@ -128,7 +158,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
         </div>
       ),
     },
-  ];
+  ], [setRefreshTime]);
 
   const table = useReactTable({
     data: allClasses,
@@ -145,12 +175,12 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
     state: { sorting, globalFilter, columnVisibility },
   });
 
-  const handleViewDetails = (classData: any) => {
+  const handleViewDetails = useCallback((classData: Class) => {
     setSelectedClass(classData);
     setDetailsOpen(true);
-  };
+  }, []);
 
-  const handleDeleteClass = async (classId: number) => {
+  const handleDeleteClass = useCallback(async (classId: number) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
@@ -198,6 +228,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
               htmlContainer: 'text-sm'
             }
           });
+          setRefreshTime(Date.now().toString());
         } else {
           await Swal.fire({
             title: 'Failed!',
@@ -224,42 +255,11 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
         setIsLoading(false);
       }
     }
-  };
+  }, [tenantDomain, accessToken, refreshToken, setRefreshTime]);
 
-  useEffect(() => {
-    let isMounted = true;
+  const handleExport = useCallback(() => {
+    if (allClasses.length === 0) return;
     
-    const loadClasses = async () => {
-      if (tenantDomain && accessToken && refreshToken) {
-        setIsLoading(true);
-        try {
-          const classes = await getClasses(tenantDomain, accessToken, refreshToken);
-          if (isMounted) {
-            setAllClasses(classes);
-          }
-        } catch (error) {
-          await Swal.fire(
-            'Error!',
-            'Failed to load classes.',
-            'error'
-          );
-        } finally {
-          if (isMounted) {
-            setIsLoading(false);
-          }
-        }
-      }
-    };
-  
-    loadClasses();
-  
-    return () => {
-      isMounted = false;
-    };
-  }, [refreshTime, tenantDomain, accessToken, refreshToken]);
-
-
-  const handleExport = () => {
     const csvContent = [
       Object.keys(allClasses[0]).join(','),
       ...allClasses.map(item => Object.values(item).join(','))
@@ -274,7 +274,61 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
+  }, [allClasses]);
+
+  const handleGlobalFilterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setGlobalFilter(e.target.value);
+  }, []);
+
+  const loadClassesAndStudents = useCallback(async () => {
+    if (tenantDomain && accessToken && refreshToken) {
+      setIsLoading(true);
+      try {
+        const [classes, students] = await Promise.all([
+          getClasses(tenantDomain, accessToken, refreshToken),
+          getStudents(tenantDomain, accessToken, refreshToken)
+        ]);
+        console.log("Loaded classes:", classes);
+        console.log("Loaded students:", students);
+        setAllClasses(classes);
+        setAllStudents(students);
+      } catch (error) {
+        await Swal.fire(
+          'Error!',
+          'Failed to load data.',
+          'error'
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [tenantDomain, accessToken, refreshToken]);
+
+  useEffect(() => {
+    let isMounted = true;
+    
+    if (isMounted) {
+      loadClassesAndStudents();
+    }
+  
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshTime, loadClassesAndStudents]);
+
+  const classDetailsData = useMemo(() => 
+    selectedClass ? {
+      ...selectedClass,
+      teacher: typeof selectedClass.teacher === 'object' ? selectedClass.teacher.id : selectedClass.teacher
+    } : null,
+    [selectedClass]
+  );
+
+  const classRosterData = useMemo(() => 
+    selectedClassForRoster ? transformClassData(selectedClassForRoster) : null,
+    [selectedClassForRoster, transformClassData]
+  );
+
 
   return (
     <div className="w-full space-y-6 p-4 bg-white rounded-lg shadow-sm">
@@ -285,7 +339,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
           <Input
             placeholder="Filter classes..."
             value={globalFilter ?? ''}
-            onChange={(e) => setGlobalFilter(e.target.value)}
+            onChange={handleGlobalFilterChange}
             className="pl-8 w-full md:w-[400px]"
           />
         </div>
@@ -389,13 +443,17 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
       </div>
 
       <ClassDetailsDialog
-        classData={selectedClass ? {
-          ...selectedClass,
-          teacher: typeof selectedClass.teacher === 'object' ? selectedClass.teacher.id : selectedClass.teacher
-        } : null}
+        classData={classDetailsData}
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
+      />
+      <ClassRosterDialog
+        classData={classRosterData}
+        studentList={allStudents}
+        open={rosterOpen}
+        onOpenChange={setRosterOpen}
       />
     </div>
   );
 }
+

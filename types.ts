@@ -161,9 +161,18 @@ export interface ITeacher {
   user: IUser;
 }
 export interface IStudent {
-  id: number;
-  first_name?: string;
-  last_name?: string;
-  user: IUser;
-  grade?: string;
-}
+    id: number;
+    first_name?: string;
+    last_name?: string;
+    user: IUser;
+    grade?: string;
+  }
+
+  export interface  SeatingCondition  {
+    id: string;
+    type: 'separate' | 'group' | 'front' | 'back' | 'random';
+    studentIds: string[];
+    priority?: number;
+  };
+
+  
