@@ -46,7 +46,6 @@ const rewardsData = [
     pointLost: 6,
     total: 2,
   },
-
 ];
 
 export function RewardsTable({ refreshTime, onDataLoaded }: RewardsTableProps) {
@@ -67,7 +66,6 @@ export function RewardsTable({ refreshTime, onDataLoaded }: RewardsTableProps) {
     loadRewards();
   }, [refreshTime, onDataLoaded]);
 
-
   const handleViewDetails = (studentId: number) => {
     router.push(`/rewards/${studentId}`);
   };
@@ -83,34 +81,49 @@ export function RewardsTable({ refreshTime, onDataLoaded }: RewardsTableProps) {
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="font-bold">Students</TableHead>
-                  <TableHead className="font-bold text-center">Attendance</TableHead>
-                  <TableHead className="font-bold text-center">Point Gained</TableHead>
-                  <TableHead className="font-bold text-center">Point Lost</TableHead>
+                  <TableHead className="font-bold text-center">
+                    Attendance
+                  </TableHead>
+                  <TableHead className="font-bold text-center">
+                    Point Gained
+                  </TableHead>
+                  <TableHead className="font-bold text-center">
+                    Point Lost
+                  </TableHead>
                   <TableHead className="font-bold text-center">Total</TableHead>
-                  <TableHead className="font-bold text-center">ACTIONS</TableHead>
+                  <TableHead className="font-bold text-center">
+                    ACTIONS
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rewards.map((reward) => (
                   <TableRow key={reward.id}>
-                    <TableCell className="font-medium">{reward.student}</TableCell>
+                    <TableCell className="font-medium">
+                      {reward.student}
+                    </TableCell>
                     <TableCell>
                       <AttendanceDisplay attendance={reward.attendance} />
                     </TableCell>
-                    <TableCell className="text-center">{reward.pointGained}</TableCell>
-                    <TableCell className="text-center">{reward.pointLost}</TableCell>
-                    <TableCell className="text-center">{reward.total}</TableCell>
+                    <TableCell className="text-center">
+                      {reward.pointGained}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {reward.pointLost}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {reward.total}
+                    </TableCell>
                     <TableCell>
                       <div className="flex gap-2 justify-center">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 hover:bg-blue-50"
-                        onClick={() => handleViewDetails(reward.id)}
-                      >
-                        <Eye className="h-4 w-4 text-[#25AAE1]" />
-                      </Button>
-
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-blue-50"
+                          onClick={() => handleViewDetails(reward.id)}
+                        >
+                          <Eye className="h-4 w-4 text-[#25AAE1]" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>

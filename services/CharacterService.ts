@@ -3,7 +3,7 @@
 const characterPath = "/characters/initialize-class/";
 
 export async function getCharracters(
-  initCharaterData: { class_id: number; teacher_id: number },
+  initCharaterData: { class_id: number; teacher_id: number; date?: string },
   tenantPrimaryDomain: string,
   accessToken: string,
   refreshToken: string
@@ -12,11 +12,13 @@ export async function getCharracters(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
-  // Add current date to the request
-  const today = new Date().toISOString().split('T')[0];
+  // Use provided date or current date
+  const requestDate =
+    initCharaterData.date || new Date().toISOString().split("T")[0];
   const requestData = {
-    ...initCharaterData,
-    date: today
+    class_id: initCharaterData.class_id,
+    teacher_id: initCharaterData.teacher_id,
+    date: requestDate,
   };
 
   console.log("initCharaterData => ", requestData);
@@ -54,9 +56,18 @@ export async function updateCharacter(
   try {
     const url = `${tenantPrimaryDomain}/characters/update-ratings/`;
     console.log("URL => ", url);
-    const data = {
-      updates: [character],
+
+    // Ensure character data includes date information
+    const characterData = {
+      ...character,
+      observation_date:
+        character.observation_date || new Date().toISOString().split("T")[0],
     };
+
+    const data = {
+      updates: [characterData],
+    };
+
     let response = await fetch(url, {
       method: "PUT",
       headers: {
@@ -67,16 +78,16 @@ export async function updateCharacter(
     });
 
     if (response.ok) {
-      const data: any = await response.json();
-      console.log("PUT Class data => ", data);
-
+      const responseData: any = await response.json();
+      console.log("PUT Character data => ", responseData);
       return "ok";
     } else {
-      console.log("PUT Class Failed => ", response);
-      throw new Error("Class modification failed");
+      console.log("PUT Character Failed => ", response);
+      throw new Error("Character modification failed");
     }
   } catch (error) {
     console.log("Error => ", error);
+    throw error;
   }
 }
 
@@ -143,4 +154,44 @@ export async function getCharacterGeneralView(
   console.log("characters_general_view => ", data);
 
   return data;
+}
+
+// Get character observations for a specific date range
+export async function getCharacterObservationsForDateRange(
+  params: {
+    class_id: number;
+    teacher_id: number;
+    start_date: string;
+    end_date: string;
+  },
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  refreshToken: string
+) {
+  if (!accessToken) {
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
+  }
+
+  const url = `${tenantPrimaryDomain}/characters/date-range/`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(params),
+  });
+
+  if (!response.ok) {
+    if (response.status === 403) {
+      throw new Error(
+        "Vous n'avez pas la permission d'accéder aux observations."
+      );
+    } else {
+      throw new Error("Erreur lors de la récupération des observations.");
+    }
+  }
+
+  const data = await response.json();
+  return data.observations;
 }
