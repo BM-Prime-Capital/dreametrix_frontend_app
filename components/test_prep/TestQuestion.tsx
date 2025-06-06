@@ -27,12 +27,12 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import CalculatorComponent from "./tools/Calculator"; // ADDED: Import Calculator component
-import RulerComponent from "./tools/Ruler"; // ADDED: Import Ruler component
+import RulerComponent from "./tools/EnhancedRuler"; // ADDED: Import Ruler component
 import NotesPanelComponent from "./tools/NotesPanel"; // ADDED: Import NotesPanel component
 import LineReaderComponent from "./tools/LineReader"; // ADDED: Import LineReader component
 import ReferencePanelComponent from "./tools/ReferencePanel"; // ADDED: Import ReferencePanel component
 import HintDisplayComponent from "./tools/HintDisplay"; // ADDED: Import HintDisplay component
-import AnnotationToolbar from "./tools/AnnotationToolbar"; // ADDED: Import AnnotationToolbar
+import HighlighterTool from "./tools/HighlighterTool"; // ADDED: Import HighlighterTool
 
 interface Question {
   id: number;
@@ -90,13 +90,12 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
   const [isHintVisible, setIsHintVisible] = useState(false);
   const [isLineReaderVisible, setIsLineReaderVisible] = useState(false);
   const [isCalculatorVisible, setIsCalculatorVisible] = useState(false);
-  const [isAnnotationToolbarVisible, setIsAnnotationToolbarVisible] =
-    useState(false); // ADDED: State for AnnotationToolbar visibility
   const [isRulerVisible, setIsRulerVisible] = useState(false);
   const [isNotesVisible, setIsNotesVisible] = useState(false);
   const [isReferenceVisible, setIsReferenceVisible] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentHintText, setCurrentHintText] = useState<string>(""); // ADDED: State for hint text
+  const [isHighlighterVisible, setIsHighlighterVisible] = useState(false); // ADDED: State for HighlighterTool visibility
 
   const { tenantDomain, accessToken } = useRequestInfo();
   const mainImageRef = useRef<HTMLImageElement>(null);
@@ -338,6 +337,7 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
   }, [currentQuestion, questions, accessToken]);
 
   const handleImageLoad = (questionId: number) => {
+    console.log("Image loaded for question ID:", questionId);
     setLoadedImages((prev) => ({
       ...prev,
       [questionId]: true,
@@ -404,13 +404,16 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
         // Toast is handled by the component or not needed if UI is clear
         break;
       case "Highlighter":
-      case "Eraser": // Both Highlighter and Eraser will toggle the AnnotationToolbar
-        setIsAnnotationToolbarVisible((prev: boolean) => !prev);
-        toast.info(
-          !isAnnotationToolbarVisible
-            ? "Annotation tools activated"
-            : "Annotation tools deactivated"
-        );
+        setIsHighlighterVisible((prev: boolean) => !prev);
+        if (!isHighlighterVisible) {
+          toast.info("Highlighter tool activated - Draw on the image!");
+        } else {
+          toast.info("Highlighter tool deactivated");
+        }
+        break;
+      case "Eraser":
+        // For now, just show a message that eraser functionality is not implemented
+        toast.info("Eraser tool not yet implemented");
         break;
       case "Ruler":
         setIsRulerVisible((prev: boolean) => !prev);
@@ -439,7 +442,7 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
   return (
     <div
       ref={fullscreenContentRef}
-      className="min-h-screen bg-white flex flex-col w-full relative pb-24 overflow-auto"
+      className="min-h-screen bg-white flex flex-col w-full relative overflow-auto"
     >
       {/* Header */}
       <header className="flex justify-between items-center p-4 border-b w-full bg-gradient-to-r from-blue-50 to-indigo-50">
@@ -482,20 +485,14 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
 
       {/* Main Content */}
       <div className="flex-1 p-6 w-full max-w-5xl mx-auto">
-        {isAnnotationToolbarVisible && annotatableContentRef.current && (
-          <div className="sticky top-0 z-50 mb-2 bg-white p-2 shadow-md rounded-md">
-            {" "}
-            {/* Added container for sticky positioning and some basic styling */}
-            <AnnotationToolbar targetRef={annotatableContentRef} />
-          </div>
-        )}
         {questions.length === 0 ? (
           <div className="flex justify-center items-center h-64">
             <p className="text-gray-500">No questions available</p>
           </div>
         ) : (
           <div
-            ref={annotatableContentRef} // ATTACHED: Ref for annotation target
+            // ref={annotatableContentRef} // ATTACHED: Ref for annotation target
+
             className="w-full mx-auto bg-white rounded-xl shadow-sm border p-6"
           >
             <div className="flex justify-between items-center mb-6">
@@ -515,7 +512,7 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
             </div>
 
             {/* Question Image */}
-            <div className="mb-8 bg-gray-50 p-6 rounded-lg">
+            <div className="mb-8 bg-gray-50 p-6 rounded-lg" ref={mainImageRef}>
               <div className="relative">
                 {!previewImageSrc && !loadedImages[currentQuestionData?.id] && (
                   <div className="w-full aspect-video flex justify-center items-center">
@@ -533,7 +530,6 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
 
                 {currentQuestionData && (
                   <img
-                    ref={mainImageRef}
                     src={currentQuestionData.main_link}
                     alt={`Question ${currentQuestion + 1}`}
                     className={`w-full h-auto rounded-lg ${
@@ -601,73 +597,82 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
                 <ChevronRight size={20} />
               </Button>
             </div>
+
+            {/* Tools Toolbar - Moved inside content area */}
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <h3 className="text-sm font-medium text-gray-700 mb-3 text-center">
+                Test Tools
+              </h3>
+              <div className="bg-gradient-to-r from-slate-100 to-slate-200 p-4 rounded-lg shadow-sm">
+                <div className="flex justify-center gap-3 flex-wrap">
+                  {[
+                    {
+                      icon: <Lightbulb size={18} />,
+                      label: "Hint",
+                      color: "bg-amber-400 hover:bg-amber-500",
+                    },
+                    {
+                      icon: <TextCursor size={18} />,
+                      label: "Line Reader",
+                      color: "bg-blue-400 hover:bg-blue-500",
+                    },
+                    {
+                      icon: <Calculator size={18} />,
+                      label: "Calculator",
+                      color: "bg-purple-400 hover:bg-purple-500",
+                    },
+                    {
+                      icon: <Palette size={18} />,
+                      label: "Highlighter",
+                      color: "bg-green-400 hover:bg-green-500",
+                    },
+                    {
+                      icon: <Eraser size={18} />,
+                      label: "Eraser",
+                      color: "bg-red-400 hover:bg-red-500",
+                    },
+                    {
+                      icon: <Ruler size={18} />,
+                      label: "Ruler",
+                      color: "bg-teal-400 hover:bg-teal-500",
+                    },
+                    {
+                      icon: <PenTool size={18} />,
+                      label: "Notes",
+                      color: "bg-indigo-400 hover:bg-indigo-500",
+                    },
+                    {
+                      icon: <ImageIcon size={18} />,
+                      label: "Reference",
+                      color: "bg-pink-400 hover:bg-pink-500",
+                    },
+                    {
+                      icon: <Maximize size={18} />,
+                      label: isFullscreen ? "Exit Fullscreen" : "Fullscreen",
+                      color: "bg-gray-400 hover:bg-gray-500",
+                    },
+                  ].map((tool, index) => (
+                    <Button
+                      key={index}
+                      variant="ghost"
+                      className="text-gray-700 hover:text-white flex flex-col items-center gap-1 p-3 rounded-lg h-fit transition-all duration-200 hover:scale-105"
+                      onClick={() => handleToolClick(tool.label)}
+                    >
+                      <div
+                        className={`${tool.color} p-2 rounded-full shadow-sm transition-colors duration-200`}
+                      >
+                        {tool.icon}
+                      </div>
+                      <span className="text-xs font-medium">{tool.label}</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Tools Footer */}
-
-      <footer className="bg-gradient-to-r from-gray-800 to-gray-900 p-3 w-full fixed bottom-0 left-0 right-0 z-50">
-        {" "}
-        {/* ADDED fixed bottom-0 left-0 right-0 z-50 */}
-        <div className="flex justify-center gap-2 flex-wrap">
-          {[
-            {
-              icon: <Lightbulb size={20} />,
-              label: "Hint",
-              color: "bg-amber-500",
-            },
-            {
-              icon: <TextCursor size={20} />,
-              label: "Line Reader",
-              color: "bg-blue-500",
-            },
-            {
-              icon: <Calculator size={20} />,
-              label: "Calculator",
-              color: "bg-purple-500",
-            },
-            {
-              icon: <Palette size={20} />,
-              label: "Highlighter",
-              color: "bg-green-500",
-            },
-            {
-              icon: <Eraser size={20} />,
-              label: "Eraser",
-              color: "bg-red-500",
-            },
-            { icon: <Ruler size={20} />, label: "Ruler", color: "bg-teal-500" },
-            {
-              icon: <PenTool size={20} />,
-              label: "Notes",
-              color: "bg-indigo-500",
-            },
-            {
-              icon: <ImageIcon size={20} />,
-              label: "Reference",
-              color: "bg-pink-500",
-            },
-            {
-              icon: <Maximize size={20} />,
-              label: isFullscreen ? "Exit Fullscreen" : "Fullscreen",
-              color: "bg-gray-500",
-            },
-          ].map((tool, index) => (
-            <Button
-              key={index}
-              variant="ghost"
-              className="text-white hover:bg-white/10 flex flex-col items-center gap-1 p-2 rounded-lg h-fit"
-              onClick={() => handleToolClick(tool.label)} // Added onClick handler
-            >
-              <div className={`${tool.color} p-2 rounded-full`}>
-                {tool.icon}
-              </div>
-              <span className="text-xs font-medium">{tool.label}</span>
-            </Button>
-          ))}
-        </div>
-      </footer>
       <ToastContainer />
       {/* Tool Components */}
       {isCalculatorVisible && (
@@ -692,6 +697,13 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
         <HintDisplayComponent
           hintText={currentHintText}
           onClose={() => setIsHintVisible(false)}
+        />
+      )}
+      {isHighlighterVisible && (
+        <HighlighterTool
+          onClose={() => setIsHighlighterVisible(false)}
+          targetImageRef={mainImageRef}
+          initialPosition={{ x: 100, y: 100 }}
         />
       )}
     </div>

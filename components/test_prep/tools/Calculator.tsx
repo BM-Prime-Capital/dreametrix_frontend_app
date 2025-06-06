@@ -225,19 +225,36 @@ const Calculator: React.FC<CalculatorProps> = ({
       defaultPosition={initialPosition}
       nodeRef={draggableNodeRef}
       cancel=".no-drag"
+      bounds={{
+        left: 0,
+        top: 0,
+        right: window.innerWidth - 350,
+        bottom: window.innerHeight - 100,
+      }}
+      scale={1}
+      grid={[1, 1]}
+      defaultClassNameDragging="dragging"
+      defaultClassNameDragged="dragged"
+      enableUserSelectHack={false}
+      allowAnyClick={false}
+      disabled={false}
+      axis="both"
+      offsetParent={document.body}
     >
       <div
         ref={draggableNodeRef}
-        className={`fixed bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 rounded-xl shadow-2xl text-white z-50 select-none transition-all duration-300 border border-slate-700 backdrop-blur-md ${
+        className={`calculator-drag-handle fixed bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-1 rounded-xl shadow-2xl text-white z-50 select-none transition-none border-2 border-slate-600 hover:border-slate-500 backdrop-blur-md cursor-move ${
           isMinimized ? "w-80 h-16" : isCompact ? "w-72" : "w-80"
         } ${isMinimized ? "animate-pulse" : ""}`}
         style={{
           minWidth: isMinimized ? "320px" : isCompact ? "288px" : "320px",
           maxWidth: "90vw",
+          willChange: "transform",
+          transform: "translate3d(0, 0, 0)", // Hardware acceleration
         }}
       >
         {/* Enhanced Header */}
-        <div className="calculator-drag-handle cursor-move h-8 mb-3 flex justify-between items-center">
+        <div className="h-8 mb-3 flex justify-between items-center px-3">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-red-500 rounded-full opacity-80"></div>
             <div className="w-3 h-3 bg-yellow-500 rounded-full opacity-80"></div>
@@ -247,35 +264,35 @@ const Calculator: React.FC<CalculatorProps> = ({
           <div className="flex items-center gap-1">
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="no-drag text-slate-400 hover:text-slate-200 transition-colors p-1 rounded"
+              className="no-drag text-slate-400 hover:text-slate-200 transition-colors p-1 rounded hover:bg-slate-700/50"
               title="Settings"
             >
               <Settings size={16} />
             </button>
             <button
               onClick={() => setShowHistory(!showHistory)}
-              className="no-drag text-slate-400 hover:text-slate-200 transition-colors p-1 rounded"
+              className="no-drag text-slate-400 hover:text-slate-200 transition-colors p-1 rounded hover:bg-slate-700/50"
               title="History"
             >
               <History size={16} />
             </button>
             <button
               onClick={() => setIsCompact(!isCompact)}
-              className="no-drag text-slate-400 hover:text-slate-200 transition-colors p-1 rounded"
+              className="no-drag text-slate-400 hover:text-slate-200 transition-colors p-1 rounded hover:bg-slate-700/50"
               title={isCompact ? "Expand" : "Compact"}
             >
               {isCompact ? <Maximize2 size={16} /> : <Minimize2 size={16} />}
             </button>
             <button
               onClick={() => setIsMinimized(!isMinimized)}
-              className="no-drag text-slate-400 hover:text-slate-200 transition-colors p-1 rounded"
+              className="no-drag text-slate-400 hover:text-slate-200 transition-colors p-1 rounded hover:bg-slate-700/50"
               title={isMinimized ? "Restore" : "Minimize"}
             >
               <RotateCcw size={16} />
             </button>
             <button
               onClick={onClose}
-              className="no-drag text-slate-400 hover:text-red-400 transition-colors p-1 rounded"
+              className="no-drag text-slate-400 hover:text-red-400 transition-colors p-1 rounded hover:bg-slate-700/50"
               title="Close"
             >
               <X size={16} />
@@ -284,10 +301,10 @@ const Calculator: React.FC<CalculatorProps> = ({
         </div>
 
         {!isMinimized && (
-          <>
+          <div className="px-3 pb-3">
             {/* Settings Panel */}
             {showSettings && (
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-3 mb-3 border border-slate-600">
+              <div className="no-drag bg-slate-800/50 backdrop-blur-sm rounded-lg p-3 mb-3 border border-slate-600">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-xs text-slate-400 font-medium">
                     Settings
@@ -315,7 +332,7 @@ const Calculator: React.FC<CalculatorProps> = ({
 
             {/* History Panel */}
             {showHistory && (
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-3 mb-3 max-h-32 overflow-y-auto border border-slate-600">
+              <div className="no-drag bg-slate-800/50 backdrop-blur-sm rounded-lg p-3 mb-3 max-h-32 overflow-y-auto border border-slate-600">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-xs text-slate-400 font-medium">
                     History
@@ -345,7 +362,7 @@ const Calculator: React.FC<CalculatorProps> = ({
             )}
 
             {/* Enhanced Display */}
-            <div className="bg-slate-900/80 backdrop-blur-sm text-right p-4 rounded-lg mb-4 border border-slate-600 relative overflow-hidden">
+            <div className="no-drag bg-slate-900/80 backdrop-blur-sm text-right p-4 rounded-lg mb-4 border border-slate-600 relative overflow-hidden">
               {/* Status indicators */}
               <div className="flex justify-between items-center mb-2">
                 <div className="flex gap-2 text-xs">
@@ -394,7 +411,7 @@ const Calculator: React.FC<CalculatorProps> = ({
 
             {/* Enhanced Button Grid */}
             <div
-              className={`grid gap-2 ${
+              className={`no-drag grid gap-2 ${
                 isCompact ? "grid-cols-4" : "grid-cols-5"
               } ${isCompact ? "grid-rows-6" : "grid-rows-8"}`}
             >
@@ -435,7 +452,7 @@ const Calculator: React.FC<CalculatorProps> = ({
             </div>
 
             {/* Quick Access Footer */}
-            <div className="mt-3 flex justify-center">
+            <div className=" mt-3 flex justify-center">
               <div className="text-xs text-slate-500 bg-slate-800/30 px-3 py-1 rounded-full border border-slate-700/50">
                 <span className="hidden sm:inline">
                   Press ESC to clear • Enter for equals •{" "}
@@ -445,7 +462,7 @@ const Calculator: React.FC<CalculatorProps> = ({
                 </span>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
     </Draggable>
