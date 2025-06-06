@@ -81,6 +81,7 @@ export interface DigitalLibrarySheet {
   studentsClass: string[];
   noOfQuestions: string;
   generateAnswerSheet: boolean;
+  includeAnswerKey: boolean;
 }
 export interface SheetDomain {
   subject: string;
@@ -88,27 +89,27 @@ export interface SheetDomain {
   name: string;
   specificStandards: string[];
 }
-export interface Student { 
-  id: number; 
-  first_name: string; 
-  last_name: string 
+export interface Student {
+  id: number;
+  first_name: string;
+  last_name: string;
 }
 
-export type EducationalCondition = 
-  | 'NEAR_TEACHER' 
-  | 'EXTRA_SPACE' 
-  | 'ATTENTION_DIFFICULTIES'
-  | 'VISION_IMPAIRED'
-  | 'HEARING_IMPAIRED'
-  | 'LEFT_HANDED'
-  | 'GROUP_WORK'
-  | 'NONE';
+export type EducationalCondition =
+  | "NEAR_TEACHER"
+  | "EXTRA_SPACE"
+  | "ATTENTION_DIFFICULTIES"
+  | "VISION_IMPAIRED"
+  | "HEARING_IMPAIRED"
+  | "LEFT_HANDED"
+  | "GROUP_WORK"
+  | "NONE";
 
 export type StudentCondition = {
   studentId: string;
   condition: EducationalCondition;
-  pairedStudentId?: string; 
-  separatedStudentId?: string; 
+  pairedStudentId?: string;
+  separatedStudentId?: string;
 };
 
 export type ClassroomSeat = {
@@ -124,14 +125,22 @@ export interface SeatingCondition {
   studentId: string;
   condition: string;
 }
+export interface CharacterObservationEntry {
+  id: string;
+  trait: string;
+  timestamp: string;
+  comment?: string;
+}
+
 export interface Character {
   character_id: number;
-  student:Student;
-  bad_characters: string[];
-  good_characters: string[];
+  student: Student;
+  bad_characters: string[] | CharacterObservationEntry[];
+  good_characters: string[] | CharacterObservationEntry[];
   teacher_comment: string;
   create_at: string;
   update_at: string;
+  observation_date?: string;
 }
 export interface IUser {
   id: number;
@@ -139,16 +148,14 @@ export interface IUser {
   last_name: string;
 }
 export interface ITeacher {
-    id: number;
-    full_name?: string;
-    user: IUser;
-  }
+  id: number;
+  full_name?: string;
+  user: IUser;
+}
 export interface IStudent {
-    id: number;
-    first_name?: string;
-    last_name?: string;
-    user: IUser;
-    grade?: string;
-  }
-
-  
+  id: number;
+  first_name?: string;
+  last_name?: string;
+  user: IUser;
+  grade?: string;
+}

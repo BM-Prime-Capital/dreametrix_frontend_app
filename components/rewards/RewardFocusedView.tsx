@@ -11,10 +11,14 @@ import LineChartComponent from "../ui/line-chart";
 import { localStorageKey, views } from "@/constants/global";
 import { useEffect, useState } from "react";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
-import { Loader } from "../ui/loader"; 
+import { Loader } from "../ui/loader";
 import NoDataPersonalized from "../ui/no-data-personalized";
 
 import { getRewardsFocusView } from "@/services/RewardsService";
+import {
+  parseDomainForDisplay,
+  generateDomainKey,
+} from "@/utils/characterUtils";
 
 export default function RewardsFocusedView({
   student,
@@ -28,12 +32,16 @@ export default function RewardsFocusedView({
   const [error, setError] = useState<string | null>(null);
 
   //space
-  const { tenantDomain: tenantPrimaryDomain, accessToken, refreshToken } = useRequestInfo();
+  const {
+    tenantDomain: tenantPrimaryDomain,
+    accessToken,
+    refreshToken,
+  } = useRequestInfo();
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
   const currentClass = JSON.parse(
     localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
   );
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [rewards, setRewards] = useState<any[]>([]);
   const [rewardsCount, setRewardsCount] = useState(0);
@@ -41,7 +49,7 @@ export default function RewardsFocusedView({
   const [toDate, setToDate] = useState("");
 
   // In FocusView component
-// Dans FocusView (correct)
+  // Dans FocusView (correct)
   useEffect(() => {
     const loadStudentDetails = async () => {
       setIsLoading(true);
@@ -51,10 +59,12 @@ export default function RewardsFocusedView({
           console.error("Missing authentication credentials");
           return;
         }
-        
+
         // Vérifiez la structure attendue (student.student.id)
         if (!student?.student?.id) {
-          throw new Error(`Missing student ID. Received data: ${JSON.stringify(student)}`);
+          throw new Error(
+            `Missing student ID. Received data: ${JSON.stringify(student)}`
+          );
         }
 
         const data = await getRewardsFocusView(
@@ -69,7 +79,9 @@ export default function RewardsFocusedView({
         setStudentData(data);
       } catch (err) {
         console.error("Failed to load student details:", err);
-        setError(err instanceof Error ? err.message : "Failed to load student details");
+        setError(
+          err instanceof Error ? err.message : "Failed to load student details"
+        );
       } finally {
         setIsLoading(false);
       }
@@ -89,7 +101,7 @@ export default function RewardsFocusedView({
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
-       <NoDataPersonalized message={error} />
+        <NoDataPersonalized message={error} />
         <Button onClick={() => changeView(views.GENERAL_VIEW)}>
           Back to General View
         </Button>
@@ -113,8 +125,8 @@ export default function RewardsFocusedView({
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             onClick={() => changeView(views.GENERAL_VIEW)}
             className="p-2"
           >
@@ -171,26 +183,64 @@ export default function RewardsFocusedView({
               </div>
             </div>
 
-            {/* Bloc Domaines */} 
+            {/* Bloc Domaines */}
             <div className="flex flex-col gap-5 w-full max-w-[280px]">
               {/* Domains I did well in */}
               <div className="bg-white p-0 rounded-xl shadow-xs border border-emerald-100 overflow-hidden">
                 <div className="bg-emerald-500 flex items-center px-4 py-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 text-white mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 10l7-7m0 0l7 7m-7-7v18"
+                    />
                   </svg>
-                  <h3 className="font-bold text-white">Domains I did well in</h3>
+                  <h3 className="font-bold text-white">
+                    Domains I did well in
+                  </h3>
                 </div>
                 <div className="p-4">
                   <div className="flex flex-col gap-3">
                     {studentData.goodDomains.length > 0 ? (
-                      studentData.goodDomains.map((domain: string) => (
-                        <div key={domain} className="flex items-center bg-emerald-50 px-3 py-2 rounded-lg">
-                          <span className="text-emerald-800 font-medium">{domain}</span>
-                        </div>
-                      ))
+                      studentData.goodDomains.map(
+                        (domain: any, index: number) => {
+                          console.log(
+                            "Good domain item:",
+                            domain,
+                            typeof domain
+                          );
+
+                          const { displayText, parsedDomain } =
+                            parseDomainForDisplay(domain);
+                          const key = generateDomainKey(
+                            domain,
+                            parsedDomain,
+                            index
+                          );
+
+                          return (
+                            <div
+                              key={key}
+                              className="flex items-center bg-emerald-50 px-3 py-2 rounded-lg"
+                            >
+                              <span className="text-emerald-800 font-medium">
+                                {displayText}
+                              </span>
+                            </div>
+                          );
+                        }
+                      )
                     ) : (
-                      <div className="text-center text-gray-500 py-2">No domains found</div>
+                      <div className="text-center text-gray-500 py-2">
+                        No domains found
+                      </div>
                     )}
                   </div>
                 </div>
@@ -199,21 +249,57 @@ export default function RewardsFocusedView({
               {/* Domains to focus on */}
               <div className="bg-white p-0 rounded-xl shadow-xs border border-rose-100 overflow-hidden">
                 <div className="bg-rose-500 flex items-center px-4 py-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 text-white mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                    />
                   </svg>
                   <h3 className="font-bold text-white">Domains to focus on</h3>
                 </div>
                 <div className="p-4">
                   <div className="flex flex-wrap gap-3">
                     {studentData.focusDomains.length > 0 ? (
-                      studentData.focusDomains.map((domain: string) => (
-                        <div key={domain} className="flex items-center bg-rose-50 px-3 py-2 rounded-lg">
-                          <span className="text-rose-800 font-medium">{domain}</span>
-                        </div>
-                      ))
+                      studentData.focusDomains.map(
+                        (domain: any, index: number) => {
+                          console.log(
+                            "Focus domain item:",
+                            domain,
+                            typeof domain
+                          );
+
+                          const { displayText, parsedDomain } =
+                            parseDomainForDisplay(domain);
+                          const key = generateDomainKey(
+                            domain,
+                            parsedDomain,
+                            index
+                          );
+
+                          return (
+                            <div
+                              key={key}
+                              className="flex items-center bg-rose-50 px-3 py-2 rounded-lg"
+                            >
+                              <span className="text-rose-800 font-medium">
+                                {displayText}
+                              </span>
+                            </div>
+                          );
+                        }
+                      )
                     ) : (
-                      <div className="text-center text-gray-500 py-2">No focus domains</div>
+                      <div className="text-center text-gray-500 py-2">
+                        No focus domains
+                      </div>
                     )}
                   </div>
                 </div>
@@ -224,14 +310,23 @@ export default function RewardsFocusedView({
             <div className="flex-1 bg-white p-5 rounded-xl shadow-xs border border-gray-100 min-w-0">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold text-lg text-gray-700 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2 text-indigo-500"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
                     <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
                   </svg>
                   Score History
                 </h3>
                 <div className="flex gap-2">
-                  <button className="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded">Weekly</button>
-                  <button className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Monthly</button>
+                  <button className="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded">
+                    Weekly
+                  </button>
+                  <button className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                    Monthly
+                  </button>
                 </div>
               </div>
               <div className="h-[240px]">
@@ -246,8 +341,17 @@ export default function RewardsFocusedView({
               {/* Bloc Attendance Balance */}
               <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-xs">
                 <h3 className="font-bold mb-4 text-lg text-indigo-600 border-b-2 border-indigo-100 pb-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 inline-block mr-2"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   Attendance
                 </h3>
@@ -282,26 +386,44 @@ export default function RewardsFocusedView({
               {/* Bloc Good Character */}
               <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-xs">
                 <h3 className="font-bold mb-4 text-lg text-emerald-600 border-b-2 border-emerald-100 pb-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 inline-block mr-2"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
                   </svg>
-                  Good Character
+                  Positives
                 </h3>
                 <div className="space-y-2">
                   {Object.entries(studentData.goodCharacter).length > 0 ? (
-                    Object.entries(studentData.goodCharacter).map(([domain, points]) => (
-                      <div key={domain} className="flex justify-between items-center hover:bg-emerald-50 px-2 py-1 rounded transition-colors">
-                        <span className="text-gray-700 capitalize">
-                          {domain}
-                        </span>
-                        <span className="font-bold text-emerald-600 bg-white px-2 rounded-full border border-emerald-100">
-                          +{typeof points === "number" ? points : 0}
-                        </span>
-
-                      </div>
-                    ))
+                    Object.entries(studentData.goodCharacter).map(
+                      ([domain, points]) => {
+                        const { displayText } = parseDomainForDisplay(domain);
+                        return (
+                          <div
+                            key={domain}
+                            className="flex justify-between items-center hover:bg-emerald-50 px-2 py-1 rounded transition-colors"
+                          >
+                            <span className="text-gray-700 capitalize">
+                              {displayText}
+                            </span>
+                            <span className="font-bold text-emerald-600 bg-white px-2 rounded-full border border-emerald-100">
+                              +{typeof points === "number" ? points : 0}
+                            </span>
+                          </div>
+                        );
+                      }
+                    )
                   ) : (
-                    <div className="text-center text-gray-500 py-2">No good character data</div>
+                    <div className="text-center text-gray-500 py-2">
+                      No good character data
+                    </div>
                   )}
                 </div>
               </div>
@@ -309,26 +431,44 @@ export default function RewardsFocusedView({
               {/* Bloc Bad Character */}
               <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-xs">
                 <h3 className="font-bold mb-4 text-lg text-rose-600 border-b-2 border-rose-100 pb-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 inline-block mr-2"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
                   </svg>
-                  Bad Character
+                  Growth Areas
                 </h3>
                 <div className="space-y-2">
                   {Object.entries(studentData.badCharacter).length > 0 ? (
-                    Object.entries(studentData.badCharacter).map(([domain, points]) => (
-                      <div key={domain} className="flex justify-between items-center hover:bg-rose-50 px-2 py-1 rounded transition-colors">
-                        <span className="text-gray-700 capitalize">
-                          {domain}
-                        </span>
-                        <span className="font-bold text-rose-600 bg-white px-2 rounded-full border border-rose-100">
-                          {typeof points === "number" ? points : 0}
-                        </span>
-
-                      </div>
-                    ))
+                    Object.entries(studentData.badCharacter).map(
+                      ([domain, points]) => {
+                        const { displayText } = parseDomainForDisplay(domain);
+                        return (
+                          <div
+                            key={domain}
+                            className="flex justify-between items-center hover:bg-rose-50 px-2 py-1 rounded transition-colors"
+                          >
+                            <span className="text-gray-700 capitalize">
+                              {displayText}
+                            </span>
+                            <span className="font-bold text-rose-600 bg-white px-2 rounded-full border border-rose-100">
+                              {typeof points === "number" ? points : 0}
+                            </span>
+                          </div>
+                        );
+                      }
+                    )
                   ) : (
-                    <div className="text-center text-gray-500 py-2">No bad character data</div>
+                    <div className="text-center text-gray-500 py-2">
+                      No bad character data
+                    </div>
                   )}
                 </div>
               </div>
@@ -340,7 +480,17 @@ export default function RewardsFocusedView({
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-bold">Latest News</h3>
               <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
                   <path d="M21 3v5h-5"></path>
                   <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
@@ -368,26 +518,58 @@ export default function RewardsFocusedView({
                     {studentData.latestNews.length > 0 ? (
                       studentData.latestNews.map((news: any, index: number) => (
                         <tr key={index} className="border-b">
-                          <td className="p-2">{news.date ? new Date(news.date).toLocaleDateString() : 'N/A'}</td>
-                          <td className="p-2">{news.period || 'N/A'}</td>
-                          <td className="p-2">{news.class || 'N/A'}</td>
-                          <td className="p-2">{news.newsAndComment || 'N/A'}</td>
-                          <td className="p-2">{news.sanctions || 'None'}</td>
-                          <td className={`p-2 font-bold ${news.points > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          <td className="p-2">
+                            {news.date
+                              ? new Date(news.date).toLocaleDateString()
+                              : "N/A"}
+                          </td>
+                          <td className="p-2">{news.period || "N/A"}</td>
+                          <td className="p-2">{news.class || "N/A"}</td>
+                          <td className="p-2">
+                            {news.newsAndComment || "N/A"}
+                          </td>
+                          <td className="p-2">{news.sanctions || "None"}</td>
+                          <td
+                            className={`p-2 font-bold ${
+                              news.points > 0
+                                ? "text-emerald-600"
+                                : "text-rose-600"
+                            }`}
+                          >
                             {news.points > 0 ? `+${news.points}` : news.points}
                           </td>
                           <td className="p-2">
                             <div className="flex gap-2 items-center">
                               {news.followUp?.edit && (
                                 <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  >
                                     <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                                   </svg>
                                 </button>
                               )}
                               {news.followUp?.delete && (
                                 <button className="flex items-center gap-1 text-rose-600 hover:text-rose-800">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  >
                                     <polyline points="3 6 5 6 21 6"></polyline>
                                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                                   </svg>
@@ -399,7 +581,10 @@ export default function RewardsFocusedView({
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={7} className="p-4 text-center text-gray-500">
+                        <td
+                          colSpan={7}
+                          className="p-4 text-center text-gray-500"
+                        >
                           No news available
                         </td>
                       </tr>

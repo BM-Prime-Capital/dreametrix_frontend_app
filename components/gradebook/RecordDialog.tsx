@@ -9,84 +9,243 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useState, useRef, useEffect } from "react";
-import { Mic, Play, StopCircle, Check, Upload, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { Mic, Play, StopCircle, Check, Upload, Loader2 } from "lucide-react";
+import {
+  saveVoiceRecording,
+  getVoiceRecordingAudio,
+} from "@/services/GradebooksService";
+import { localStorageKey } from "@/constants/global";
 
-export function RecordDialog({ children }: { children: React.ReactNode }) {
+interface RecordDialogProps {
+  children: React.ReactNode;
+  studentId?: string;
+  assessmentType?: string;
+  assessmentIndex?: number;
+  onRecordingSaved?: () => void;
+  hasExistingRecording?: boolean; // Add prop to indicate if recording exists
+}
+
+export function RecordDialog({
+  children,
+  studentId,
+  assessmentType,
+  assessmentIndex,
+  onRecordingSaved,
+  hasExistingRecording = false,
+}: RecordDialogProps) {
   const [open, setOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [audioURL, setAudioURL] = useState("");
+  const [hasRecording, setHasRecording] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingExisting, setIsLoadingExisting] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  const chunksRef = useRef<BlobPart[]>([]);
+
+  const tenantData: any = localStorage.getItem(localStorageKey.TENANT_DATA);
+  const { primary_domain } = JSON.parse(tenantData);
+  const tenantPrimaryDomain = `https://${primary_domain}`;
+  const accessToken: any = localStorage.getItem(localStorageKey.ACCESS_TOKEN);
+  const refreshToken: any = localStorage.getItem(localStorageKey.REFRESH_TOKEN);
+
+  // Load existing recording when dialog opens
+  useEffect(() => {
+    console.log("useEffect triggered with conditions:", {
+      open,
+      hasExistingRecording,
+      studentId,
+      assessmentType,
+      assessmentIndex,
+      hasRecording,
+    });
+
+    if (
+      open &&
+      hasExistingRecording &&
+      studentId &&
+      assessmentType &&
+      assessmentIndex !== undefined &&
+      !hasRecording
+    ) {
+      console.log("All conditions met, loading existing recording...");
+      loadExistingRecording();
+    } else {
+      console.log("Conditions not met for loading existing recording");
+    }
+  }, [
+    open,
+    hasExistingRecording,
+    studentId,
+    assessmentType,
+    assessmentIndex,
+    hasRecording,
+  ]);
+
+  const loadExistingRecording = async () => {
+    setIsLoadingExisting(true);
+    try {
+      console.log("Loading existing recording for:", {
+        studentId,
+        assessmentType,
+        assessmentIndex,
+      });
+
+      const response = await getVoiceRecordingAudio(
+        tenantPrimaryDomain,
+        accessToken,
+        parseInt(studentId!),
+        assessmentType!,
+        assessmentIndex!,
+        refreshToken
+      );
+
+      console.log("Voice recording response:", response);
+
+      if (response.success && response.audioUrl) {
+        // Much simpler - use the URL directly!
+        console.log("Setting audio URL directly:", response.audioUrl);
+        setAudioUrl(response.audioUrl);
+        setHasRecording(true);
+      } else {
+        console.error("Failed to load existing recording:", response);
+      }
+    } catch (error) {
+      console.error("Error loading existing recording:", error);
+    } finally {
+      setIsLoadingExisting(false);
+    }
+  };
 
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      audioChunksRef.current = [];
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
 
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
       };
 
-      mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        setAudioBlob(audioBlob);
-        const audioUrl = URL.createObjectURL(audioBlob);
-        setAudioURL(audioUrl);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        setAudioBlob(blob);
+        const url = URL.createObjectURL(blob);
+        setAudioUrl(url);
+        setHasRecording(true);
+
+        // Stop all tracks to free up microphone
+        stream.getTracks().forEach((track) => track.stop());
       };
 
-      mediaRecorderRef.current.start();
+      mediaRecorder.start();
       setIsRecording(true);
-    } catch (err) {
-      console.error('Error starting recording:', err);
-      toast.error("Failed to access microphone");
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      alert("Unable to access microphone. Please check permissions.");
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current) {
+    if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
       setIsRecording(false);
     }
   };
 
-  const handleSave = () => {
-    if (audioBlob) {
-      // Here you would typically send the audioBlob to your backend
-      // For now, we'll store it in localStorage as a base64 string
-      const reader = new FileReader();
-      reader.readAsDataURL(audioBlob);
-      reader.onloadend = () => {
-        const base64Audio = reader.result as string;
-        localStorage.setItem('voiceRecording', base64Audio);
-        toast.success("Voice recording saved successfully");
-        setOpen(false);
-      };
+  const handleRecordingToggle = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
     }
   };
 
-  const handleDelete = () => {
-    setAudioURL("");
-    setAudioBlob(null);
-    audioChunksRef.current = [];
+  const saveRecording = async () => {
+    if (
+      !audioBlob ||
+      !studentId ||
+      !assessmentType ||
+      assessmentIndex === undefined
+    ) {
+      console.error("Missing required data for saving recording");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Convert Blob to base64 string for server transmission
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const result = reader.result as string;
+          // Remove the data URL prefix to get just the base64 string
+          const base64String = result.split(",")[1];
+          resolve(base64String);
+        };
+        reader.onerror = reject;
+      });
+
+      reader.readAsDataURL(audioBlob);
+      const audioBase64 = await base64Promise;
+
+      await saveVoiceRecording(
+        tenantPrimaryDomain,
+        accessToken,
+        parseInt(studentId),
+        assessmentType,
+        assessmentIndex,
+        audioBase64, // Pass base64 string instead of Blob
+        refreshToken
+      );
+
+      console.log("Recording saved successfully");
+      onRecordingSaved?.();
+      setOpen(false);
+
+      // Reset state
+      setHasRecording(false);
+      setAudioBlob(null);
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+        setAudioUrl(null);
+      }
+    } catch (error) {
+      console.error("Error saving recording:", error);
+      alert("Failed to save recording. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  useEffect(() => {
-    return () => {
-      if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, []);
+  const handleClose = () => {
+    // Clean up when dialog closes
+    if (isRecording) {
+      stopRecording();
+    }
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+    }
+    setOpen(false);
+    setHasRecording(false);
+    setAudioBlob(null);
+    setAudioUrl(null);
+  };
+
+  const handleDialogOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      setOpen(true);
+    } else {
+      handleClose();
+    }
+  };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-blue-600 flex items-center gap-2">
@@ -95,34 +254,55 @@ export function RecordDialog({ children }: { children: React.ReactNode }) {
           </DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-6">
-          <div className="p-8 bg-gray-100 rounded-lg flex flex-col items-center justify-center gap-4">
-            {isRecording ? (
+          <div className="p-8 bg-gray-100 rounded-lg flex items-center justify-center">
+            {isLoadingExisting ? (
+              <div className="flex items-center gap-2 text-blue-500">
+                <Loader2 className="h-6 w-6 animate-spin" />
+                <span>Loading existing recording...</span>
+              </div>
+            ) : isRecording ? (
               <div className="flex items-center gap-2 text-red-500">
                 <StopCircle className="h-6 w-6 animate-pulse" />
                 <span>Recording in progress...</span>
               </div>
-            ) : audioURL ? (
-              <div className="w-full flex flex-col items-center gap-2">
-                <audio controls src={audioURL} className="w-full" />
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleDelete}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Recording
-                </Button>
+            ) : hasRecording ? (
+              <div className="flex items-center gap-2 text-green-600">
+                <Check className="h-6 w-6" />
+                <span>
+                  {hasExistingRecording
+                    ? "Existing recording loaded"
+                    : "Recording ready to save"}
+                </span>
               </div>
             ) : (
               <span className="text-gray-500">No recording yet</span>
             )}
           </div>
+
+          {hasRecording && audioUrl && (
+            <div className="bg-white p-4 rounded-lg border">
+              <audio
+                controls
+                className="w-full"
+                src={audioUrl}
+                onError={(e) => {
+                  console.error("Audio playback error:", e);
+                  console.error("Audio URL:", audioUrl);
+                  console.error("Audio blob type:", audioBlob?.type);
+                }}
+                onLoadStart={() => console.log("Audio loading started")}
+                onCanPlay={() => console.log("Audio can play")}
+                onLoadedData={() => console.log("Audio data loaded")}
+              />
+            </div>
+          )}
+
           <div className="flex gap-3">
-            <Button 
-              variant={isRecording ? "destructive" : "outline"} 
+            <Button
+              variant={isRecording ? "destructive" : "outline"}
               className="flex-1 gap-2"
-              onClick={isRecording ? stopRecording : startRecording}
+              onClick={handleRecordingToggle}
+              disabled={isSaving || isLoadingExisting}
             >
               {isRecording ? (
                 <>
@@ -131,30 +311,30 @@ export function RecordDialog({ children }: { children: React.ReactNode }) {
                 </>
               ) : (
                 <>
-                  <Play className="h-4 w-4" />
-                  Start
+                  <Mic className="h-4 w-4" />
+                  {hasRecording ? "Record Again" : "Start Recording"}
                 </>
               )}
             </Button>
-            <Button 
-              variant="outline" 
-              className="flex-1 gap-2" 
-              disabled={!audioURL}
-              onClick={() => {
-                // Implement review functionality
-                toast.info("Playing recording for review");
-              }}
+
+            <Button
+              className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700"
+              disabled={!hasRecording || isSaving || isLoadingExisting}
+              onClick={saveRecording}
             >
-              <Check className="h-4 w-4" />
-              Review
-            </Button>
-            <Button 
-              className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700" 
-              disabled={!audioURL}
-              onClick={handleSave}
-            >
-              <Upload className="h-4 w-4" />
-              Save
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4" />
+                  {hasExistingRecording && hasRecording
+                    ? "Update Recording"
+                    : "Save Recording"}
+                </>
+              )}
             </Button>
           </div>
         </div>
