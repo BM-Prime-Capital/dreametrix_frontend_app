@@ -5,10 +5,10 @@ import { ChevronLeft, Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRigh
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Toggle } from "@/components/ui/toggle";
 
-type LessonPlanField = 
-  | 'teacher' | 'subject' | 'grade' | 'students' 
-  | 'standards' | 'overview' | 'objectives' | 'aim' 
-  | 'hook' | 'hits' | 'bloom1' | 'minutesOfGlory' 
+type LessonPlanField =
+  | 'teacher' | 'subject' | 'grade' | 'students'
+  | 'standards' | 'overview' | 'objectives' | 'aim'
+  | 'hook' | 'hits' | 'bloom1' | 'minutesOfGlory'
   | 'firstTransition' | 'bloom2' | 'secondTransition' | 'closing';
 
 type Section = LessonPlanField | 'header';
@@ -31,7 +31,7 @@ interface LessonPlanContent {
     styles: TextStyles;
 }
 
-interface LessonPlan {
+export interface LessonPlan {
     teacher: string;
     subject: string;
     grade: string;
@@ -68,7 +68,7 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
         subject: "MATH",
         grade: "6",
         students: "32",
-        standards: { 
+        standards: {
             content: "6.RP.2 Understand the concept of a unit rate a/b associated with a ratio a:b with b ≠ 0, and use rate language in the context of a ratio relationship.\n6.EE.7 Solve real-world and mathematical problems by writing and solving equations of the form x + p = q and px = q for cases in which p, q and x are all nonnegative rational numbers.",
             styles: initialTextStyles
         },
@@ -134,7 +134,7 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
 
     const updateSectionStyles = (section: SectionKey, styles: Partial<TextStyles>) => {
         if (section === 'header') return;
-        
+
         setLessonPlan(prev => ({
             ...prev,
             [section]: {
@@ -150,21 +150,21 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
     const startEditing = (section: SectionKey) => {
         setEditingSection(section);
     };
-    
+
     const cancelEditing = () => {
         setEditingSection(null);
     };
-    
+
     const saveSection = () => {
         if (editingSection) {
             console.log("Section saved:", editingSection, lessonPlan[editingSection as keyof LessonPlan]);
             setEditingSection(null);
         }
     };
-    
+
     const applyTextStyle = (section: SectionKey) => {
         if (section === 'header') return "";
-        
+
         const styles = lessonPlan[section as Exclude<keyof LessonPlan, 'teacher' | 'subject' | 'grade' | 'students'>].styles;
         let style = "";
         if (styles.isBold) style += "font-bold ";
@@ -172,7 +172,7 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
         if (styles.isUnderline) style += "underline ";
         if (styles.textAlign === 'center') style += "text-center ";
         if (styles.textAlign === 'right') style += "text-right ";
-        
+
         return style;
     };
 
@@ -186,12 +186,7 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
     return (
         <div className="p-4 flex flex-col h-screen">
             {/* Top toolbar */}
-            <div className="flex justify-between items-center mb-2">
-                <Button variant="ghost" className="w-fit">
-                    <ChevronLeft className="mr-2 h-4 w-4" />
-                    Retour
-                </Button>
-            </div>
+
 
             {/* Formatting toolbar - only visible when editing a section */}
             {editingSection && (
@@ -209,8 +204,8 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                                 {['Arial', 'Calibri', 'Times New Roman', 'Verdana'].map(font => (
-                                    <DropdownMenuItem 
-                                        key={font} 
+                                    <DropdownMenuItem
+                                        key={font}
                                         onClick={() => updateSectionStyles(editingSection, { fontFamily: font })}
                                     >
                                         {font}
@@ -229,8 +224,8 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                                 {['8', '10', '11', '12', '14'].map(size => (
-                                    <DropdownMenuItem 
-                                        key={size} 
+                                    <DropdownMenuItem
+                                        key={size}
                                         onClick={() => updateSectionStyles(editingSection, { fontSize: size })}
                                     >
                                         {size}
@@ -315,7 +310,7 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                                 </Button>
                             </div>
                         </div>
-                        
+
                         <div className="flex space-x-2">
                             <Button variant="outline" onClick={cancelEditing}>
                                 <X className="mr-2 h-4 w-4" />
@@ -344,8 +339,8 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                     <div className="w-1/4 p-2 border-r-2 border-white flex items-center gap-2">
                         <span><strong>Teacher:</strong></span>
                         {editingSection === 'header' ? (
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 value={lessonPlan.teacher}
                                 onChange={(e) => handleInputChange('teacher', e.target.value)}
                                 className="border-none bg-white w-full text-black px-2 rounded-none"
@@ -357,8 +352,8 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                     <div className="w-1/4 p-2 border-r-2 border-white flex items-center gap-2">
                         <span><strong>SUBJECT:</strong></span>
                         {editingSection === 'header' ? (
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 value={lessonPlan.subject}
                                 onChange={(e) => handleInputChange('subject', e.target.value)}
                                 className="border-none bg-white w-full font-bold text-black px-2 rounded-none"
@@ -370,8 +365,8 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                     <div className="w-1/4 p-2 border-r-2 border-white flex items-center gap-2">
                         <span><strong>Grade:</strong></span>
                         {editingSection === 'header' ? (
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 value={lessonPlan.grade}
                                 onChange={(e) => handleInputChange('grade', e.target.value)}
                                 className="border-none bg-white w-full text-black px-2 rounded-none"
@@ -383,8 +378,8 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                     <div className="w-1/4 p-2 flex items-center gap-2">
                         <span><strong># Students:</strong></span>
                         {editingSection === 'header' ? (
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 value={lessonPlan.students}
                                 onChange={(e) => handleInputChange('students', e.target.value)}
                                 className="border-none bg-white w-full text-black px-2 rounded-none"
@@ -393,11 +388,11 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                             <div className="bg-gray-100 w-full text-black px-2 py-1">{lessonPlan.students}</div>
                         )}
                     </div>
-                    
+
                     {!editingSection && (
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             className="absolute right-8 top-32 text-white hover:text-white"
                             onClick={() => startEditing('header')}
                         >
@@ -421,11 +416,11 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                             {lessonPlan.standards.content}
                         </div>
                     )}
-                    
+
                     {!editingSection && (
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             className="absolute right-2 top-2"
                             onClick={() => startEditing('standards')}
                         >
@@ -449,11 +444,11 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                             {lessonPlan.overview.content}
                         </div>
                     )}
-                    
+
                     {!editingSection && (
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             className="absolute right-2 top-2"
                             onClick={() => startEditing('overview')}
                         >
@@ -473,7 +468,7 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                             <div className="font-bold">Objectives:</div>
                         </div>
                         {editingSection === 'objectives' ? (
-                            <textarea 
+                            <textarea
                                 value={lessonPlan.objectives.content}
                                 onChange={(e) => handleInputChange('objectives', e.target.value)}
                                 className={`w-full h-32 p-2 border ${applyTextStyle('objectives')}`}
@@ -483,11 +478,11 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                                 {lessonPlan.objectives.content}
                             </div>
                         )}
-                        
+
                         {!editingSection && (
-                            <Button 
-                                variant="ghost" 
-                                size="sm" 
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 className="absolute right-2 top-2"
                                 onClick={() => startEditing('objectives')}
                             >
@@ -495,7 +490,7 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                             </Button>
                         )}
                     </div>
-                    
+
                     {/* Aim column */}
                     <div className="w-4/12 p-3 border-r border-black relative">
                         <div className="flex items-center mb-2">
@@ -505,7 +500,7 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                             <div className="font-bold">Aim:</div>
                         </div>
                         {editingSection === 'aim' ? (
-                            <textarea 
+                            <textarea
                                 value={lessonPlan.aim.content}
                                 onChange={(e) => handleInputChange('aim', e.target.value)}
                                 className={`w-full h-32 p-2 border ${applyTextStyle('aim')}`}
@@ -515,11 +510,11 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                                 {lessonPlan.aim.content}
                             </div>
                         )}
-                        
+
                         {!editingSection && (
-                            <Button 
-                                variant="ghost" 
-                                size="sm" 
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 className="absolute right-2 top-2"
                                 onClick={() => startEditing('aim')}
                             >
@@ -527,7 +522,7 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                             </Button>
                         )}
                     </div>
-                    
+
                     {/* Hook column */}
                     <div className="w-4/12 p-3 relative">
                         <div className="flex items-center mb-2">
@@ -537,7 +532,7 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                             <div className="font-bold">Hook:</div>
                         </div>
                         {editingSection === 'hook' ? (
-                            <textarea 
+                            <textarea
                                 value={lessonPlan.hook.content}
                                 onChange={(e) => handleInputChange('hook', e.target.value)}
                                 className={`w-full h-32 p-2 border ${applyTextStyle('hook')}`}
@@ -547,11 +542,11 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                                 {lessonPlan.hook.content}
                             </div>
                         )}
-                        
+
                         {!editingSection && (
-                            <Button 
-                                variant="ghost" 
-                                size="sm" 
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 className="absolute right-2 top-2"
                                 onClick={() => startEditing('hook')}
                             >
@@ -573,11 +568,11 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                     ) : (
                         <div className={applyTextStyle('hits')}>{lessonPlan.hits.content}</div>
                     )}
-                    
+
                     {!editingSection && (
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             className="absolute right-2 top-2"
                             onClick={() => startEditing('hits')}
                         >
@@ -598,11 +593,11 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                     ) : (
                         <div className={applyTextStyle('bloom1')}>{lessonPlan.bloom1.content}</div>
                     )}
-                    
+
                     {!editingSection && (
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             className="absolute right-2 top-2"
                             onClick={() => startEditing('bloom1')}
                         >
@@ -634,11 +629,11 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                                 </div>
                             )}
                         </div>
-                        
+
                         {!editingSection && (
-                            <Button 
-                                variant="ghost" 
-                                size="sm" 
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 className="absolute right-2 top-2"
                                 onClick={() => startEditing('minutesOfGlory')}
                             >
@@ -646,7 +641,7 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                             </Button>
                         )}
                     </div>
-                    
+
                     {/* 1st Transition */}
                     <div className="w-6/12 p-3 relative">
                         <div className="flex items-center mb-2">
@@ -668,11 +663,11 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                                 </div>
                             )}
                         </div>
-                        
+
                         {!editingSection && (
-                            <Button 
-                                variant="ghost" 
-                                size="sm" 
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 className="absolute right-2 top-2"
                                 onClick={() => startEditing('firstTransition')}
                             >
@@ -694,11 +689,11 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                     ) : (
                         <div className={applyTextStyle('bloom2')}>{lessonPlan.bloom2.content}</div>
                     )}
-                    
+
                     {!editingSection && (
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             className="absolute right-2 top-2"
                             onClick={() => startEditing('bloom2')}
                         >
@@ -731,11 +726,11 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                             )}
                         </div>
                     </div>
-                    
+
                     {!editingSection && (
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             className="absolute right-2 top-2"
                             onClick={() => startEditing('secondTransition')}
                         >
@@ -768,11 +763,11 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                             )}
                         </div>
                     </div>
-                    
+
                     {!editingSection && (
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             className="absolute right-2 top-2"
                             onClick={() => startEditing('closing')}
                         >

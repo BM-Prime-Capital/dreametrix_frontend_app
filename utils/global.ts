@@ -80,3 +80,51 @@ export const getFormatedDate = (
 
   return `${mainDate} ${timeString}`;
 };
+
+
+
+export const LessonPlanDuration =[
+  {
+    title: "Pick a duration",
+    value:""
+  }
+    ,
+  {
+    title:"5 minutes",
+    value:"5min"
+  },
+  {
+    title:"10 minutes",
+    value:"10min"
+  },  {
+    title:"15 minutes",
+    value:"15min"
+  },  {
+    title:"20 minutes",
+    value:"20min"
+  },  {
+    title:"25 minutes",
+    value:"25min"
+  },  {
+    title:"30 minutes",
+    value:"30min"
+  },  {
+    title:"35 minutes",
+    value:"35min"
+  },  {
+    title:"40 minutes",
+    value:"40min"
+  },  {
+    title:"45 minutes",
+    value:"45min"
+  },  {
+    title:"50 minutes",
+    value:"50min"
+  },  {
+    title:"55 minutes",
+    value:"55min"
+  },  {
+    title:"60 minutes",
+    value:"60min"
+  },
+]

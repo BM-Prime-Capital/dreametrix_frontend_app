@@ -1,7 +1,7 @@
 "use client";
 
-import CommingSoon from "@/components/ui/comming-soon";
+import ComingSoon from "@/components/ui/coming-soon";
 
 export default function DreamArcadePage() {
-  return <CommingSoon title="Dream Arcade" />;
+  return <ComingSoon title="Dream Arcade" />;
 }
