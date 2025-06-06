@@ -1,9 +1,9 @@
-// components/Accordion.tsx
 'use client';
 
 import {ReactNode, useState} from 'react';
 // import Link from 'next/link';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import {useRouter} from "next/navigation";
+
 
 type Item = {
     label: string;
@@ -13,40 +13,26 @@ type Item = {
 
 type AccordionProps = {
     title: string;
-    items: Item[];
+    link:string;
     icon: ReactNode;
     callback: ()=>void
 };
 
-export default function PlanAccordion({ title, items, icon, callback }: AccordionProps) {
+export default function PlanAccordion({ title, icon, link  }: AccordionProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const router = useRouter();
 
     return (
-        <div className="min-w-[280px] border rounded-xl shadow-sm bg-white">
+        <div onClick={() => router.push(`/teacher/plan/${link}`)} className="min-w-[280px] border rounded-xl shadow-sm bg-white">
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-full px-4 py-3 flex items-center justify-between text-left font-semibold hover:bg-gray-100 "
             >
                 {icon}
-                <p className={"text-sm"}>{title}</p>
 
-                {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                <p className={"text-sm"}>{title}</p>
             </button>
 
-            {isOpen && (
-                <ul className="px-4 py-2 space-y-2 bg-gray-50">
-                    {items.map((item) => (
-                        <li key={item.href} onClick={callback} className="block px-3 py-2 rounded hover:bg-blue-100 text-blue-700 font-medium cursor-pointer transition">
-                            {/*<Link*/}
-                            {/*    href={item.href}*/}
-                            {/*    className="block px-3 py-2 rounded hover:bg-blue-100 text-blue-700 font-medium transition"*/}
-                            {/*>*/}
-                                {item.label}
-                            {/*</Link>*/}
-                        </li>
-                    ))}
-                </ul>
-            )}
         </div>
     );
 }

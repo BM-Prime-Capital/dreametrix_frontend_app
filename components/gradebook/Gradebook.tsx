@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { GradebookTable } from "./gradebook-table";
 import PageTitleH1 from "@/components/ui/page-title-h1";
 import { AddGradebookItemDialog } from "./AddGradebookItemDialog";
+import { GradebookSettingsDialog } from "./GradebookSettingsDialog";
 
 import { GradebookClassTable } from "./gradebook-class-table";
 
@@ -16,25 +17,19 @@ import { getGradeBookList } from "@/services/GradebooksService";
 import { localStorageKey } from "@/constants/global";
 import { ClassData } from "../types/gradebook";
 
-
-
 interface GradebookTableProps {
   classes: ClassData[];
   setCurrentClass: (selectedClass: ClassData) => void;
 }
 
 export default function Gradebook() {
-
   const [currentClass, setCurrentClass] = useState<ClassData | null>(null);
   const [gradebookData, setGradebookData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  
   const accessToken: any = localStorage.getItem(localStorageKey.ACCESS_TOKEN);
-  const refreshToken: any = localStorage.getItem(
-        localStorageKey.REFRESH_TOKEN
-      );
+  const refreshToken: any = localStorage.getItem(localStorageKey.REFRESH_TOKEN);
 
   const tenantData: any = localStorage.getItem(localStorageKey.TENANT_DATA);
 
@@ -43,7 +38,10 @@ export default function Gradebook() {
 
   const handleClassSelect = (selectedClass: ClassData) => {
     setCurrentClass(selectedClass);
-    localStorage.setItem(localStorageKey.CURRENT_SELECTED_CLASS, JSON.stringify(selectedClass));
+    localStorage.setItem(
+      localStorageKey.CURRENT_SELECTED_CLASS,
+      JSON.stringify(selectedClass)
+    );
   };
 
   const handleBackToList = () => {
@@ -54,9 +52,13 @@ export default function Gradebook() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getGradeBookList(tenantPrimaryDomain, accessToken, refreshToken);
+        const data = await getGradeBookList(
+          tenantPrimaryDomain,
+          accessToken,
+          refreshToken
+        );
 
-        console.log("GradeBookList data: ", data)
+        console.log("GradeBookList data: ", data);
 
         // Mapper vers le format attendu par GradebookTable
         const formatted = data.map((item: any) => ({
@@ -102,7 +104,6 @@ export default function Gradebook() {
         {currentClass && <ClassSelect />}
       </div>
 
-
       <div className="flex gap-2">
         <AddGradebookItemDialog />
         {currentClass && (
@@ -117,6 +118,7 @@ export default function Gradebook() {
             <span>Layout</span>
           </Button>
         )}
+        {currentClass && <GradebookSettingsDialog />}
       </div>
 
       <Card className="rounded-md p-4">
@@ -127,22 +129,22 @@ export default function Gradebook() {
         ) : currentClass ? (
           // VOICI LA PARTIE MODIFIÉE 👇
           <div className="space-y-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleBackToList}
               className="mb-4"
             >
               ← Back to class list
             </Button>
-            <GradebookClassTable 
-              classData={currentClass}  // Ajout de la prop classData
-              onBack={handleBackToList}  // Ajout de la prop onBack
+            <GradebookClassTable
+              classData={currentClass} // Ajout de la prop classData
+              onBack={handleBackToList} // Ajout de la prop onBack
             />
           </div>
         ) : (
           <GradebookTable
-          classes={gradebookData}
-          onClassSelect={handleClassSelect}
+            classes={gradebookData}
+            onClassSelect={handleClassSelect}
           />
         )}
       </Card>

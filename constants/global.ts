@@ -4,6 +4,7 @@ export const attendanceLabel = {
   PRESENT: "Present",
   ABSENT: "Absent",
   LATE: "Late",
+  HALF_DAY: "Half Day",
 };
 
 export const studentClassCharacters = [

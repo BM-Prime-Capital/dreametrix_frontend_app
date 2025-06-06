@@ -12,6 +12,11 @@ export interface LessonPlanContent {
   styles: TextStyles;
 }
 
+export interface LessonPlanContentForFormCreation{
+  content: string;
+
+}
+
 export interface LessonPlan {
   teacher: string;
   subject: string;
@@ -29,6 +34,28 @@ export interface LessonPlan {
   bloom2: LessonPlanContent;
   secondTransition: LessonPlanContent;
   closing: LessonPlanContent;
+}
+
+
+
+export interface LessonPlanForForm {
+  teacher: string;
+  subject: string;
+  grade: string;
+  students: string;
+  standards: {content: string[]};
+  overview: LessonPlanContentForFormCreation;
+  objectives: LessonPlanContentForFormCreation;
+  aim: LessonPlanContentForFormCreation;
+  hook: LessonPlanContentForFormCreation;
+  minutesOfGlory: LessonPlanContentForFormCreation;
+  minutesOfReview: LessonPlanContentForFormCreation;
+  minutesOfLessons: LessonPlanContentForFormCreation;
+  firstTransitionMinutes: LessonPlanContentForFormCreation;
+  secondTransitionMinutes: LessonPlanContentForFormCreation;
+  thirdTransitionMinutes: LessonPlanContentForFormCreation;
+
+  closing: LessonPlanContentForFormCreation;
 }
 
 
