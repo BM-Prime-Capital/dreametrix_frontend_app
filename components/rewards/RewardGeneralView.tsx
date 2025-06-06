@@ -26,13 +26,20 @@ interface RewardsGeneralViewProps {
   changeView: (viewName: string, student?: any) => void;
 }
 
-export default function RewardsGeneralView({ changeView }: RewardsGeneralViewProps) {
-  const { tenantDomain: tenantPrimaryDomain, accessToken, refreshToken } = useRequestInfo();
-  const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
+export default function RewardsGeneralView({
+  changeView,
+}: RewardsGeneralViewProps) {
+  const {
+    tenantDomain: tenantPrimaryDomain,
+    accessToken,
+    refreshToken,
+  } = useRequestInfo();
+  //const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
+  //console.log("localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!",localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!)
   const currentClass = JSON.parse(
     localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
   );
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [rewards, setRewards] = useState<any[]>([]);
   const [rewardsCount, setRewardsCount] = useState(0);
@@ -57,7 +64,7 @@ export default function RewardsGeneralView({ changeView }: RewardsGeneralViewPro
           currentClass?.id // Ajout de l'ID de la classe courante
         );
 
-        const transformedData = apiData.classes.flatMap((classItem: any) => 
+        const transformedData = apiData.classes.flatMap((classItem: any) =>
           classItem.students.map((studentItem: any) => ({
             id: studentItem.student.id,
             student: studentItem.student.name,
@@ -66,7 +73,7 @@ export default function RewardsGeneralView({ changeView }: RewardsGeneralViewPro
             pointGained: studentItem.pointGained,
             pointLost: studentItem.pointLost,
             total: studentItem.total,
-            rawData: studentItem
+            rawData: studentItem,
           }))
         );
 
@@ -80,7 +87,14 @@ export default function RewardsGeneralView({ changeView }: RewardsGeneralViewPro
     };
 
     loadRewards();
-  }, [tenantPrimaryDomain, accessToken, refreshToken, fromDate, toDate, currentClass?.id]);
+  }, [
+    tenantPrimaryDomain,
+    accessToken,
+    refreshToken,
+    fromDate,
+    toDate,
+    currentClass?.id,
+  ]);
 
   // In GeneralView component
   // Dans GeneralView (correct)
@@ -104,9 +118,10 @@ export default function RewardsGeneralView({ changeView }: RewardsGeneralViewPro
       {/* Deuxième ligne : "Results found" à gauche, dates à droite */}
       <div className="flex justify-between items-center">
         <div className="text-sm text-gray-500 ml-1">
-          Results found: <span className="font-bold text-primaryText">{rewardsCount}</span>
+          Results found:{" "}
+          <span className="font-bold text-primaryText">{rewardsCount}</span>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <label className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">From:</span>
@@ -141,9 +156,15 @@ export default function RewardsGeneralView({ changeView }: RewardsGeneralViewPro
               <TableRow className="hover:bg-transparent">
                 <TableHead className="font-bold">Students</TableHead>
                 <TableHead className="font-bold text-center">Class</TableHead>
-                <TableHead className="font-bold text-center">Attendance</TableHead>
-                <TableHead className="font-bold text-center">Point Gained</TableHead>
-                <TableHead className="font-bold text-center">Point Lost</TableHead>
+                <TableHead className="font-bold text-center">
+                  Attendance
+                </TableHead>
+                <TableHead className="font-bold text-center">
+                  Point Gained
+                </TableHead>
+                <TableHead className="font-bold text-center">
+                  Point Lost
+                </TableHead>
                 <TableHead className="font-bold text-center">Total</TableHead>
                 <TableHead className="font-bold text-center">ACTIONS</TableHead>
               </TableRow>
@@ -152,14 +173,29 @@ export default function RewardsGeneralView({ changeView }: RewardsGeneralViewPro
               {rewards.length > 0 ? (
                 rewards.map((reward) => (
                   <TableRow key={reward.id}>
-                    <TableCell className="font-medium">{reward.student}</TableCell>
-                    <TableCell className="text-center">{reward.class}</TableCell>
+                    <TableCell className="font-medium">
+                      <button
+                        className="text-center text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
+                        onClick={() => handleViewDetails(reward)}
+                      >
+                        {reward.student}
+                      </button>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {reward.class}
+                    </TableCell>
                     <TableCell>
                       <AttendanceDisplay attendance={reward.attendance} />
                     </TableCell>
-                    <TableCell className="text-center">{reward.pointGained}</TableCell>
-                    <TableCell className="text-center">{reward.pointLost}</TableCell>
-                    <TableCell className="text-center">{reward.total}</TableCell>
+                    <TableCell className="text-center">
+                      {reward.pointGained}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {reward.pointLost}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {reward.total}
+                    </TableCell>
                     <TableCell>
                       <div className="flex gap-2 justify-center">
                         <Button

@@ -3,14 +3,12 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { X, Download, Printer, ChevronLeft, ChevronRight } from "lucide-react"
+import { Assignment } from "@/app/api/student/assignment/assignment.model"
 
 interface ViewAssignmentDialogProps {
   isOpen: boolean
   onClose: () => void
-  assignment: {
-    class?: string
-    type?: string
-  }
+  assignment: Assignment | null;
 }
 export function ViewAssignmentDialog({ isOpen, onClose, assignment }: ViewAssignmentDialogProps) {
   return (
@@ -26,9 +24,9 @@ export function ViewAssignmentDialog({ isOpen, onClose, assignment }: ViewAssign
         </DialogHeader>
         <div className="px-4 pb-4 space-y-4">
           <div className="text-gray-500 text-sm">
-            {assignment?.class}
+            {assignment?.name}
             <br />
-            {assignment?.type}
+            {assignment?.kind}
           </div>
 
           <div className="bg-white rounded-lg p-4 min-h-[200px] flex flex-col justify-center items-center">

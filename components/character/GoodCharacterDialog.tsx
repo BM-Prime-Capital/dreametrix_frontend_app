@@ -1,50 +1,95 @@
-"use client";
-
 import React, { useEffect, useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { teacherImages } from "@/constants/images";
 import Image from "next/image";
 import PageTitleH2 from "../ui/page-title-h2";
 import { localStorageKey } from "@/constants/global";
-import { Character } from "@/types";
+import { Character, CharacterObservationEntry } from "@/types";
 import { updateCharacter } from "@/services/CharacterService";
+import {
+  extractTraitsFromEntries,
+  createCharacterObservationEntry,
+  parseDomainForDisplay,
+} from "@/utils/characterUtils";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
+import { format } from "date-fns";
 
 const GoodCharacterDialog = React.memo(
   ({
     character,
     setShouldRefreshData,
+    selectedDate,
+    isReadOnly = false,
   }: {
     character: Character;
     setShouldRefreshData: Function;
+    selectedDate?: Date;
+    isReadOnly?: boolean;
   }) => {
     const [open, setOpen] = useState(false);
     const currentClass = JSON.parse(
       localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
     );
-    const characterList: { id: number; name: string }[] = JSON.parse(
-      localStorage.getItem(localStorageKey.CHARACTERS_LIST)!
-    );
+    const characterList: {
+      id: number;
+      name: string;
+      character_type: string;
+      value_point: string;
+    }[] = JSON.parse(localStorage.getItem(localStorageKey.CHARACTERS_LIST)!);
     const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+    console.log("tenantDomain", tenantDomain)
     const [comment, setComment] = useState<string>(character.teacher_comment);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+    // Get current traits for the character
+    const currentTraits = useMemo(() => {
+      return extractTraitsFromEntries(character.good_characters);
+    }, [character.good_characters]);
+
+    // Get current entries grouped by trait
+    const currentEntries = useMemo(() => {
+      if (!Array.isArray(character.good_characters)) return {};
+
+      const entriesMap: Record<string, CharacterObservationEntry[]> = {};
+      character.good_characters.forEach((entry) => {
+        if (typeof entry === "string") {
+          const trait = entry;
+          if (!entriesMap[trait]) entriesMap[trait] = [];
+          entriesMap[trait].push(createCharacterObservationEntry(trait));
+        } else {
+          const trait = entry.trait;
+          if (!entriesMap[trait]) entriesMap[trait] = [];
+          entriesMap[trait].push(entry);
+        }
+      });
+      return entriesMap;
+    }, [character.good_characters]);
+
     // Memoize the allItems to prevent unnecessary recalculations
     const allItems = useMemo(() => {
-      return characterList ? characterList.flatMap((char) => char.name) : [];
+      return characterList
+        ? characterList
+            .filter((char) => char.character_type === "good")
+            .flatMap((char) => char.name)
+        : [];
     }, [characterList]);
 
     // Initialize checkedItems state properly
     const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(
       () => {
         const initialChecked: Record<string, boolean> = {};
-        if (characterList && character.good_characters.length > 0) {
+        if (characterList && currentTraits.length > 0) {
           allItems.forEach((item) => {
-            initialChecked[item] = character.good_characters.includes(item);
+            initialChecked[item] = currentTraits.includes(item);
           });
         }
         return initialChecked;
       }
+    );
+
+    // Track comment for individual traits
+    const [traitComments, setTraitComments] = useState<Record<string, string>>(
+      {}
     );
 
     // Calculate selectAll based on checkedItems
@@ -54,9 +99,9 @@ const GoodCharacterDialog = React.memo(
 
     // Handle individual item checkbox change
     const handleItemChange = (item: string) => {
-      setCheckedItems(prev => ({
+      setCheckedItems((prev) => ({
         ...prev,
-        [item]: !prev[item]
+        [item]: !prev[item],
       }));
     };
 
@@ -64,33 +109,56 @@ const GoodCharacterDialog = React.memo(
     const handleSelectAllChange = () => {
       const newCheckedState = !selectAll;
       setCheckedItems(
-        Object.fromEntries(allItems.map(item => [item, newCheckedState]))
+        Object.fromEntries(allItems.map((item) => [item, newCheckedState]))
       );
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
+      if (isReadOnly) return;
+
       setIsSubmitting(true);
-      
+
       try {
+        // Create new entries for selected traits
+        const newGoodEntries: CharacterObservationEntry[] = [];
+        Object.keys(checkedItems).forEach((trait) => {
+          if (checkedItems[trait]) {
+            const entry = createCharacterObservationEntry(
+              trait,
+              traitComments[trait] || undefined
+            );
+            newGoodEntries.push(entry);
+          }
+        });
+
+        // Preserve existing entries and add new ones
+        const existingEntries = Array.isArray(character.good_characters)
+          ? character.good_characters.filter(
+              (entry) =>
+                typeof entry !== "string" ||
+                !Object.keys(checkedItems).includes(entry)
+            )
+          : [];
+
+        const combinedEntries = [...existingEntries, ...newGoodEntries];
+
         const data = {
           character_id: character.character_id,
           bad_statistics_character: character.bad_characters,
-          good_statistics_character: Object.keys(checkedItems).filter(
-            (key) => checkedItems[key]
-          ),
+          good_statistics_character: combinedEntries,
           teacher_comment: comment,
+          observation_date: selectedDate
+            ? format(selectedDate, "yyyy-MM-dd")
+            : undefined,
         };
-        
-        await updateCharacter(
-          data,
-          tenantDomain,
-          accessToken,
-          refreshToken
-        );
-        
+
+        await updateCharacter(data, tenantDomain, accessToken, refreshToken);
+
         setShouldRefreshData(true);
         setOpen(false);
+      } catch (error) {
+        console.error("Error updating character:", error);
       } finally {
         setIsSubmitting(false);
       }
@@ -101,15 +169,15 @@ const GoodCharacterDialog = React.memo(
         <DialogTrigger asChild className="cursor-pointer">
           <span
             className={`flex justify-center items-center p-2 h-10 w-10 rounded-full cursor-pointer ${
-              character.good_characters.length > 0
+              currentTraits.length > 0
                 ? "bg-bgGreenLight2"
                 : "border-2 border-bgGreenLight2"
-            }`}
+            } ${isReadOnly ? "opacity-60" : ""}`}
           >
             <Image src={teacherImages.up} width={20} height={20} alt="up" />
           </span>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[400px] h-[90%]">
+        <DialogContent className="sm:max-w-[500px] h-[90%]">
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div className="flex justify-between p-2 border-b-[1px] border-[#eee]">
               <div className="flex flex-col gap-2 justify-center">
@@ -119,62 +187,152 @@ const GoodCharacterDialog = React.memo(
                 <span className="text-muted-foreground">
                   {currentClass.name}
                 </span>
+                {selectedDate && (
+                  <span className="text-sm text-gray-500">
+                    {format(selectedDate, "PPP")}
+                  </span>
+                )}
+                {isReadOnly && (
+                  <span className="text-sm text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                    Read-only mode
+                  </span>
+                )}
               </div>
               <div className="flex flex-col gap-2 justify-center">
                 <span
                   className={`flex justify-center items-center p-2 h-10 w-10 rounded-full cursor-pointer ${
-                    character.good_characters.length > 0
+                    currentTraits.length > 0
                       ? "bg-bgGreenLight2"
                       : "border-2 border-bgGreenLight2"
                   }`}
                 >
-                  <Image src={teacherImages.up} width={20} height={20} alt="up" />
+                  <Image
+                    src={teacherImages.up}
+                    width={20}
+                    height={20}
+                    alt="up"
+                  />
                 </span>
                 <PageTitleH2 title="Character" className="text-bgGreenLight2" />
               </div>
             </div>
-            
-            <label>Select the options that apply:</label>
+
+            {/* Current Entries Display */}
+            {Object.keys(currentEntries).length > 0 && (
+              <div className="bg-gray-50 p-3 rounded-md">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Current Observations:
+                </label>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {Object.entries(currentEntries).map(([trait, entries]) => {
+                    const { displayText } = parseDomainForDisplay(trait);
+                    return (
+                      <div key={trait} className="text-sm">
+                        <span className="font-medium text-green-700">
+                          {displayText}
+                        </span>
+                        <span className="text-gray-500 ml-2">
+                          ({entries.length} entries)
+                        </span>
+                        {entries.length > 0 &&
+                          entries[entries.length - 1].comment && (
+                            <div className="text-xs text-gray-600 ml-4 italic">
+                              "{entries[entries.length - 1].comment}"
+                            </div>
+                          )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <label>
+              {isReadOnly ? "Available traits:" : "Add new observations:"}
+            </label>
             <div className="h-[33%] overflow-y-scroll border-[1px] border-[#eee] p-2">
               <div className="flex flex-col gap-4">
-                <label className="flex items-center space-x-2">
-                  <input
-                    className="hidden"
-                    type="checkbox"
-                    checked={selectAll}
-                    onChange={handleSelectAllChange}
-                  />
-                  <span className="flex p-[2px] border-[2px] border-[#ff69b4] w-[20px] h-[20px] rounded-sm">
-                    <span className={`flex-1 rounded-xs ${selectAll ? "bg-[#ff69b4]" : ""}`} />
-                  </span>
-                  <span>Select All</span>
-                </label>
+                {!isReadOnly && (
+                  <label className="flex items-center space-x-2">
+                    <input
+                      className="hidden"
+                      type="checkbox"
+                      checked={selectAll}
+                      onChange={handleSelectAllChange}
+                    />
+                    <span className="flex p-[2px] border-[2px] border-[#ff69b4] w-[20px] h-[20px] rounded-sm">
+                      <span
+                        className={`flex-1 rounded-xs ${
+                          selectAll ? "bg-[#ff69b4]" : ""
+                        }`}
+                      />
+                    </span>
+                    <span>Select All</span>
+                  </label>
+                )}
 
                 <div className="flex flex-col gap-4 flex-wrap">
-                  {allItems.map((item, index) => (
-                    <label key={index} className="flex items-center space-x-2">
-                      <input
-                        className="hidden"
-                        type="checkbox"
-                        checked={checkedItems[item] || false}
-                        onChange={() => handleItemChange(item)}
-                      />
-                      <span className="flex p-[2px] border-[2px] border-[#ff69b4] w-[20px] h-[20px] rounded-sm">
-                        <span className={`flex-1 rounded-xs ${checkedItems[item] ? "bg-[#ff69b4]" : ""}`} />
-                      </span>
-                      <span>{item}</span>
-                    </label>
-                  ))}
+                  {allItems.map((item, index) => {
+                    const { displayText } = parseDomainForDisplay(item);
+                    return (
+                      <div key={index} className="space-y-2">
+                        <label className="flex items-center space-x-2">
+                          <input
+                            className="hidden"
+                            type="checkbox"
+                            checked={checkedItems[item] || false}
+                            onChange={() =>
+                              !isReadOnly && handleItemChange(item)
+                            }
+                            disabled={isReadOnly}
+                          />
+                          <span
+                            className={`flex p-[2px] border-[2px] border-[#ff69b4] w-[20px] h-[20px] rounded-sm ${
+                              isReadOnly ? "opacity-50" : ""
+                            }`}
+                          >
+                            <span
+                              className={`flex-1 rounded-xs ${
+                                checkedItems[item] ? "bg-[#ff69b4]" : ""
+                              }`}
+                            />
+                          </span>
+                          <span className={isReadOnly ? "text-gray-500" : ""}>
+                            {displayText}
+                          </span>
+                        </label>
+                        {checkedItems[item] && !isReadOnly && (
+                          <input
+                            type="text"
+                            placeholder="Optional comment for this trait..."
+                            className="ml-6 text-sm border border-gray-200 rounded px-2 py-1 w-full"
+                            value={traitComments[item] || ""}
+                            onChange={(e) =>
+                              setTraitComments((prev) => ({
+                                ...prev,
+                                [item]: e.target.value,
+                              }))
+                            }
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
 
             <textarea
-              className="border-[1px] p-2 border-[#eee]"
+              className={`border-[1px] p-2 border-[#eee] ${
+                isReadOnly ? "bg-gray-50 text-gray-500" : ""
+              }`}
               rows={3}
-              placeholder="Comment"
+              placeholder={
+                isReadOnly ? "Teacher comment (read-only)" : "General comment"
+              }
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={(e) => !isReadOnly && setComment(e.target.value)}
+              disabled={isReadOnly}
             />
 
             <div className="flex justify-between gap-2">
@@ -183,15 +341,17 @@ const GoodCharacterDialog = React.memo(
                 className="flex-1 rounded-full px-4 hover:bg-gray-100"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {isReadOnly ? "Close" : "Cancel"}
               </button>
-              <button
-                disabled={isSubmitting}
-                type="submit"
-                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white rounded-full px-4"
-              >
-                {isSubmitting ? "Submitting..." : "Apply"}
-              </button>
+              {!isReadOnly && (
+                <button
+                  disabled={isSubmitting}
+                  type="submit"
+                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white rounded-full px-4"
+                >
+                  {isSubmitting ? "Submitting..." : "Apply"}
+                </button>
+              )}
             </div>
           </form>
         </DialogContent>

@@ -1,7 +1,6 @@
-"use client";
+import ReportCard from "@/components/report_cards/report_card";
+import React from "react";
 
-import ComingSoon from "@/components/ui/coming-soon";
-
-export default function ReportPage() {
-  return <ComingSoon title="Report Card" />;
+export default function ReportCardPage() {
+  return <ReportCard />;
 }

@@ -5,6 +5,7 @@ import { AssignmentsTable } from "./assignments-table";
 import AssignmentFiltersPopUp from "./AssignmentsFiltersPopUp";
 import { AddAssignmentDialog } from "./AddAssignmentDialog";
 import ClassSelect from "../ClassSelect";
+import { motion } from "framer-motion";
 import PageTitleH1 from "../ui/page-title-h1";
 
 export default function Assignments() {

@@ -9,7 +9,7 @@ import { teacherImages } from "@/constants/images";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
-import { Plus, Pencil, Printer, LayoutDashboard, FileText, Check, X, Clock, AlertCircle } from "lucide-react";
+import { Plus, Pencil, Printer, LayoutDashboard, FileText, Check, X, Clock, AlertCircle, ChevronLeft } from "lucide-react";
 import ClassSelect from "../ClassSelect";
 import { views } from "@/constants/global";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -47,6 +47,7 @@ export default function AttendanceFocusedView({
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  console.log("tenantDomain")
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
   const { id: currentClassId } = JSON.parse(
     localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
@@ -202,8 +203,8 @@ export default function AttendanceFocusedView({
 
   return (
     <section className="flex flex-col gap-4 w-full">
-      <div className="flex justify-between items-center">
-        <PageTitleH1 title="Attendance Management" />
+      <div className="flex justify-between items-center bg-[#3e81d4] px-4 py-3 rounded-md">
+        <PageTitleH1 title="Attendance Management" className="text-white" />
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-md border border-gray-200">
             <label className="text-sm font-medium text-gray-600">Date:</label>
@@ -219,6 +220,18 @@ export default function AttendanceFocusedView({
       </div>
 
       <div className="flex flex-wrap gap-3 justify-between items-center">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border-gray-200 shadow-sm"
+          onClick={() => changeView(views.GENERAL_VIEW)}
+          title="Back to general view"
+          disabled={isLoading}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span className="font-medium">Back</span>
+        </Button>
+
         <div className="flex flex-wrap gap-2">
           {isToday && !hasAttendances && (
             <>
@@ -312,54 +325,45 @@ export default function AttendanceFocusedView({
             </div>
           )}
 
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-9 w-9 bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
-            onClick={() => setShowReportDialog(true)}
-            title="Generate report"
-            disabled={isLoading}
-          >
-            <FileText className="h-4 w-4" />
-          </Button>
-
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-9 w-9"
-            title="Print attendance"
-            asChild
-            disabled={isLoading}
-          >
-            <Link href="/assets/google_search.pdf" target="_blank">
-              <Printer className="h-4 w-4 text-gray-600" />
-            </Link>
-          </Button>
-
-          {isAttendanceDatePast && (
+          <div className="flex gap-2 border-l border-gray-200 pl-2 ml-2">
             <Button
               variant="outline"
               size="icon"
-              className="h-9 w-9 bg-purple-50 hover:bg-purple-100 text-purple-600 border-purple-200"
-              title="Edit attendance"
-              onClick={() => setIsAttendanceDatePast(false)}
+              className="h-9 w-9 bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
+              onClick={() => setShowReportDialog(true)}
+              title="Generate report"
               disabled={isLoading}
             >
-              <Pencil className="h-4 w-4" />
+              <FileText className="h-4 w-4" />
             </Button>
-          )}
-        </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 text-gray-600 hover:text-gray-900"
-          onClick={() => changeView(views.GENERAL_VIEW)}
-          title="General view"
-          disabled={isLoading}
-        >
-          <LayoutDashboard className="h-4 w-4" />
-        </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-9 w-9"
+              title="Print attendance"
+              asChild
+              disabled={isLoading}
+            >
+              <Link href="/assets/google_search.pdf" target="_blank">
+                <Printer className="h-4 w-4 text-gray-600" />
+              </Link>
+            </Button>
+
+            {isAttendanceDatePast && (
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 bg-purple-50 hover:bg-purple-100 text-purple-600 border-purple-200"
+                title="Edit attendance"
+                onClick={() => setIsAttendanceDatePast(false)}
+                disabled={isLoading}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
 
       <ReportAttendanceDialog 
@@ -368,10 +372,12 @@ export default function AttendanceFocusedView({
       />
 
       <Card className="rounded-lg border shadow-sm">
-
         <AttendanceTable
           currentDate={attendanceDate}
           isAttendanceDatePast={isAttendanceDatePast}
+          onAttendancesLoaded={(data) => setHasAttendances(data.length > 0)}
+          onInitializeAttendances={handleInitializeAttendances}
+          onEditAttendance={() => setIsAttendanceDatePast(false)}
         />
       </Card>
     </section>
