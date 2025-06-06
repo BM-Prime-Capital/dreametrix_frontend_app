@@ -3,8 +3,7 @@
 
 export async function getStudents(
   tenantPrimaryDomain: string,
-  accessToken: string,
-  refreshToken: string
+  accessToken: string
 ) {
   if (!accessToken) {
     throw new Error("You are not logged in. Please log in again.");
