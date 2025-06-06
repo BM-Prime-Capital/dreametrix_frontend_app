@@ -15,10 +15,12 @@ export default function AttendanceItem({
   const PRESENT = attendanceLabel.PRESENT;
   const ABSENT = attendanceLabel.ABSENT;
   const LATE = attendanceLabel.LATE;
+  const HALF_DAY = attendanceLabel.HALF_DAY;
 
   const PRESENT_COLOR = isAttendanceDatePast ? "gray-300" : "bgGreenLight2";
   const ABSENT_COLOR = isAttendanceDatePast ? "gray-300" : "bgPinkLight2";
   const LATE_COLOR = isAttendanceDatePast ? "gray-300" : "bgYellow";
+  const HALF_DAY_COLOR = isAttendanceDatePast ? "gray-300" : "bgOrangeLight2";
 
   function handleClick(attendanceLabel: string): void {
     if (!isAttendanceDatePast) {
@@ -66,6 +68,16 @@ export default function AttendanceItem({
         onClick={() => handleClick(LATE)}
       >
         {LATE}
+      </span>
+
+      <span
+        className={`py-2 px-4 rounded-full cursor-pointer ${currentAttendanceLabel.toLocaleLowerCase() === HALF_DAY.toLocaleLowerCase()
+            ? `bg-${HALF_DAY_COLOR} text-orange-900`
+            : `border-2 border-${HALF_DAY_COLOR}`
+        }`}
+        onClick={() => handleClick(HALF_DAY)}
+      >
+        {HALF_DAY}
       </span>
     </div>
   );

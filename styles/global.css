@@ -84,6 +84,69 @@
   transform-origin: center bottom;
 }
 
+/* Styles pour les différents types de jours */
+.custom-calendar-day-cell {
+  /* Style de base pour tous les jours */
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1.1rem;
+  background-color: #f9fafb;
+  transition: all 0.2s ease;
+}
+
+/* Jours du mois actuel (non sélectionnés) */
+.custom-calendar-day-cell {
+  background-color: #f9fafb;
+  color: #333;
+}
+
+/* Jours des autres mois */
+.custom-calendar-day-cell.other-month {
+  background-color: #f0f4f8;
+  color: #a0aec0;
+}
+
+/* Date du jour (aujourd'hui) */
+.custom-calendar-day-cell.today {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+  font-weight: bold;
+  border: 2px solid #3b82f6;
+}
+
+/* Jour sélectionné */
+.custom-calendar-day-cell.selected {
+  background-color: #3e81d4;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-weight: bold;
+}
+
+/* Combinaison: jour actuel et sélectionné */
+.custom-calendar-day-cell.today.selected {
+  background-color: #2563eb;
+  border-color: white;
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+}
+
+/* Effets de survol */
+.custom-calendar-day-cell:hover:not(.selected) {
+  background-color: #edf2f7;
+  transform: scale(1.05);
+}
+
+.custom-calendar-day-cell.other-month:hover {
+  background-color: #e2e8f0;
+}
+
+.custom-calendar-day-cell.today:hover:not(.selected) {
+  background-color: #bfdbfe;
+}
 
 .hover-scale {
   transition: transform 0.4s ease;

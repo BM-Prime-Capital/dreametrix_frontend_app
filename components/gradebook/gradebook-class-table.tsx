@@ -182,8 +182,6 @@ export function GradebookClassTable({
           refreshToken
         );
 
-        console.log("STUDENTS LOADED => ", response);
-
         if (!Array.isArray(response)) {
           throw new Error("Invalid API response structure: Expected array");
         }
@@ -214,10 +212,8 @@ export function GradebookClassTable({
         setStudents(formattedStudents);
         setLoading(false);
       } catch (err: any) {
-        console.error("Fetch error details:", {
-          error: err,
-        });
-        setError(err.message || "Erreur de chargement");
+        console.error("Fetch error details:", err);
+        setError(err.message || "Error loading data");
         setLoading(false);
       }
     }
@@ -311,9 +307,7 @@ export function GradebookClassTable({
   return (
     <TooltipProvider>
       <div className="w-full">
-        {/* Conteneur principal avec bordure et ombre */}
         <div className="rounded-lg border shadow-sm bg-white">
-          {/* Conteneur de scroll avec padding-bottom pour la barre de défilement */}
           <div className="overflow-x-auto pb-2">
             {/* Tableau avec largeur fixe adaptée à votre contenu */}
 

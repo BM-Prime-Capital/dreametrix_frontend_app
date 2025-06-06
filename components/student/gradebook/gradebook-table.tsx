@@ -1,9 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ExamsDialog } from "./exams-dialog"
 import { ExamDetailDialog } from "./exam-detail-dialog"
+import { getGradebookByClassId } from "@/app/api/student/gradebook/gradebook.controller"
+import { StudentGrade } from "@/app/api/student/gradebook/gradebook.model"
+import { useRequestInfo } from "@/hooks/useRequestInfo"
+import { getAuthenticatedStudent } from "@/app/api/student/student.controller"
+import { Student } from "@/app/api/student/student.model"
+import { getClassById } from "@/app/api/student/class/classController"
 
 // Define proper types for our data
 interface Exam {
@@ -22,122 +28,131 @@ interface ClassData {
   trend: "up" | "down"
 }
 
-// Sample gradebook data
-const gradebookData: ClassData[] = [
-  {
-    id: 1,
-    class: "Class 5 - Sci",
-    average: "85% (C)",
-    exams: [
-      { id: 1, score: "87%" },
-      { id: 2, score: "85%" },
-      { id: 3, score: "93%" },
-    ],
-    tests: 2,
-    assignments: 14,
-    teacher: "Eva Parker",
-    trend: "down",
-  },
-  {
-    id: 2,
-    class: "Class 5 - Math",
-    average: "100% (A)",
-    exams: [
-      { id: 1, score: "100%" },
-      { id: 2, score: "100%" },
-      { id: 3, score: "100%" },
-    ],
-    tests: 2,
-    assignments: 14,
-    teacher: "Eva Parker",
-    trend: "up",
-  },
-  {
-    id: 3,
-    class: "Class 5 - Bio",
-    average: "85% (C)",
-    exams: [
-      { id: 1, score: "87%" },
-      { id: 2, score: "85%" },
-      { id: 3, score: "93%" },
-    ],
-    tests: 2,
-    assignments: 14,
-    teacher: "Sam Burke",
-    trend: "down",
-  },
-  {
-    id: 4,
-    class: "Class 5 - Lit",
-    average: "85% (C)",
-    exams: [
-      { id: 1, score: "87%" },
-      { id: 2, score: "85%" },
-      { id: 3, score: "93%" },
-    ],
-    tests: 2,
-    assignments: 14,
-    teacher: "Anna Blake",
-    trend: "down",
-  },
-  {
-    id: 5,
-    class: "Class 5 - Che",
-    average: "85% (C)",
-    exams: [
-      { id: 1, score: "87%" },
-      { id: 2, score: "85%" },
-      { id: 3, score: "93%" },
-    ],
-    tests: 2,
-    assignments: 14,
-    teacher: "Sam Burke",
-    trend: "down",
-  },
-  {
-    id: 6,
-    class: "Class 5 - Spa",
-    average: "85% (C)",
-    exams: [
-      { id: 1, score: "87%" },
-      { id: 2, score: "85%" },
-      { id: 3, score: "93%" },
-    ],
-    tests: 2,
-    assignments: 14,
-    teacher: "Anna Blake",
-    trend: "down",
-  },
-  {
-    id: 7,
-    class: "Class 5 - Phy",
-    average: "85% (C)",
-    exams: [
-      { id: 1, score: "87%" },
-      { id: 2, score: "85%" },
-      { id: 3, score: "93%" },
-    ],
-    tests: 2,
-    assignments: 14,
-    teacher: "Eva Parker",
-    trend: "down",
-  },
-]
-
 export function GradebookTable() {
+  const [studentGrades, setStudentGrades] = useState<StudentGrade[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [authenticatedStudent, setAuthenticatedStudent] = useState<Student | null>(null);
+  const [className, setClassName] = useState<string | null>(null);
+  const [teacherName, setTeacherName] = useState<string | null>(null); // New state for teacher name
   const [isExamsModalOpen, setIsExamsModalOpen] = useState(false)
   const [isExamDetailModalOpen, setIsExamDetailModalOpen] = useState(false)
   const [selectedClass, setSelectedClass] = useState<ClassData | null>(null)
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null)
+  const { accessToken } = useRequestInfo();
 
-  const handleExamsClick = (classData: ClassData) => {
-    setSelectedClass(classData)
-    setIsExamsModalOpen(true)
-  }
 
   const handleExamClick = (exam: Exam) => {
     setSelectedExam(exam)
     setIsExamDetailModalOpen(true)
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+  
+      if (!accessToken) {
+        setError("Authentification requise.");
+        setLoading(false);
+        setStudentGrades([]);
+        return;
+      }
+
+      try {
+        // 1. Get authenticated student info
+        console.log("Fetching authenticated student info...");
+        const studentInfo = await getAuthenticatedStudent(accessToken);
+        setAuthenticatedStudent(studentInfo);
+        console.log("Authenticated student info:", studentInfo);
+
+        if (studentInfo && studentInfo.enrolled_courses && studentInfo.enrolled_courses.length > 0) {
+          // Assuming the student is enrolled in only one class for now, or we take the first one
+          const classId = studentInfo.enrolled_courses[0];
+          console.log("Using class ID for gradebook fetch:", classId);
+
+          // Fetch class details to get class name and teacher name
+          try {
+            const classRes = await getClassById(classId, accessToken);
+            if (classRes && classRes.data) {
+              if (classRes.data.name) {
+                setClassName(classRes.data.name);
+              } else {
+                setClassName("Nom inconnu");
+                console.warn(`Class name not found in class data for ID ${classId}:`, classRes.data);
+              }
+              if (classRes.data.teacher && classRes.data.teacher.full_name) { // Assuming teacher info is nested and has full_name
+                setTeacherName(classRes.data.teacher.full_name);
+              } else {
+                setTeacherName("Prof inconnu");
+                console.warn(`Teacher info not found in class data for ID ${classId}:`, classRes.data);
+              }
+            } else {
+              setClassName("Erreur chargement nom");
+              setTeacherName("Erreur chargement prof");
+              console.error(`Failed to load class data for ID ${classId}:`, classRes);
+            }
+          } catch (classError) {
+            setClassName("Erreur chargement nom");
+            setTeacherName("Erreur chargement prof");
+            console.error(`Error fetching class name and teacher for ID ${classId}:`, classError);
+          }
+
+          // 2. Get gradebook for the student's class
+          console.log("Fetching gradebook for class ID:", classId);
+          const grades = await getGradebookByClassId(classId, accessToken);
+          console.log("Received gradebook data:", grades);
+
+          // 3. Filter grades for the authenticated student
+          console.log("Filtering gradebook for student ID:", studentInfo.id);
+          const currentStudentGrade = grades.find(grade => {
+            console.log(`Checking grade entry for student ID ${grade.student_id} against authenticated student ID ${studentInfo.id}`);
+            return grade.student_id === studentInfo.id;
+          });
+
+          console.log("Result of filtering (currentStudentGrade):", currentStudentGrade);
+
+          if (currentStudentGrade) {
+              // Wrap the single student grade in an array to maintain expected state structure
+              setStudentGrades([currentStudentGrade]);
+              console.log("StudentGrades state updated with:", [currentStudentGrade]);
+          } else {
+              setStudentGrades([]);
+              console.warn("Current student's grade not found in the gradebook data.", studentInfo);
+          }
+
+        } else {
+          setStudentGrades([]);
+          console.warn("Authenticated student or enrolled courses not found.", studentInfo);
+        }
+      } catch (err) {
+        setError('Failed to load data.');
+        console.error(err);
+        setStudentGrades([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (accessToken) { 
+      fetchData();
+    }
+
+  }, [accessToken]); // Re-run effect when accessToken changes
+
+  // Now currentStudentGrade is managed within the useEffect and stored in studentGrades state
+  const currentStudentGradeToDisplay = studentGrades.length > 0 ? studentGrades[0] : null;
+
+  if (loading) {
+    return <div>Loading gradebook...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  if (!currentStudentGradeToDisplay) {
+      return <div>No grade data available for this class or student.</div>;
   }
 
   return (
@@ -147,45 +162,32 @@ export function GradebookTable() {
           <TableRow className="hover:bg-transparent border-b">
             <TableHead className="font-bold text-gray-700 py-4">CLASS</TableHead>
             <TableHead className="font-bold text-gray-700 py-4">AVERAGE</TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">EXAM (3)</TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">TESTS(2)</TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">ASSIGNMENTS(14)</TableHead>
+            <TableHead className="font-bold text-gray-700 py-4">EXAM</TableHead>
+            <TableHead className="font-bold text-gray-700 py-4">TESTS</TableHead>
+            <TableHead className="font-bold text-gray-700 py-4">ASSIGNMENTS</TableHead>
             <TableHead className="font-bold text-gray-700 py-4">TEACHER</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {gradebookData.map((classData, index) => (
-            <TableRow key={classData.id} className={index % 2 === 0 ? "bg-[#EDF6FA]" : ""}>
-              <TableCell className="font-medium text-gray-500">{classData.class}</TableCell>
-              <TableCell className="text-gray-500">{classData.average}</TableCell>
+            <TableRow key={currentStudentGradeToDisplay.student_id} className="bg-[#EDF6FA]">
+              <TableCell className="font-medium text-gray-500">{className || 'Chargement nom...'}</TableCell>
+              <TableCell className="text-gray-500">{currentStudentGradeToDisplay.average_grade}</TableCell>
               <TableCell>
                 <button
-                  className="text-[#25AAE1] hover:underline flex items-center"
-                  onClick={() => handleExamsClick(classData)}
-                >
-                  View
-                  <TrendIcon trend={classData.trend} />
-                </button>
+                  className="text-[#25AAE1] hover:underline flex items-center"> View </button>
               </TableCell>
               <TableCell>
-                <button className="text-[#25AAE1] hover:underline flex items-center">
-                  View
-                  <TrendIcon trend={classData.trend} />
-                </button>
+                <button className="text-[#25AAE1] hover:underline flex items-center"> View </button>
               </TableCell>
               <TableCell>
-                <button className="text-[#25AAE1] hover:underline flex items-center">
-                  View
-                  <TrendIcon trend={classData.trend} />
-                </button>
+                <button className="text-[#25AAE1] hover:underline flex items-center"> View </button>
               </TableCell>
               <TableCell className="text-gray-500">
                 <div className="flex items-center">
-                  {classData.teacher} <MessageIcon />
+                  {teacherName || 'Chargement prof...'} <MessageIcon />
                 </div>
               </TableCell>
             </TableRow>
-          ))}
         </TableBody>
       </Table>
 
