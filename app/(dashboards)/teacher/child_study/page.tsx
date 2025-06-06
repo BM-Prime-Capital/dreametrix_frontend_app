@@ -1,7 +1,6 @@
-"use client";
+import ChildStudy from "@/components/child_study/child-study";
+import React from "react";
 
-import CommingSoon from "@/components/ui/comming-soon";
-
-export default function ChildStudyPage() {
-  return <CommingSoon title="Child Study" />;
+export default function ReportsPage() {
+  return <ChildStudy />;
 }

@@ -1,69 +1,77 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { SendMessageDialog } from "./send-message-dialog"
-
-// Sample class data that matches the image
-const studentClasses = [
-  {
-    id: 1,
-    name: "Class 5 - Sci",
-    subject: "Science",
-    teacher: "Eva Parker",
-    dayTime: ["Monday 8 AM", "Fridays 12:15 AM"],
-  },
-  {
-    id: 2,
-    name: "Class 5 - Math",
-    subject: "Mathematics",
-    teacher: "Eva Parker",
-    dayTime: ["Monday 8 AM", "Fridays 11:15 AM"],
-  },
-  {
-    id: 3,
-    name: "Class 5 - Bio",
-    subject: "Biology",
-    teacher: "Sam Burke",
-    dayTime: ["Thursday 8 am"],
-  },
-  {
-    id: 4,
-    name: "Class 5 - Lit",
-    subject: "Literature",
-    teacher: "Anna Blake",
-    dayTime: ["Thursday 12 am"],
-  },
-  {
-    id: 5,
-    name: "Class 5 - Che",
-    subject: "Chemistry",
-    teacher: "Sam Burke",
-    dayTime: ["Wednesday 8 am"],
-  },
-  {
-    id: 6,
-    name: "Class 5 - Spa",
-    subject: "Spanish",
-    teacher: "Anna Blake",
-    dayTime: ["Wednesday 11:15 am"],
-  },
-  {
-    id: 7,
-    name: "Class 5 - Phy",
-    subject: "Physics",
-    teacher: "Eva Parker",
-    dayTime: ["Tuesday 11:15 am", "Wednesday 11:15 am"],
-  },
-]
+import { getAllClasses } from "@/app/api/student/class/classController" 
+import { CourseRead } from "@/app/api/student/class/classModel"
+import { useRequestInfo } from "@/hooks/useRequestInfo"
 
 export function StudentClassesTable() {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedTeacher, setSelectedTeacher] = useState("")
+  const [selectedTeacherName, setSelectedTeacherName] = useState("")
+  const [studentClasses, setStudentClasses] = useState<CourseRead[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null);
+  const { accessToken, tenantDomain, refreshToken } = useRequestInfo();
+  
+  console.log("Token::::::", accessToken);
+  console.log("État de chargement:", loading);
+  console.log("Classes actuelles (avant rendu):", studentClasses);
 
-  const handleTeacherClick = (teacher: string) => {
-    setSelectedTeacher(teacher)
-    setIsModalOpen(true)
+  useEffect(() => {
+    const fetchClasses = async () => {
+      setLoading(true);
+      setError(null);
+  
+      if (!accessToken) {
+        console.error("Aucun token d'authentification n'est disponible (accessToken est vide ou null).");
+        setError("Authentification requise.");
+        setLoading(false);
+        setStudentClasses([]);
+        return;
+      }
+      console.log("Token2::::::", accessToken);
+      try {
+        const res = await getAllClasses(accessToken); // Passe le token
+  
+        console.log("Réponse complète de getAllClasses:", res);
+  
+        if (res && res.data && Array.isArray(res.data.results)) {
+          setStudentClasses(res.data.results);
+        } else {
+          console.warn("La réponse de l'API n'a pas la structure attendue (res.data.results n'est pas un tableau):", res);
+          setStudentClasses([]);
+          setError("Format de données inattendu reçu de l'API.");
+        }
+      } catch (err: any) {
+        console.error("Erreur lors de la récupération des classes:", err);
+        setError(`Échec du chargement des classes: ${err.message || 'Erreur inconnue'}`);
+        setStudentClasses([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (accessToken) { // Optionnel mais recommandé : n'appelle fetchClasses que si un token (potentiellement non vide) est disponible initialement
+      fetchClasses();
+    }
+  
+  }, [accessToken]);
+
+  const handleTeacherClick = (teacherData: any) => {
+    const teacherName = typeof teacherData === 'object' && teacherData !== null && 'full_name' in teacherData
+        ? teacherData.full_name
+        : (typeof teacherData === 'string' ? teacherData : "");
+    setSelectedTeacherName(teacherName);
+    setIsModalOpen(true);
+  }
+
+  if (loading) {
+    return <div>Chargement...</div>
+  }
+  if (error) {
+    return <div>Erreur : {error}</div>
   }
 
   return (
@@ -81,17 +89,43 @@ export function StudentClassesTable() {
           {studentClasses.map((class_, index) => (
             <TableRow key={class_.id} className={index % 2 === 0 ? "bg-[#EDF6FA]" : ""}>
               <TableCell className="font-medium text-gray-500">{class_.name}</TableCell>
-              <TableCell className="text-gray-500">{class_.subject}</TableCell>
+              <TableCell className="text-gray-500">{class_.subject_in_short || class_.subject_in_all_letter}</TableCell>
               <TableCell className="text-gray-500">
-                <div className="flex items-center cursor-pointer" onClick={() => handleTeacherClick(class_.teacher)}>
-                  {class_.teacher} <MessageIcon />
-                </div>
+                {class_.teacher ? (
+                  <div className="flex items-center cursor-pointer" onClick={() => handleTeacherClick(class_.teacher)}>
+                    {typeof class_.teacher === 'object' && class_.teacher !== null && 'full_name' in class_.teacher
+                        ? class_.teacher.full_name
+                        : (typeof class_.teacher === 'string' ? class_.teacher : "N/A")}
+                    <MessageIcon />
+                  </div>
+                ) : (
+                  "N/A"
+                )}
               </TableCell>
               <TableCell className="text-gray-500">
                 <div className="flex flex-col">
-                  {class_.dayTime.map((time, i) => (
-                    <span key={i}>{time}</span>
-                  ))}
+                  {class_.hours_and_dates_of_course_schedule &&
+                   typeof class_.hours_and_dates_of_course_schedule === 'object' &&
+                   Object.keys(class_.hours_and_dates_of_course_schedule).length > 0 ? (
+                     // Itérer sur les clés (les jours) de l'objet
+                     Object.entries(class_.hours_and_dates_of_course_schedule).map(([day, schedules], dayIndex) => (
+                       // Pour chaque jour, itérer sur le tableau des horaires
+                       Array.isArray(schedules) && schedules.length > 0 ? (
+                         schedules.map((schedule, scheduleIndex) => (
+                           <span key={`${dayIndex}-${scheduleIndex}`}>
+                             {day}: 
+                             {`${schedule.date} ${schedule.start_time} - ${schedule.end_time}`}
+                           </span>
+                         ))
+                       ) : (
+                         // Gérer le cas où le tableau d'horaires pour un jour est vide ou non un tableau
+                         <span key={`${dayIndex}-empty`}>{day}: Pas d'horaire</span>
+                       )
+                     ))
+                   ) : (
+                     // Afficher "N/A" si l'objet est null, vide, ou pas un objet
+                     <span>N/A</span>
+                   )}
                 </div>
               </TableCell>
             </TableRow>
@@ -99,7 +133,7 @@ export function StudentClassesTable() {
         </TableBody>
       </Table>
 
-      <SendMessageDialog isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} teacher={selectedTeacher} />
+      <SendMessageDialog isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} teacher={selectedTeacherName || ""} />
 
       {isModalOpen && <div className="absolute inset-0 bg-white/50 backdrop-blur-sm" />}
     </div>

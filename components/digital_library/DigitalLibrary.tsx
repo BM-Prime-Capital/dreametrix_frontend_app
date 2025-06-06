@@ -629,9 +629,13 @@ export default function DigitalLibrary() {
 
   useEffect(() => {
     if (loadedSelectedClass) {
-      const currentSelectedClass = JSON.parse(loadedSelectedClass);
-      setSelectedClass(currentSelectedClass);
-    }
+      if (loadedSelectedClass === "undefined") {
+        localStorage.removeItem(localStorageKey.CURRENT_SELECTED_CLASS);
+        return;
+      }
+      const parsed = JSON.parse(loadedSelectedClass);
+        setSelectedClass(parsed); 
+  }
   }, [loadedSelectedClass]);
 
   useEffect(() => {

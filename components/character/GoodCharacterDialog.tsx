@@ -37,6 +37,7 @@ const GoodCharacterDialog = React.memo(
       value_point: string;
     }[] = JSON.parse(localStorage.getItem(localStorageKey.CHARACTERS_LIST)!);
     const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+    console.log("tenantDomain", tenantDomain)
     const [comment, setComment] = useState<string>(character.teacher_comment);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 

@@ -34,7 +34,8 @@ export default function RewardsGeneralView({
     accessToken,
     refreshToken,
   } = useRequestInfo();
-  const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
+  //const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
+  //console.log("localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!",localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!)
   const currentClass = JSON.parse(
     localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
   );

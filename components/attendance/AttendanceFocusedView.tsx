@@ -47,6 +47,7 @@ export default function AttendanceFocusedView({
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  console.log("tenantDomain")
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
   const { id: currentClassId } = JSON.parse(
     localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
