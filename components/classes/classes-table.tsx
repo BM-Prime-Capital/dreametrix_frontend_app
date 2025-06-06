@@ -37,7 +37,7 @@ import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { AddClassDialog } from "./AddClassDialog";
 import Swal from 'sweetalert2';
 import { ClassDetailsDialog } from "./ClassDetailsDialog";
-import { Class, Student } from "@/types";
+import { Class } from "@/types";
 import { getStudents } from "@/services/student-service";
 
 const globalFilterFn: FilterFn<Class> = (row, columnId, filterValue) => {
@@ -457,3 +457,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
   );
 }
 
+interface Student {
+  id: number;
+  full_name: string;
+}

@@ -416,10 +416,11 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
               Cancel
             </Button>
             <Button 
+            variant="primary"
               onClick={handleSaveChanges}
               disabled={!hasChanges || isSaving}
             >
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4 mr-2 " />
               {isSaving ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>

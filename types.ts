@@ -159,9 +159,6 @@ export interface IStudent {
   };
 
 
-  export  interface Student {
-    id: number;
-    full_name: string;
-  }
+  
 
   
