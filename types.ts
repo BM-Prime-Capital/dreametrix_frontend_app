@@ -151,4 +151,17 @@ export interface IStudent {
     grade?: string;
   }
 
+  export interface  SeatingCondition  {
+    id: string;
+    type: 'separate' | 'group' | 'front' | 'back' | 'random';
+    studentIds: string[];
+    priority?: number;
+  };
+
+
+  export  interface Student {
+    id: number;
+    full_name: string;
+  }
+
   
