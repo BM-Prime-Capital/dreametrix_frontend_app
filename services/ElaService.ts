@@ -1,5 +1,7 @@
 "use server";
 
+"use server";
+
 export async function fetchElaStandards(
   subject: string,
   grade: string,
@@ -12,13 +14,6 @@ export async function fetchElaStandards(
   }
 
   const url = `${tenantPrimaryDomain}/digital_library/standards_ela/${subject}/${grade}/`;
-
-  console.log("Fetching ELA Standards:", {
-    url,
-    subject,
-    grade,
-    hasAccessToken: !!accessToken,
-  });
 
   try {
     const response = await fetch(url, {
@@ -70,14 +65,6 @@ export async function fetchElaStrands(
   const url = `${tenantPrimaryDomain}/digital_library/strands/${subject}/${grade}/${encodeURIComponent(
     standardsEla
   )}/`;
-
-  console.log("Fetching ELA Strands:", {
-    url,
-    subject,
-    grade,
-    standardsEla,
-    hasAccessToken: !!accessToken,
-  });
 
   try {
     const response = await fetch(url, {
@@ -131,26 +118,11 @@ export async function fetchElaSpecificStandards(
     standardsEla
   )}/${encodeURIComponent(strand)}/`;
 
-  console.log("Fetching ELA Specific Standards:", {
-    url,
-    subject,
-    grade,
-    standardsEla,
-    strand,
-    hasAccessToken: !!accessToken,
-  });
-
   try {
     const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-    });
-
-    console.log("ELA Specific Standards Response:", {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok,
     });
 
     if (!response.ok) {
@@ -173,6 +145,104 @@ export async function fetchElaSpecificStandards(
     return specificStandards;
   } catch (error) {
     console.error("Error fetching ELA specific standards:", error);
+    throw error;
+  }
+}
+
+export async function fetchElaQuestionLinks(
+  subject: string,
+  grade: string,
+  standardsEla: string,
+  strands: string,
+  specificStandards: string,
+  kind: string,
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  refreshToken: string
+) {
+  if (!accessToken) {
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
+  }
+
+  const url = `${tenantPrimaryDomain}/digital_library/links_ela/${subject}/${grade}/${standardsEla}/${strands}/${specificStandards}/${kind}/`;
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    console.log("ELA Question Links Response:", {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+    });
+
+    if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error("Vous n'avez pas la permission d'accéder aux données.");
+      } else {
+        throw new Error("Erreur lors de la récupération des liens ELA.");
+      }
+    }
+
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching ELA question links:", error);
+    throw error;
+  }
+}
+
+export async function generateElaPdf(
+  pdfData: {
+    subject: string;
+    grade: string;
+    standards_ela: string;
+    strands: string;
+    specifique_standards: string;
+    kind: string;
+    selected_class: string;
+    generate_answer_sheet: boolean;
+    teacher_name: string;
+    student_id: any;
+    assignment_type: string;
+    number_of_questions: number;
+  },
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  refreshToken: string
+) {
+  if (!accessToken) {
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
+  }
+
+  const url = `${tenantPrimaryDomain}/digital_library/ela_generate-pdf/`;
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(pdfData),
+    });
+
+    if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error("Vous n'avez pas la permission de générer le PDF.");
+      } else {
+        throw new Error("Erreur lors de la génération du PDF ELA.");
+      }
+    }
+
+    // Return the blob for PDF download
+    const blob = await response.blob();
+    return blob;
+  } catch (error) {
     throw error;
   }
 }
