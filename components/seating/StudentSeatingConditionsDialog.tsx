@@ -1,145 +1,194 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+ // DialogTrigger,
 } from "@/components/ui/dialog";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 
 //import { Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+//import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { teacherImages } from "@/constants/images";
 import Image from "next/image";
+import { SeatingCondition } from "@/types";
 
-export default function StudentSeatingConditionsDialog({
- // studentClassName,
-}: {
-  studentClassName: string;
-}) {
-  const [open, setOpen] = useState(false);
+interface StudentSeatingConditionsDialogProps {
+  studentClassName?: string;
+  conditions: SeatingCondition[];
+  setConditions: (conditions: SeatingCondition[]) => void;
+  students: Array<{ studentId: string; studentName: string }>;
+}
+
+export const StudentSeatingConditionsDialog: React.FC<StudentSeatingConditionsDialogProps> = ({
+  studentClassName,
+  conditions,
+  setConditions,
+  students,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [newCondition, setNewCondition] = useState<Partial<SeatingCondition>>({
+    type: 'separate',
+    studentIds: [],
+  });
+
+  const handleAddCondition = () => {
+    if (!newCondition.type || newCondition.studentIds?.length === 0) return;
+    
+    setConditions([
+      ...conditions,
+      {
+        id: `cond-${Date.now()}`,
+        type: newCondition.type,
+        studentIds: newCondition.studentIds || [],
+        priority: newCondition.priority,
+        studentId: newCondition.studentIds?.[0] || '', // Assuming the first student ID is used
+        condition: newCondition.type, // Assuming the condition matches the type
+      }
+    ]);
+    
+    setNewCondition({
+      type: 'separate',
+      studentIds: [],
+    });
+  };
+
+  const handleRemoveCondition = (id: string) => {
+    setConditions(conditions.filter(cond => cond.id !== id));
+  };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild className="cursor-pointer">
-        <Button className="flex gap-2 items-center text-lg bg-[#F5C358] hover:bg-[#eeb53b] rounded-md">
-          <Image
-            src={teacherImages.conditions}
-            alt="conditions"
-            width={100}
-            height={100}
-            className="w-4 h-4"
-          />
-          <span>Conditions</span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="w-fit">
-        <DialogHeader
-          className="pb-4"
-          style={{ borderBottom: "solid 1px #eee" }}
-        >
-          <DialogTitle className="flex gap-2 items-center opacity-80">
-            <span>Class 5 - </span>
-            <span className="text-muted-foreground">{"Math - Test 1"}</span>
-          </DialogTitle>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Button
+        onClick={() => setIsOpen(true)}
+        className={studentClassName}
+      >
+        <Image
+          src={teacherImages.conditions}
+          alt="conditions"
+          width={24}
+          height={24}
+          className="w-5 h-5"
+        />
+        <span>Seating Conditions</span>
+      </Button>
+      
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Seating Conditions</DialogTitle>
+          <DialogDescription>
+            Define rules for automatically placing students
+          </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-4">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>STUDENTS</TableHead>
-                <TableHead>CONDITION</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow key={1}>
-                <TableCell>
-                  <div className="flex items-center gap-2 py-1">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src="/placeholder.svg" />
-                      <AvatarFallback>SL</AvatarFallback>
-                    </Avatar>
-                    <label className="text-gray-700">Martin Mobali</label>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <select className="bg-white p-2 rounded-full border-[1px] border-[#eee]">
-                    <option>Use glasses</option>
-                    <option>Seat on the left side</option>
-                    <option>Seat on the right side</option>
-                    <option>Get distracted</option>
-                    <option>No Condition</option>
-                  </select>
-                </TableCell>
-              </TableRow>
-              <TableRow key={2} className={"bg-sky-50/50"}>
-                <TableCell>
-                  <div className="flex items-center gap-2 py-1">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src="/placeholder.svg" />
-                      <AvatarFallback>SL</AvatarFallback>
-                    </Avatar>
-                    <label className="text-gray-700">Bintu Keita</label>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <select className="bg-white p-2 rounded-full border-[1px] border-[#eee]">
-                    <option>Use glasses</option>
-                    <option>Seat on the left side</option>
-                    <option>Seat on the right side</option>
-                    <option>Get distracted</option>
-                    <option>No Condition</option>
-                  </select>
-                </TableCell>
-              </TableRow>
-              <TableRow key={3} className={"bg-sky-50/50"}>
-                <TableCell>
-                  <div className="flex items-center gap-2 py-1">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src="/placeholder.svg" />
-                      <AvatarFallback>SL</AvatarFallback>
-                    </Avatar>
-                    <label className="text-gray-700">Clara Lorence</label>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <select className="bg-white p-2 rounded-full border-[1px] border-[#eee]">
-                    <option>Use glasses</option>
-                    <option>Seat on the left side</option>
-                    <option>Seat on the right side</option>
-                    <option>Get distracted</option>
-                    <option>No Condition</option>
-                  </select>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-
-          <div className="flex justify-center gap-4">
-            <button
-              className="max-w-fit rounded-full px-8 py-1 hover:bg-gray-100"
-              onClick={() => setOpen(false)}
-            >
-              Cancel
-            </button>
-            <button className="max-w-fit bg-blue-500 hover:bg-blue-600 text-white rounded-full px-8 py-1">
-              Apply
-            </button>
+        
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Condition Type</label>
+              <select
+                value={newCondition.type}
+                onChange={(e) => setNewCondition({
+                  ...newCondition,
+                  type: e.target.value as any,
+                })}
+                className="w-full p-2 border rounded"
+              >
+                <option value="separate">Separate students</option>
+                <option value="group">Group students</option>
+                <option value="front">Place at front</option>
+                <option value="back">Place at back</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Priority (1-10)</label>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                value={newCondition.priority || ''}
+                onChange={(e) => setNewCondition({
+                  ...newCondition,
+                  priority: parseInt(e.target.value) || undefined,
+                })}
+                className="w-full p-2 border rounded"
+              />
+            </div>
           </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-1">Select Students</label>
+            <select
+              multiple
+              value={newCondition.studentIds || []}
+              onChange={(e) => {
+                const options = Array.from(e.target.selectedOptions, option => option.value);
+                setNewCondition({
+                  ...newCondition,
+                  studentIds: options,
+                });
+              }}
+              className="w-full h-32 p-2 border rounded"
+            >
+              {students.map(student => (
+                <option key={student.studentId} value={student.studentId}>
+                  {student.studentName}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <Button
+            onClick={handleAddCondition}
+            className="mt-2"
+            variant='primary'
+          >
+            Add Condition
+          </Button>
         </div>
+        
+        <div className="mt-6">
+          <h3 className="font-medium mb-2">Active Conditions</h3>
+          {conditions.length === 0 ? (
+            <p className="text-sm text-gray-500">No conditions defined</p>
+          ) : (
+            <ul className="space-y-2">
+              {conditions.map(condition => (
+                <li key={condition.id} className="flex justify-between items-center p-2 border rounded">
+                  <div>
+                    <span className="font-medium capitalize">{condition.type}</span>: 
+                    {condition.studentIds.map(id => {
+                      const student = students.find(s => s.studentId === id);
+                      return student ? ` ${student.studentName},` : '';
+                    })}
+                    {condition.priority && ` (Priority: ${condition.priority})`}
+                  </div>
+                  <Button
+                    variant="destructive"
+                    className="h-6"
+                    size="sm"
+                    onClick={() => handleRemoveCondition(condition.id)}
+                  >
+                    Remove
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        
+        <DialogFooter>
+          <Button variant='primary' className="" onClick={() => setIsOpen(false)}>Close</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-}
+};

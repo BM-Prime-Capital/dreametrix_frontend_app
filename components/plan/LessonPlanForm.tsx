@@ -6,7 +6,7 @@ import SelectForPlanTemplateForm from "@/components/ui/SelectForPlanTemplateForm
 import {localStorageKey} from "@/constants/global";
 
 type props={
-    callback:(state:boolean)=>void
+    callback?:(state:boolean)=>void
 }
 
 type Item = {
@@ -15,7 +15,7 @@ type Item = {
     checked: boolean;
 };
 
-const LessonPlanForm : FC<props> =({callback})=>{
+const LessonPlanForm : FC<props> =()=>{
     // const items = ['6.PR.1', '6.PR.2', '6.PR.3', '6.PR.4', '6.PR.5', '6.PR.6'];
     const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
 
