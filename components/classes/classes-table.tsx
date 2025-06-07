@@ -286,7 +286,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
       try {
         const [classes, students] = await Promise.all([
           getClasses(tenantDomain, accessToken, refreshToken),
-          getStudents(tenantDomain, accessToken, refreshToken)
+          getStudents(tenantDomain, accessToken)
         ]);
         console.log("Loaded classes:", classes);
         console.log("Loaded students:", students);
