@@ -33,15 +33,15 @@ export function ClassDetailsDialog({
            (teacher.user ? `${teacher.user.first_name} ${teacher.user.last_name}` : `Teacher ID: ${teacher.id}`);
   };
 
-  const getStudentName = (student: IStudent | number): string => {
-    if (typeof student === 'number') return `Student ID: ${student}`;
-    return `${student.first_name || (student.user?.first_name || '')} ${student.last_name || (student.user?.last_name || '')}`.trim() || 
-           `Student ID: ${student.id}`;
-  };
+  // const getStudentName = (student: IStudent | number): string => {
+  //   if (typeof student === 'number') return `Student ID: ${student}`;
+  //   return `${student.first_name || (student.user?.first_name || '')} ${student.last_name || (student.user?.last_name || '')}`.trim() || 
+  //          `Student ID: ${student.id}`;
+  // };
 
-  const getStudentId = (student: IStudent | number): number => {
-    return typeof student === 'number' ? student : student.id;
-  };
+  // const getStudentId = (student: IStudent | number): number => {
+  //   return typeof student === 'number' ? student : student.id;
+  // };
 
   const getStudentsCount = (students: (IStudent | number)[]): number => {
     return Array.isArray(students) ? students.length : 0;
@@ -51,9 +51,8 @@ export function ClassDetailsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
         className="sm:max-w-2xl max-h-[90vh] p-0 overflow-hidden rounded-xl"
-        onInteractOutside={(e) => e.preventDefault()} // Empêche la fermeture en cliquant à l'extérieur
+        onInteractOutside={(e) => e.preventDefault()}
       >
-        {/* Header avec dégradé et bouton de fermeture positionné correctement */}
         <div className="relative bg-gradient-to-r from-blue-700 to-blue-600 text-white p-6">
           <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
             <X className="h-5 w-5 text-white/90 hover:text-white" />
@@ -61,7 +60,7 @@ export function ClassDetailsDialog({
           </DialogClose>
           
           <DialogHeader>
-            <div className="pr-6"> {/* Ajout de padding pour éviter le chevauchement */}
+            <div className="pr-6">
               <DialogTitle className="text-2xl font-bold tracking-tight flex items-center gap-3">
                 <BookOpen className="h-6 w-6 text-white/90" />
                 {classData.name || "Class Details"}
@@ -132,7 +131,6 @@ export function ClassDetailsDialog({
               </Card>
             )}
   
-            {/* Schedule Card */}
             <Card className="border border-gray-100 shadow-xs">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-3">
@@ -190,7 +188,6 @@ export function ClassDetailsDialog({
               </CardContent>
             </Card>
   
-            {/* Students Card */}
             <Card className="border border-gray-100 shadow-xs">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-3">
