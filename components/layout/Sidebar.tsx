@@ -18,7 +18,10 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
         {routes.map((route: any) => {
           const iconPath = route.icon;
           const isActive = isMenuItemActive(route, pathname);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 257e02c (changes)
           return (
             <Link
               key={route.path}
