@@ -66,7 +66,6 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Transform studentList to match the expected Student format
   const normalizedStudentList: Student[] = useMemo(() => {
     return studentList?.results?.map((student: any) => ({
       id: student.id,
@@ -75,11 +74,12 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
       grade: student.grade,
       user: student.user,
       school: student.school,
-      enrolled_courses: student.enrolled_courses
+      enrolled_courses: student.enrolled_courses,
+      characterScore: Math.floor(Math.random() * 10) + 1,
+      attendance: Math.floor(Math.random() * 100)
     })) || [];
   }, [studentList]);
 
-  // Transform classData.students to include full details from studentList
   const normalizedClassStudents = useMemo(() => {
     if (!classData?.students || !normalizedStudentList) return [];
     
@@ -88,7 +88,9 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
       return {
         ...classStudent,
         ...(fullStudent || {}),
-        full_name: fullStudent?.full_name || classStudent.full_name
+        full_name: fullStudent?.full_name || classStudent.full_name,
+        characterScore: fullStudent?.characterScore || Math.floor(Math.random() * 10) + 1,
+        attendance: fullStudent?.attendance || Math.floor(Math.random() * 100)
       };
     });
   }, [classData, normalizedStudentList]);
@@ -151,14 +153,6 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
     setHasChanges(true);
   }, []);
 
-  const getStudentPerformance = useCallback(() => {
-    return {
-      grade: Math.floor(Math.random() * 20) + 60, 
-      characterScore: Math.floor(Math.random() * 10) + 1,
-      attendance: Math.floor(Math.random() * 100) 
-    };
-  }, []);
-
   const handleSearchTermChange = useCallback((value: string) => {
     setSearchTerm(value);
   }, []);
@@ -194,12 +188,13 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
       const originalIds = originalStudents.map(s => s.id);
       
       if (JSON.stringify(currentIds.sort()) !== JSON.stringify(originalIds.sort())) {
-        // await fetch(`/classes/${classData?.id}`, {
-        //   method: 'PUT',
-        //   body: JSON.stringify({ students: currentIds }),
-        //   headers: { 'Content-Type': 'application/json' }
-        // });
-        console.log('Would update class roster with:', currentIds);
+        const response = await fetch(`/classes/${classData?.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ students: currentIds }),
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        console.log('response', response);
       }
 
       toast({
@@ -258,20 +253,21 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
                     </div>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[300px] p-0 " align="start">
+                <PopoverContent className="w-[300px] p-0" align="start">
                   <Command>
                     <CommandInput
                       placeholder="Search students..."
                       value={searchTerm}
                       onValueChange={handleSearchTermChange}
                     />
-                    <CommandList className="max-h-[300px] overflow-y-scroll">
+                    <CommandList className="max-h-[300px] overflow-y-auto">
                       <CommandEmpty>No students found.</CommandEmpty>
-                      <CommandGroup>
+                      <CommandGroup className="max-h-[250px] overflow-y-auto">
                         {filteredStudents.map((student:any) => (
                           <CommandItem
                             key={student.id}
                             onSelect={() => handleStudentSelect(student.id)}
+                            className="cursor-pointer"
                           >
                             <div className="flex items-center gap-2">
                               <span>{student.full_name}</span>
@@ -286,7 +282,7 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
                         <CommandGroup>
                           <CommandItem 
                             onSelect={() => handleAddStudents(selectedStudentIds)}
-                            className="bg-blue-400 hover:bg-blue-500 text-white"
+                            className="bg-blue-400 hover:bg-blue-500 text-white cursor-pointer"
                           >
                             <span className="font-medium">
                               Add {selectedStudentIds.length} selected students
@@ -342,56 +338,53 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredClassStudents.length > 0 ? (
-                      filteredClassStudents.map(student => {
-                        const performance = getStudentPerformance();
-                        return (
-                          <tr key={student.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {student.full_name}
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                              {student.email}
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm">
-                              <Badge variant="outline">Grade {student.grade}</Badge>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm">
-                              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                <div 
-                                  className="bg-blue-600 h-2.5 rounded-full" 
-                                  style={{ width: `${performance.characterScore * 10}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-xs text-gray-500">{performance.characterScore}/10</span>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm">
-                              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                <div 
-                                  className="bg-green-600 h-2.5 rounded-full" 
-                                  style={{ width: `${performance.attendance}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-xs text-gray-500">{performance.attendance}%</span>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                              <div className="flex gap-2">
-                                <button 
-                                  className="p-1 text-gray-500 hover:text-gray-700"
-                                  onClick={() => handleEditStudent(student)}
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </button>
-                                <button 
-                                  className="p-1 text-red-500 hover:text-red-700"
-                                  onClick={() => handleDeleteStudent(student.id)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })
+                      filteredClassStudents.map(student => (
+                        <tr key={student.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {student.full_name}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                            {student.email}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm">
+                            <Badge variant="outline">Grade {student.grade}</Badge>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm">
+                            <div className="w-full bg-gray-200 rounded-full h-2.5">
+                              <div 
+                                className="bg-blue-600 h-2.5 rounded-full" 
+                                style={{ width: `${student.characterScore * 10}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-xs text-gray-500">{student.characterScore}/10</span>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm">
+                            <div className="w-full bg-gray-200 rounded-full h-2.5">
+                              <div 
+                                className="bg-green-600 h-2.5 rounded-full" 
+                                style={{ width: `${student.attendance}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-xs text-gray-500">{student.attendance}%</span>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                            <div className="flex gap-2">
+                              <button 
+                                className="p-1 text-gray-500 hover:text-gray-700"
+                                onClick={() => handleEditStudent(student)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </button>
+                              <button 
+                                className="p-1 text-red-500 hover:text-red-700"
+                                onClick={() => handleDeleteStudent(student.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
                     ) : (
                       <tr>
                         <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">
@@ -429,7 +422,6 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
         </DialogContent>
       </Dialog>
 
-      {/* Edit Student Dialog */}
       {editingStudent && (
         <EditStudentDialog
           student={editingStudent}
@@ -437,8 +429,7 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
           onCancel={() => setEditingStudent(null)}
         />
       )}
-
-      {/* Cancel Confirmation Dialog */}
+      
       <AlertDialog open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -541,17 +532,47 @@ function EditStudentDialog({ student, onSave, onCancel }: {
                 className="col-span-3"
               />
             </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="characterScore" className="text-right">
+                Character Score
+              </Label>
+              <Input
+                id="characterScore"
+                name="characterScore"
+                type="number"
+                min="1"
+                max="10"
+                value={editedStudent.characterScore || ''}
+                onChange={handleChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="attendance" className="text-right">
+                Attendance (%)
+              </Label>
+              <Input
+                id="attendance"
+                name="attendance"
+                type="number"
+                min="0"
+                max="100"
+                value={editedStudent.attendance || ''}
+                onChange={handleChange}
+                className="col-span-3"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
             </Button>
             <Button 
-            type="submit"
-            className="bg-blue-400 hover:bg-blue-500 text-white"
-          >
-            Save
-          </Button>
+              type="submit"
+              className="bg-blue-400 hover:bg-blue-500 text-white"
+            >
+              Save
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
