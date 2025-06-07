@@ -13,7 +13,7 @@ import {
   type VisibilityState,
   type FilterFn
 } from "@tanstack/react-table";
-import { Eye, Trash2, ChevronDown, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import {  Trash2, ChevronDown, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { ClassRosterDialog } from "./roster-management";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,14 +45,14 @@ const globalFilterFn: FilterFn<Class> = (row, columnId, filterValue) => {
   return String(value).toLowerCase().includes(filterValue.toLowerCase());
 };
 
-export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: string, setRefreshTime: Function }) {
+export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: string, setRefreshTime: (time: string) => void }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [allClasses, setAllClasses] = useState<Class[]>([]);
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [selectedClass, setSelectedClass] = useState<Class | null>(null);
+  const [selectedClass,] = useState<Class | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [rosterOpen, setRosterOpen] = useState(false);
   const [selectedClassForRoster, setSelectedClassForRoster] = useState<Class | null>(null);
@@ -175,10 +175,10 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
     state: { sorting, globalFilter, columnVisibility },
   });
 
-  const handleViewDetails = useCallback((classData: Class) => {
-    setSelectedClass(classData);
-    setDetailsOpen(true);
-  }, []);
+  // const handleViewDetails = useCallback((classData: Class) => {
+  //   setSelectedClass(classData);
+  //   setDetailsOpen(true);
+  // }, []);
 
   const handleDeleteClass = useCallback(async (classId: number) => {
     const result = await Swal.fire({
@@ -292,6 +292,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
         console.log("Loaded students:", students);
         setAllClasses(classes);
         setAllStudents(students);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         await Swal.fire(
           'Error!',
@@ -328,6 +329,15 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
     selectedClassForRoster ? transformClassData(selectedClassForRoster) : null,
     [selectedClassForRoster, transformClassData]
   );
+
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader />
+      </div>
+    );
+  }
 
 
   return (
