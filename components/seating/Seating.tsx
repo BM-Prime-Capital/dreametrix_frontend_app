@@ -9,8 +9,8 @@ import { generalImages, teacherImages } from "@/constants/images";
 import PageTitleH2 from "../ui/page-title-h2";
 import StudentArrangementItem from "./student-arrangement-item";
 import { useEffect, useState } from "react";
-import StudentSeatingConditionsDialog from "./StudentSeatingConditionsDialog";
-import { assignRandomSeatNumbers } from "@/libs/utils";
+import { StudentSeatingConditionsDialog } from "./StudentSeatingConditionsDialog";
+//import { assignRandomSeatNumbers } from "@/libs/utils";
 import { CreateArrangementDialog } from "./CreateArrangementDialog";
 import { SeatingHistory } from "./SeatingHistory";
 import { useCallback,useMemo } from 'react';
@@ -25,8 +25,11 @@ import {
 //import ClassSelect from "../ClassSelect";
 import { getSeatingArrangements, updateSeatingArrangement, deactivateArrangementEvent } from "@/services/SeatingService";
 import { ClassSelector } from "../ui/class-selector";
+import { SeatingCondition } from "@/types";
 
 const totalSeats = 64;
+
+
 
 export default function Seating({
   tenantPrimaryDomain,
@@ -54,6 +57,7 @@ export default function Seating({
   const [searchTerm, setSearchTerm] = useState("");
   const [currentClassId,] = useState<string | null>(null);
   const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
+  const [seatingConditions, setSeatingConditions] = useState<SeatingCondition[]>([]);
   //const [seatingConditions, setSeatingConditions] = useState<SeatingCondition[]>([]);
 
   const loadArrangements = useCallback(async (courseId?: number) => {
@@ -73,44 +77,61 @@ export default function Seating({
     }
   }, [tenantPrimaryDomain, accessToken]);
 
-  const formatArrangements = useCallback((apiData: any) => {
-    console.log()
-    const result: any[] = [];
-    
-    for (const courseName in apiData) {
-      const courseData = apiData[courseName];
+  // Modify the formatArrangements function to handle empty arrangements
+const formatArrangements = useCallback((apiData: any) => {
+  //console.log("apiData", apiData)
+  const result: any[] = [];
+  
+  for (const courseName in apiData) {
+    const courseData = apiData[courseName];
 
-      for (const eventName in courseData) {
-        const eventData = courseData[eventName];
-        const students = [];
+    for (const eventName in courseData) {
+      const eventData = courseData[eventName];
+      const students = [];
 
-        // Check if seating_data exists and is not empty
-        if (eventData.seating_data && Object.keys(eventData.seating_data).length > 0) {
-          for (const siteNumber in eventData.seating_data) {
-            const studentData = eventData.seating_data[siteNumber];
-            students.push({
-              seatNumber: parseInt(siteNumber),
-              studentImageUrl: studentData.student_profile_picture || generalImages.student,
-              studentName: studentData.full_name,
-              studentId: studentData.student_id,
-              seatingId: studentData.seating_arrangement_id,
-            });
-          }
+      // Check if seating_data exists and is not empty
+      if (eventData.seating_data && Object.keys(eventData.seating_data).length > 0) {
+        for (const siteNumber in eventData.seating_data) {
+          const studentData = eventData.seating_data[siteNumber];
+          students.push({
+            seatNumber: parseInt(siteNumber),
+            studentImageUrl: studentData.student_profile_picture || generalImages.student,
+            studentName: studentData.full_name,
+            studentId: studentData.student_id,
+            seatingId: studentData.seating_arrangement_id,
+            isSeated: true // Add this flag
+          });
         }
-
-        result.push({
-          id: eventData.arrangement_event_id.toString(),
-          title: eventData.name,
-          courseName,
-          arrangements: students,
-          is_active: eventData.is_active,
-          course_id: eventData.course_id,
-        });
+      } else {
+        // For new arrangements, create unseated students
+        if (eventData.students && eventData.students.length > 0) {
+          eventData.students.forEach((student: any) => {
+            students.push({
+              seatNumber: -1, // -1 indicates not seated
+              studentImageUrl: student.student_profile_picture || generalImages.student,
+              studentName: student.full_name,
+              studentId: student.student_id,
+              seatingId: null,
+              isSeated: false
+            });
+          });
+        }
       }
-    }
 
-    return result;
-  }, []);
+      result.push({
+        id: eventData.arrangement_event_id.toString(),
+        title: eventData.name,
+        courseName,
+        arrangements: students,
+        is_active: eventData.is_active,
+        course_id: eventData.course_id,
+        isNew: !eventData.seating_data // Flag for new arrangements
+      });
+    }
+  }
+
+  return result;
+}, []);
 
   const filteredStudents = useMemo(() => {
     if (!currentArrangement) return [];
@@ -185,25 +206,202 @@ export default function Seating({
 
   const handleSeatingArrangementAuto = useCallback(() => {
     if (!currentArrangement) return;
-
-    const shuffledArrangements = assignRandomSeatNumbers(
-      currentArrangement.arrangements,
-      totalSeats
+  
+    // Créer une copie des arrangements actuels
+    let studentsToPlace = [...currentArrangement.arrangements];
+    const placedStudents: any[] = [];
+    const availableSeats = Array.from({ length: totalSeats }, (_, i) => i + 1); // [1, 2, ..., 64]
+  
+    // Trier les conditions par priorité (si définie)
+    const sortedConditions = [...seatingConditions].sort((a, b) => 
+      (b.priority || 0) - (a.priority || 0)
     );
-
-      const newCurrentArrangement = {
-        ...currentArrangement,
-        arrangements: shuffledArrangements,
-      };
-      setCurrentArrangement(newCurrentArrangement);
-      setArrangements(
-        arrangements.map((arr) =>
-          arr.id === currentArrangement.id ? newCurrentArrangement : arr
-        )
-      );
-      setIsSeatingArrangementAuto(true);
-      setIsModified(true);
-    }, [currentArrangement, arrangements]);
+  
+    // Appliquer chaque condition
+    for (const condition of sortedConditions) {
+      switch (condition.type) {
+        case 'separate':
+          // Séparer les élèves spécifiés
+          const studentsToSeparate = studentsToPlace.filter(s => 
+            condition.studentIds.includes(s.studentId)
+          );
+          
+          if (studentsToSeparate.length > 0) {
+            // Placer ces élèves avec au moins 1 siège d'écart
+            for (const student of studentsToSeparate) {
+              if (availableSeats.length === 0) break;
+              
+              const randomIndex = Math.floor(Math.random() * availableSeats.length);
+              const seatNumber = availableSeats[randomIndex];
+              
+              placedStudents.push({
+                ...student,
+                seatNumber
+              });
+              
+              // Retirer le siège utilisé et les sièges adjacents
+              availableSeats.splice(randomIndex, 1);
+              const adjacentIndex = availableSeats.indexOf(seatNumber + 1);
+              if (adjacentIndex !== -1) availableSeats.splice(adjacentIndex, 1);
+              const prevAdjacentIndex = availableSeats.indexOf(seatNumber - 1);
+              if (prevAdjacentIndex !== -1) availableSeats.splice(prevAdjacentIndex, 1);
+            }
+            
+            // Mettre à jour la liste des élèves restants
+            studentsToPlace = studentsToPlace.filter(s => 
+              !condition.studentIds.includes(s.studentId)
+            );
+          }
+          break;
+  
+        case 'group':
+          // Grouper les élèves spécifiés
+          const studentsToGroup = studentsToPlace.filter(s => 
+            condition.studentIds.includes(s.studentId)
+          );
+          
+          if (studentsToGroup.length > 0) {
+            // Trouver un bloc de sièges contigus suffisamment grand
+            const groupSize = studentsToGroup.length;
+            let foundBlock = false;
+            
+            for (let i = 0; i <= availableSeats.length - groupSize; i++) {
+              const block = availableSeats.slice(i, i + groupSize);
+              // Vérifier si les sièges sont contigus
+              if (block.every((seat, idx) => 
+                idx === 0 || seat === block[idx - 1] + 1
+              )) {
+                foundBlock = true;
+                // Placer le groupe
+                studentsToGroup.forEach((student, idx) => {
+                  placedStudents.push({
+                    ...student,
+                    seatNumber: block[idx]
+                  });
+                });
+                
+                // Retirer les sièges utilisés
+                availableSeats.splice(i, groupSize);
+                break;
+              }
+            }
+            
+            if (!foundBlock) {
+              // Si on ne trouve pas de bloc contigu, placer normalement
+              studentsToGroup.forEach(student => {
+                if (availableSeats.length === 0) return;
+                
+                const randomIndex = Math.floor(Math.random() * availableSeats.length);
+                const seatNumber = availableSeats[randomIndex];
+                
+                placedStudents.push({
+                  ...student,
+                  seatNumber
+                });
+                
+                availableSeats.splice(randomIndex, 1);
+              });
+            }
+            
+            // Mettre à jour la liste des élèves restants
+            studentsToPlace = studentsToPlace.filter(s => 
+              !condition.studentIds.includes(s.studentId)
+            );
+          }
+          break;
+  
+        case 'front':
+          // Placer les élèves spécifiés au premier rang (sièges 1-8)
+          const studentsForFront = studentsToPlace.filter(s => 
+            condition.studentIds.includes(s.studentId)
+          );
+          
+          const frontSeats = availableSeats.filter(seat => seat <= 8);
+          
+          studentsForFront.forEach(student => {
+            if (frontSeats.length === 0) return;
+            
+            const randomIndex = Math.floor(Math.random() * frontSeats.length);
+            const seatNumber = frontSeats[randomIndex];
+            
+            placedStudents.push({
+              ...student,
+              seatNumber
+            });
+            
+            // Retirer des listes
+            availableSeats.splice(availableSeats.indexOf(seatNumber), 1);
+            frontSeats.splice(randomIndex, 1);
+          });
+          
+          // Mettre à jour la liste des élèves restants
+          studentsToPlace = studentsToPlace.filter(s => 
+            !condition.studentIds.includes(s.studentId)
+          );
+          break;
+  
+        case 'back':
+          // Placer les élèves spécifiés au dernier rang (sièges 57-64)
+          const studentsForBack = studentsToPlace.filter(s => 
+            condition.studentIds.includes(s.studentId)
+          );
+          
+          const backSeats = availableSeats.filter(seat => seat >= 57);
+          
+          studentsForBack.forEach(student => {
+            if (backSeats.length === 0) return;
+            
+            const randomIndex = Math.floor(Math.random() * backSeats.length);
+            const seatNumber = backSeats[randomIndex];
+            
+            placedStudents.push({
+              ...student,
+              seatNumber
+            });
+            
+            // Retirer des listes
+            availableSeats.splice(availableSeats.indexOf(seatNumber), 1);
+            backSeats.splice(randomIndex, 1);
+          });
+          
+          // Mettre à jour la liste des élèves restants
+          studentsToPlace = studentsToPlace.filter(s => 
+            !condition.studentIds.includes(s.studentId)
+          );
+          break;
+      }
+    }
+  
+    // Placer les élèves restants aléatoirement
+    studentsToPlace.forEach(student => {
+      if (availableSeats.length === 0) return;
+      
+      const randomIndex = Math.floor(Math.random() * availableSeats.length);
+      const seatNumber = availableSeats[randomIndex];
+      
+      placedStudents.push({
+        ...student,
+        seatNumber
+      });
+      
+      availableSeats.splice(randomIndex, 1);
+    });
+  
+    // Mettre à jour l'arrangement
+    const newCurrentArrangement = {
+      ...currentArrangement,
+      arrangements: placedStudents,
+    };
+    
+    setCurrentArrangement(newCurrentArrangement);
+    setArrangements(
+      arrangements.map(arr =>
+        arr.id === currentArrangement.id ? newCurrentArrangement : arr
+      )
+    );
+    setIsSeatingArrangementAuto(true);
+    setIsModified(true);
+  }, [currentArrangement, arrangements, seatingConditions]);
 
     const handleSave = useCallback(async () => {
   if (!currentArrangement || !isModified) return;
@@ -363,7 +561,13 @@ export default function Seating({
         </Button>
 
         <StudentSeatingConditionsDialog 
-          studentClassName="flex gap-2 items-center text-lg bg-gray-600 hover:bg-gray-700 text-white rounded-md px-4 py-3 shadow-md transition-all"
+          studentClassName="flex gap-2 items-center text-lg text-white rounded-md px-4 py-3 shadow-md transition-all bg-[#F5C358] hover:bg-[#eeb53b]"
+          conditions={seatingConditions}
+          setConditions={setSeatingConditions}
+          students={currentArrangement?.arrangements?.map((a: any) => ({
+            studentId: a.studentId,
+            studentName: a.studentName,
+          })) || []}
         />
 
         <CreateArrangementDialog
