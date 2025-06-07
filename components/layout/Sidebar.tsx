@@ -19,8 +19,6 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
           const iconPath = route.icon;
           const isActive = isMenuItemActive(route, pathname);
 
-            console.log('Checking:', route.path, 'against', pathname, '=>', isActive)
-
           return (
             <Link
               key={route.path}
