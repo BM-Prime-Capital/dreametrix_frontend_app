@@ -1,3 +1,5 @@
+"use server";
+
 export async function fetchElaStandards(
   subject: string,
   grade: string,
@@ -134,8 +136,6 @@ export async function fetchElaSpecificStandards(
     const data = await response.json();
     console.log("ELA Specific Standards Data:", data);
 
-    // Extract the specific standards from the response object
-    // This might be an array of standards or an object with domains/standards
     const specificStandards =
       data.specifique_standards || data.standards || data;
     console.log("Extracted Specific Standards:", specificStandards);
