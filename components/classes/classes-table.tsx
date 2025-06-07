@@ -175,11 +175,6 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
     state: { sorting, globalFilter, columnVisibility },
   });
 
-  // const handleViewDetails = useCallback((classData: Class) => {
-  //   setSelectedClass(classData);
-  //   setDetailsOpen(true);
-  // }, []);
-
   const handleDeleteClass = useCallback(async (classId: number) => {
     const result = await Swal.fire({
       title: 'Are you sure?',

@@ -353,7 +353,7 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
                             <div className="w-full bg-gray-200 rounded-full h-2.5">
                               <div 
                                 className="bg-blue-600 h-2.5 rounded-full" 
-                                style={{ width: `${student.characterScore * 10}%` }}
+                                style={{ width: `${student.characterScore && (student.characterScore * 10)}%` }}
                               ></div>
                             </div>
                             <span className="text-xs text-gray-500">{student.characterScore}/10</span>
