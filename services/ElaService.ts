@@ -11,13 +11,6 @@ export async function fetchElaStandards(
 
   const url = `${tenantPrimaryDomain}/digital_library/standards_ela/${subject}/${grade}/`;
 
-  console.log("Fetching ELA Standards:", {
-    url,
-    subject,
-    grade,
-    hasAccessToken: !!accessToken,
-  });
-
   try {
     const response = await fetch(url, {
       headers: {
@@ -68,14 +61,6 @@ export async function fetchElaStrands(
   const url = `${tenantPrimaryDomain}/digital_library/strands/${subject}/${grade}/${encodeURIComponent(
     standardsEla
   )}/`;
-
-  console.log("Fetching ELA Strands:", {
-    url,
-    subject,
-    grade,
-    standardsEla,
-    hasAccessToken: !!accessToken,
-  });
 
   try {
     const response = await fetch(url, {
@@ -129,26 +114,11 @@ export async function fetchElaSpecificStandards(
     standardsEla
   )}/${encodeURIComponent(strand)}/`;
 
-  console.log("Fetching ELA Specific Standards:", {
-    url,
-    subject,
-    grade,
-    standardsEla,
-    strand,
-    hasAccessToken: !!accessToken,
-  });
-
   try {
     const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-    });
-
-    console.log("ELA Specific Standards Response:", {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok,
     });
 
     if (!response.ok) {
@@ -194,17 +164,6 @@ export async function fetchElaQuestionLinks(
 
   const url = `${tenantPrimaryDomain}/digital_library/links_ela/${subject}/${grade}/${standardsEla}/${strands}/${specificStandards}/${kind}/`;
 
-  console.log("Fetching ELA Question Links:", {
-    url,
-    subject,
-    grade,
-    standardsEla,
-    strands,
-    specificStandards,
-    kind,
-    hasAccessToken: !!accessToken,
-  });
-
   try {
     const response = await fetch(url, {
       headers: {
@@ -227,7 +186,6 @@ export async function fetchElaQuestionLinks(
     }
 
     const data = await response.json();
-    console.log("ELA Question Links Data:", data);
 
     return data;
   } catch (error) {
@@ -261,12 +219,6 @@ export async function generateElaPdf(
 
   const url = `${tenantPrimaryDomain}/digital_library/ela_generate-pdf/`;
 
-  console.log("Generating ELA PDF:", {
-    url,
-    pdfData,
-    hasAccessToken: !!accessToken,
-  });
-
   try {
     const response = await fetch(url, {
       method: "POST",
@@ -275,12 +227,6 @@ export async function generateElaPdf(
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(pdfData),
-    });
-
-    console.log("ELA PDF Generation Response:", {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok,
     });
 
     if (!response.ok) {
@@ -295,7 +241,6 @@ export async function generateElaPdf(
     const blob = await response.blob();
     return blob;
   } catch (error) {
-    console.error("Error generating ELA PDF:", error);
     throw error;
   }
 }
