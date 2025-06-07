@@ -6,72 +6,99 @@ import { FileIcon, FileTextIcon } from "lucide-react"
 import { ViewAssignmentDialog } from "@/components/student/assignments/view-assignment-dialog"
 import { ViewSubmissionDialog } from "@/components/student/assignments/view-submission-dialog"
 import { Badge } from "@/components/ui/badge"
+import {Assignment} from "@/app/api/student/assignment/assignment.model";
 
 // Sample assignments data
 const assignments = [
   {
     id: 1,
-    student: "Mia",
+    name: "Mia",
+    teacher:"Richard",
+    file: "string",
+    due_date: "19-05-2025",
+    weight: 3,
+    kind: "Homework",
     class: "Class 5 - Sci",
-    day: "YESTERDAY",
-    type: "Homework",
-    hasSubmitted: true,
-    teacher: "Eva Parker",
-  },
+    published: true,
+    created_at: "03-03-2025",
+    updated_at: "03-015-2025",
+    published_at: "03-06-2025",
+    course: 5,
+},
   {
     id: 2,
-    student: "Mia",
-    class: "Class 5 - Math",
-    day: "TODAY",
-    type: "Test",
-    hasSubmitted: false,
-    teacher: "Eva Parker",
-  },
-  {
-    id: 3,
-    student: "John",
+    name: "John",
+    teacher:"Anna Blake",
+    file: "string",
+    due_date: "19-05-2025",
+    weight: 3,
+    kind: "Test",
     class: "Class 5 - Bio",
-    day: "11:25",
-    type: "Homework",
-    hasSubmitted: true,
-    teacher: "Sam Burke",
+    day: "TODAY",
+    published: false,
+    created_at: "03-03-2025",
+    updated_at: "03-015-2025",
+    published_at: "03-06-2025",
+    course: 5,
   },
+  // {
+  //   id: 3,
+  //   student: "John",
+  //   class: "Class 5 - Bio",
+  //   day: "11:25",
+  //   type: "Homework",
+  //   hasSubmitted: true,
+  //   teacher: "Sam Burke",
+  // },
   {
     id: 4,
-    student: "John",
-    class: "Class 5 - Lit",
+    name: "Erick",
+    teacher:"Richard",
+    file: "string",
+    due_date: "19-05-2025",
+    weight: 3,
+    kind: "Homework",
+    class: "Class 5 - Bio",
     day: "11:25",
-    type: "Homework",
-    hasSubmitted: true,
-    teacher: "Anna Blake",
+    published: true,
+    created_at: "03-03-2025",
+    updated_at: "03-015-2025",
+    published_at: "03-06-2025",
+    course: 5,
   },
   {
     id: 5,
-    student: "Mia",
-    class: "Class 5 - Che",
-    day: "11:29",
-    type: "Test",
-    hasSubmitted: false,
-    teacher: "Sam Burke",
+    name: "Peter",
+    teacher:"Eva Parker",
+    file: "string",
+    due_date: "19-05-2025",
+    weight: 3,
+    kind: "Test",
+    class: "Class 5 - Bio",
+    day: "12:05",
+    published: false,
+    created_at: "03-03-2025",
+    updated_at: "03-015-2025",
+    published_at: "03-06-2025",
+    course: 5,
   },
   {
     id: 6,
-    student: "John",
+    name: "Jeremiah",
+    teacher:"Richard",
+    file: "string",
+    due_date: "19-05-2025",
+    weight: 3,
+    kind: "string",
     class: "Class 5 - Spa",
-    day: "12:05",
-    type: "Test",
-    hasSubmitted: false,
-    teacher: "Anna Blake",
+    day: "YESTERDAY",
+    published: true,
+    created_at: "03-03-2025",
+    updated_at: "03-015-2025",
+    published_at: "03-06-2025",
+    course: 5,
   },
-  {
-    id: 7,
-    student: "John",
-    class: "Class 5 - Phy",
-    day: "12:06",
-    type: "Test",
-    hasSubmitted: false,
-    teacher: "Eva Parker",
-  },
+
 ]
 
 interface ParentAssignmentsTableProps {
@@ -82,15 +109,7 @@ interface ParentAssignmentsTableProps {
 export function ParentAssignmentsTable({ selectedStudent, selectedClass }: ParentAssignmentsTableProps) {
   const [isViewAssignmentModalOpen, setIsViewAssignmentModalOpen] = useState(false)
   const [isViewSubmissionModalOpen, setIsViewSubmissionModalOpen] = useState(false)
-  const [selectedAssignment, setSelectedAssignment] = useState<{
-    id: number
-    student: string
-    class: string
-    day: string
-    type: string
-    hasSubmitted: boolean
-    teacher: string
-  } | null>(null)
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null)
 
   const handleAssignmentClick = (assignment: (typeof assignments)[0]) => {
     setSelectedAssignment(assignment)
@@ -99,7 +118,7 @@ export function ParentAssignmentsTable({ selectedStudent, selectedClass }: Paren
 
   const handleSubmissionClick = (assignment: (typeof assignments)[0]) => {
     setSelectedAssignment(assignment)
-    if (assignment.hasSubmitted) {
+    if (assignment.published) {
       setIsViewSubmissionModalOpen(true)
     }
   }
@@ -108,8 +127,8 @@ export function ParentAssignmentsTable({ selectedStudent, selectedClass }: Paren
   const filteredAssignments = assignments.filter((assignment) => {
     const studentMatch =
       selectedStudent === "all-students" ||
-      (selectedStudent === "john" && assignment.student === "John") ||
-      (selectedStudent === "mia" && assignment.student === "Mia")
+      (selectedStudent === "john" && assignment.name === "John") ||
+      (selectedStudent === "mia" && assignment.name === "Mia")
 
     const classMatch =
       selectedClass === "all-classes" || assignment.class.toLowerCase() === selectedClass.replace(/-/g, " ")
@@ -136,7 +155,7 @@ export function ParentAssignmentsTable({ selectedStudent, selectedClass }: Paren
             <TableRow key={assignment.id} className={index % 2 === 0 ? "bg-[#EDF6FA]" : ""}>
               <TableCell className="font-medium text-gray-500">
                 <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-100">
-                  {assignment.student}
+                  {assignment.name}
                 </Badge>
               </TableCell>
               <TableCell className="font-medium text-gray-500">{assignment.class}</TableCell>
@@ -153,7 +172,7 @@ export function ParentAssignmentsTable({ selectedStudent, selectedClass }: Paren
                   {assignment.day}
                 </span>
               </TableCell>
-              <TableCell className="text-gray-500">{assignment.type}</TableCell>
+              <TableCell className="text-gray-500">{assignment.kind}</TableCell>
               <TableCell>
                 <div className="flex items-center justify-center">
                   <button
@@ -167,7 +186,7 @@ export function ParentAssignmentsTable({ selectedStudent, selectedClass }: Paren
               <TableCell>
                 <div className="flex items-center justify-center">
                   <button
-                    className={`${assignment.hasSubmitted ? "text-[#4CAF50]" : "text-gray-400"} hover:opacity-80`}
+                    className={`${assignment.published ? "text-[#4CAF50]" : "text-gray-400"} hover:opacity-80`}
                     onClick={() => handleSubmissionClick(assignment)}
                   >
                     <FileIcon className="h-5 w-5" />
