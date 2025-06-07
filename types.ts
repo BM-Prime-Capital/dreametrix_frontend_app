@@ -1,3 +1,5 @@
+import React from "react";
+
 export interface UserNavigationInfo {
   label: string;
   basePath: string;
@@ -6,6 +8,7 @@ export interface MenuRoute {
   path: string;
   icon: React.ReactNode;
   label: string;
+  exact?: boolean;
 }
 export interface Assignment {
   id: number;
@@ -19,6 +22,7 @@ export interface Assignment {
   created_at: string;
   updated_at: string;
 }
+
 export interface ClassDay {
   id: number;
   day: string;
@@ -56,10 +60,12 @@ export interface ISchoolClass {
   students: number[];
 }
 
+
 type FileRecord = {
   name: string;
   url: string;
 };
+
 export interface Communication {
   userImageUrl: string;
   userName: string;
@@ -67,6 +73,7 @@ export interface Communication {
   created: string;
   attachedFilesUrls: FileRecord[];
 }
+
 export interface SchoolClasses {
   subject: string;
   grade: string;
@@ -142,6 +149,7 @@ export interface Character {
   update_at: string;
   observation_date?: string;
 }
+
 export interface IUser {
   id: number;
   first_name: string;
@@ -153,9 +161,21 @@ export interface ITeacher {
   user: IUser;
 }
 export interface IStudent {
-  id: number;
-  first_name?: string;
-  last_name?: string;
-  user: IUser;
-  grade?: string;
-}
+    id: number;
+    first_name?: string;
+    last_name?: string;
+    user: IUser;
+    grade?: string;
+  }
+
+  export interface  SeatingCondition  {
+    id: string;
+    type: 'separate' | 'group' | 'front' | 'back' | 'random';
+    studentIds: string[];
+    priority?: number;
+  };
+
+
+  
+
+  

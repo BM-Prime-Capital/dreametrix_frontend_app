@@ -1,5 +1,7 @@
 "use server";
 
+"use server";
+
 export async function fetchElaStandards(
   subject: string,
   grade: string,

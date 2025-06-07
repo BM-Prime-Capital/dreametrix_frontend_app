@@ -1,7 +1,7 @@
 "use client";
 
-import CommingSoon from "@/components/ui/comming-soon";
+import ComingSoon from "@/components/ui/coming-soon";
 
 export default function TutorPage() {
-  return <CommingSoon title="Tutor" />;
+  return <ComingSoon title="Tutor" />;
 }
