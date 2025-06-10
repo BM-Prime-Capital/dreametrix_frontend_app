@@ -13,8 +13,7 @@ import {
     DialogTitle,
     DialogClose
 } from "@/components/ui/dialog";
-// import LessonPlanForm from "@/components/plan/LessonPlanForm";
-import LessonPlanCard from "../../../../components/plan/LessonPlanCard";
+import LessonPlanCard from "@/components/plan/LessonPlanCard";
 
 interface FormData {
     title: string;
@@ -88,7 +87,7 @@ const LessonPlans = () => {
             ]
         }
     ]);
-    
+
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState<FormData>(initialFormData);
     const [editingId, setEditingId] = useState<string | null>(null);
