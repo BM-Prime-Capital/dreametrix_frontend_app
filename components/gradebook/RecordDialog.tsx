@@ -19,19 +19,23 @@ import { localStorageKey } from "@/constants/global";
 interface RecordDialogProps {
   children: React.ReactNode;
   studentId?: string;
+  submissionId?: number; // Add submissionId prop for submissions
   assessmentType?: string;
   assessmentIndex?: number;
-  onRecordingSaved?: () => void;
+  onRecordingSaved?: (voiceNotesUrl?: string) => void; // Updated to accept voice URL
   hasExistingRecording?: boolean; // Add prop to indicate if recording exists
+  voiceUrl?: string; // Add prop to pass existing voice URL
 }
 
 export function RecordDialog({
   children,
   studentId,
+  submissionId, // Add submissionId parameter
   assessmentType,
   assessmentIndex,
   onRecordingSaved,
   hasExistingRecording = false,
+  voiceUrl, // Add voiceUrl parameter
 }: RecordDialogProps) {
   const [open, setOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -54,21 +58,35 @@ export function RecordDialog({
     console.log("useEffect triggered with conditions:", {
       open,
       hasExistingRecording,
+      voiceUrl,
       studentId,
       assessmentType,
       assessmentIndex,
       hasRecording,
     });
 
+    // If we have a direct voiceUrl, use it instead of making API call
+    if (open && hasExistingRecording && voiceUrl && !hasRecording) {
+      console.log("Using provided voiceUrl:", voiceUrl);
+      const fullAudioUrl = voiceUrl.startsWith("http")
+        ? voiceUrl
+        : `${tenantPrimaryDomain}${voiceUrl}`;
+      setAudioUrl(fullAudioUrl);
+      setHasRecording(true);
+      return;
+    }
+
+    // Otherwise, use the old API call method
     if (
       open &&
       hasExistingRecording &&
       studentId &&
       assessmentType &&
       assessmentIndex !== undefined &&
-      !hasRecording
+      !hasRecording &&
+      !voiceUrl
     ) {
-      console.log("All conditions met, loading existing recording...");
+      console.log("All conditions met, loading existing recording via API...");
       loadExistingRecording();
     } else {
       console.log("Conditions not met for loading existing recording");
@@ -76,6 +94,7 @@ export function RecordDialog({
   }, [
     open,
     hasExistingRecording,
+    voiceUrl,
     studentId,
     assessmentType,
     assessmentIndex,
@@ -177,33 +196,30 @@ export function RecordDialog({
 
     setIsSaving(true);
     try {
-      // Convert Blob to base64 string for server transmission
-      const reader = new FileReader();
-      const base64Promise = new Promise<string>((resolve, reject) => {
-        reader.onload = () => {
-          const result = reader.result as string;
-          // Remove the data URL prefix to get just the base64 string
-          const base64String = result.split(",")[1];
-          resolve(base64String);
-        };
-        reader.onerror = reject;
+      // Convert Blob to base64 string for server action
+      const base64Promise = new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(audioBlob);
       });
-
-      reader.readAsDataURL(audioBlob);
       const audioBase64 = await base64Promise;
 
-      await saveVoiceRecording(
+      const result = await saveVoiceRecording(
         tenantPrimaryDomain,
         accessToken,
-        parseInt(studentId),
+        submissionId || parseInt(studentId || "0"), // Use submissionId if available, otherwise studentId
         assessmentType,
         assessmentIndex,
         audioBase64, // Pass base64 string instead of Blob
         refreshToken
       );
 
-      console.log("Recording saved successfully");
-      onRecordingSaved?.();
+      console.log("Recording saved successfully:", result);
+
+      // Pass the voice_notes URL from the API response to the parent callback
+      const voiceNotesUrl =
+        result?.voice_notes_url || result?.data?.voice_notes;
+      onRecordingSaved?.(voiceNotesUrl);
       setOpen(false);
 
       // Reset state

@@ -10,6 +10,10 @@ export interface MenuRoute {
   label: string;
   exact?: boolean;
 }
+export interface MiniCourse {
+  id: number;
+  name: string;
+}
 export interface Assignment {
   id: number;
   name: string;
@@ -18,7 +22,7 @@ export interface Assignment {
   weight: string;
   kind: string;
   published: boolean;
-  course: number;
+  course: MiniCourse;
   created_at: string;
   updated_at: string;
 }
@@ -59,7 +63,6 @@ export interface ISchoolClass {
   teacher: number;
   students: number[];
 }
-
 
 type FileRecord = {
   name: string;
@@ -161,21 +164,16 @@ export interface ITeacher {
   user: IUser;
 }
 export interface IStudent {
-    id: number;
-    first_name?: string;
-    last_name?: string;
-    user: IUser;
-    grade?: string;
-  }
+  id: number;
+  first_name?: string;
+  last_name?: string;
+  user: IUser;
+  grade?: string;
+}
 
-  export interface  SeatingCondition  {
-    id: string;
-    type: 'separate' | 'group' | 'front' | 'back' | 'random';
-    studentIds: string[];
-    priority?: number;
-  };
-
-
-  
-
-  
+export interface SeatingCondition {
+  id: string;
+  type: "separate" | "group" | "front" | "back" | "random";
+  studentIds: string[];
+  priority?: number;
+}

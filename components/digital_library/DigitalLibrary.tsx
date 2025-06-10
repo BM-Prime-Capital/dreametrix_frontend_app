@@ -634,8 +634,8 @@ export default function DigitalLibrary() {
         return;
       }
       const parsed = JSON.parse(loadedSelectedClass);
-        setSelectedClass(parsed); 
-  }
+      setSelectedClass(parsed);
+    }
   }, [loadedSelectedClass]);
 
   useEffect(() => {

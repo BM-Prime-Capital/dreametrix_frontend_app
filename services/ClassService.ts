@@ -53,21 +53,29 @@ export async function createClass(
 
     // Format schedule data
     const formattedSchedule: ClassSchedule = {};
-    Object.entries(classData.hours_and_dates_of_course_schedule).forEach(([day, schedules]) => {
-      const scheduleArray = Array.isArray(schedules) ? schedules : [schedules];
-      formattedSchedule[day] = scheduleArray.map((schedule: any) => ({
-        date: schedule.date || new Date().toISOString().split('T')[0],
-        start_time: schedule.start_time,
-        end_time: schedule.end_time,
-      }));
-    });
+    Object.entries(classData.hours_and_dates_of_course_schedule).forEach(
+      ([day, schedules]) => {
+        const scheduleArray = Array.isArray(schedules)
+          ? schedules
+          : [schedules];
+        formattedSchedule[day] = scheduleArray.map((schedule: any) => ({
+          date: schedule.date || new Date().toISOString().split("T")[0],
+          start_time: schedule.start_time,
+          end_time: schedule.end_time,
+        }));
+      }
+    );
 
     const data = {
-      name: classData.name || `Class ${classData.grade} - ${classData.subject_in_short}`,
+      name:
+        classData.name ||
+        `Class ${classData.grade} - ${classData.subject_in_short}`,
       subject_in_all_letter: classData.subject_in_all_letter,
       subject_in_short: classData.subject_in_short,
       hours_and_dates_of_course_schedule: formattedSchedule,
-      description: classData.description || `Class ${classData.grade} - ${classData.subject_in_short}`,
+      description:
+        classData.description ||
+        `Class ${classData.grade} - ${classData.subject_in_short}`,
       grade: classData.grade,
       teacher: classData.teacher,
       students: classData.students,
@@ -102,10 +110,10 @@ export async function updateClass(
 ) {
   try {
     // Vérifier et formater les étudiants
-    const students = Array.isArray(classData.students) 
+    const students = Array.isArray(classData.students)
       ? classData.students
           .map((student: any) => {
-            if (typeof student === 'number') return student;
+            if (typeof student === "number") return student;
             if (student?.id) return student.id;
             return null;
           })
@@ -113,9 +121,10 @@ export async function updateClass(
       : [];
 
     // Vérifier le teacher
-    const teacher = typeof classData.teacher === 'number' 
-      ? classData.teacher 
-      : classData.teacher?.id;
+    const teacher =
+      typeof classData.teacher === "number"
+        ? classData.teacher
+        : classData.teacher?.id;
 
     if (!teacher) {
       throw new Error("Teacher ID is required");
@@ -128,7 +137,7 @@ export async function updateClass(
     };
 
     console.log("UPDATING Class payload => ", data);
-    
+
     const url = `${tenantPrimaryDomain}/classes/${classData.id}/`;
     const response = await fetch(url, {
       method: "PUT",
@@ -157,8 +166,6 @@ export async function updateClass(
   }
 }
 
-
-
 export async function deleteClass(
   classId: number,
   tenantPrimaryDomain: string,
@@ -171,7 +178,7 @@ export async function deleteClass(
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
