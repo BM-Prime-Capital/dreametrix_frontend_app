@@ -71,7 +71,7 @@ export async function getGradeBookFocusList(
 export async function updateStudentGrade(
   tenantPrimaryDomain: string,
   accessToken: string,
-  studentId: number,
+  submissionId: number, // Changed from studentId to submissionId
   assessmentType: string,
   assessmentIndex: number,
   grade: number,
@@ -81,100 +81,135 @@ export async function updateStudentGrade(
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  // MOCK/FAKE API RESPONSE - Remove this when real endpoint is ready
-  console.log("MOCK: Updating grade for student:", {
-    studentId,
-    assessmentType,
-    assessmentIndex,
-    grade,
-  });
+  try {
+    console.log("🔄 Updating grade for submission:", {
+      submissionId,
+      assessmentType,
+      assessmentIndex,
+      grade,
+    });
 
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
+    const url = `${tenantPrimaryDomain}/submissions/${submissionId}/`;
 
-  // Simulate successful response
-  return {
-    success: true,
-    message: "Grade updated successfully",
-    data: {
-      student_id: studentId,
-      assessment_type: assessmentType,
-      assessment_index: assessmentIndex,
-      grade: grade,
-      updated_at: new Date().toISOString(),
-    },
-  };
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        "X-Refresh-Token": refreshToken,
+      },
+      body: JSON.stringify({
+        grade: grade,
+      }),
+    });
 
-  // REAL API CALL - Uncomment when backend is ready
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("❌ Backend error:", errorData);
+
+      if (response.status === 403) {
+        throw new Error("You don't have permission to update grades.");
+      } else if (response.status === 404) {
+        throw new Error("Submission not found.");
+      } else {
+        throw new Error(
+          errorData.detail || `Error updating grade. Status: ${response.status}`
+        );
+      }
+    }
+
+    const data = await response.json();
+
+    console.log("✅ Grade updated successfully:", data);
+
+    return {
+      success: true,
+      message: "Grade updated successfully",
+      data: data,
+    };
+  } catch (error) {
+    console.error("❌ Network error updating grade:", error);
+    throw error;
+  }
 }
 
 export async function saveVoiceRecording(
   tenantPrimaryDomain: string,
   accessToken: string,
-  studentId: number,
+  submissionId: number, // Changed from studentId to submissionId
   assessmentType: string,
   assessmentIndex: number,
-  audioBase64: string, // Changed from Blob to string
+  audioBase64: string, // Accept base64 string from client
   refreshToken: string
 ) {
   if (!accessToken) {
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  // MOCK/FAKE API RESPONSE - Remove this when real endpoint is ready
-  console.log("MOCK: Saving voice recording for:", {
-    studentId,
-    assessmentType,
-    assessmentIndex,
-    audioSize: audioBase64.length + " characters (base64)",
-  });
+  try {
+    console.log("🎙️ Saving voice recording for submission:", {
+      submissionId,
+      assessmentType,
+      assessmentIndex,
+      audioSize: audioBase64.length + " characters (base64)",
+    });
 
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  // Simulate successful response
-  return {
-    success: true,
-    message: "Voice recording saved successfully",
-    data: {
-      recording_id: `rec_${Date.now()}`,
-      student_id: studentId,
-      assessment_type: assessmentType,
-      assessment_index: assessmentIndex,
-      file_size: audioBase64.length,
-      created_at: new Date().toISOString(),
-    },
-  };
-
-  // REAL API CALL - Uncomment when backend is ready
-  /*
-  const url = `${tenantPrimaryDomain}/gradebooks/voice-recording/`;
-  let response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({
-      student_id: studentId,
-      assessment_type: assessmentType,
-      assessment_index: assessmentIndex,
-      audio_data: audioBase64, // Send base64 string in JSON
-      mime_type: "audio/webm"
-    })
-  });
-
-  if (!response.ok) {
-    if (response.status === 403) {
-      throw new Error("You don't have permission to save voice recordings.");
-    } else {
-      throw new Error(`Error saving voice recording. URL: ${url}`);
+    // Convert base64 to Blob for FormData
+    const base64Data = audioBase64.split(",")[1]; // Remove data:audio/webm;base64, prefix
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
-  }
+    const byteArray = new Uint8Array(byteNumbers);
+    const audioBlob = new Blob([byteArray], { type: "audio/webm" });
 
-  const data = await response.json();
-  return data;
-  */
+    const url = `${tenantPrimaryDomain}/submissions/${submissionId}/`;
+
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append("voice_notes", audioBlob, "voice_recording.webm");
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "X-Refresh-Token": refreshToken,
+        // Don't set Content-Type header - let browser set it for FormData
+      },
+      body: formData, // Send FormData with the file
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("❌ Backend error:", errorData);
+
+      if (response.status === 403) {
+        throw new Error("You don't have permission to save voice recordings.");
+      } else if (response.status === 404) {
+        throw new Error("Submission not found.");
+      } else {
+        throw new Error(
+          errorData.detail ||
+            `Error saving voice recording. Status: ${response.status}`
+        );
+      }
+    }
+
+    const data = await response.json();
+
+    console.log("✅ Voice recording saved successfully:", data);
+
+    return {
+      success: true,
+      message: "Voice recording saved successfully",
+      data: data,
+      voice_notes_url: data.voice_notes, // Return the voice_notes URL from the response
+    };
+  } catch (error) {
+    console.error("❌ Network error saving voice recording:", error);
+    throw error;
+  }
 }
 
 export async function getVoiceRecordings(

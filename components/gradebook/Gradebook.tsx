@@ -118,7 +118,9 @@ export default function Gradebook() {
             <span>Layout</span>
           </Button>
         )}
-        {currentClass && <GradebookSettingsDialog />}
+        {currentClass && (
+          <GradebookSettingsDialog courseId={parseInt(currentClass.id)} />
+        )}
       </div>
 
       <Card className="rounded-md p-4">
@@ -139,6 +141,23 @@ export default function Gradebook() {
             <GradebookClassTable
               classData={currentClass} // Ajout de la prop classData
               onBack={handleBackToList} // Ajout de la prop onBack
+              columnCounts={{
+                test:
+                  gradebookData.find((item) => item.id === currentClass.id)
+                    ?.noOfExams || 1,
+                quiz:
+                  gradebookData.find((item) => item.id === currentClass.id)
+                    ?.noOfTests || 1,
+                homework:
+                  gradebookData.find((item) => item.id === currentClass.id)
+                    ?.noOfHomeworks || 1,
+                participation:
+                  gradebookData.find((item) => item.id === currentClass.id)
+                    ?.noOfParticipation || 1,
+                other:
+                  gradebookData.find((item) => item.id === currentClass.id)
+                    ?.noOfOther || 1,
+              }}
             />
           </div>
         ) : (
