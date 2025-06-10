@@ -42,6 +42,13 @@ import {
 interface GradebookClassTableProps {
   classData: ClassData;
   onBack: () => void;
+  columnCounts?: {
+    test: number;
+    quiz: number;
+    homework: number;
+    participation: number;
+    other: number;
+  };
 }
 
 interface ApiStudent {
@@ -73,6 +80,7 @@ interface StudentGrade {
 export function GradebookClassTable({
   classData,
   onBack,
+  columnCounts,
 }: GradebookClassTableProps) {
   const [students, setStudents] = useState<StudentGrade[]>([]);
   const [loading, setLoading] = useState(true);
@@ -187,7 +195,7 @@ export function GradebookClassTable({
         }
 
         const apiData = response as ApiStudent[];
-
+        console.log("API Data:", apiData);
         const formattedStudents = apiData
           .map((student) => {
             if (!student?.student_name || !student?.assessment_types) {
@@ -304,6 +312,37 @@ export function GradebookClassTable({
       </div>
     );
 
+  // Calculate maximum column counts for dynamic rendering
+  // Use provided columnCounts if available, otherwise calculate dynamically
+  const getMaxLength = (assessmentType: keyof StudentGrade["assessments"]) => {
+    if (columnCounts && columnCounts[assessmentType]) {
+      return columnCounts[assessmentType];
+    }
+    if (students.length === 0) return 1;
+    return Math.max(
+      ...students.map((s) => s.assessments[assessmentType].length),
+      1
+    );
+  };
+
+  const maxTestCols = getMaxLength("test");
+  const maxQuizCols = getMaxLength("quiz");
+  const maxHomeworkCols = getMaxLength("homework");
+  const maxParticipationCols = getMaxLength("participation");
+  const maxOtherCols = getMaxLength("other");
+
+  // Log dynamic column info for debugging
+  console.log("📊 Dynamic column counts:", {
+    tests: maxTestCols,
+    quizzes: maxQuizCols,
+    homework: maxHomeworkCols,
+    participation: maxParticipationCols,
+    other: maxOtherCols,
+    totalStudents: students.length,
+    usingProvidedCounts: !!columnCounts,
+    providedCounts: columnCounts,
+  });
+
   return (
     <TooltipProvider>
       <div className="w-full">
@@ -327,22 +366,34 @@ export function GradebookClassTable({
                     AVERAGE
                   </TableHead>
                   <TableHead
-                    colSpan={2}
+                    colSpan={maxTestCols}
                     className="text-center font-semibold text-gray-700"
                   >
-                    EXAMS
+                    TESTS
                   </TableHead>
                   <TableHead
-                    colSpan={4}
+                    colSpan={maxQuizCols}
                     className="text-center font-semibold text-gray-700"
                   >
                     QUIZZES
                   </TableHead>
                   <TableHead
-                    colSpan={3}
+                    colSpan={maxHomeworkCols}
                     className="text-center font-semibold text-gray-700"
                   >
                     HOMEWORK
+                  </TableHead>
+                  <TableHead
+                    colSpan={maxParticipationCols}
+                    className="text-center font-semibold text-gray-700"
+                  >
+                    PARTICIPATION
+                  </TableHead>
+                  <TableHead
+                    colSpan={maxOtherCols}
+                    className="text-center font-semibold text-gray-700"
+                  >
+                    OTHER
                   </TableHead>
                   <TableHead
                     rowSpan={2}
@@ -352,22 +403,49 @@ export function GradebookClassTable({
                   </TableHead>
                 </TableRow>
                 <TableRow className="bg-gray-50">
-                  {[
-                    "General",
-                    "Practical",
-                    "General",
-                    "Pop Quiz",
-                    "Unit 1",
-                    "Unit 2",
-                    "Chapter 3",
-                    "General",
-                    "Project",
-                  ].map((header, i) => (
+                  {/* Dynamic Test Headers */}
+                  {Array.from({ length: maxTestCols }, (_, i) => (
                     <TableHead
-                      key={i}
+                      key={`test-header-${i}`}
                       className="text-xs font-medium text-gray-500"
                     >
-                      {header}
+                      Test {i + 1}
+                    </TableHead>
+                  ))}
+                  {/* Dynamic Quiz Headers */}
+                  {Array.from({ length: maxQuizCols }, (_, i) => (
+                    <TableHead
+                      key={`quiz-header-${i}`}
+                      className="text-xs font-medium text-gray-500"
+                    >
+                      Quiz {i + 1}
+                    </TableHead>
+                  ))}
+                  {/* Dynamic Homework Headers */}
+                  {Array.from({ length: maxHomeworkCols }, (_, i) => (
+                    <TableHead
+                      key={`homework-header-${i}`}
+                      className="text-xs font-medium text-gray-500"
+                    >
+                      HW {i + 1}
+                    </TableHead>
+                  ))}
+                  {/* Dynamic Participation Headers */}
+                  {Array.from({ length: maxParticipationCols }, (_, i) => (
+                    <TableHead
+                      key={`participation-header-${i}`}
+                      className="text-xs font-medium text-gray-500"
+                    >
+                      Part {i + 1}
+                    </TableHead>
+                  ))}
+                  {/* Dynamic Other Headers */}
+                  {Array.from({ length: maxOtherCols }, (_, i) => (
+                    <TableHead
+                      key={`other-header-${i}`}
+                      className="text-xs font-medium text-gray-500"
+                    >
+                      Other {i + 1}
                     </TableHead>
                   ))}
                 </TableRow>
@@ -400,52 +478,33 @@ export function GradebookClassTable({
                       </Badge>
                     </TableCell>
 
-                    {/* Exam Cells */}
-                    <TableCell className="text-center">
-                      <GradeCell
-                        value={student.assessments.test[0]}
-                        studentId={student.id}
-                        assessmentType="test"
-                        assessmentIndex={0}
-                        cellId={`${student.id}-test-0`}
-                        editingCell={editingCell}
-                        setEditingCell={setEditingCell}
-                        onGradeUpdate={handleGradeUpdate}
-                        hasVoiceRecording={hasVoiceRecording(
-                          student.id,
-                          "test",
-                          0
-                        )}
-                        onRecordingSaved={() =>
-                          handleRecordingSaved(student.id, "test", 0)
-                        }
-                        audioUrl={getAudioUrl(student.id, "test", 0)}
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <GradeCell
-                        value={student.assessments.test[1]}
-                        studentId={student.id}
-                        assessmentType="test"
-                        assessmentIndex={1}
-                        cellId={`${student.id}-test-1`}
-                        editingCell={editingCell}
-                        setEditingCell={setEditingCell}
-                        onGradeUpdate={handleGradeUpdate}
-                        hasVoiceRecording={hasVoiceRecording(
-                          student.id,
-                          "test",
-                          1
-                        )}
-                        onRecordingSaved={() =>
-                          handleRecordingSaved(student.id, "test", 1)
-                        }
-                        audioUrl={getAudioUrl(student.id, "test", 1)}
-                      />
-                    </TableCell>
+                    {/* Dynamic Test Cells */}
+                    {Array.from({ length: maxTestCols }, (_, i) => (
+                      <TableCell key={`test-${i}`} className="text-center">
+                        <GradeCell
+                          value={student.assessments.test[i]}
+                          studentId={student.id}
+                          assessmentType="test"
+                          assessmentIndex={i}
+                          cellId={`${student.id}-test-${i}`}
+                          editingCell={editingCell}
+                          setEditingCell={setEditingCell}
+                          onGradeUpdate={handleGradeUpdate}
+                          hasVoiceRecording={hasVoiceRecording(
+                            student.id,
+                            "test",
+                            i
+                          )}
+                          onRecordingSaved={() =>
+                            handleRecordingSaved(student.id, "test", i)
+                          }
+                          audioUrl={getAudioUrl(student.id, "test", i)}
+                        />
+                      </TableCell>
+                    ))}
 
-                    {/* Quiz Cells */}
-                    {[0, 1, 2, 3].map((i) => (
+                    {/* Dynamic Quiz Cells */}
+                    {Array.from({ length: maxQuizCols }, (_, i) => (
                       <TableCell key={`quiz-${i}`} className="text-center">
                         <GradeCell
                           value={student.assessments.quiz[i]}
@@ -469,70 +528,83 @@ export function GradebookClassTable({
                       </TableCell>
                     ))}
 
-                    {/* Homework Cells */}
-                    <TableCell className="text-center">
-                      <GradeCell
-                        value={student.assessments.homework[0]}
-                        studentId={student.id}
-                        assessmentType="homework"
-                        assessmentIndex={0}
-                        cellId={`${student.id}-homework-0`}
-                        editingCell={editingCell}
-                        setEditingCell={setEditingCell}
-                        onGradeUpdate={handleGradeUpdate}
-                        hasVoiceRecording={hasVoiceRecording(
-                          student.id,
-                          "homework",
-                          0
-                        )}
-                        onRecordingSaved={() =>
-                          handleRecordingSaved(student.id, "homework", 0)
-                        }
-                        audioUrl={getAudioUrl(student.id, "homework", 0)}
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <GradeCell
-                        value={student.assessments.homework[1]}
-                        studentId={student.id}
-                        assessmentType="homework"
-                        assessmentIndex={1}
-                        cellId={`${student.id}-homework-1`}
-                        editingCell={editingCell}
-                        setEditingCell={setEditingCell}
-                        onGradeUpdate={handleGradeUpdate}
-                        hasVoiceRecording={hasVoiceRecording(
-                          student.id,
-                          "homework",
-                          1
-                        )}
-                        onRecordingSaved={() =>
-                          handleRecordingSaved(student.id, "homework", 1)
-                        }
-                        audioUrl={getAudioUrl(student.id, "homework", 1)}
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <GradeCell
-                        value={student.assessments.homework[2]}
-                        studentId={student.id}
-                        assessmentType="homework"
-                        assessmentIndex={2}
-                        cellId={`${student.id}-homework-2`}
-                        editingCell={editingCell}
-                        setEditingCell={setEditingCell}
-                        onGradeUpdate={handleGradeUpdate}
-                        hasVoiceRecording={hasVoiceRecording(
-                          student.id,
-                          "homework",
-                          2
-                        )}
-                        onRecordingSaved={() =>
-                          handleRecordingSaved(student.id, "homework", 2)
-                        }
-                        audioUrl={getAudioUrl(student.id, "homework", 2)}
-                      />
-                    </TableCell>
+                    {/* Dynamic Homework Cells */}
+                    {Array.from({ length: maxHomeworkCols }, (_, i) => (
+                      <TableCell key={`homework-${i}`} className="text-center">
+                        <GradeCell
+                          value={student.assessments.homework[i]}
+                          studentId={student.id}
+                          assessmentType="homework"
+                          assessmentIndex={i}
+                          cellId={`${student.id}-homework-${i}`}
+                          editingCell={editingCell}
+                          setEditingCell={setEditingCell}
+                          onGradeUpdate={handleGradeUpdate}
+                          hasVoiceRecording={hasVoiceRecording(
+                            student.id,
+                            "homework",
+                            i
+                          )}
+                          onRecordingSaved={() =>
+                            handleRecordingSaved(student.id, "homework", i)
+                          }
+                          audioUrl={getAudioUrl(student.id, "homework", i)}
+                        />
+                      </TableCell>
+                    ))}
+
+                    {/* Dynamic Participation Cells */}
+                    {Array.from({ length: maxParticipationCols }, (_, i) => (
+                      <TableCell
+                        key={`participation-${i}`}
+                        className="text-center"
+                      >
+                        <GradeCell
+                          value={student.assessments.participation[i]}
+                          studentId={student.id}
+                          assessmentType="participation"
+                          assessmentIndex={i}
+                          cellId={`${student.id}-participation-${i}`}
+                          editingCell={editingCell}
+                          setEditingCell={setEditingCell}
+                          onGradeUpdate={handleGradeUpdate}
+                          hasVoiceRecording={hasVoiceRecording(
+                            student.id,
+                            "participation",
+                            i
+                          )}
+                          onRecordingSaved={() =>
+                            handleRecordingSaved(student.id, "participation", i)
+                          }
+                          audioUrl={getAudioUrl(student.id, "participation", i)}
+                        />
+                      </TableCell>
+                    ))}
+
+                    {/* Dynamic Other Cells */}
+                    {Array.from({ length: maxOtherCols }, (_, i) => (
+                      <TableCell key={`other-${i}`} className="text-center">
+                        <GradeCell
+                          value={student.assessments.other[i]}
+                          studentId={student.id}
+                          assessmentType="other"
+                          assessmentIndex={i}
+                          cellId={`${student.id}-other-${i}`}
+                          editingCell={editingCell}
+                          setEditingCell={setEditingCell}
+                          onGradeUpdate={handleGradeUpdate}
+                          hasVoiceRecording={hasVoiceRecording(
+                            student.id,
+                            "other",
+                            i
+                          )}
+                          onRecordingSaved={() =>
+                            handleRecordingSaved(student.id, "other", i)
+                          }
+                          audioUrl={getAudioUrl(student.id, "other", i)}
+                        />
+                      </TableCell>
+                    ))}
 
                     <TableCell className="w-[150px]">
                       <div className="flex gap-1 justify-center">

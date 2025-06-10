@@ -136,18 +136,69 @@ export function SubmissionsPopup({
   const [globalFilter, setGlobalFilter] = useState("");
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [editingCell, setEditingCell] = useState<string | null>(null);
-  const [voiceRecordings, setVoiceRecordings] = useState<Set<string>>(
-    new Set()
-  );
-  const [audioUrls, setAudioUrls] = useState<Map<string, string>>(new Map());
+
+  // Handle authorized file viewing
+  const handleViewFile = async (filePath: string) => {
+    try {
+      const response = await fetch(`${tenantDomain}${filePath}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "X-Refresh-Token": refreshToken || "",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Open in new tab
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.target = "_blank";
+      link.click();
+
+      // Cleanup after a delay
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    } catch (error) {
+      console.error("Error viewing file:", error);
+      // Fallback to direct URL
+      window.open(`${tenantDomain}${filePath}`, "_blank");
+    }
+  };
 
   const handleRecordingSaved = (
     studentId: string,
     assessmentType: string,
-    assessmentIndex: number
+    assessmentIndex: number,
+    voiceNotesUrl?: string
   ) => {
-    const recordingKey = `${studentId}-${assessmentType}-${assessmentIndex}`;
-    setVoiceRecordings((prev) => new Set([...prev, recordingKey]));
+    console.log("🎙️ Voice recording saved, updating local state", {
+      studentId,
+      voiceNotesUrl,
+    });
+
+    if (voiceNotesUrl) {
+      // Update local state with the actual voice notes URL from the API response
+      setSubmissions((prevSubmissions) =>
+        prevSubmissions.map((submission) => {
+          if (submission.student.id.toString() === studentId) {
+            const updatedSubmission = { ...submission };
+            if (updatedSubmission.submission) {
+              updatedSubmission.submission.voice_notes = voiceNotesUrl;
+            }
+            return updatedSubmission;
+          }
+          return submission;
+        })
+      );
+    } else {
+      // Fallback: reload submissions data to get the updated voice_notes URL
+      console.log("No voice URL provided, will reload on next popup open");
+    }
   };
 
   const hasVoiceRecording = (
@@ -155,8 +206,11 @@ export function SubmissionsPopup({
     assessmentType: string,
     assessmentIndex: number
   ) => {
-    const recordingKey = `${studentId}-${assessmentType}-${assessmentIndex}`;
-    return voiceRecordings.has(recordingKey);
+    // For submissions, check if the submission has voice_notes
+    const submission = submissions.find(
+      (sub) => sub.student.id.toString() === studentId
+    );
+    return !!submission?.submission?.voice_notes;
   };
 
   const getAudioUrl = (
@@ -164,8 +218,11 @@ export function SubmissionsPopup({
     assessmentType: string,
     assessmentIndex: number
   ) => {
-    const recordingKey = `${studentId}-${assessmentType}-${assessmentIndex}`;
-    return audioUrls.get(recordingKey);
+    // For submissions, return the voice_notes URL directly from the submission
+    const submission = submissions.find(
+      (sub) => sub.student.id.toString() === studentId
+    );
+    return submission?.submission?.voice_notes;
   };
 
   const handleGradeUpdate = async (
@@ -175,12 +232,26 @@ export function SubmissionsPopup({
     newGrade: number
   ) => {
     try {
-      // For submissions, we'll use the assessment ID and submission ID
-      // This might need to be adjusted based on your API structure
+      // Find the submission for this student
+      const targetSubmission = submissions.find(
+        (submission) => submission.student.id.toString() === studentId
+      );
+
+      if (!targetSubmission?.submission?.id) {
+        throw new Error("Submission not found or submission ID missing");
+      }
+
+      console.log("🔄 Updating submission grade:", {
+        submissionId: targetSubmission.submission.id,
+        studentId,
+        newGrade,
+      });
+
+      // Use the submission ID for the API call
       await updateStudentGrade(
-        `https://${tenantDomain}`,
+        tenantDomain,
         accessToken,
-        parseInt(studentId),
+        targetSubmission.submission.id, // Use submission ID instead of student ID
         assessmentType,
         assessmentIndex,
         newGrade,
@@ -247,54 +318,45 @@ export function SubmissionsPopup({
             submissionsArray = data ? [data] : [];
           }
 
-          // Add default positive feedback to the first submission for testing purposes
-          if (submissionsArray.length > 0) {
-            const firstSubmission = submissionsArray[0];
+          // // Add default positive feedback to the first submission for testing purposes
+          // if (submissionsArray.length > 0) {
+          //   const firstSubmission = submissionsArray[0];
 
-            // Initialize submission object if it's null
-            if (!firstSubmission.submission) {
-              firstSubmission.submission = {
-                id: 0, // Temporary ID for testing
-                student: firstSubmission.student.id,
-                course: 0, // Will be set by backend
-                assessment: assessmentId,
-                marked: false,
-              };
-              console.log("🔧 Initialized submission object for first student");
-            }
+          //   // Initialize submission object if it's null
+          //   if (!firstSubmission.submission) {
+          //     firstSubmission.submission = {
+          //       id: 0, // Temporary ID for testing
+          //       student: firstSubmission.student.id,
+          //       course: 0, // Will be set by backend
+          //       assessment: assessmentId,
+          //       marked: false,
+          //     };
+          //     console.log("🔧 Initialized submission object for first student");
+          //   }
 
-            // Add positive feedback if none exists
-            if (!firstSubmission.submission.voice_notes) {
-              // Create a mock audio URL for testing
-              const mockAudioFeedback =
-                "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEA..."; // Mock positive feedback audio
-              firstSubmission.submission.voice_notes = mockAudioFeedback;
+          //   // Add positive feedback if none exists
+          //   if (!firstSubmission.submission.voice_notes) {
+          //     // Create a mock audio URL for testing (simulate a real file path/URL)
+          //     const mockAudioUrl =
+          //       "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"; // Real audio file for testing
+          //     firstSubmission.submission.voice_notes = mockAudioUrl;
 
-              // Add to voice recordings set for UI state
-              const recordingKey = `${firstSubmission.student.id}-submission-${assessmentId}`;
-              setVoiceRecordings((prev) => new Set([...prev, recordingKey]));
+          //     console.log(
+          //       "✅ Added default positive feedback URL to first submission"
+          //     );
+          //   }
 
-              // Add mock audio URL for playback
-              setAudioUrls(
-                (prev) => new Map(prev.set(recordingKey, mockAudioFeedback))
-              );
+          //   // Add a good grade if none exists
+          //   if (!firstSubmission.submission.grade) {
+          //     firstSubmission.submission.grade = 85;
+          //     firstSubmission.submission.marked = true;
+          //     console.log("📝 Added default grade (85) to first submission");
+          //   }
+          //   firstSubmission.has_submitted = true; // Mark as submitted for testing
+          //   firstSubmission.submission.submitted_at = new Date().toISOString();
 
-              console.log(
-                "✅ Added default positive feedback to first submission"
-              );
-            }
-
-            // Add a good grade if none exists
-            if (!firstSubmission.submission.grade) {
-              firstSubmission.submission.grade = 85;
-              firstSubmission.submission.marked = true;
-              console.log("📝 Added default grade (85) to first submission");
-            }
-            firstSubmission.has_submitted = true; // Mark as submitted for testing
-            firstSubmission.submission.submitted_at = new Date().toISOString();
-
-            submissionsArray[0] = firstSubmission;
-          }
+          //   submissionsArray[0] = firstSubmission;
+          // }
           console.log("📋 Processed submissions:", submissionsArray);
           setSubmissions(submissionsArray);
         } catch (err) {
@@ -309,70 +371,8 @@ export function SubmissionsPopup({
 
       fetchSubmissions();
 
-      // Load existing voice recordings for submissions
-      const loadExistingVoiceRecordings = async () => {
-        try {
-          const response = await getVoiceRecordings(
-            `https://${tenantDomain}`,
-            accessToken,
-            assessmentId.toString(), // Using assessment ID as class ID for submissions
-            refreshToken
-          );
-
-          if (response.success && response.recordings) {
-            const recordingKeys = response.recordings.map(
-              (recording: any) =>
-                `${recording.student_id}-submission-${assessmentId}`
-            );
-            setVoiceRecordings(new Set(recordingKeys));
-
-            // Load audio URLs for existing recordings
-            const audioUrlPromises = response.recordings.map(
-              async (recording: any) => {
-                try {
-                  const audioResponse = await getVoiceRecordingAudio(
-                    `https://${tenantDomain}`,
-                    accessToken,
-                    parseInt(recording.student_id),
-                    "submission",
-                    assessmentId,
-                    refreshToken
-                  );
-
-                  if (audioResponse.success && audioResponse.audioUrl) {
-                    const recordingKey = `${recording.student_id}-submission-${assessmentId}`;
-                    return { recordingKey, audioUrl: audioResponse.audioUrl };
-                  }
-                } catch (error) {
-                  console.error(
-                    "Error loading audio URL for recording:",
-                    recording,
-                    error
-                  );
-                }
-                return null;
-              }
-            );
-
-            // Wait for all audio URLs to load
-            const audioResults = await Promise.all(audioUrlPromises);
-            const newAudioUrls = new Map();
-
-            audioResults.forEach((result) => {
-              if (result) {
-                newAudioUrls.set(result.recordingKey, result.audioUrl);
-              }
-            });
-
-            setAudioUrls(newAudioUrls);
-          }
-        } catch (err: any) {
-          console.error("Error loading voice recordings for submissions:", err);
-          // Don't show error to user for voice recordings, just log it
-        }
-      };
-
-      loadExistingVoiceRecordings();
+      // Load existing voice recordings for submissions - not needed since we check voice_notes directly
+      // Voice recordings are already included in the submission data
     }
   }, [isOpen, assessmentId, tenantDomain, accessToken, refreshToken]);
 
@@ -468,6 +468,7 @@ export function SubmissionsPopup({
           <GradeCell
             value={submission.submission.grade}
             studentId={submission.student.id.toString()}
+            submissionId={submission.submission.id} // Pass submission ID for API calls
             assessmentType="submission"
             assessmentIndex={assessmentId}
             cellId={`${submission.student.id}-submission-${assessmentId}`}
@@ -479,11 +480,12 @@ export function SubmissionsPopup({
               "submission",
               assessmentId
             )}
-            onRecordingSaved={() =>
+            onRecordingSaved={(voiceNotesUrl) =>
               handleRecordingSaved(
                 submission.student.id.toString(),
                 "submission",
-                assessmentId
+                assessmentId,
+                voiceNotesUrl
               )
             }
             audioUrl={getAudioUrl(
@@ -506,14 +508,13 @@ export function SubmissionsPopup({
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-gray-500" />
             {submission?.file ? (
-              <a
-                href={submission.file}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
+              <Button
+                variant="link"
+                onClick={() => handleViewFile(submission.file!)}
+                className="p-0 h-auto text-blue-600 hover:underline"
               >
                 View File
-              </a>
+              </Button>
             ) : row.original.has_submitted ? (
               <span className="text-green-600">Submitted</span>
             ) : (
@@ -530,48 +531,36 @@ export function SubmissionsPopup({
       cell: ({ row }) => {
         const voiceNotes = row.original.submission?.voice_notes;
         const hasSubmitted = row.original.has_submitted;
-        const studentId = row.original.student.id.toString();
-        const recordingKey = `${studentId}-submission-${assessmentId}`;
-        const hasRecording = hasVoiceRecording(
-          studentId,
-          "submission",
-          assessmentId
-        );
 
         if (!hasSubmitted) {
           return <span className="text-gray-400">-</span>;
         }
 
-        if (voiceNotes || hasRecording) {
-          const isTestFeedback = voiceNotes?.startsWith(
-            "data:audio/wav;base64,"
-          );
+        if (voiceNotes) {
+          const fullAudioUrl = voiceNotes.startsWith("http")
+            ? voiceNotes
+            : `${tenantDomain}${voiceNotes}`;
+          const isTestFeedback = voiceNotes?.includes("soundjay.com"); // Check if it's our test audio
 
           return (
             <div className="flex items-center gap-2">
               <Play className="h-4 w-4 text-green-600" />
-              {isTestFeedback ? (
-                <div className="flex items-center gap-1">
-                  <span className="text-green-600 text-sm">
-                    Positive Feedback
-                  </span>
+              <div className="flex items-center gap-1">
+                <audio controls className="h-8">
+                  <source src={fullAudioUrl} type="audio/wav" />
+                  <source src={fullAudioUrl} type="audio/mp3" />
+                  <source src={fullAudioUrl} type="audio/ogg" />
+                  Your browser does not support the audio element.
+                </audio>
+                {isTestFeedback && (
                   <Badge
                     variant="outline"
-                    className="text-xs text-blue-600 border-blue-200"
+                    className="text-xs text-blue-600 border-blue-200 ml-2"
                   >
                     TEST
                   </Badge>
-                </div>
-              ) : (
-                <a
-                  href={voiceNotes}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-green-600 text-sm hover:underline"
-                >
-                  Play Audio
-                </a>
-              )}
+                )}
+              </div>
             </div>
           );
         }
@@ -656,13 +645,13 @@ export function SubmissionsPopup({
   return (
     <TooltipProvider>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+        <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <span>Submissions for: {assessmentName}</span>
-              <Button variant="ghost" size="icon" onClick={onClose}>
+              {/* <Button variant="ghost" size="icon" onClick={onClose}>
                 <X className="h-4 w-4" />
-              </Button>
+              </Button> */}
             </DialogTitle>
           </DialogHeader>
 
@@ -804,23 +793,6 @@ export function SubmissionsPopup({
                 </>
               )}
             </div>
-
-            {/* Debug info */}
-            {submissions.length > 0 && (
-              <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded">
-                <strong>Debug Info:</strong> Found {submissions.length}{" "}
-                submissions. Sample fields:{" "}
-                {Object.keys(submissions[0]).join(", ")}
-                {submissions[0]?.submission?.voice_notes?.startsWith(
-                  "data:audio/wav;base64,"
-                ) && (
-                  <div className="mt-1 text-blue-600">
-                    ✅ <strong>Test Mode:</strong> Default positive feedback and
-                    grade (85) added to first submission
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -831,6 +803,7 @@ export function SubmissionsPopup({
 interface GradeCellProps {
   value?: number;
   studentId: string;
+  submissionId?: number; // Add submissionId prop for submissions
   assessmentType: string;
   assessmentIndex: number;
   cellId: string;
@@ -843,13 +816,14 @@ interface GradeCellProps {
     newGrade: number
   ) => void;
   hasVoiceRecording: boolean;
-  onRecordingSaved: () => void;
+  onRecordingSaved: (voiceNotesUrl?: string) => void; // Updated to accept voice URL
   audioUrl?: string; // Direct audio URL for inline playback
 }
 
 function GradeCell({
   value,
   studentId,
+  submissionId, // Add submissionId parameter
   assessmentType,
   assessmentIndex,
   cellId,
@@ -942,10 +916,12 @@ function GradeCell({
           <TooltipTrigger asChild>
             <RecordDialog
               studentId={studentId}
+              submissionId={submissionId}
               assessmentType={assessmentType}
               assessmentIndex={assessmentIndex}
               onRecordingSaved={onRecordingSaved}
               hasExistingRecording={hasVoiceRecording}
+              voiceUrl={audioUrl} // Pass the voice URL when available
             >
               <Button
                 variant="ghost"
@@ -1001,10 +977,12 @@ function GradeCell({
         <TooltipTrigger asChild>
           <RecordDialog
             studentId={studentId}
+            submissionId={submissionId} // Pass submissionId for submissions
             assessmentType={assessmentType}
             assessmentIndex={assessmentIndex}
             onRecordingSaved={onRecordingSaved}
             hasExistingRecording={hasVoiceRecording}
+            voiceUrl={audioUrl} // Pass the voice URL when available
           >
             <Button
               variant="ghost"
