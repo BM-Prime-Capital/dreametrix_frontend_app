@@ -91,19 +91,19 @@ const LessonPlanCard: React.FC<LessonPlanCardProps> = ({
                 </div>
             </div>
 
+            <div className="flex flex-col sm:flex-row sm:gap-4 text-sm mb-3">
+                <div className="mb-2 sm:mb-0">
+                    <span className="text-gray-500">Date:</span>
+                    <span className="ml-1">{new Date(lessonPlan.date).toLocaleDateString()}</span>
+                </div>
+                <div>
+                    <span className="text-gray-500">Standards:</span>
+                    <span className="ml-1">{lessonPlan.standards}</span>
+                </div>
+            </div>
+
             {isExpanded && (
                 <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:gap-4 text-sm">
-                        <div className="mb-2 sm:mb-0">
-                            <span className="text-gray-500">Date:</span>
-                            <span className="ml-1">{new Date(lessonPlan.date).toLocaleDateString()}</span>
-                        </div>
-                        <div>
-                            <span className="text-gray-500">Standards:</span>
-                            <span className="ml-1">{lessonPlan.standards}</span>
-                        </div>
-                    </div>
-
                     <div>
                         <h4 className="text-sm font-medium text-gray-700 mb-1">Objectives:</h4>
                         <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
