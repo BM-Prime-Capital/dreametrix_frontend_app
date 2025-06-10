@@ -34,6 +34,26 @@ import ReferencePanelComponent from "./tools/ReferencePanel"; // ADDED: Import R
 import HintDisplayComponent from "./tools/HintDisplay"; // ADDED: Import HintDisplay component
 import HighlighterTool from "./tools/HighlighterTool"; // ADDED: Import HighlighterTool
 
+// Add the highlight interfaces that we need for question-specific highlights
+interface DrawingPoint {
+  x: number;
+  y: number;
+}
+
+interface Highlight {
+  id: string;
+  type: "rectangle" | "circle" | "freehand";
+  color: string;
+  opacity: number;
+  strokeWidth: number;
+  x: number;
+  y: number;
+  width?: number;
+  height?: number;
+  radius?: number;
+  points?: DrawingPoint[];
+}
+
 interface Question {
   id: number;
   main_link: string;
@@ -86,6 +106,11 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Question-specific highlights state
+  const [questionHighlights, setQuestionHighlights] = useState<
+    Record<number, Highlight[]>
+  >({});
+
   // States for footer tools
   const [isHintVisible, setIsHintVisible] = useState(false);
   const [isLineReaderVisible, setIsLineReaderVisible] = useState(false);
@@ -96,11 +121,38 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentHintText, setCurrentHintText] = useState<string>(""); // ADDED: State for hint text
   const [isHighlighterVisible, setIsHighlighterVisible] = useState(false); // ADDED: State for HighlighterTool visibility
+  const [questionContainerWidth, setQuestionContainerWidth] = useState(800); // ADDED: State for container width
 
   const { tenantDomain, accessToken } = useRequestInfo();
   const mainImageRef = useRef<HTMLImageElement>(null);
   const fullscreenContentRef = useRef<HTMLDivElement>(null);
   const annotatableContentRef = useRef<HTMLDivElement>(null); // ADDED: Ref for annotatable content
+
+  // Helper functions for question-specific highlights
+  const getCurrentQuestionHighlights = (): Highlight[] => {
+    const currentQuestionId = questions[currentQuestion]?.id;
+    return questionHighlights[currentQuestionId] || [];
+  };
+
+  const updateCurrentQuestionHighlights = (highlights: Highlight[]) => {
+    const currentQuestionId = questions[currentQuestion]?.id;
+    if (currentQuestionId) {
+      setQuestionHighlights((prev) => ({
+        ...prev,
+        [currentQuestionId]: highlights,
+      }));
+    }
+  };
+
+  const clearCurrentQuestionHighlights = () => {
+    const currentQuestionId = questions[currentQuestion]?.id;
+    if (currentQuestionId) {
+      setQuestionHighlights((prev) => ({
+        ...prev,
+        [currentQuestionId]: [],
+      }));
+    }
+  };
 
   useEffect(() => {
     setAnswers(
@@ -126,6 +178,25 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
       });
     }
   }, [selectedAnswer, currentQuestion]);
+
+  // Update container width when component mounts or window resizes
+  useEffect(() => {
+    const updateContainerWidth = () => {
+      if (mainImageRef.current) {
+        setQuestionContainerWidth(mainImageRef.current.offsetWidth);
+      }
+    };
+
+    // Update on mount
+    updateContainerWidth();
+
+    // Update on window resize
+    window.addEventListener("resize", updateContainerWidth);
+
+    return () => {
+      window.removeEventListener("resize", updateContainerWidth);
+    };
+  }, []);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -511,8 +582,11 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
               </div>
             </div>
 
-            {/* Question Image */}
-            <div className="mb-8 bg-gray-50 p-6 rounded-lg" ref={mainImageRef}>
+            {/* Question Image Container - LineReader will be constrained to this area */}
+            <div
+              className="mb-8 bg-gray-50 p-6 rounded-lg relative"
+              ref={mainImageRef}
+            >
               <div className="relative">
                 {!previewImageSrc && !loadedImages[currentQuestionData?.id] && (
                   <div className="w-full aspect-video flex justify-center items-center">
@@ -537,6 +611,15 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
                     }`}
                     onLoad={() => handleImageLoad(currentQuestionData.id)}
                     crossOrigin="anonymous"
+                  />
+                )}
+
+                {/* LineReader - constrained to this question container */}
+                {isLineReaderVisible && (
+                  <LineReaderComponent
+                    onClose={() => setIsLineReaderVisible(false)}
+                    initialPosition={{ x: 0, y: 50 }}
+                    containerWidth={questionContainerWidth}
                   />
                 )}
               </div>
@@ -626,11 +709,7 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
                       label: "Highlighter",
                       color: "bg-green-400 hover:bg-green-500",
                     },
-                    {
-                      icon: <Eraser size={18} />,
-                      label: "Eraser",
-                      color: "bg-red-400 hover:bg-red-500",
-                    },
+
                     {
                       icon: <Ruler size={18} />,
                       label: "Ruler",
@@ -687,9 +766,6 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
           // initialNotes={localStorage.getItem('testPrepNotes') || ''} // Optional: Load saved notes
         />
       )}
-      {isLineReaderVisible && (
-        <LineReaderComponent onClose={() => setIsLineReaderVisible(false)} />
-      )}
       {isReferenceVisible && (
         <ReferencePanelComponent onClose={() => setIsReferenceVisible(false)} />
       )}
@@ -704,6 +780,9 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
           onClose={() => setIsHighlighterVisible(false)}
           targetImageRef={mainImageRef}
           initialPosition={{ x: 100, y: 100 }}
+          highlights={getCurrentQuestionHighlights()}
+          onHighlightsChange={updateCurrentQuestionHighlights}
+          onClearHighlights={clearCurrentQuestionHighlights}
         />
       )}
     </div>

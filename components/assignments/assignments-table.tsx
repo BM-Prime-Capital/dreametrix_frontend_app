@@ -11,9 +11,18 @@ import {
   type ColumnDef,
   type SortingState,
   type VisibilityState,
-  type FilterFn
+  type FilterFn,
 } from "@tanstack/react-table";
-import { Eye, Pencil, Trash2, ChevronDown, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import {
+  Eye,
+  Pencil,
+  Trash2,
+  ChevronDown,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,45 +41,61 @@ import {
 } from "@/components/ui/table";
 import { useList } from "@/hooks/useList";
 import { getAssignments } from "@/services/AssignmentService";
+import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Loader } from "../ui/loader";
 import Image from "next/image";
 import { generalImages } from "@/constants/images";
 import { Assignment } from "@/types";
+import { SubmissionsPopup } from "./SubmissionsPopup";
 
 const globalFilterFn: FilterFn<Assignment> = (row, columnId, filterValue) => {
   const value = row.getValue(columnId);
-  
-  if (typeof value === 'string') {
+
+  if (typeof value === "string") {
     return value.toLowerCase().includes(filterValue.toLowerCase());
   }
-  
-  if (typeof value === 'number') {
+
+  if (typeof value === "number") {
     return value.toString().includes(filterValue);
   }
-  
+
   if (value instanceof Date) {
     return value.toLocaleDateString().includes(filterValue);
   }
-  
-  if (typeof value === 'boolean') {
-    return (value ? 'published' : 'draft').includes(filterValue.toLowerCase());
+
+  if (typeof value === "boolean") {
+    return (value ? "published" : "draft").includes(filterValue.toLowerCase());
   }
-  
+
   return false;
 };
 
 export function AssignmentsTable() {
   const { list: assignments, isLoading, error } = useList(getAssignments);
+  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [selectedAssignment, setSelectedAssignment] =
+    useState<Assignment | null>(null);
+  const [isSubmissionsPopupOpen, setIsSubmissionsPopupOpen] = useState(false);
+
+  const handleAssignmentClick = (assignment: Assignment) => {
+    setSelectedAssignment(assignment);
+    setIsSubmissionsPopupOpen(true);
+  };
 
   const columns: ColumnDef<Assignment>[] = [
     {
       accessorKey: "name",
       header: "Name",
       cell: ({ row }) => (
-        <div className="font-medium">{row.getValue("name")}</div>
+        <button
+          onClick={() => handleAssignmentClick(row.original)}
+          className="font-medium text-[#3e81d4] hover:text-[#1D8CB3] hover:underline cursor-pointer text-left"
+        >
+          {row.getValue("name")}
+        </button>
       ),
     },
     {
@@ -96,8 +121,9 @@ export function AssignmentsTable() {
         <div className="font-medium">
           {Number(row.getValue("weight")).toLocaleString(undefined, {
             maximumFractionDigits: 2,
-            minimumFractionDigits: 0
-          })}%
+            minimumFractionDigits: 0,
+          })}
+          %
         </div>
       ),
     },
@@ -129,13 +155,25 @@ export function AssignmentsTable() {
       cell: ({ row }) => {
         return (
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[#3e81d4]/10">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 hover:bg-[#3e81d4]/10"
+            >
               <Eye className="h-4 w-4 text-[#3e81d4]" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[#3e81d4]/10">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 hover:bg-[#3e81d4]/10"
+            >
               <Pencil className="h-4 w-4 text-[#3e81d4]" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[#3e81d4]/10">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 hover:bg-[#3e81d4]/10"
+            >
               <Trash2 className="h-4 w-4 text-red-500" />
             </Button>
           </div>
@@ -167,28 +205,27 @@ export function AssignmentsTable() {
 
   const handleExport = () => {
     const csvContent = [
-      Object.keys(assignments[0]).join(','),
-      ...assignments.map((item: Assignment) => Object.values(item).join(','))
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      Object.keys(assignments[0]).join(","),
+      ...assignments.map((item: Assignment) => Object.values(item).join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'assignments.csv');
-    link.style.visibility = 'hidden';
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "assignments.csv");
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   if (isLoading) return <Loader />;
-  
-  if (error) return (
-    <div className="text-red-500 p-4">
-      Error loading assignments: {error}
-    </div>
-  );
+
+  if (error)
+    return (
+      <div className="text-red-500 p-4">Error loading assignments: {error}</div>
+    );
 
   return (
     <div className="w-full space-y-6 p-4 bg-white rounded-lg shadow-sm">
@@ -198,25 +235,28 @@ export function AssignmentsTable() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Filter assignments..."
-            value={globalFilter ?? ''}
+            value={globalFilter ?? ""}
             onChange={(event) => setGlobalFilter(event.target.value)}
             className="pl-8 w-full md:w-[400px]"
           />
         </div>
-        
+
         <div className="flex items-center gap-2">
-          <Button 
+          <Button
             onClick={handleExport}
-            variant="outline" 
+            variant="outline"
             className="bg-[#3e81d4]/10 text-[#3e81d4] hover:bg-[#3e81d4]/20 border-[#3e81d4]/20"
           >
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="bg-[#3e81d4]/10 text-[#3e81d4] hover:bg-[#3e81d4]/20 border-[#3e81d4]/20">
+              <Button
+                variant="outline"
+                className="bg-[#3e81d4]/10 text-[#3e81d4] hover:bg-[#3e81d4]/20 border-[#3e81d4]/20"
+              >
                 Columns <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -251,7 +291,7 @@ export function AssignmentsTable() {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead 
+                    <TableHead
                       key={header.id}
                       className="px-4 py-3 text-left text-xs font-medium text-[#3e81d4] uppercase tracking-wider"
                     >
@@ -276,7 +316,7 @@ export function AssignmentsTable() {
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell 
+                    <TableCell
                       key={cell.id}
                       className="px-4 py-3 whitespace-nowrap text-sm text-gray-800"
                     >
@@ -305,10 +345,12 @@ export function AssignmentsTable() {
       {/* Pagination */}
       <div className="flex flex-col md:flex-row items-center justify-between px-4 py-3 bg-[#3e81d4]/5 rounded-b-lg">
         <div className="text-sm text-[#3e81d4] mb-4 md:mb-0">
-          Showing <span className="font-medium">{table.getRowModel().rows.length}</span> of{' '}
-          <span className="font-medium">{assignments.length}</span> assignments
+          Showing{" "}
+          <span className="font-medium">{table.getRowModel().rows.length}</span>{" "}
+          of <span className="font-medium">{assignments.length}</span>{" "}
+          assignments
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
@@ -332,6 +374,19 @@ export function AssignmentsTable() {
           </Button>
         </div>
       </div>
+
+      {/* Submissions Popup */}
+      {selectedAssignment && (
+        <SubmissionsPopup
+          isOpen={isSubmissionsPopupOpen}
+          onClose={() => {
+            setIsSubmissionsPopupOpen(false);
+            setSelectedAssignment(null);
+          }}
+          assessmentId={selectedAssignment.id}
+          assessmentName={selectedAssignment.name}
+        />
+      )}
     </div>
   );
 }

@@ -6,13 +6,13 @@ export async function getAssignments(
   refreshToken: string
 ) {
   const url = `${tenantPrimaryDomain}/assessments/`;
-  
+
   const response = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
-    }
+    },
   });
 
   if (!response.ok) {
@@ -25,7 +25,6 @@ export async function getAssignments(
   return data.results; // Retourne directement le tableau des assignments
 }
 
-
 export async function createAssignment(
   formData: FormData,
   tenantPrimaryDomain: string,
@@ -33,14 +32,14 @@ export async function createAssignment(
   refreshToken: string
 ) {
   const url = `${tenantPrimaryDomain}/assessments/`;
-  
+
   try {
     const response = await fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-      body: formData
+      body: formData,
     });
 
     if (!response.ok) {
@@ -56,3 +55,34 @@ export async function createAssignment(
   }
 }
 
+export async function getSubmissions(
+  assessmentId: number,
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  refreshToken: string
+) {
+  const url = `${tenantPrimaryDomain}/submissions?assessment_id=${assessmentId}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        "X-Refresh-Token": refreshToken,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Backend error:", errorData);
+      throw new Error(errorData.detail || "Error fetching submissions");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Network error:", error);
+    throw new Error("Failed to connect to server");
+  }
+}
