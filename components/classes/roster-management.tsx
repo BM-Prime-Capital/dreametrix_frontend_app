@@ -33,11 +33,7 @@ interface Student {
   characterScore?: number;
   attendance?: number;
   class?: string;
-  user?: {
-    email: string;
-    first_name: string;
-    last_name: string;
-  };
+  user?:any;
   school?: {
     name: string;
   };
@@ -170,6 +166,7 @@ export function ClassRosterDialog({
           last_name: updatedStudent.user?.last_name,
         }
       };
+
       const userId = updatedStudent.user?.id || updatedStudent.id;
       await updateStudent(
         userId,
