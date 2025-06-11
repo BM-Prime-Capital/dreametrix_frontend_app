@@ -13,6 +13,7 @@ export interface SchoolFormData {
   administrator_email: string
   phone: string
   country: string
+  state:string
   region: string
   city: string
   address: string
@@ -23,6 +24,7 @@ export interface SchoolFormErrors {
   school_email: string
   administrator_email: string
   phone: string
+  state:string
   country: string
   region: string
   city: string
@@ -36,6 +38,7 @@ export const useSchoolRegistration = () => {
     administrator_email: "",
     phone: "",
     country: "",
+    state: "",
     region: "",
     city: "",
     address: "",
@@ -47,6 +50,7 @@ export const useSchoolRegistration = () => {
     administrator_email: "",
     phone: "",
     country: "",
+    state: "",
     region: "",
     city: "",
     address: "",

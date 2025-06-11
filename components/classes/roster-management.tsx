@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { enrollStudentsToClass, unenrollStudentsFromClass, updateStudent } from "@/services/student-service";
 
 interface Student {
   id: number;
@@ -52,9 +53,20 @@ interface ClassRosterDialogProps {
   studentList: any;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  tenantPrimaryDomain: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
-export function ClassRosterDialog({ classData, open, onOpenChange, studentList }: ClassRosterDialogProps) {
+export function ClassRosterDialog({ 
+  classData, 
+  open, 
+  onOpenChange, 
+  studentList,
+  tenantPrimaryDomain,
+  accessToken,
+  refreshToken
+}: ClassRosterDialogProps) {
   const { toast } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
   const [originalStudents, setOriginalStudents] = useState<Student[]>([]);
@@ -78,7 +90,7 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
       characterScore: Math.floor(Math.random() * 10) + 1,
       attendance: Math.floor(Math.random() * 100)
     })) || [];
-  }, [studentList]);
+  }, [studentList]);  
 
   const normalizedClassStudents = useMemo(() => {
     if (!classData?.students || !normalizedStudentList) return [];
@@ -143,15 +155,48 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
     setEditingStudent(student);
   }, []);
 
-  const handleSaveStudent = useCallback((updatedStudent: Student) => {
-    setStudents(prev => 
-      prev.map(student => 
-        student.id === updatedStudent.id ? updatedStudent : student
-      )
-    );
-    setEditingStudent(null);
-    setHasChanges(true);
-  }, []);
+  const handleSaveStudent = useCallback(async (updatedStudent: Student) => {
+    try {
+      const studentData = {
+        user: {
+          first_name: updatedStudent.user?.first_name,
+          last_name: updatedStudent.user?.last_name,
+          //email: updatedStudent.user?.email
+        }
+      };
+  
+  
+      await updateStudent(
+        updatedStudent.id,
+        studentData.user,
+        tenantPrimaryDomain,
+        accessToken,
+        refreshToken
+      );
+  
+      setStudents(prev => 
+        prev.map(student => 
+          student.id === updatedStudent.id ? {
+            ...student,
+            ...updatedStudent,
+            full_name: `${updatedStudent.user?.first_name} ${updatedStudent.user?.last_name}`
+          } : student
+        )
+      );
+      setEditingStudent(null);  
+      toast({
+        title: "Student updated successfully",
+        description: "The student information has been saved.",
+      });
+    } catch (error) {
+      console.error("Error saving student:", error);
+      toast({
+        title: "Error saving student",
+        description: "There was an error while saving the student information.",
+        variant: "destructive",
+      });
+    }
+  }, [tenantPrimaryDomain, accessToken, refreshToken, toast]);
 
   const handleSearchTermChange = useCallback((value: string) => {
     setSearchTerm(value);
@@ -172,31 +217,58 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
   const handleSaveChanges = useCallback(async () => {
     setIsSaving(true);
     try {
+      // 1. Update individual student data if needed
       const updatedStudents = students.filter(student => {
         const original = originalStudents.find(s => s.id === student.id);
         return original && JSON.stringify(original) !== JSON.stringify(student);
       });
-
+  
       if (updatedStudents.length > 0) {
         for (const student of updatedStudents) {
-          console.log('Would update student:', student.id);
+          const studentData = {
+            grade: student.grade,
+            character_score: student.characterScore,
+            attendance: student.attendance
+          };
+          await updateStudent(
+            student.id,
+            studentData,
+            tenantPrimaryDomain,
+            accessToken,
+            refreshToken
+          );
         }
       }
-
-      // 2. Update class roster if students were added/removed
+  
+      // 2. Handle student enrollment changes
       const currentIds = students.map(s => s.id);
       const originalIds = originalStudents.map(s => s.id);
       
-      if (JSON.stringify(currentIds.sort()) !== JSON.stringify(originalIds.sort())) {
-        const response = await fetch(`/classes/${classData?.id}`, {
-          method: 'PUT',
-          body: JSON.stringify({ students: currentIds }),
-          headers: { 'Content-Type': 'application/json' }
-        });
-
-        console.log('response', response);
+      // Find students to add (present in current but not in original)
+      const studentsToAdd = currentIds.filter(id => !originalIds.includes(id));
+      // Find students to remove (present in original but not in current)
+      const studentsToRemove = originalIds.filter(id => !currentIds.includes(id));
+  
+      if (studentsToAdd.length > 0) {
+        await enrollStudentsToClass(
+          classData?.id || 0,
+          studentsToAdd,
+          tenantPrimaryDomain,
+          accessToken,
+          refreshToken
+        );
       }
-
+  
+      if (studentsToRemove.length > 0) {
+        await unenrollStudentsFromClass(
+          classData?.id || 0,
+          studentsToRemove,
+          tenantPrimaryDomain,
+          accessToken,
+          refreshToken
+        );
+      }
+  
       toast({
         title: "Changes saved successfully",
         description: "All modifications have been saved.",
@@ -204,7 +276,7 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
       setOriginalStudents(students);
       setHasChanges(false);
     } catch (error) {
-      console.log("error",error)
+      console.error("Error saving changes:", error);
       toast({
         title: "Error saving changes",
         description: "There was an error while saving your changes.",
@@ -213,7 +285,15 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
     } finally {
       setIsSaving(false);
     }
-  }, [students, originalStudents, classData?.id, toast]);
+  }, [
+    students, 
+    originalStudents, 
+    classData?.id, 
+    tenantPrimaryDomain, 
+    accessToken, 
+    refreshToken, 
+    toast
+  ]);
 
   const handleCancel = useCallback(() => {
     if (hasChanges) {
@@ -233,7 +313,7 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
   return (
     <>
       <Dialog open={open} onOpenChange={handleCancel}>
-        <DialogContent className="sm:max-w-4xl min-h-[50vh] max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-4xl min-h-[50vh] max-h-[80vh] overflow-y-auto p-4">
           <DialogHeader>
             <DialogTitle>Class Roster: {classData?.name}</DialogTitle>
           </DialogHeader>
@@ -454,12 +534,12 @@ function EditStudentDialog({ student, onSave, onCancel }: {
   onCancel: () => void;
 }) {
   const [editedStudent, setEditedStudent] = useState<Student>(student);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setEditedStudent((prev: any) => ({
       ...prev,
-      [name]: value,
       user: {
         ...prev.user,
         ...(name === 'first_name' && { first_name: value }),
@@ -469,9 +549,23 @@ function EditStudentDialog({ student, onSave, onCancel }: {
     }));
   }, []);
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(editedStudent);
+    setIsLoading(true);
+    try {
+      const studentToSave = {
+        ...editedStudent,
+        full_name: `${editedStudent.user?.first_name} ${editedStudent.user?.last_name}`,
+        user: {
+          first_name: editedStudent.user?.first_name || '',
+          last_name: editedStudent.user?.last_name || '',
+          email: editedStudent.user?.email || ''
+        }
+      };
+      await onSave(studentToSave);
+    } finally {
+      setIsLoading(false);
+    }
   }, [editedStudent, onSave]);
 
   return (
@@ -492,6 +586,7 @@ function EditStudentDialog({ student, onSave, onCancel }: {
                 value={editedStudent.user?.first_name || ''}
                 onChange={handleChange}
                 className="col-span-3"
+                disabled={isLoading}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -504,6 +599,7 @@ function EditStudentDialog({ student, onSave, onCancel }: {
                 value={editedStudent.user?.last_name || ''}
                 onChange={handleChange}
                 className="col-span-3"
+                disabled={isLoading}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -517,6 +613,7 @@ function EditStudentDialog({ student, onSave, onCancel }: {
                 value={editedStudent.user?.email || ''}
                 onChange={handleChange}
                 className="col-span-3"
+                disabled={isLoading}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -530,6 +627,7 @@ function EditStudentDialog({ student, onSave, onCancel }: {
                 value={editedStudent.grade || ''}
                 onChange={handleChange}
                 className="col-span-3"
+                disabled
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -545,6 +643,7 @@ function EditStudentDialog({ student, onSave, onCancel }: {
                 value={editedStudent.characterScore || ''}
                 onChange={handleChange}
                 className="col-span-3"
+                disabled
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -560,18 +659,33 @@ function EditStudentDialog({ student, onSave, onCancel }: {
                 value={editedStudent.attendance || ''}
                 onChange={handleChange}
                 className="col-span-3"
+                disabled
               />
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onCancel}
+              disabled={isLoading}
+            >
               Cancel
             </Button>
             <Button 
               type="submit"
               className="bg-blue-400 hover:bg-blue-500 text-white"
+              disabled={isLoading}
             >
-              Save
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : 'Save'}
             </Button>
           </DialogFooter>
         </form>
