@@ -1,6 +1,27 @@
 "use client";
 
 import {
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+  type ColumnDef,
+  type SortingState,
+  type VisibilityState,
+  type FilterFn
+} from "@tanstack/react-table";
+import { Eye, ChevronDown, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Table,
   TableBody,
   TableCell,
@@ -8,8 +29,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import NoData from "../ui/no-data";
 import { Loader } from "../ui/loader";
@@ -21,6 +40,11 @@ import AllRewardFiltersPopUp from "./AllRewardFiltersPopUp";
 import { getRewardsGeneralView } from "@/services/RewardsService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { localStorageKey } from "@/constants/global";
+
+const globalFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
+  const value = row.getValue(columnId);
+  return String(value).toLowerCase().includes(filterValue.toLowerCase());
+};
 
 interface RewardsGeneralViewProps {
   changeView: (viewName: string, student?: any) => void;
@@ -34,8 +58,6 @@ export default function RewardsGeneralView({
     accessToken,
     refreshToken,
   } = useRequestInfo();
-  //const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
-  //console.log("localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!",localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!)
   const currentClass = JSON.parse(
     localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
   );
@@ -45,6 +67,97 @@ export default function RewardsGeneralView({
   const [rewardsCount, setRewardsCount] = useState(0);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+
+  const columns: ColumnDef<any>[] = [
+    {
+      accessorKey: "student",
+      header: "STUDENT",
+      cell: ({ row }) => (
+        <button
+          className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
+          onClick={() => handleViewDetails(row.original)}
+        >
+          {row.getValue("student")}
+        </button>
+      ),
+    },
+    {
+      accessorKey: "class",
+      header: "CLASS",
+      cell: ({ row }) => (
+        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-3 py-1 text-sm font-medium">
+          {row.getValue("class")}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "attendance",
+      header: "ATTENDANCE",
+      cell: ({ row }) => (
+        <AttendanceDisplay attendance={row.getValue("attendance")} />
+      ),
+    },
+    {
+      accessorKey: "pointGained",
+      header: "POINTS GAINED",
+      cell: ({ row }) => (
+        <span className="bg-green-100 text-green-800 rounded-full px-3 py-1 text-sm font-medium">
+          {row.getValue("pointGained")}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "pointLost",
+      header: "POINTS LOST",
+      cell: ({ row }) => (
+        <span className="bg-red-100 text-red-800 rounded-full px-3 py-1 text-sm font-medium">
+          {row.getValue("pointLost")}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "total",
+      header: "TOTAL",
+      cell: ({ row }) => (
+        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-3 py-1 text-sm font-medium font-bold">
+          {row.getValue("total")}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "ACTIONS",
+      enableHiding: false,
+      cell: ({ row }) => (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 hover:bg-[#3e81d4]/10"
+          onClick={() => handleViewDetails(row.original)}
+        >
+          <Eye className="h-3.5 w-3.5 text-[#3e81d4]" />
+        </Button>
+      ),
+    },
+  ];
+
+  const table = useReactTable({
+    data: rewards,
+    columns,
+    filterFns: { global: globalFilterFn },
+    globalFilterFn,
+    onSortingChange: setSorting,
+    onGlobalFilterChange: setGlobalFilter,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    state: { sorting, globalFilter, columnVisibility },
+  });
 
   useEffect(() => {
     const loadRewards = async () => {
@@ -61,7 +174,7 @@ export default function RewardsGeneralView({
           refreshToken,
           fromDate,
           toDate,
-          currentClass?.id // Ajout de l'ID de la classe courante
+          currentClass?.id
         );
 
         const transformedData = apiData.classes.flatMap((classItem: any) =>
@@ -96,15 +209,37 @@ export default function RewardsGeneralView({
     currentClass?.id,
   ]);
 
-  // In GeneralView component
-  // Dans GeneralView (correct)
   const handleViewDetails = (student: any) => {
     if (!student?.rawData?.student?.id) {
       console.log("Student data being passed to FocusView:", student.rawData);
       console.error("Invalid student data structure:", student);
       return;
     }
-    changeView("FOCUSED_VIEW", student.rawData); // ← Passez l'objet complet
+    changeView("FOCUSED_VIEW", student.rawData);
+  };
+
+  const handleExport = () => {
+    if (rewards.length === 0) return;
+    
+    const csvContent = [
+      Object.keys(rewards[0]).filter(key => key !== 'rawData').join(','),
+      ...rewards.map(item => 
+        Object.entries(item)
+          .filter(([key]) => key !== 'rawData')
+          .map(([_, value]) => value)
+          .join(',')
+      )
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'rewards.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -144,6 +279,52 @@ export default function RewardsGeneralView({
         </div>
       </div>
 
+      {/* Filtres et export */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="relative w-full md:w-auto md:flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Filter students..."
+            value={globalFilter ?? ''}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            className="pl-8 w-full md:w-[400px]"
+          />
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button 
+            onClick={handleExport}
+            variant="outline" 
+            className="bg-[#3e81d4]/10 text-[#3e81d4] hover:bg-[#3e81d4]/20 border-[#3e81d4]/20"
+            disabled={rewards.length === 0}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="bg-[#3e81d4]/10 text-[#3e81d4] hover:bg-[#3e81d4]/20 border-[#3e81d4]/20">
+                Columns <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table.getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                  >
+                    {column.id}
+                  </DropdownMenuCheckboxItem>
+                ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
       {/* Tableau */}
       <Card className="rounded-lg shadow-sm">
         {isLoading ? (
@@ -151,76 +332,76 @@ export default function RewardsGeneralView({
             <Loader />
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="font-bold">Students</TableHead>
-                <TableHead className="font-bold text-center">Class</TableHead>
-                <TableHead className="font-bold text-center">
-                  Attendance
-                </TableHead>
-                <TableHead className="font-bold text-center">
-                  Point Gained
-                </TableHead>
-                <TableHead className="font-bold text-center">
-                  Point Lost
-                </TableHead>
-                <TableHead className="font-bold text-center">Total</TableHead>
-                <TableHead className="font-bold text-center">ACTIONS</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rewards.length > 0 ? (
-                rewards.map((reward) => (
-                  <TableRow key={reward.id}>
-                    <TableCell className="font-medium">
-                      <button
-                        className="text-center text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
-                        onClick={() => handleViewDetails(reward)}
-                      >
-                        {reward.student}
-                      </button>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {reward.class}
-                    </TableCell>
-                    <TableCell>
-                      <AttendanceDisplay attendance={reward.attendance} />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {reward.pointGained}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {reward.pointLost}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {reward.total}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2 justify-center">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-blue-50"
-                          onClick={() => handleViewDetails(reward)}
-                        >
-                          <Eye className="h-4 w-4 text-[#25AAE1]" />
-                        </Button>
-                      </div>
+          <div className="rounded-lg border border-gray-200 overflow-hidden">
+            <Table className="min-w-full">
+              <TableHeader className="bg-[#3e81d4]/10">
+                {table.getHeaderGroups().map(headerGroup => (
+                  <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                    {headerGroup.headers.map(header => (
+                      <TableHead key={header.id} className="px-4 py-3 text-left text-xs font-medium text-[#3e81d4] uppercase tracking-wider">
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody className="bg-white divide-y divide-gray-200">
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map(row => (
+                    <TableRow 
+                      key={row.id} 
+                      className="hover:bg-[#3e81d4]/5 cursor-pointer"
+                    >
+                      {row.getVisibleCells().map(cell => (
+                        <TableCell key={cell.id} className="px-4 py-3 whitespace-nowrap text-sm text-gray-800 text-center">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={columns.length} className="px-4 py-3 text-center text-sm text-gray-500">
+                      <NoData />
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center">
-                    <NoData />
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </Card>
+
+      {/* Pagination */}
+      {rewards.length > 0 && (
+        <div className="flex flex-col md:flex-row items-center justify-between px-4 py-3 bg-[#3e81d4]/5 rounded-b-lg">
+          <div className="text-sm text-[#3e81d4] mb-4 md:mb-0">
+            Showing {table.getRowModel().rows.length} of {rewards.length} students
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="px-3 py-1 border border-[#3e81d4]/20 rounded-md text-sm font-medium text-[#3e81d4] bg-[#3e81d4]/10 hover:bg-[#3e81d4]/20"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="px-3 py-1 border border-[#3e81d4]/20 rounded-md text-sm font-medium text-[#3e81d4] bg-[#3e81d4]/10 hover:bg-[#3e81d4]/20"
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
