@@ -652,9 +652,10 @@ export default function PlanGeneralView({ changeView }: PlanGeneralViewProps) {
                     <div className="w-6/12 p-3 relative">
                         <div className="flex items-center mb-2">
                             <div className="bg-black text-white rounded-full h-6 w-6 flex items-center justify-center mr-2">
+                                
                                 5
                             </div>
-                            <div className="font-bold underline">1st Transition (10 minutes): Guided Practice, Teacher Modeling with student input.</div>
+                            <div className="font-bold underline">1st Transition </div>
                         </div>
                         <div className="w-11/12">
                             {editingSection === 'firstTransition' ? (

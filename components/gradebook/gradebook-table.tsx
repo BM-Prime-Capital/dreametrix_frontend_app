@@ -52,23 +52,25 @@ export function GradebookTable({ classes, onClassSelect }: GradebookTableProps) 
       accessorKey: "name",
       header: "CLASS",
       cell: ({ row }) => (
+      <div className="text-left"> {/* Ajout de text-left ici */}
         <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-3 py-1 text-sm font-medium">
           {row.getValue("name")}
         </span>
+      </div>
       ),
     },
     {
       accessorKey: "average",
-      header: "AVERAGE",
+      header: "CLASS AVERAGE",
       cell: ({ row }) => (
-        <span className="px-2.5 py-1 bg-[#3e81d4]/10 text-[#3e81d4] rounded-full text-sm font-medium">
+        <span className="px-2.5 py-1 bg-[#3e81d4]/10 text-[#3e81d4] rounded-full text-sm font-medium text-center">
           {row.getValue("average")}
         </span>
       ),
     },
     {
       accessorKey: "noOfExams",
-      header: "# EXAMS",
+      header: "# TESTS",
       cell: ({ row }) => (
         <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-2 py-1 text-xs font-medium">
           {row.getValue("noOfExams")}
@@ -77,7 +79,7 @@ export function GradebookTable({ classes, onClassSelect }: GradebookTableProps) 
     },
     {
       accessorKey: "noOfTests",
-      header: "# TESTS",
+      header: "# QUIZ",
       cell: ({ row }) => (
         <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-2 py-1 text-xs font-medium">
           {row.getValue("noOfTests")}
@@ -214,7 +216,12 @@ export function GradebookTable({ classes, onClassSelect }: GradebookTableProps) 
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <TableHead key={header.id} className="px-4 py-3 text-left text-xs font-medium text-[#3e81d4] uppercase tracking-wider">
+                  <TableHead 
+                    key={header.id} 
+                    className={`px-4 py-3 text-xs font-medium text-[#3e81d4] uppercase tracking-wider ${
+                      header.id === "name" ? "text-left" : "text-center"
+                    }`}
+                  >
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
@@ -230,9 +237,14 @@ export function GradebookTable({ classes, onClassSelect }: GradebookTableProps) 
                   onClick={() => onClassSelect(row.original)}
                 >
                   {row.getVisibleCells().map(cell => (
-                    <TableCell key={cell.id} className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
+                    <TableCell 
+                        key={cell.id} 
+                        className={`px-4 py-3 whitespace-nowrap text-sm text-gray-800 ${
+                          cell.column.id === "name" ? "text-left" : "text-center"
+                        }`}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
                   ))}
                 </TableRow>
               ))

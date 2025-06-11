@@ -63,7 +63,7 @@ export default function Gradebook() {
         // Mapper vers le format attendu par GradebookTable
         const formatted = data.map((item: any) => ({
           id: item.class_id,
-          name: `Class ${item.class_id}`,
+          name: `${item.class_name}`,
           average: `${item.average}%`,
           noOfExams: item.test,
           noOfTests: item.quiz,

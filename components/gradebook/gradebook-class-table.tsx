@@ -355,7 +355,7 @@ export function GradebookClassTable({
                 <TableRow>
                   <TableHead
                     rowSpan={2}
-                    className="w-[120px] sticky left-0 bg-gray-50 z-10 text-center font-semibold text-gray-700"
+                    className="w-[120px] sticky left-0 bg-gray-50 z-10 text-left font-semibold text-gray-700"
                   >
                     STUDENT
                   </TableHead>
@@ -450,10 +450,11 @@ export function GradebookClassTable({
                   ))}
                 </TableRow>
               </TableHeader>
+              
               <TableBody>
                 {students.map((student) => (
                   <TableRow key={student.id} className="hover:bg-gray-50/50">
-                    <TableCell className="font-medium sticky left-0 bg-white z-10 w-[120px] truncate">
+                    <TableCell className="font-medium text-left sticky left-0 bg-white z-10 w-[120px] truncate">
                       {student.name}
                     </TableCell>
 
