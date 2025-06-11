@@ -61,6 +61,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { fixS3Url, S3_CONFIG } from "@/src/config/s3";
 
 interface Submission {
   student: {
@@ -138,8 +139,50 @@ export function SubmissionsPopup({
   const [editingCell, setEditingCell] = useState<string | null>(null);
 
   // Handle authorized file viewing
+  // const handleViewFile = async (filePath: string) => {
+  //   try {
+  //     const response = await fetch(`${tenantDomain}${filePath}`, {
+  //       method: "GET",
+  //       headers: {
+  //         Authorization: `Bearer ${accessToken}`,
+  //         "X-Refresh-Token": refreshToken || "",
+  //       },
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to fetch file: ${response.status}`);
+  //     }
+
+  //     const blob = await response.blob();
+  //     const blobUrl = URL.createObjectURL(blob);
+
+  //     // Open in new tab
+  //     const link = document.createElement("a");
+  //     link.href = blobUrl;
+  //     link.target = "_blank";
+  //     link.click();
+
+  //     // Cleanup after a delay
+  //     setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+  //   } catch (error) {
+  //     console.error("Error viewing file:", error);
+  //     // Fallback to direct URL
+  //     window.open(`${tenantDomain}${filePath}`, "_blank");
+  //   }
+  // };
+
   const handleViewFile = async (filePath: string) => {
     try {
+      // Correction systématique de l'URL S3
+      const s3Url = fixS3Url(filePath);
+      
+      // Si c'est une URL S3 corrigée, on l'ouvre directement
+      if (s3Url.includes(`s3.${S3_CONFIG.region}.amazonaws.com`)) {
+        window.open(s3Url, '_blank');
+        return;
+      }
+
+      // Sinon, tentative d'accès authentifié
       const response = await fetch(`${tenantDomain}${filePath}`, {
         method: "GET",
         headers: {
@@ -149,24 +192,20 @@ export function SubmissionsPopup({
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch file: ${response.status}`);
+        // Fallback vers l'URL S3 corrigée
+        window.open(s3Url, '_blank');
+        return;
       }
 
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
-
-      // Open in new tab
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      link.target = "_blank";
-      link.click();
-
-      // Cleanup after a delay
+      window.open(blobUrl, '_blank');
       setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      
     } catch (error) {
       console.error("Error viewing file:", error);
-      // Fallback to direct URL
-      window.open(`${tenantDomain}${filePath}`, "_blank");
+      // Fallback final vers l'URL S3 corrigée
+      window.open(fixS3Url(filePath), '_blank');
     }
   };
 
@@ -213,16 +252,30 @@ export function SubmissionsPopup({
     return !!submission?.submission?.voice_notes;
   };
 
+  // const getAudioUrl = (
+  //   studentId: string,
+  //   assessmentType: string,
+  //   assessmentIndex: number
+  // ) => {
+  //   // For submissions, return the voice_notes URL directly from the submission
+  //   const submission = submissions.find(
+  //     (sub) => sub.student.id.toString() === studentId
+  //   );
+  //   return submission?.submission?.voice_notes;
+  // };
+
   const getAudioUrl = (
     studentId: string,
     assessmentType: string,
     assessmentIndex: number
   ) => {
-    // For submissions, return the voice_notes URL directly from the submission
     const submission = submissions.find(
       (sub) => sub.student.id.toString() === studentId
     );
-    return submission?.submission?.voice_notes;
+    
+    if (!submission?.submission?.voice_notes) return null;
+    
+    return fixS3Url(submission.submission.voice_notes);
   };
 
   const handleGradeUpdate = async (
@@ -488,15 +541,45 @@ export function SubmissionsPopup({
                 voiceNotesUrl
               )
             }
-            audioUrl={getAudioUrl(
-              submission.student.id.toString(),
-              "submission",
-              assessmentId
-            )}
+            audioUrl={
+              getAudioUrl(
+                submission.student.id.toString(),
+                "submission",
+                assessmentId
+              ) ?? undefined
+            }
           />
         );
       },
     },
+    // {
+    //   id: "submission",
+    //   header: "Submission",
+    //   accessorFn: (row) => row.submission?.file,
+    //   cell: ({ row }) => {
+    //     const submission = row.original.submission;
+
+    //     return (
+    //       <div className="flex items-center gap-2">
+    //         <FileText className="h-4 w-4 text-gray-500" />
+    //         {submission?.file ? (
+    //           <Button
+    //             variant="link"
+    //             onClick={() => handleViewFile(submission.file!)}
+    //             className="p-0 h-auto text-blue-600 hover:underline"
+    //           >
+    //             View File
+    //           </Button>
+    //         ) : row.original.has_submitted ? (
+    //           <span className="text-green-600">Submitted</span>
+    //         ) : (
+    //           <span className="text-gray-400">No submission</span>
+    //         )}
+    //       </div>
+    //     );
+    //   },
+    // },
+
     {
       id: "submission",
       header: "Submission",
@@ -510,7 +593,7 @@ export function SubmissionsPopup({
             {submission?.file ? (
               <Button
                 variant="link"
-                onClick={() => handleViewFile(submission.file!)}
+                onClick={() => handleViewFile(fixS3Url(submission.file!))}
                 className="p-0 h-auto text-blue-600 hover:underline"
               >
                 View File
@@ -524,6 +607,53 @@ export function SubmissionsPopup({
         );
       },
     },
+
+
+    // {
+    //   id: "audio_feedback",
+    //   header: "Audio Feedback",
+    //   accessorFn: (row) => row.submission?.voice_notes,
+    //   cell: ({ row }) => {
+    //     const voiceNotes = row.original.submission?.voice_notes;
+    //     const hasSubmitted = row.original.has_submitted;
+
+    //     if (!hasSubmitted) {
+    //       return <span className="text-gray-400">-</span>;
+    //     }
+
+    //     if (voiceNotes) {
+    //       const fullAudioUrl = voiceNotes.startsWith("http")
+    //         ? voiceNotes
+    //         : `${tenantDomain}${voiceNotes}`;
+    //       const isTestFeedback = voiceNotes?.includes("soundjay.com"); // Check if it's our test audio
+
+    //       return (
+    //         <div className="flex items-center gap-2">
+    //           <Play className="h-4 w-4 text-green-600" />
+    //           <div className="flex items-center gap-1">
+    //             <audio controls className="h-8">
+    //               <source src={fullAudioUrl} type="audio/wav" />
+    //               <source src={fullAudioUrl} type="audio/mp3" />
+    //               <source src={fullAudioUrl} type="audio/ogg" />
+    //               Your browser does not support the audio element.
+    //             </audio>
+    //             {isTestFeedback && (
+    //               <Badge
+    //                 variant="outline"
+    //                 className="text-xs text-blue-600 border-blue-200 ml-2"
+    //               >
+    //                 TEST
+    //               </Badge>
+    //             )}
+    //           </div>
+    //         </div>
+    //       );
+    //     }
+
+    //     return <span className="text-gray-400">No audio feedback</span>;
+    //   },
+    // },
+
     {
       id: "audio_feedback",
       header: "Audio Feedback",
@@ -537,10 +667,8 @@ export function SubmissionsPopup({
         }
 
         if (voiceNotes) {
-          const fullAudioUrl = voiceNotes.startsWith("http")
-            ? voiceNotes
-            : `${tenantDomain}${voiceNotes}`;
-          const isTestFeedback = voiceNotes?.includes("soundjay.com"); // Check if it's our test audio
+          const fullAudioUrl = fixS3Url(voiceNotes);
+          const isTestFeedback = voiceNotes?.includes("soundjay.com");
 
           return (
             <div className="flex items-center gap-2">
@@ -567,7 +695,7 @@ export function SubmissionsPopup({
 
         return <span className="text-gray-400">No audio feedback</span>;
       },
-    },
+    }
   ];
 
   const table = useReactTable({
