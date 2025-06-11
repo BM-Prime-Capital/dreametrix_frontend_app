@@ -76,12 +76,14 @@ export default function RewardsGeneralView({
       accessorKey: "student",
       header: "STUDENT",
       cell: ({ row }) => (
+      <div className="text-left"> {/* Added text-left wrapper */}
         <button
           className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium"
           onClick={() => handleViewDetails(row.original)}
         >
           {row.getValue("student")}
         </button>
+      </div>
       ),
     },
     {
@@ -338,7 +340,12 @@ export default function RewardsGeneralView({
                 {table.getHeaderGroups().map(headerGroup => (
                   <TableRow key={headerGroup.id} className="hover:bg-transparent">
                     {headerGroup.headers.map(header => (
-                      <TableHead key={header.id} className="px-4 py-3 text-left text-xs font-medium text-[#3e81d4] uppercase tracking-wider">
+                      <TableHead 
+                        key={header.id} 
+                        className={`px-4 py-3 text-xs font-medium text-[#3e81d4] uppercase tracking-wider ${
+                          header.id === "student" ? "text-left" : "text-center"
+                        }`}
+                      >
                         {flexRender(header.column.columnDef.header, header.getContext())}
                       </TableHead>
                     ))}
@@ -348,12 +355,14 @@ export default function RewardsGeneralView({
               <TableBody className="bg-white divide-y divide-gray-200">
                 {table.getRowModel().rows?.length ? (
                   table.getRowModel().rows.map(row => (
-                    <TableRow 
-                      key={row.id} 
-                      className="hover:bg-[#3e81d4]/5 cursor-pointer"
-                    >
+                    <TableRow key={row.id} className="hover:bg-[#3e81d4]/5 cursor-pointer">
                       {row.getVisibleCells().map(cell => (
-                        <TableCell key={cell.id} className="px-4 py-3 whitespace-nowrap text-sm text-gray-800 text-center">
+                        <TableCell 
+                          key={cell.id} 
+                          className={`px-4 py-3 whitespace-nowrap text-sm text-gray-800 ${
+                            cell.column.id === "student" ? "text-left" : "text-center"
+                          }`}
+                        >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>
                       ))}
