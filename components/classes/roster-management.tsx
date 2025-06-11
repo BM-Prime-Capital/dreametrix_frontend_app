@@ -34,9 +34,10 @@ interface Student {
   attendance?: number;
   class?: string;
   user?: {
-    email: string;
-    first_name: string;
-    last_name: string;
+    id?: number;
+    email?: string;
+    first_name?: string;
+    last_name?: string;
   };
   school?: {
     name: string;
