@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { FileText, BookOpen, Home, FileArchive, Download, Upload } from "lucide-react";
+import { FileText, BookOpen, Home, FileArchive, Download, Upload, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { addDays, format } from "date-fns";
 import PlanGeneralView from "./PlanGeneralView";
@@ -94,9 +94,26 @@ export function TeachMaterialsPopup({
     }
   };
 
+  const handleClose = () => {
+    onOpenChange(false);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[90vh] p-0 overflow-hidden">
+    <Dialog open={open} onOpenChange={onOpenChange} modal>
+      
+      <DialogContent 
+        className="max-w-6xl h-[90vh] p-0 overflow-hidden"
+        onInteractOutside={(e) => e.preventDefault()} // Empêche la fermeture au clic extérieur
+      >
+                {/* Bouton de fermeture en haut à droite */}
+        {/* <button 
+          onClick={handleClose}
+          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+        >
+          <X className="h-6 w-6" />
+          <span className="sr-only">Fermer</span>
+        </button> */}
+
         <div className="flex h-full">
           {/* Sidebar */}
           <div className="w-64 border-r bg-gray-50 p-4 flex flex-col">
@@ -172,11 +189,17 @@ export function TeachMaterialsPopup({
 
           {/* Main content */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="border-b p-4 flex justify-between items-center">
-              <h3 className="text-lg font-medium">
-                {materials.find(m => m.id === activeTab)?.name}
-              </h3>
-              <div className="flex gap-2">
+            {/* En-tête avec boutons */}
+            <div className="border-b p-4 flex justify-between items-center sticky top-0 bg-white z-10">
+              {/* Titre centré avec padding pour éviter le chevauchement */}
+              <div className="flex-1 text-center px-10"> {/* Ajout de px-10 pour l'espace */}
+                <h3 className="text-lg font-medium inline-block">
+                  {materials.find(m => m.id === activeTab)?.name}
+                </h3>
+              </div>
+
+              {/* Boutons de droite */}
+              <div className="flex gap-4 items-center">
                 <Button variant="outline" size="sm">
                   <Download className="w-4 h-4 mr-2" />
                   Download
@@ -184,6 +207,14 @@ export function TeachMaterialsPopup({
                 <Button size="sm">
                   <span>Share</span>
                 </Button>
+                {/* Bouton de fermeture intégré dans le groupe */}
+                <button 
+                  onClick={handleClose}
+                  className="p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                  aria-label="Fermer"
+                >
+                  <X className="h-5 w-5" />
+                </button>
               </div>
             </div>
 
