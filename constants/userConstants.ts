@@ -10,6 +10,7 @@ const LOGIN_PAGE_PATH = "/login";
 const REGISTER_PATH = "/register";
 
 export enum userPath {
+  LOGIN = '/',
   STUDENT_BASE_PATH = "/student",
   STUDENT_LOGIN_PATH = `${LOGIN_PAGE_PATH}?userType=${userTypeEnum.STUDENT}`,
   STUDENT_DASHBOARD_PATH = `${STUDENT_BASE_PATH}${HOME_PAGE_PATH}`,
@@ -48,4 +49,8 @@ export enum activityLabel {
   MESSAGE = "sent you a message",
   UPLOAD = "uploaded",
   EDIT = "edited",
+}
+
+export enum backend_base_url {
+  BASE_URL = "backend-dreametrix.com"
 }
