@@ -55,6 +55,7 @@ export default function Seating({
   const [currentClassId] = useState<string | null>(null);
   const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
   const [seatingConditions, setSeatingConditions] = useState<SeatingCondition[]>([]);
+  const [draggedStudent, setDraggedStudent] = useState<any>(null);
 
   const loadArrangements = useCallback(async (courseId?: number) => {
     try {
@@ -128,23 +129,69 @@ export default function Seating({
     );
   }, [currentArrangement, searchTerm]);
 
+  const handleDragStart = useCallback((student: any) => {
+    setDraggedStudent(student);
+  }, []);
+
+  const handleDrop = useCallback((targetSeatNumber: number) => {
+    if (!draggedStudent || !currentArrangement) return;
+
+    const selectedStudent = draggedStudent;
+    
+    const seatOccupiedBy = currentArrangement.arrangements.find(
+      (s: any) => s.seatNumber === targetSeatNumber && s.studentId !== selectedStudent.studentId
+    );
+    
+    let newArrangements;
+    
+    if (seatOccupiedBy) {
+      newArrangements = currentArrangement.arrangements.map((student: any) => {
+        if (student.studentId === selectedStudent.studentId) {
+          return { ...student, seatNumber: targetSeatNumber };
+        }
+        if (student.studentId === seatOccupiedBy.studentId) {
+          return { ...student, seatNumber: selectedStudent.seatNumber };
+        }
+        return student;
+      });
+    } else {
+      newArrangements = currentArrangement.arrangements.map((student: any) => {
+        if (student.studentId === selectedStudent.studentId) {
+          return { ...student, seatNumber: targetSeatNumber };
+        }
+        return student;
+      });
+    }
+    
+    const newCurrentArrangement = {
+      ...currentArrangement,
+      arrangements: newArrangements,
+    };
+    
+    setCurrentArrangement(newCurrentArrangement);
+    setArrangements(
+      arrangements.map((arr) =>
+        arr.id === currentArrangement.id ? newCurrentArrangement : arr
+      )
+    );
+    setIsModified(true);
+    setDraggedStudent(null);
+  }, [draggedStudent, currentArrangement, arrangements]);
+
   const handleSeatClick = useCallback((targetSeatNumber: number) => {
     if (!currentArrangement) return;
   
-    // Cas 1: Un élève est sélectionné (dans la liste) - qu'il soit déjà placé ou non
     if (selectedStudentId !== null) {
       const selectedStudent = currentArrangement.arrangements.find(
         (s: any) => s.studentId === selectedStudentId
       );
       
       if (selectedStudent) {
-        // Vérifier si le siège cible est déjà occupé par un autre élève
         const seatOccupiedBy = currentArrangement.arrangements.find(
           (s: any) => s.seatNumber === targetSeatNumber && s.studentId !== selectedStudentId
         );
         
         if (seatOccupiedBy) {
-          // Échange des positions entre les deux élèves
           const newArrangements = currentArrangement.arrangements.map(
             (student: any) => {
               if (student.studentId === selectedStudentId) {
@@ -169,7 +216,6 @@ export default function Seating({
             )
           );
         } else {
-          // Si le siège est libre ou occupé par le même élève
           const newArrangements = currentArrangement.arrangements.map(
             (student: any) => {
               if (student.studentId === selectedStudentId) {
@@ -199,7 +245,6 @@ export default function Seating({
       return;
     }
   
-    // Cas 2: Un siège est sélectionné (échange ou désélection)
     if (firstSelectedSeatNumber === -1) {
       const targetStudent = currentArrangement.arrangements.find(
         (s: any) => s.seatNumber === targetSeatNumber
@@ -211,13 +256,11 @@ export default function Seating({
       return;
     }
     
-    // Si on clique sur le même siège, on désélectionne
     if (firstSelectedSeatNumber === targetSeatNumber) {
       setFirstSelectedSeatNumber(-1);
       return;
     }
   
-    // Cas 3: Échange entre deux sièges sélectionnés
     const firstStudent = currentArrangement.arrangements.find(
       (s: any) => s.seatNumber === firstSelectedSeatNumber
     );
@@ -251,7 +294,94 @@ export default function Seating({
     setIsModified(true);
     setFirstSelectedSeatNumber(-1);
   }, [currentArrangement, firstSelectedSeatNumber, arrangements, selectedStudentId]);
+
+  const handleSave = useCallback(async () => {
+    if (!currentArrangement || !isModified) return;
   
+    try {
+      setIsSaving(true);
+      const updates = currentArrangement.arrangements.map((student: any) => ({
+        seating_id: student.seatingId,
+        site_number: student.seatNumber
+      }));
+      
+      await updateSeatingArrangement(
+        tenantPrimaryDomain,
+        accessToken,
+        updates
+      );
+      
+      setIsModified(false);
+    } catch (error) {
+      console.error("Error saving arrangement:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [currentArrangement, isModified, tenantPrimaryDomain, accessToken]);
+  
+  const confirmDeactivation = useCallback(async () => {
+    if (!eventToDeactivate) return;
+  
+    try {
+      setIsDeactivating(true);
+      await deactivateArrangementEvent(tenantPrimaryDomain, accessToken, eventToDeactivate);
+      await loadArrangements(selectedCourse || undefined);
+    } catch (error) {
+      console.error("Error deactivating event:", error);
+    } finally {
+      setIsDeactivating(false);
+      setIsConfirmDialogOpen(false);
+      setEventToDeactivate(null);
+    }
+  }, [eventToDeactivate, tenantPrimaryDomain, accessToken, selectedCourse, loadArrangements]);
+
+  const GridComponent = useMemo(() => {
+    if (!currentArrangement) return null;
+    
+    const seats = currentArrangement.available_place_number || DEFAULT_SEAT_COUNT;
+    
+    return (
+      <div className="grid grid-cols-8 gap-2 p-2 border-2 border-gray-200">
+        {Array.from({ length: seats }).map((_, index) => {
+          const seatNumber = index + 1;
+          const student = currentArrangement.arrangements.find(
+            (s: any) => s.seatNumber === seatNumber
+          );
+
+          return (
+            <div
+              key={`seat-${seatNumber}`}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => handleDrop(seatNumber)}
+              onClick={() => handleSeatClick(seatNumber)}
+              className={`w-full h-[50px] relative ${
+                firstSelectedSeatNumber === seatNumber 
+                  ? 'bg-blue-50'
+                  : 'border-[1px] border-[#eee]'
+              } ${student ? 'bg-white' : 'bg-gray-200 hover:border-bgPink'}`}
+            >
+              {student ? (
+                <StudentArrangementItem
+                  id={seatNumber}
+                  studentImageUrl={student.studentImageUrl}
+                  studentName={student.studentName}
+                  className="w-full h-full"
+                  handleSeatClick={() => handleSeatClick(seatNumber)}
+                  maxSeatNumber={seats}
+                  isSeatingArrangementAuto={isSeatingArrangementAuto}
+                  isSelected={firstSelectedSeatNumber === seatNumber}
+                />
+              ) : (
+                <label className="seat-number font-bold text-xs text-bgPurple absolute top-1 left-1">
+                  {seatNumber}
+                </label>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }, [currentArrangement, firstSelectedSeatNumber, handleSeatClick, handleDrop]);
 
   const handleSeatingArrangementAuto = useCallback(() => {
     if (!currentArrangement) return;
@@ -406,7 +536,6 @@ export default function Seating({
       }
     }
   
-    // Placer les élèves restants aléatoirement
     studentsToPlace.forEach(student => {
       if (availableSeats.length === 0) return;
       
@@ -436,29 +565,13 @@ export default function Seating({
     setIsModified(true);
   }, [currentArrangement, arrangements, seatingConditions]);
 
-  const handleSave = useCallback(async () => {
-    if (!currentArrangement || !isModified) return;
 
-    try {
-      setIsSaving(true);
-      const updates = currentArrangement.arrangements.map((student: any) => ({
-        seating_id: student.seatingId,
-        site_number: student.seatNumber
-      }));
-      
-      await updateSeatingArrangement(
-        tenantPrimaryDomain,
-        accessToken,
-        updates
-      );
-      
-      setIsModified(false);
-    } catch (error) {
-      console.error("Error saving arrangement:", error);
-    } finally {
-      setIsSaving(false);
-    }
-  }, [currentArrangement, isModified, tenantPrimaryDomain, accessToken]);
+  const handleDeactivateEvent = useCallback(async (eventId: number) => {
+    setEventToDeactivate(eventId);
+    setIsConfirmDialogOpen(true);
+  }, []);
+  
+
 
   const handleCleanAllSeats = useCallback(() => {
     if (!currentArrangement) return;
@@ -484,80 +597,38 @@ export default function Seating({
     setFirstSelectedSeatNumber(-1);
   }, [currentArrangement, arrangements]);
 
-  const handleDeactivateEvent = useCallback(async (eventId: number) => {
-    setEventToDeactivate(eventId);
-    setIsConfirmDialogOpen(true);
-  }, []);
-  
-  const confirmDeactivation = useCallback(async () => {
-    if (!eventToDeactivate) return;
-  
-    try {
-      setIsDeactivating(true);
-      await deactivateArrangementEvent(tenantPrimaryDomain, accessToken, eventToDeactivate);
-      await loadArrangements(selectedCourse || undefined);
-    } catch (error) {
-      console.error("Error deactivating event:", error);
-    } finally {
-      setIsDeactivating(false);
-      setIsConfirmDialogOpen(false);
-      setEventToDeactivate(null);
-    }
-  }, [eventToDeactivate, tenantPrimaryDomain, accessToken, selectedCourse, loadArrangements]);
-
-  const GridComponent = useMemo(() => {
-    if (!currentArrangement) return null;
-    
-    const seats = currentArrangement.available_place_number || DEFAULT_SEAT_COUNT;
-    
-    return (
-      <div className="grid grid-cols-8 gap-2 p-2 border-2 border-gray-200"> 
-        {currentArrangement.arrangements?.length > 0 ? (
-          <>
-            {Array.from({ length: seats }).map((_, index) => {
-              const seatNumber = index + 1;
-              const student = currentArrangement.arrangements.find(
-                (s: any) => s.seatNumber === seatNumber
-              );
-    
-              return student ? (
-                <StudentArrangementItem
-                  key={`student-${student.studentId}-${seatNumber}`}
-                  id={seatNumber}
-                  studentImageUrl={student.studentImageUrl}
-                  studentName={student.studentName}
-                  className="w-full h-[50px]"
-                  handleSeatClick={() => handleSeatClick(seatNumber)}
-                  maxSeatNumber={seats}
-                  isSeatingArrangementAuto={isSeatingArrangementAuto}
-                  isSelected={firstSelectedSeatNumber === seatNumber}
-                />
-              ) : (
-                <div
-                  key={`empty-${seatNumber}`}
-                  onClick={() => handleSeatClick(seatNumber)}
-                  className={`w-full h-[50px] bg-gray-200 border-[1px] border-[#eee] hover:border-[1px] hover:border-bgPink relative
-                    ${firstSelectedSeatNumber === -1 ? 'cursor-pointer' : 'cursor-move'}`}
-                >
-                  <label className="seat-number font-bold text-xs text-bgPurple absolute top-1 left-1">
-                    {seatNumber}
-                  </label>
-                </div>
-              );
-            })}
-          </>
-        ) : (
-          <div className="col-span-8 flex items-center justify-center h-[400px]">
-            <label className="text-muted-foreground">
-              {arrangements.length === 0
-                ? "No arrangements found. Create one!"
-                : "No students in this arrangement"}
-            </label>
-          </div>
+  const renderStudentList = useMemo(() => {
+    return filteredStudents.map((student: any) => (
+      <div
+        key={student.studentId}
+        draggable={student.seatNumber === null} 
+        onDragStart={() => student.seatNumber === null && handleDragStart(student)}
+        onClick={() => {
+          if (student.seatNumber === null) {
+            setSelectedStudentId(student.studentId);
+            setFirstSelectedSeatNumber(-1);
+          } else {
+            setFirstSelectedSeatNumber(student.seatNumber);
+            setSelectedStudentId(null);
+          }
+        }}
+        className={`whitespace-nowrap text-[14px] ${
+          student.seatNumber === null ? 'cursor-pointer' : 'cursor-default'
+        } border-b-2 py-1 ${
+          selectedStudentId === student.studentId 
+            ? "border-blue-500 bg-blue-50" 
+            : student.seatNumber !== null && firstSelectedSeatNumber === student.seatNumber
+              ? "border-blue-500 bg-blue-50"
+              : "border-gray-200"
+        } ${student.seatNumber !== null ? 'opacity-50' : ''}`}
+      >
+        <span className="text-muted-foreground">{student.studentName}</span>
+        {student.seatNumber !== null && (
+          <>(<span className="text-secondaryBtn">{student.seatNumber}</span>)</>
         )}
       </div>
-    );
-  }, [currentArrangement, firstSelectedSeatNumber, isSeatingArrangementAuto, handleSeatClick, arrangements.length]);
+    ));
+  }, [filteredStudents, handleDragStart, firstSelectedSeatNumber, selectedStudentId]);
 
   useEffect(() => {
     loadArrangements();
@@ -619,8 +690,6 @@ export default function Seating({
           />
           <span>Manual</span>
         </Button>
-
-        
 
         <StudentSeatingConditionsDialog 
           studentClassName="flex gap-2 items-center text-lg text-white rounded-md px-4 py-3 shadow-md transition-all bg-[#F5C358] hover:bg-[#eeb53b]"
@@ -721,70 +790,40 @@ export default function Seating({
                           className="w-full p-2 border border-gray-300 rounded-md text-sm"
                         />
                       </div>
-                      
-                      {filteredStudents.map((arrangement: any) => (
-                        <label
-                          key={arrangement.studentId}
-                          className={`block whitespace-nowrap text-[14px] cursor-pointer border-b-2 py-1 ${
-                            selectedStudentId === arrangement.studentId 
-                              ? "border-blue-500 bg-blue-50" 
-                              : arrangement.seatNumber !== null && firstSelectedSeatNumber === arrangement.seatNumber
-                                ? "border-blue-500 bg-blue-50"
-                                : "border-gray-200"
-                          } ${arrangement.seatNumber !== null ? 'opacity-50' : ''}`}
-                          onClick={() => {
-                            if (arrangement.seatNumber === null) {
-                              // Sélectionner l'élève pour le placer
-                              setSelectedStudentId(arrangement.studentId);
-                              setFirstSelectedSeatNumber(-1);
-                            } else {
-                              // Sélectionner le siège pour échange
-                              setFirstSelectedSeatNumber(arrangement.seatNumber);
-                              setSelectedStudentId(null);
-                            }
-                          }}
-                        >
-                          <span className="text-muted-foreground">{arrangement.studentName}</span>
-                          {arrangement.seatNumber !== null && (
-                            <>(<span className="text-secondaryBtn">{arrangement.seatNumber}</span>)</>
-                          )}
-                        </label>
-                      ))}
+                      {renderStudentList}
                     </div>
                   )}
 
                   {currentArrangement && (
                     <>
-                   
-                    <Button
-                    onClick={handleCleanAllSeats}
-                    className="flex mt-8 gap-2 items-center text-lg bg-red-100 text-red-600 hover:bg-red-200 rounded-md px-4 py-3 shadow-md transition-all"
-                  >
-                    <Image
-                      src={teacherImages.delete}
-                      alt="clean"
-                      width={24}
-                      height={24}
-                      className="w-5 h-5"
-                    />
-                    <span>Clean</span>
-                  </Button>
+                      <Button
+                        onClick={handleCleanAllSeats}
+                        className="flex mt-8 gap-2 items-center text-lg bg-red-100 text-red-600 hover:bg-red-200 rounded-md px-4 py-3 shadow-md transition-all"
+                      >
+                        <Image
+                          src={teacherImages.delete}
+                          alt="clean"
+                          width={24}
+                          height={24}
+                          className="w-5 h-5"
+                        />
+                        <span>Clean</span>
+                      </Button>
 
-                    <Button
-                      className="flex gap-2 items-center h-[25px] text-lg bg-red-500 hover:bg-red-700 text-white rounded-md px-4 py-5 shadow-md transition-all mt-4"
-                      onClick={() => handleDeactivateEvent(parseInt(currentArrangement.id))}
-                      isLoading={isDeactivating}
-                    >
-                      <Image
-                        src={teacherImages.delete}
-                        alt="delete"
-                        width={20}
-                        height={24}
-                        className="w-5 h-5"
-                      />
-                      <span>Deactivate</span>
-                    </Button>
-
+                      <Button
+                        className="flex gap-2 items-center h-[25px] text-lg bg-red-500 hover:bg-red-700 text-white rounded-md px-4 py-5 shadow-md transition-all mt-4"
+                        onClick={() => handleDeactivateEvent(parseInt(currentArrangement.id))}
+                        isLoading={isDeactivating}
+                      >
+                        <Image
+                          src={teacherImages.delete}
+                          alt="delete"
+                          width={20}
+                          height={24}
+                          className="w-5 h-5"
+                        />
+                        <span>Deactivate</span>
+                      </Button>
                     </>
                   )}
                 </div>
