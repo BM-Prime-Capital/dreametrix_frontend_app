@@ -283,8 +283,6 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
           getClasses(tenantDomain, accessToken, refreshToken),
           getStudents(tenantDomain, accessToken)
         ]);
-        console.log("Loaded classes:", classes);
-        console.log("Loaded students:", students);
         setAllClasses(classes);
         setAllStudents(students);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
