@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { FileText, BookOpen, Home, FileArchive, Download, Upload } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
-import { format } from "date-fns";
+import { addDays, format } from "date-fns";
 import PlanGeneralView from "./PlanGeneralView";
 import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -20,19 +20,6 @@ export function TeachMaterialsPopup({
 }: TeachMaterialsPopupProps) {
   const [activeTab, setActiveTab] = useState("lesson-plan");
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-  const [selectedDate, setSelectedDate] = useState(date);
-
-  // Update when the prop date changes
-  useEffect(() => {
-    setSelectedDate(date);
-  }, [date]);
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = new Date(e.target.value);
-    if (!isNaN(newDate.getTime())) {
-      setSelectedDate(newDate);
-    }
-  };
 
   // Subject-specific resources
   const mathResources = {
@@ -117,16 +104,16 @@ export function TeachMaterialsPopup({
               <div className="mb-2">
                 <input
                   type="date"
-                  value={format(selectedDate, "yyyy-MM-dd")}
-                  onChange={handleDateChange}
+                  value={format(date, "yyyy-MM-dd")}
+                  readOnly 
                   className="w-full p-2 border rounded"
                 />
               </div>
               <h2 className="text-xl font-semibold">
-                {format(selectedDate, "EEEE, MMMM d, yyyy")}
+                {format(date, "EEEE, MMMM d, yyyy")}
               </h2>
               <p className="text-sm text-gray-500">
-                {format(selectedDate, "'Week' w")}
+                {format(date, "'Week' w")}
               </p>
             </DialogHeader>
 
@@ -206,7 +193,7 @@ export function TeachMaterialsPopup({
                   <Card className="h-full overflow-hidden">
                     <PlanGeneralView 
                       changeView={() => {}} 
-                      selectedDate={selectedDate} // Use the local selected date
+                      selectedDate={date}
                     />
                   </Card>
                 </TabsContent>
@@ -268,7 +255,7 @@ export function TeachMaterialsPopup({
                           </ul>
                           
                           <p className="text-sm text-gray-500 mt-4">
-                            Due: {format(new Date(date.setDate(date.getDate() + 2)), "EEEE, MMMM d")}
+                            Due: {format(addDays(date, 2), "EEEE, MMMM d")}
                           </p>
                         </div>
                       </div>
