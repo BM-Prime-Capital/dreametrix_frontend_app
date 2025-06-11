@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-//import { teacherImages } from "@/constants/images";
 import reactivate from "@/public/assets/images/reactivate.png";
 import Image from "next/image";
 
@@ -109,6 +108,11 @@ export function SeatingHistory({
               loadDeactivatedEvents();
             }
           }}
+          className={`border-1 transition-colors ${
+            showDeactivated 
+              ? "border-green-500 bg-green-50 hover:bg-green-100 text-green-700" 
+              : "border-blue-500 bg-blue-50 hover:bg-blue-100 text-blue-700"
+          }`}
         >
           {showDeactivated ? "Show Active" : "Show Deactivated"}
         </Button>
