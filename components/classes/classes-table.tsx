@@ -455,6 +455,9 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
       <ClassRosterDialog
         classData={classRosterData}
         studentList={allStudents}
+        tenantPrimaryDomain={tenantDomain}
+        accessToken={accessToken}
+        refreshToken={refreshToken}
         open={rosterOpen}
         onOpenChange={setRosterOpen}
       />

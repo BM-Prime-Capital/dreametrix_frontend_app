@@ -17,7 +17,6 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { createArrangementEvent } from "@/services/SeatingService";
-import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { localStorageKey } from "@/constants/global";
 
 interface Course {
@@ -27,24 +26,24 @@ interface Course {
 
 interface CreateArrangementDialogProps {
   onSuccess: () => void;
-
   tenantPrimaryDomain: string;
-
   accessToken: string;
-
   refreshToken: string;
-
   courses: any[];
-
 }
 
-export function CreateArrangementDialog({ onSuccess }: CreateArrangementDialogProps) {
-  const { tenantDomain: tenantPrimaryDomain, accessToken, refreshToken } = useRequestInfo();
+export function CreateArrangementDialog({ 
+  onSuccess, 
+  tenantPrimaryDomain, 
+  accessToken, 
+  refreshToken 
+}: CreateArrangementDialogProps) {
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA) || "{}");
   const teacherId = userData.owner_id;
 
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [availablePlaceNumber, setAvailablePlaceNumber] = useState<number>(64);
   const [courseId, setCourseId] = useState<number | null>(null);
   const [, setDate] = useState<Date>(new Date());
   const [courses, setCourses] = useState<Course[]>([]);
@@ -70,7 +69,7 @@ export function CreateArrangementDialog({ onSuccess }: CreateArrangementDialogPr
   }, [open]);
 
   const handleSubmit = async () => {
-    if (!name || !courseId) {
+    if (!name || !courseId || !availablePlaceNumber) {
       toast.error("Please fill all required fields");
       return;
     }
@@ -95,6 +94,7 @@ export function CreateArrangementDialog({ onSuccess }: CreateArrangementDialogPr
           name,
           course: courseId,
           teacher: teacherId,
+          available_place_number: availablePlaceNumber,
         }
       );
 
@@ -124,6 +124,7 @@ export function CreateArrangementDialog({ onSuccess }: CreateArrangementDialogPr
 
   const resetForm = () => {
     setName("");
+    setAvailablePlaceNumber(64);
     setCourseId(null);
     setDate(new Date());
     setOpen(false);
@@ -161,7 +162,19 @@ export function CreateArrangementDialog({ onSuccess }: CreateArrangementDialogPr
               required
             />
           </div>
-
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="availablePlaceNumber" className="text-right">
+              Available Places
+            </Label>
+            <Input
+              id="availablePlaceNumber"
+              type="number"
+              value={availablePlaceNumber}
+              onChange={(e) => setAvailablePlaceNumber(Number(e.target.value))}
+              className="col-span-3"
+              placeholder="64"
+            />
+          </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="course" className="text-right">
               Course*
@@ -187,7 +200,6 @@ export function CreateArrangementDialog({ onSuccess }: CreateArrangementDialogPr
               </p>
             )}
           </div>
-
           <div className="flex justify-end gap-2 mt-6">
             <Button
               variant="outline"
