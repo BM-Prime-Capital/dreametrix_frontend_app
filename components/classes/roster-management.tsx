@@ -33,12 +33,7 @@ interface Student {
   characterScore?: number;
   attendance?: number;
   class?: string;
-  user?: {
-    id?: number;
-    email?: string;
-    first_name?: string;
-    last_name?: string;
-  };
+  user?:any;
   school?: {
     name: string;
   };
@@ -171,6 +166,8 @@ export function ClassRosterDialog({
           last_name: updatedStudent.user?.last_name,
         }
       };
+
+      console.log("Saving student data:", updatedStudent);
       const userId = updatedStudent.user?.id || updatedStudent.id;
       await updateStudent(
         userId,
