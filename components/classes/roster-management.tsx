@@ -167,6 +167,7 @@ export function ClassRosterDialog({
         }
       };
 
+      console.log("Saving student data:", updatedStudent);
       const userId = updatedStudent.user?.id || updatedStudent.id;
       await updateStudent(
         userId,
