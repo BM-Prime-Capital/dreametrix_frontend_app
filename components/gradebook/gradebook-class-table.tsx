@@ -450,6 +450,7 @@ export function GradebookClassTable({
                   ))}
                 </TableRow>
               </TableHeader>
+              
               <TableBody>
                 {students.map((student) => (
                   <TableRow key={student.id} className="hover:bg-gray-50/50">
