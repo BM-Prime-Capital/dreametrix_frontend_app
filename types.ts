@@ -145,8 +145,8 @@ export interface CharacterObservationEntry {
 export interface Character {
   character_id: number;
   student: Student;
-  bad_characters: string[] | CharacterObservationEntry[];
-  good_characters: string[] | CharacterObservationEntry[];
+  bad_characters: string[];
+  good_characters: string[];
   teacher_comment: string;
   create_at: string;
   update_at: string;

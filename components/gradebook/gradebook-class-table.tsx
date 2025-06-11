@@ -347,318 +347,326 @@ export function GradebookClassTable({
     <TooltipProvider>
       <div className="w-full">
         <div className="rounded-lg border shadow-sm bg-white">
-          <div className="overflow-x-auto pb-2">
-            {/* Tableau avec largeur fixe adaptée à votre contenu */}
-
-            <Table>
-              <TableHeader className="bg-gray-50">
-                <TableRow>
+          <Table>
+            <TableHeader className="bg-gray-50">
+              <TableRow>
+                <TableHead
+                  rowSpan={2}
+                  className="w-[120px] sticky left-0 bg-gray-50 z-20 text-center font-semibold text-gray-700 border-r border-gray-200"
+                >
+                  STUDENT
+                </TableHead>
+                <TableHead
+                  rowSpan={2}
+                  className="w-[90px] sticky left-[120px] bg-gray-50 z-20 text-center font-semibold text-gray-700 border-r border-gray-200"
+                >
+                  AVERAGE
+                </TableHead>
+                <TableHead
+                  colSpan={maxTestCols}
+                  className="text-center font-semibold text-gray-700 min-w-[100px]"
+                >
+                  TESTS
+                </TableHead>
+                <TableHead
+                  colSpan={maxQuizCols}
+                  className="text-center font-semibold text-gray-700 min-w-[100px]"
+                >
+                  QUIZZES
+                </TableHead>
+                <TableHead
+                  colSpan={maxHomeworkCols}
+                  className="text-center font-semibold text-gray-700 min-w-[100px]"
+                >
+                  HOMEWORK
+                </TableHead>
+                <TableHead
+                  colSpan={maxParticipationCols}
+                  className="text-center font-semibold text-gray-700 min-w-[120px]"
+                >
+                  PARTICIPATION
+                </TableHead>
+                <TableHead
+                  colSpan={maxOtherCols}
+                  className="text-center font-semibold text-gray-700 min-w-[100px]"
+                >
+                  OTHER
+                </TableHead>
+                <TableHead
+                  rowSpan={2}
+                  className="w-[150px] font-semibold text-gray-700 sticky right-0 bg-gray-50 z-20 border-l border-gray-200"
+                >
+                  ACTIONS
+                </TableHead>
+              </TableRow>
+              <TableRow className="bg-gray-50">
+                {/* Dynamic Test Headers */}
+                {Array.from({ length: maxTestCols }, (_, i) => (
                   <TableHead
-                    rowSpan={2}
-                    className="w-[120px] sticky left-0 bg-gray-50 z-10 text-center font-semibold text-gray-700"
+                    key={`test-header-${i}`}
+                    className="text-xs font-medium text-gray-500 min-w-[80px]"
                   >
-                    STUDENT
+                    Test {i + 1}
                   </TableHead>
-                  <TableHead
-                    rowSpan={2}
-                    className="w-[90px] text-center font-semibold text-gray-700"
-                  >
-                    AVERAGE
-                  </TableHead>
-                  <TableHead
-                    colSpan={maxTestCols}
-                    className="text-center font-semibold text-gray-700"
-                  >
-                    TESTS
-                  </TableHead>
-                  <TableHead
-                    colSpan={maxQuizCols}
-                    className="text-center font-semibold text-gray-700"
-                  >
-                    QUIZZES
-                  </TableHead>
-                  <TableHead
-                    colSpan={maxHomeworkCols}
-                    className="text-center font-semibold text-gray-700"
-                  >
-                    HOMEWORK
-                  </TableHead>
-                  <TableHead
-                    colSpan={maxParticipationCols}
-                    className="text-center font-semibold text-gray-700"
-                  >
-                    PARTICIPATION
-                  </TableHead>
-                  <TableHead
-                    colSpan={maxOtherCols}
-                    className="text-center font-semibold text-gray-700"
-                  >
-                    OTHER
-                  </TableHead>
-                  <TableHead
-                    rowSpan={2}
-                    className="w-[150px] font-semibold text-gray-700"
-                  >
-                    ACTIONS
-                  </TableHead>
-                </TableRow>
-                <TableRow className="bg-gray-50">
-                  {/* Dynamic Test Headers */}
-                  {Array.from({ length: maxTestCols }, (_, i) => (
-                    <TableHead
-                      key={`test-header-${i}`}
-                      className="text-xs font-medium text-gray-500"
-                    >
-                      Test {i + 1}
-                    </TableHead>
-                  ))}
-                  {/* Dynamic Quiz Headers */}
-                  {Array.from({ length: maxQuizCols }, (_, i) => (
-                    <TableHead
-                      key={`quiz-header-${i}`}
-                      className="text-xs font-medium text-gray-500"
-                    >
-                      Quiz {i + 1}
-                    </TableHead>
-                  ))}
-                  {/* Dynamic Homework Headers */}
-                  {Array.from({ length: maxHomeworkCols }, (_, i) => (
-                    <TableHead
-                      key={`homework-header-${i}`}
-                      className="text-xs font-medium text-gray-500"
-                    >
-                      HW {i + 1}
-                    </TableHead>
-                  ))}
-                  {/* Dynamic Participation Headers */}
-                  {Array.from({ length: maxParticipationCols }, (_, i) => (
-                    <TableHead
-                      key={`participation-header-${i}`}
-                      className="text-xs font-medium text-gray-500"
-                    >
-                      Part {i + 1}
-                    </TableHead>
-                  ))}
-                  {/* Dynamic Other Headers */}
-                  {Array.from({ length: maxOtherCols }, (_, i) => (
-                    <TableHead
-                      key={`other-header-${i}`}
-                      className="text-xs font-medium text-gray-500"
-                    >
-                      Other {i + 1}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {students.map((student) => (
-                  <TableRow key={student.id} className="hover:bg-gray-50/50">
-                    <TableCell className="font-medium sticky left-0 bg-white z-10 w-[120px] truncate">
-                      {student.name}
-                    </TableCell>
-
-                    <TableCell className="text-center w-[90px]">
-                      <Badge
-                        variant={
-                          student.average >= 70
-                            ? "default"
-                            : student.average >= 50
-                            ? "secondary"
-                            : "destructive"
-                        }
-                        className={
-                          student.average >= 70
-                            ? "bg-green-100 text-green-800"
-                            : student.average >= 50
-                            ? "bg-yellow-100 text-yellow-800"
-                            : ""
-                        }
-                      >
-                        {student.average.toFixed(1)}
-                      </Badge>
-                    </TableCell>
-
-                    {/* Dynamic Test Cells */}
-                    {Array.from({ length: maxTestCols }, (_, i) => (
-                      <TableCell key={`test-${i}`} className="text-center">
-                        <GradeCell
-                          value={student.assessments.test[i]}
-                          studentId={student.id}
-                          assessmentType="test"
-                          assessmentIndex={i}
-                          cellId={`${student.id}-test-${i}`}
-                          editingCell={editingCell}
-                          setEditingCell={setEditingCell}
-                          onGradeUpdate={handleGradeUpdate}
-                          hasVoiceRecording={hasVoiceRecording(
-                            student.id,
-                            "test",
-                            i
-                          )}
-                          onRecordingSaved={() =>
-                            handleRecordingSaved(student.id, "test", i)
-                          }
-                          audioUrl={getAudioUrl(student.id, "test", i)}
-                        />
-                      </TableCell>
-                    ))}
-
-                    {/* Dynamic Quiz Cells */}
-                    {Array.from({ length: maxQuizCols }, (_, i) => (
-                      <TableCell key={`quiz-${i}`} className="text-center">
-                        <GradeCell
-                          value={student.assessments.quiz[i]}
-                          studentId={student.id}
-                          assessmentType="quiz"
-                          assessmentIndex={i}
-                          cellId={`${student.id}-quiz-${i}`}
-                          editingCell={editingCell}
-                          setEditingCell={setEditingCell}
-                          onGradeUpdate={handleGradeUpdate}
-                          hasVoiceRecording={hasVoiceRecording(
-                            student.id,
-                            "quiz",
-                            i
-                          )}
-                          onRecordingSaved={() =>
-                            handleRecordingSaved(student.id, "quiz", i)
-                          }
-                          audioUrl={getAudioUrl(student.id, "quiz", i)}
-                        />
-                      </TableCell>
-                    ))}
-
-                    {/* Dynamic Homework Cells */}
-                    {Array.from({ length: maxHomeworkCols }, (_, i) => (
-                      <TableCell key={`homework-${i}`} className="text-center">
-                        <GradeCell
-                          value={student.assessments.homework[i]}
-                          studentId={student.id}
-                          assessmentType="homework"
-                          assessmentIndex={i}
-                          cellId={`${student.id}-homework-${i}`}
-                          editingCell={editingCell}
-                          setEditingCell={setEditingCell}
-                          onGradeUpdate={handleGradeUpdate}
-                          hasVoiceRecording={hasVoiceRecording(
-                            student.id,
-                            "homework",
-                            i
-                          )}
-                          onRecordingSaved={() =>
-                            handleRecordingSaved(student.id, "homework", i)
-                          }
-                          audioUrl={getAudioUrl(student.id, "homework", i)}
-                        />
-                      </TableCell>
-                    ))}
-
-                    {/* Dynamic Participation Cells */}
-                    {Array.from({ length: maxParticipationCols }, (_, i) => (
-                      <TableCell
-                        key={`participation-${i}`}
-                        className="text-center"
-                      >
-                        <GradeCell
-                          value={student.assessments.participation[i]}
-                          studentId={student.id}
-                          assessmentType="participation"
-                          assessmentIndex={i}
-                          cellId={`${student.id}-participation-${i}`}
-                          editingCell={editingCell}
-                          setEditingCell={setEditingCell}
-                          onGradeUpdate={handleGradeUpdate}
-                          hasVoiceRecording={hasVoiceRecording(
-                            student.id,
-                            "participation",
-                            i
-                          )}
-                          onRecordingSaved={() =>
-                            handleRecordingSaved(student.id, "participation", i)
-                          }
-                          audioUrl={getAudioUrl(student.id, "participation", i)}
-                        />
-                      </TableCell>
-                    ))}
-
-                    {/* Dynamic Other Cells */}
-                    {Array.from({ length: maxOtherCols }, (_, i) => (
-                      <TableCell key={`other-${i}`} className="text-center">
-                        <GradeCell
-                          value={student.assessments.other[i]}
-                          studentId={student.id}
-                          assessmentType="other"
-                          assessmentIndex={i}
-                          cellId={`${student.id}-other-${i}`}
-                          editingCell={editingCell}
-                          setEditingCell={setEditingCell}
-                          onGradeUpdate={handleGradeUpdate}
-                          hasVoiceRecording={hasVoiceRecording(
-                            student.id,
-                            "other",
-                            i
-                          )}
-                          onRecordingSaved={() =>
-                            handleRecordingSaved(student.id, "other", i)
-                          }
-                          audioUrl={getAudioUrl(student.id, "other", i)}
-                        />
-                      </TableCell>
-                    ))}
-
-                    <TableCell className="w-[150px]">
-                      <div className="flex gap-1 justify-center">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 hover:bg-blue-50"
-                            >
-                              <Pencil className="h-3.5 w-3.5 text-blue-600" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Edit grades</p>
-                          </TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-3.5 w-3.5 text-red-600" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Delete record</p>
-                          </TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 hover:bg-green-50"
-                            >
-                              <File className="h-3.5 w-3.5 text-green-600" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>View details</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </TableCell>
-                  </TableRow>
                 ))}
-              </TableBody>
-            </Table>
-          </div>
+                {/* Dynamic Quiz Headers */}
+                {Array.from({ length: maxQuizCols }, (_, i) => (
+                  <TableHead
+                    key={`quiz-header-${i}`}
+                    className="text-xs font-medium text-gray-500 min-w-[80px]"
+                  >
+                    Quiz {i + 1}
+                  </TableHead>
+                ))}
+                {/* Dynamic Homework Headers */}
+                {Array.from({ length: maxHomeworkCols }, (_, i) => (
+                  <TableHead
+                    key={`homework-header-${i}`}
+                    className="text-xs font-medium text-gray-500 min-w-[80px]"
+                  >
+                    HW {i + 1}
+                  </TableHead>
+                ))}
+                {/* Dynamic Participation Headers */}
+                {Array.from({ length: maxParticipationCols }, (_, i) => (
+                  <TableHead
+                    key={`participation-header-${i}`}
+                    className="text-xs font-medium text-gray-500 min-w-[90px]"
+                  >
+                    Part {i + 1}
+                  </TableHead>
+                ))}
+                {/* Dynamic Other Headers */}
+                {Array.from({ length: maxOtherCols }, (_, i) => (
+                  <TableHead
+                    key={`other-header-${i}`}
+                    className="text-xs font-medium text-gray-500 min-w-[80px]"
+                  >
+                    Other {i + 1}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {students.map((student) => (
+                <TableRow key={student.id} className="hover:bg-gray-50/50">
+                  <TableCell className="font-medium sticky left-0 bg-white z-10 w-[120px] truncate border-r border-gray-200">
+                    {student.name}
+                  </TableCell>
+
+                  <TableCell className="text-center w-[90px] sticky left-[120px] bg-white z-10 border-r border-gray-200">
+                    <Badge
+                      variant={
+                        student.average >= 70
+                          ? "default"
+                          : student.average >= 50
+                          ? "secondary"
+                          : "destructive"
+                      }
+                      className={
+                        student.average >= 70
+                          ? "bg-green-100 text-green-800"
+                          : student.average >= 50
+                          ? "bg-yellow-100 text-yellow-800"
+                          : ""
+                      }
+                    >
+                      {student.average.toFixed(1)}
+                    </Badge>
+                  </TableCell>
+
+                  {/* Dynamic Test Cells */}
+                  {Array.from({ length: maxTestCols }, (_, i) => (
+                    <TableCell
+                      key={`test-${i}`}
+                      className="text-center min-w-[80px]"
+                    >
+                      <GradeCell
+                        value={student.assessments.test[i]}
+                        studentId={student.id}
+                        assessmentType="test"
+                        assessmentIndex={i}
+                        cellId={`${student.id}-test-${i}`}
+                        editingCell={editingCell}
+                        setEditingCell={setEditingCell}
+                        onGradeUpdate={handleGradeUpdate}
+                        hasVoiceRecording={hasVoiceRecording(
+                          student.id,
+                          "test",
+                          i
+                        )}
+                        onRecordingSaved={() =>
+                          handleRecordingSaved(student.id, "test", i)
+                        }
+                        audioUrl={getAudioUrl(student.id, "test", i)}
+                      />
+                    </TableCell>
+                  ))}
+
+                  {/* Dynamic Quiz Cells */}
+                  {Array.from({ length: maxQuizCols }, (_, i) => (
+                    <TableCell
+                      key={`quiz-${i}`}
+                      className="text-center min-w-[80px]"
+                    >
+                      <GradeCell
+                        value={student.assessments.quiz[i]}
+                        studentId={student.id}
+                        assessmentType="quiz"
+                        assessmentIndex={i}
+                        cellId={`${student.id}-quiz-${i}`}
+                        editingCell={editingCell}
+                        setEditingCell={setEditingCell}
+                        onGradeUpdate={handleGradeUpdate}
+                        hasVoiceRecording={hasVoiceRecording(
+                          student.id,
+                          "quiz",
+                          i
+                        )}
+                        onRecordingSaved={() =>
+                          handleRecordingSaved(student.id, "quiz", i)
+                        }
+                        audioUrl={getAudioUrl(student.id, "quiz", i)}
+                      />
+                    </TableCell>
+                  ))}
+
+                  {/* Dynamic Homework Cells */}
+                  {Array.from({ length: maxHomeworkCols }, (_, i) => (
+                    <TableCell
+                      key={`homework-${i}`}
+                      className="text-center min-w-[80px]"
+                    >
+                      <GradeCell
+                        value={student.assessments.homework[i]}
+                        studentId={student.id}
+                        assessmentType="homework"
+                        assessmentIndex={i}
+                        cellId={`${student.id}-homework-${i}`}
+                        editingCell={editingCell}
+                        setEditingCell={setEditingCell}
+                        onGradeUpdate={handleGradeUpdate}
+                        hasVoiceRecording={hasVoiceRecording(
+                          student.id,
+                          "homework",
+                          i
+                        )}
+                        onRecordingSaved={() =>
+                          handleRecordingSaved(student.id, "homework", i)
+                        }
+                        audioUrl={getAudioUrl(student.id, "homework", i)}
+                      />
+                    </TableCell>
+                  ))}
+
+                  {/* Dynamic Participation Cells */}
+                  {Array.from({ length: maxParticipationCols }, (_, i) => (
+                    <TableCell
+                      key={`participation-${i}`}
+                      className="text-center min-w-[90px]"
+                    >
+                      <GradeCell
+                        value={student.assessments.participation[i]}
+                        studentId={student.id}
+                        assessmentType="participation"
+                        assessmentIndex={i}
+                        cellId={`${student.id}-participation-${i}`}
+                        editingCell={editingCell}
+                        setEditingCell={setEditingCell}
+                        onGradeUpdate={handleGradeUpdate}
+                        hasVoiceRecording={hasVoiceRecording(
+                          student.id,
+                          "participation",
+                          i
+                        )}
+                        onRecordingSaved={() =>
+                          handleRecordingSaved(student.id, "participation", i)
+                        }
+                        audioUrl={getAudioUrl(student.id, "participation", i)}
+                      />
+                    </TableCell>
+                  ))}
+
+                  {/* Dynamic Other Cells */}
+                  {Array.from({ length: maxOtherCols }, (_, i) => (
+                    <TableCell
+                      key={`other-${i}`}
+                      className="text-center min-w-[80px]"
+                    >
+                      <GradeCell
+                        value={student.assessments.other[i]}
+                        studentId={student.id}
+                        assessmentType="other"
+                        assessmentIndex={i}
+                        cellId={`${student.id}-other-${i}`}
+                        editingCell={editingCell}
+                        setEditingCell={setEditingCell}
+                        onGradeUpdate={handleGradeUpdate}
+                        hasVoiceRecording={hasVoiceRecording(
+                          student.id,
+                          "other",
+                          i
+                        )}
+                        onRecordingSaved={() =>
+                          handleRecordingSaved(student.id, "other", i)
+                        }
+                        audioUrl={getAudioUrl(student.id, "other", i)}
+                      />
+                    </TableCell>
+                  ))}
+
+                  <TableCell className="w-[150px] sticky right-0 bg-white z-10 border-l border-gray-200">
+                    <div className="flex gap-1 justify-center">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 hover:bg-blue-50"
+                          >
+                            <Pencil className="h-3.5 w-3.5 text-blue-600" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Edit grades</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-red-600" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Delete record</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 hover:bg-green-50"
+                          >
+                            <File className="h-3.5 w-3.5 text-green-600" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>View details</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </div>
     </TooltipProvider>

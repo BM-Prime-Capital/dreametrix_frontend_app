@@ -38,6 +38,7 @@ import {
 } from "../ui/select";
 import { Checkbox } from "../ui/checkbox";
 import { Alert, AlertDescription } from "../ui/alert";
+import { useSearchParams } from "next/navigation";
 
 const GRADEBOOK_SHEET_INIT_STATE = {
   subject: "",
@@ -109,6 +110,52 @@ export default function DigitalLibrary() {
   const [error, setError] = useState("");
   const [isSubjectLoadAutomaticaly, setIsSubjectLoadAutomaticaly] =
     useState<boolean>(false);
+
+  // Assignment context state
+  const [assignmentContext, setAssignmentContext] = useState<{
+    assignmentName?: string;
+    courseId?: string;
+    courseName?: string;
+    dueDate?: string;
+    assignmentType?: string;
+    published?: string;
+  } | null>(null);
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Parse and set assignment context from query parameters
+    const assignmentName = searchParams.get("assignmentName");
+    const courseId = searchParams.get("courseId");
+    const courseName = searchParams.get("courseName");
+    const subject = searchParams.get("subject");
+    const grade = searchParams.get("grade");
+    const dueDate = searchParams.get("dueDate");
+    const assignmentType = searchParams.get("assignmentType");
+    const published = searchParams.get("published");
+
+    if (assignmentName || courseId) {
+      setAssignmentContext({
+        assignmentName: assignmentName || undefined,
+        courseId: courseId || undefined,
+        courseName: courseName || undefined,
+        dueDate: dueDate || undefined,
+        assignmentType: assignmentType || undefined,
+        published: published || undefined,
+      });
+
+      // Auto-populate digital library form with assignment data
+      if (subject) {
+        handleSubjectSelection(subject);
+      }
+      if (grade) {
+        setDigitalLibrarySheet((prev) => ({
+          ...prev,
+          grade: grade,
+        }));
+      }
+    }
+  }, [searchParams]);
 
   const handleSubjectSelection = async (selectedSubject: string) => {
     console.log("🔄 Subject Selection:", {
@@ -664,6 +711,48 @@ export default function DigitalLibrary() {
         <PageTitleH1 title="Create Worksheet" className="text-white" />
       </div>
 
+      {/* Assignment Context Banner */}
+      {assignmentContext && (
+        <Card className="rounded-lg shadow-md p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full">
+              <svg
+                className="w-5 h-5 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-blue-800">
+                Creating worksheet for: {assignmentContext.assignmentName}
+              </h3>
+              <div className="flex flex-wrap gap-4 text-sm text-blue-600 mt-1">
+                {assignmentContext.courseName && (
+                  <span>Course: {assignmentContext.courseName}</span>
+                )}
+                {assignmentContext.dueDate && (
+                  <span>
+                    Due:{" "}
+                    {new Date(assignmentContext.dueDate).toLocaleDateString()}
+                  </span>
+                )}
+                {assignmentContext.assignmentType && (
+                  <span>Type: {assignmentContext.assignmentType}</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <Card className="rounded-lg shadow-lg p-8 bg-white border border-gray-200">
         <form
           className="flex flex-col gap-6"
@@ -765,8 +854,10 @@ export default function DigitalLibrary() {
                 }}
               >
                 <SelectTrigger className="w-full bg-gray-50 border-gray-300 hover:border-blue-400">
-                  <SelectValue>
-                    {digitalLibrarySheet.grade || "Select Grade"}
+                  <SelectValue placeholder="Select Grade">
+                    {isLoadingSubjects
+                      ? "Loading grades..."
+                      : digitalLibrarySheet.grade || "Select Grade"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-white border border-gray-200 shadow-lg">

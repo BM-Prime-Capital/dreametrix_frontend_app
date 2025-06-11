@@ -47,13 +47,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useList } from "@/hooks/useList";
-import { getAssignments } from "@/services/AssignmentService";
+import { getAssignments, deleteAssignment } from "@/services/AssignmentService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Loader } from "../ui/loader";
 import Image from "next/image";
 import { generalImages } from "@/constants/images";
 import { Assignment, MiniCourse } from "@/types";
 import { SubmissionsPopup } from "./SubmissionsPopup";
+import { EditAssignmentDialog } from "./EditAssignmentDialog";
 
 const globalFilterFn: FilterFn<Assignment> = (row, columnId, filterValue) => {
   const value = row.getValue(columnId);
@@ -87,6 +88,10 @@ export function AssignmentsTable() {
   const [selectedAssignment, setSelectedAssignment] =
     useState<Assignment | null>(null);
   const [isSubmissionsPopupOpen, setIsSubmissionsPopupOpen] = useState(false);
+  const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(
+    null
+  );
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   // Get unique courses for the filter dropdown
   const uniqueCourses = useMemo(() => {
@@ -122,6 +127,42 @@ export function AssignmentsTable() {
   const handleAssignmentClick = (assignment: Assignment) => {
     setSelectedAssignment(assignment);
     setIsSubmissionsPopupOpen(true);
+  };
+
+  const handleEditAssignment = (assignment: Assignment) => {
+    setEditingAssignment(assignment);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteAssignment = async (assignment: Assignment) => {
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      `Are you sure you want to delete the assignment "${assignment.name}"? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await deleteAssignment(
+        assignment.id,
+        tenantDomain,
+        accessToken,
+        refreshToken
+      );
+
+      // Refresh the page to update the assignments list
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting assignment:", error);
+      alert("Failed to delete assignment. Please try again.");
+    }
+  };
+
+  const handleAssignmentUpdate = (updatedAssignment: Assignment) => {
+    // Update the assignment in the local state
+    // Note: In a real app, you might want to refetch the data or use a state management solution
+    console.log("Assignment updated:", updatedAssignment);
+    // You could trigger a refetch here or update local state
   };
 
   const resetFilters = () => {
@@ -212,6 +253,8 @@ export function AssignmentsTable() {
               variant="ghost"
               size="icon"
               className="h-8 w-8 hover:bg-[#3e81d4]/10"
+              onClick={() => handleAssignmentClick(row.original)}
+              title="View Submissions"
             >
               <Eye className="h-4 w-4 text-[#3e81d4]" />
             </Button>
@@ -219,13 +262,17 @@ export function AssignmentsTable() {
               variant="ghost"
               size="icon"
               className="h-8 w-8 hover:bg-[#3e81d4]/10"
+              onClick={() => handleEditAssignment(row.original)}
+              title="Edit Assignment"
             >
               <Pencil className="h-4 w-4 text-[#3e81d4]" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 hover:bg-[#3e81d4]/10"
+              className="h-8 w-8 hover:bg-red-50"
+              onClick={() => handleDeleteAssignment(row.original)}
+              title="Delete Assignment"
             >
               <Trash2 className="h-4 w-4 text-red-500" />
             </Button>
@@ -474,6 +521,17 @@ export function AssignmentsTable() {
           assessmentName={selectedAssignment.name}
         />
       )}
+
+      {/* Edit Assignment Dialog */}
+      <EditAssignmentDialog
+        assignment={editingAssignment}
+        isOpen={isEditDialogOpen}
+        onClose={() => {
+          setIsEditDialogOpen(false);
+          setEditingAssignment(null);
+        }}
+        onUpdate={handleAssignmentUpdate}
+      />
     </div>
   );
 }

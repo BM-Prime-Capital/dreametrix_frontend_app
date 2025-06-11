@@ -4,13 +4,9 @@ import { teacherImages } from "@/constants/images";
 import Image from "next/image";
 import PageTitleH2 from "../ui/page-title-h2";
 import { localStorageKey } from "@/constants/global";
-import { Character, CharacterObservationEntry } from "@/types";
+import { Character } from "@/types";
 import { updateCharacter } from "@/services/CharacterService";
-import {
-  extractTraitsFromEntries,
-  createCharacterObservationEntry,
-  parseDomainForDisplay,
-} from "@/utils/characterUtils";
+import { extractTraitsFromEntries } from "@/utils/characterUtils";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { format } from "date-fns";
 
@@ -43,22 +39,15 @@ const BadCharacterDialog = React.memo(
     // Get current traits for the character
     const currentTraits = useMemo(() => {
       return extractTraitsFromEntries(character.bad_characters);
-    }, [character.bad_characters]);
-
-    // Get current entries grouped by trait
+    }, [character.bad_characters]); // Get current entries grouped by trait
     const currentEntries = useMemo(() => {
       if (!Array.isArray(character.bad_characters)) return {};
 
-      const entriesMap: Record<string, CharacterObservationEntry[]> = {};
+      const entriesMap: Record<string, number> = {};
       character.bad_characters.forEach((entry) => {
         if (typeof entry === "string") {
           const trait = entry;
-          if (!entriesMap[trait]) entriesMap[trait] = [];
-          entriesMap[trait].push(createCharacterObservationEntry(trait));
-        } else {
-          const trait = entry.trait;
-          if (!entriesMap[trait]) entriesMap[trait] = [];
-          entriesMap[trait].push(entry);
+          entriesMap[trait] = (entriesMap[trait] || 0) + 1;
         }
       });
       return entriesMap;
@@ -84,11 +73,6 @@ const BadCharacterDialog = React.memo(
         }
         return initialChecked;
       }
-    );
-
-    // Track comment for individual traits
-    const [traitComments, setTraitComments] = useState<Record<string, string>>(
-      {}
     );
 
     // Derived select all state
@@ -118,14 +102,10 @@ const BadCharacterDialog = React.memo(
 
       try {
         // Create new entries for selected traits
-        const newBadEntries: CharacterObservationEntry[] = [];
+        const newBadEntries: string[] = [];
         Object.keys(checkedItems).forEach((trait) => {
           if (checkedItems[trait]) {
-            const entry = createCharacterObservationEntry(
-              trait,
-              traitComments[trait] || undefined
-            );
-            newBadEntries.push(entry);
+            newBadEntries.push(trait);
           }
         });
 
@@ -133,7 +113,7 @@ const BadCharacterDialog = React.memo(
         const existingEntries = Array.isArray(character.bad_characters)
           ? character.bad_characters.filter(
               (entry) =>
-                typeof entry !== "string" ||
+                typeof entry === "string" &&
                 !Object.keys(checkedItems).includes(entry)
             )
           : [];
@@ -221,22 +201,15 @@ const BadCharacterDialog = React.memo(
                   Current Observations:
                 </label>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {Object.entries(currentEntries).map(([trait, entries]) => {
-                    const { displayText } = parseDomainForDisplay(trait);
+                  {Object.entries(currentEntries).map(([trait, count]) => {
                     return (
                       <div key={trait} className="text-sm">
                         <span className="font-medium text-red-700">
-                          {displayText}
+                          {trait}
                         </span>
                         <span className="text-gray-500 ml-2">
-                          ({entries.length} entries)
+                          ({count} entries)
                         </span>
-                        {entries.length > 0 &&
-                          entries[entries.length - 1].comment && (
-                            <div className="text-xs text-gray-600 ml-4 italic">
-                              "{entries[entries.length - 1].comment}"
-                            </div>
-                          )}
                       </div>
                     );
                   })}
@@ -270,7 +243,6 @@ const BadCharacterDialog = React.memo(
 
                 <div className="flex flex-col gap-4 flex-wrap">
                   {allItems.map((item, index) => {
-                    const { displayText } = parseDomainForDisplay(item);
                     return (
                       <div key={index} className="space-y-2">
                         <label className="flex items-center space-x-2">
@@ -295,23 +267,9 @@ const BadCharacterDialog = React.memo(
                             />
                           </span>
                           <span className={isReadOnly ? "text-gray-500" : ""}>
-                            {displayText}
+                            {item}
                           </span>
                         </label>
-                        {checkedItems[item] && !isReadOnly && (
-                          <input
-                            type="text"
-                            placeholder="Optional comment for this trait..."
-                            className="ml-6 text-sm border border-gray-200 rounded px-2 py-1 w-full"
-                            value={traitComments[item] || ""}
-                            onChange={(e) =>
-                              setTraitComments((prev) => ({
-                                ...prev,
-                                [item]: e.target.value,
-                              }))
-                            }
-                          />
-                        )}
                       </div>
                     );
                   })}

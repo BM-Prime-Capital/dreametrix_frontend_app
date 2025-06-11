@@ -1,5 +1,3 @@
-"use server";
-
 export async function getAssignments(
   tenantPrimaryDomain: string,
   accessToken: string,
@@ -10,7 +8,6 @@ export async function getAssignments(
   const response = await fetch(url, {
     method: "GET",
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
   });
@@ -62,15 +59,13 @@ export async function getSubmissions(
   accessToken: string,
   refreshToken: string
 ) {
-  const url = `${tenantPrimaryDomain}/submissions?assessment_id=${assessmentId}`;
+  const url = `${tenantPrimaryDomain}/submissions/?assessment_id=${assessmentId}`;
 
   try {
     const response = await fetch(url, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
-        "X-Refresh-Token": refreshToken,
       },
     });
 
@@ -100,9 +95,7 @@ export async function getAssessmentWeights(
     const response = await fetch(url, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
-        "X-Refresh-Token": refreshToken,
       },
     });
 
@@ -139,9 +132,7 @@ export async function updateAssessmentWeights(
     const response = await fetch(url, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
-        "X-Refresh-Token": refreshToken,
       },
       body: JSON.stringify({ weights: weights }),
     });
@@ -154,6 +145,73 @@ export async function updateAssessmentWeights(
 
     const data = await response.json();
     return data;
+  } catch (error) {
+    console.error("Network error:", error);
+    throw new Error("Failed to connect to server");
+  }
+}
+
+export async function updateAssignment(
+  id: number,
+  assignmentData: {
+    name: string;
+    due_date: string;
+    kind: string;
+    published: boolean;
+    course: number;
+  },
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  refreshToken: string
+) {
+  const url = `${tenantPrimaryDomain}/assessments/${id}/`;
+
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(assignmentData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Backend error:", errorData);
+      throw new Error(errorData.detail || "Error updating assignment");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Network error:", error);
+    throw new Error("Failed to connect to server");
+  }
+}
+
+export async function deleteAssignment(
+  id: number,
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  refreshToken: string
+) {
+  const url = `${tenantPrimaryDomain}/assessments/${id}/`;
+
+  try {
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Backend error:", errorData);
+      throw new Error(errorData.detail || "Error deleting assignment");
+    }
+
+    return { success: true };
   } catch (error) {
     console.error("Network error:", error);
     throw new Error("Failed to connect to server");
