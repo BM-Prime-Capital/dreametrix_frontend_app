@@ -10,6 +10,7 @@ export async function getSeatingArrangements(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
+
   const url = courseId 
     ? `${tenantPrimaryDomain}/seatings/seating-arrangements/?course_id=${courseId}`
     : `${tenantPrimaryDomain}/seatings/seating-arrangements/`;
@@ -38,6 +39,7 @@ export async function createArrangementEvent(
     name: string;
     course: number;
     teacher: number;
+    available_place_number?: number; // Optional field for available places
   }
 ) {
   if (!accessToken) {
@@ -89,7 +91,6 @@ export async function updateSeatingArrangement(
     throw new Error("No access token provided");
   }
   const payload = JSON.stringify({ updates })
-  console.log("PAYLOAD",payload)
   
   try {
     const response = await fetch(url, {
@@ -180,10 +181,6 @@ export async function reactivateArrangementEvent(
   accessToken: string,
   eventId: number
 ) {
-
-  console.log("accessToken", accessToken);
-  console.log("tenantPrimaryDomain", tenantPrimaryDomain);
-  console.log("eventId", eventId)
   if (!accessToken) {
     throw new Error("No access token provided");
   }
