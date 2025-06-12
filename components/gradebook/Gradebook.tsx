@@ -61,22 +61,41 @@ export default function Gradebook() {
         console.log("GradeBookList data: ", data);
 
         // Mapper vers le format attendu par GradebookTable
-        const formatted = data.map((item: any) => ({
-          id: item.class_id,
-          name: `Class ${item.class_id}`,
-          average: `${item.average}%`,
-          noOfExams: item.test,
-          noOfTests: item.quiz,
-          noOfHomeworks: item.homework,
-          noOfParticipation: item.participation,
-          noOfOther: item.other,
-          totalWork:
-            item.homework +
-            item.test +
-            item.quiz +
-            item.participation +
-            item.other,
-        }));
+        const formatted = data.map((item: any) => {
+          // Count assessments by type
+          const assessmentCounts = {
+            test: 0,
+            quiz: 0,
+            homework: 0,
+            participation: 0,
+            other: 0,
+          };
+
+          item.assessments.forEach((assessment: any) => {
+            const type = assessment.assessment_type.toLowerCase();
+            if (assessmentCounts.hasOwnProperty(type)) {
+              assessmentCounts[type as keyof typeof assessmentCounts]++;
+            }
+          });
+
+          return {
+            id: item.course_id,
+            name: item.course,
+            average: `${item.class_average}%`,
+            noOfExams: assessmentCounts.test,
+            noOfTests: assessmentCounts.quiz,
+            noOfHomeworks: assessmentCounts.homework,
+            noOfParticipation: assessmentCounts.participation,
+            noOfOther: assessmentCounts.other,
+            totalWork:
+              assessmentCounts.homework +
+              assessmentCounts.test +
+              assessmentCounts.quiz +
+              assessmentCounts.participation +
+              assessmentCounts.other,
+            assessments: item.assessments, // Store full assessment data for detailed view
+          };
+        });
 
         setGradebookData(formatted);
       } catch (err: any) {
@@ -154,8 +173,8 @@ export default function Gradebook() {
                   clipRule="evenodd"
                 />
               </svg>
-              Scroll horizontally to view all grade columns • Student name,
-              average, and actions stay fixed during scroll
+              Scroll horizontally to view all grade columns • Student name and
+              average stay fixed during scroll
             </div>
 
             {/* Container avec scroll horizontal */}

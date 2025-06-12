@@ -186,11 +186,17 @@ export function RecordDialog({
   const saveRecording = async () => {
     if (
       !audioBlob ||
-      !studentId ||
+      !submissionId ||
       !assessmentType ||
       assessmentIndex === undefined
     ) {
-      console.error("Missing required data for saving recording");
+      console.error("Missing required data for saving recording:", {
+        hasAudioBlob: !!audioBlob,
+        submissionId,
+        assessmentType,
+        assessmentIndex,
+      });
+      alert("Missing submission data. Please try refreshing the page.");
       return;
     }
 
@@ -204,10 +210,16 @@ export function RecordDialog({
       });
       const audioBase64 = await base64Promise;
 
+      console.log("🎙️ Saving voice recording with submission-based approach:", {
+        submissionId,
+        assessmentType,
+        assessmentIndex,
+      });
+
       const result = await saveVoiceRecording(
         tenantPrimaryDomain,
         accessToken,
-        submissionId || parseInt(studentId || "0"), // Use submissionId if available, otherwise studentId
+        submissionId, // Always use submissionId for submission-based system
         assessmentType,
         assessmentIndex,
         audioBase64, // Pass base64 string instead of Blob
