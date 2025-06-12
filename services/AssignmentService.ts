@@ -179,7 +179,7 @@ export async function updateAssignment(
       method: "PUT",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
+
         ...(isFormData ? {} : { "Content-Type": "application/json" }),
       },
       body: isFormData ? assignmentData : JSON.stringify(assignmentData),
