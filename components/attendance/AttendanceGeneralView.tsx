@@ -10,80 +10,21 @@ import { ISchoolClass } from "@/types";
 import { Loader } from "../ui/loader";
 import { getAttendanceGeneralView } from "@/services/AttendanceService";
 
-type AttendanceStat = {
-  className: string;
-  students: number;
-  presences: number;
-  absences: number;
-  lates: number;
-};
-// TO be replaced by API data
-const attendanceStatistics: AttendanceStat[] = [
-  {
-    className: "Class 3 Math",
-    students: 89,
-    presences: 264,
-    absences: 120,
-    lates: 23,
-  },
-  {
-    className: "Class 3 Language",
-    students: 64,
-    presences: 189,
-    absences: 150,
-    lates: 23,
-  },
-
-  {
-    className: "Class 4 Language",
-    students: 57,
-    presences: 124,
-    absences: 20,
-    lates: 130,
-  },
-  {
-    className: "Class 5 Math",
-    students: 49,
-    presences: 64,
-    absences: 120,
-    lates: 22,
-  },
-
-  {
-    className: "Class 5 Language",
-    students: 74,
-    presences: 84,
-    absences: 10,
-    lates: 12,
-  },
-  {
-    className: "Class 4 Math",
-    students: 89,
-    presences: 123,
-    absences: 151,
-    lates: 27,
-  },
-  {
-    className: "Class 6 Math",
-    students: 89,
-    presences: 264,
-    absences: 120,
-    lates: 23,
-  },
-  {
-    className: "Class 6 Language",
-    students: 89,
-    presences: 264,
-    absences: 120,
-    lates: 23,
-  },
-];
-
 function AttendanceGeneralView({ changeView }: { changeView: Function }) {
   const { list: data, isLoading, error } = useList(getAttendanceGeneralView);
   const allClasses = JSON.parse(
     localStorage.getItem(localStorageKey.ALL_CLASSES)!
   );
+
+  // Fonction pour formater le nom de la classe
+  const formatClassName = (name: string) => {
+    const parts = name.split(' - ');
+    // Supprime la duplication du grade (ex: "Class 6 - Class 6 - Math" => "Class 6 - Math")
+    if (parts.length >= 3 && parts[0] === parts[1]) {
+      return `${parts[0]} - ${parts.slice(2).join(' - ')}`;
+    }
+    return name;
+  };
 
   const handleClick = (selectedClass: ISchoolClass) => {
     localStorage.setItem(
@@ -96,86 +37,98 @@ function AttendanceGeneralView({ changeView }: { changeView: Function }) {
   return (
     <div className="flex flex-col gap-8 w-full pb-4">
       <div className="flex justify-between items-center bg-[#3e81d4] px-4 py-3 rounded-md">
-          <PageTitleH1 title="Attendance General View" className="text-white" />
+        <PageTitleH1 title="Attendance General View" className="text-white" />
       </div>
 
-      <div className="flex flex-col gap-8 bg-white p-4 rounded-md">
-        <div className="flex flex-wrap justify-evenly gap-2">
+      <div className="flex flex-col gap-8 bg-white p-4 rounded-md shadow-sm">
+        <div className="flex flex-wrap justify-evenly gap-4">
           <StatisticItem
             title="Students"
             iconUrl={teacherImages.whole_class}
-            statNumber={`${
-              data?.student_sum_all_class ? data?.student_sum_all_class : "..."
-            }`}
+            statNumber={data?.student_sum_all_class ?? "..."}
           />
           <StatisticItem
             title="Presences"
             titleGgColor="bg-green-100"
             iconUrl={generalImages.attendance_ok}
-            statNumber={`${
-              data?.status_present_sum_all_class
-                ? data?.status_present_sum_all_class
-                : "..."
-            }`}
+            statNumber={data?.status_present_sum_all_class ?? "..."}
           />
           <StatisticItem
             title="Absences"
             titleGgColor="bg-red-100"
             iconUrl={generalImages.red_cross}
-            statNumber={`${
-              data?.status_absent_sum_all_class
-                ? data?.status_absent_sum_all_class
-                : "..."
-            }`}
+            statNumber={data?.status_absent_sum_all_class ?? "..."}
           />
           <StatisticItem
             title="Lates"
             titleGgColor="bg-yellow-100"
             iconUrl={generalImages.question_mark}
-            statNumber={`${
-              data?.status_late_sum_all_class
-                ? data?.status_late_sum_all_class
-                : "..."
-            }`}
+            statNumber={data?.status_late_sum_all_class ?? "..."}
           />
           <StatisticItem
             title="Classes"
             iconUrl={generalImages.classes}
-            statNumber={`${data?.classes_sum ? data?.classes_sum : "..."}`}
+            statNumber={data?.classes_sum ?? "..."}
           />
         </div>
 
-        <div className="w-full overflow-scroll">
+        <div className="w-full overflow-auto">
           {isLoading ? (
-            <Loader />
+            <div className="flex justify-center py-8">
+              <Loader />
+            </div>
+          ) : error ? (
+            <div className="text-center text-red-500 py-4">{error}</div>
           ) : (
-            <table className="w-full" id="statisticTable">
-              <thead>
-                <tr>
-                  <th>Class</th>
-                  <th>Students</th>
-                  <th>Presences</th>
-                  <th>Absences</th>
-                  <th>Lates</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {data?.classes.map((as: any, index: number) => (
-                  <tr
-                    key={index}
-                    className={`cursor-pointer`}
-                    onClick={() => handleClick(as)}
-                  >
-                    <td>{as.name}</td>
-                    <td>{as.student_sum}</td>
-                    <td>{as.present_status}</td>
-                    <td>{as.absent_status}</td>
-                    <td>{as.late_status}</td>
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-[#3e81d4]/10">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#3e81d4] uppercase tracking-wider">
+                      Class
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-[#3e81d4] uppercase tracking-wider">
+                      Students
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-[#3e81d4] uppercase tracking-wider">
+                      Presences
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-[#3e81d4] uppercase tracking-wider">
+                      Absences
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-[#3e81d4] uppercase tracking-wider">
+                      Lates
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+
+                <tbody className="divide-y divide-gray-200">
+                  {data?.classes?.map((as: any) => (
+                    <tr
+                      key={as.id}
+                      className="hover:bg-[#3e81d4]/5 cursor-pointer"
+                      onClick={() => handleClick(as)}
+                    >
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {formatClassName(as.name)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-center">
+                        {as.student_sum}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-center">
+                        {as.present_status}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-center">
+                        {as.absent_status}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-center">
+                        {as.late_status}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -18,15 +18,34 @@ import {
   isToday 
 } from "date-fns";
 
-export function FullScreenCalendar({ onDateSelect }: { onDateSelect: (date: Date) => void }) {
+export function FullScreenCalendar({ 
+  onDateSelect, 
+  selectedDate: externalSelectedDate 
+}: { 
+  onDateSelect: (date: Date) => void;
+  selectedDate: Date | null;
+}) {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [internalSelectedDate, setInternalSelectedDate] = useState<Date | null>(null);
+
+  // Synchronize with external selected date
+  useEffect(() => {
+    if (externalSelectedDate) {
+      setInternalSelectedDate(externalSelectedDate);
+      // Also update current month view if needed
+      if (!isSameMonth(currentDate, externalSelectedDate)) {
+        setCurrentDate(externalSelectedDate);
+      }
+    } else {
+      setInternalSelectedDate(null);
+    }
+  }, [externalSelectedDate]);
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
 
   const handleDateClick = (day: Date) => {
-    setSelectedDate(day);
+    setInternalSelectedDate(day);
     onDateSelect(day);
   };
 
@@ -77,7 +96,7 @@ export function FullScreenCalendar({ onDateSelect }: { onDateSelect: (date: Date
       for (let i = 0; i < 7; i++) {
         const cloneDay = day;
         const isCurrentMonth = isSameMonth(day, monthStart);
-        const isSelected = selectedDate && isSameDay(day, selectedDate);
+        const isSelected = internalSelectedDate && isSameDay(day, internalSelectedDate);
         const isTodayDate = isToday(day);
         
         days.push(
