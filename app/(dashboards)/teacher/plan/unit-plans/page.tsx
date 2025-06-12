@@ -48,7 +48,7 @@ const mockUnitPlans: UnitPlan[] = [
 
 
 export default function UnitPlansPage() {
-  const [unitPlans, setUnitPlans] = useState<UnitPlan[]>([]);
+  const [unitPlans, setUnitPlans] = useState<UnitPlan[]>(mockUnitPlans);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -73,8 +73,29 @@ export default function UnitPlansPage() {
       </header>
 
       {/* Bouton Create New Unit Plan */}
-      <div className="flex justify-end">
-        <Button 
+      <div className="flex justify-between items-center">
+        <Button
+          variant="outline"
+          onClick={() => window.history.back()}
+          className="flex items-center gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+          >
+            <path d="m15 18-6-6 6-6"/>
+          </svg>
+          Back
+        </Button>
+        <Button
           onClick={() => setIsDialogOpen(true)}
           className="bg-[#3e81d4] hover:bg-[#2e71c4] text-white"
         >
@@ -94,7 +115,7 @@ export default function UnitPlansPage() {
           <UnitPlanForm onSubmitSuccess={handleSuccess} />
         </DialogContent>
       </Dialog>
-      
+
 
       {unitPlans.length === 0 && (
          <div className="text-center py-10">
@@ -116,8 +137,8 @@ export default function UnitPlansPage() {
           <Card key={plan.id} className="flex flex-col">
             <CardHeader>
               <CardTitle className="font-headline flex items-center gap-2">
-                {plan.subject === 'Math' ? 
-                    <Calculator className="h-5 w-5 text-blue-500" /> : 
+                {plan.subject === 'Math' ?
+                    <Calculator className="h-5 w-5 text-blue-500" /> :
                     <BookOpenText className="h-5 w-5 text-green-500" />
                 }
                 {plan.title}
