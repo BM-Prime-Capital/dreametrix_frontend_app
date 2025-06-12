@@ -102,7 +102,7 @@ export function LessonPlanForm({ initialData, unitPlans = [], onSubmitSuccess }:
     <Card className="w-full max-w-3xl mx-auto">
       <CardHeader>
         <CardTitle className="font-headline">{initialData ? "Edit Lesson Plan" : "Create New Lesson Plan"}</CardTitle>
-        <CardDescription>Detail the specifics for a single day's instruction.</CardDescription>
+        <CardDescription>Detail the specifics for a single day&#39;s instruction.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -120,7 +120,7 @@ export function LessonPlanForm({ initialData, unitPlans = [], onSubmitSuccess }:
                 </FormItem>
               )}
             />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -153,7 +153,7 @@ export function LessonPlanForm({ initialData, unitPlans = [], onSubmitSuccess }:
                           selected={field.value}
                           onSelect={field.onChange}
                           disabled={(date) =>
-                            date < new Date("1900-01-01") 
+                            date < new Date("1900-01-01")
                           }
                           initialFocus
                         />
@@ -241,7 +241,7 @@ export function LessonPlanForm({ initialData, unitPlans = [], onSubmitSuccess }:
                 )}
               />
             </div>
-            
+
 
             <FormField
               control={form.control}
@@ -301,7 +301,7 @@ export function LessonPlanForm({ initialData, unitPlans = [], onSubmitSuccess }:
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="differentiation"

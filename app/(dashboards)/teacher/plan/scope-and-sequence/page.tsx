@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -34,7 +33,7 @@ const mockScopeAndSequences: ScopeAndSequence[] = [
 
 
 export default function ScopeAndSequencePage() {
-  const [scopeAndSequences, setScopeAndSequences] = useState<ScopeAndSequence[]>([]);
+  const [scopeAndSequences, setScopeAndSequences] = useState<ScopeAndSequence[]>(mockScopeAndSequences);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -59,8 +58,29 @@ export default function ScopeAndSequencePage() {
       </header>
 
       {/* Bouton Create New Scope & Sequence */}
-      <div className="flex justify-end">
-        <Button 
+      <div className="flex justify-between items-center">
+        <Button
+          variant="outline"
+          onClick={() => window.history.back()}
+          className="flex items-center gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+          >
+            <path d="m15 18-6-6 6-6"/>
+          </svg>
+          Back
+        </Button>
+        <Button
           onClick={() => setIsDialogOpen(true)}
           className="bg-[#3e81d4] hover:bg-[#2e71c4] text-white"
         >
@@ -81,7 +101,7 @@ export default function ScopeAndSequencePage() {
           <ScopeAndSequenceForm onSubmitSuccess={handleSuccess} />
         </DialogContent>
       </Dialog>
-        
+
        {scopeAndSequences.length === 0 && (
          <div className="text-center py-10">
             <GanttChartSquare className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -102,7 +122,7 @@ export default function ScopeAndSequencePage() {
           <Card key={plan.id} className="flex flex-col">
             <CardHeader>
               <CardTitle className="font-headline flex items-center gap-2">
-                {plan.subject === 'Math' ? 
+                {plan.subject === 'Math' ?
                     <Calculator className="h-5 w-5 text-blue-500" /> :
                 plan.subject === 'ELA' ?
                     <BookOpenText className="h-5 w-5 text-green-500" /> :

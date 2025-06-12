@@ -61,7 +61,7 @@ export default function PlansPage() {
               </p>
             </CardContent>
             <CardFooter>
-              <Button asChild variant="outline" className="w-full bg-purple-500 text-white hover:bg-blue-600">
+              <Button asChild variant="outline" className="w-full bg-purple-500 text-white hover:bg-blue-600 hover:text-white">
                 <Link href={tool.href} className="flex items-center justify-center">
                   <span>{tool.cta}</span>
                   <ArrowRight className="ml-2 h-4 w-4" />
