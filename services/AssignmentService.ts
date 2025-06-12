@@ -37,7 +37,6 @@ export async function createAssignment(
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
       },
       body: formData,
     });
