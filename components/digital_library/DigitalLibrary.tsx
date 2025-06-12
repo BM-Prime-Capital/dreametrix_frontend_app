@@ -213,6 +213,8 @@ export default function DigitalLibrary() {
       pendingAutoPopulation &&
       !isLoadingSubjects &&
       subjects.length > 0 &&
+      !classesIsLoading &&
+      initialClasses.length > 0 &&
       !isAutoPopulating
     ) {
       const { extractedSubject, extractedAssignmentType } =
@@ -221,6 +223,8 @@ export default function DigitalLibrary() {
       console.log("🚀 Starting auto-population:", {
         extractedSubject,
         extractedAssignmentType,
+        classesCount: initialClasses.length,
+        subjectsCount: subjects.length,
       });
 
       // First ensure assignmentType is set if available
@@ -254,7 +258,14 @@ export default function DigitalLibrary() {
         setPendingAutoPopulation(null);
       }
     }
-  }, [pendingAutoPopulation, isLoadingSubjects, subjects, isAutoPopulating]);
+  }, [
+    pendingAutoPopulation,
+    isLoadingSubjects,
+    subjects,
+    isAutoPopulating,
+    classesIsLoading,
+    initialClasses,
+  ]);
 
   // Handle auto-population of grade after subject selection completes
   useEffect(() => {
@@ -262,7 +273,9 @@ export default function DigitalLibrary() {
       isAutoPopulating &&
       pendingAutoPopulation?.extractedGrade &&
       pendingAutoPopulation?.extractedSubject &&
-      grades.length > 0
+      grades.length > 0 &&
+      !classesIsLoading &&
+      initialClasses.length > 0
     ) {
       const { extractedGrade, extractedSubject } = pendingAutoPopulation;
 
@@ -270,6 +283,8 @@ export default function DigitalLibrary() {
         extractedGrade,
         availableGrades: grades,
         directMatch: grades.includes(extractedGrade),
+        classesLoaded: !classesIsLoading,
+        classesCount: initialClasses.length,
       });
 
       // Check if the extracted grade exists in the loaded grades (direct match first)
@@ -309,7 +324,7 @@ export default function DigitalLibrary() {
 
       // Update progress
       setAutoPopulationProgress({
-        currentStep: "Loading grade options and setting grade...",
+        currentStep: "Loading grade options and filtering classes...",
         totalSteps: 3,
         currentStepIndex: 2,
       });
@@ -321,7 +336,10 @@ export default function DigitalLibrary() {
       }));
 
       // Then trigger grade selection with explicit subject and grade
-      handleGradeSelectionWithSubject(matchedGrade, extractedSubject);
+      // Add a small delay to ensure classes are fully loaded
+      setTimeout(() => {
+        handleGradeSelectionWithSubject(matchedGrade, extractedSubject);
+      }, 100);
 
       // Update to final step
       setTimeout(() => {
@@ -330,16 +348,54 @@ export default function DigitalLibrary() {
           totalSteps: 3,
           currentStepIndex: 3,
         });
-      }, 500);
+      }, 800);
 
-      // Clear pending auto-population and flag after a short delay
+      // Clear pending auto-population and flag after a longer delay to ensure completion
       setTimeout(() => {
         setPendingAutoPopulation(null);
         setIsAutoPopulating(false);
         setAutoPopulationProgress(null);
-      }, 1500);
+        console.log("✅ Auto-population completed successfully!");
+      }, 2000);
     }
-  }, [isAutoPopulating, pendingAutoPopulation, grades]);
+  }, [
+    isAutoPopulating,
+    pendingAutoPopulation,
+    grades,
+    classesIsLoading,
+    initialClasses,
+  ]);
+
+  // Additional effect to handle classes loading completion during auto-population
+  useEffect(() => {
+    if (
+      isAutoPopulating &&
+      !classesIsLoading &&
+      initialClasses.length > 0 &&
+      digitalLibrarySheet.grade &&
+      digitalLibrarySheet.subject &&
+      allClasses.length === 0 // Classes haven't been filtered yet
+    ) {
+      console.log(
+        "🔄 Classes just finished loading during auto-population, re-filtering..."
+      );
+
+      // Re-trigger classes filtering since classes just finished loading
+      setTimeout(() => {
+        handleGradeSelectionWithSubject(
+          digitalLibrarySheet.grade,
+          digitalLibrarySheet.subject
+        );
+      }, 100);
+    }
+  }, [
+    classesIsLoading,
+    initialClasses,
+    isAutoPopulating,
+    digitalLibrarySheet.grade,
+    digitalLibrarySheet.subject,
+    allClasses.length,
+  ]);
 
   const handleSubjectSelection = async (selectedSubject: string) => {
     console.log("🔄 Subject Selection:", {
@@ -417,11 +473,49 @@ export default function DigitalLibrary() {
       );
       setGrades(gradeData || []); // Fallback à un tableau vide si gradeData est null/undefined
 
-      const filteredClasses = initialClasses.filter(
-        (cl: any) =>
+      // Enhanced classes filtering with better handling for loading states
+      console.log("📚 Starting Subject selection - Classes filtering:", {
+        selectedSubject,
+        initialClassesCount: initialClasses.length,
+        classesIsLoading,
+        isAutoPopulating,
+      });
+
+      // Wait for classes to be loaded if they're still loading during auto-population
+      if (classesIsLoading && isAutoPopulating) {
+        console.log(
+          "⚠️ Classes still loading during auto-population, will retry after load..."
+        );
+        return; // The useEffect will handle re-triggering once classes are loaded
+      }
+
+      const filteredClasses = initialClasses.filter((cl: any) => {
+        const subjectMatch =
           cl.subject_in_short === selectedSubject ||
-          cl.subject_in_all_letter === selectedSubject
-      );
+          cl.subject_in_all_letter === selectedSubject;
+
+        console.log(`🔍 Subject filtering for ${cl.name}:`, {
+          subject_in_short: cl.subject_in_short,
+          subject_in_all_letter: cl.subject_in_all_letter,
+          selectedSubject,
+          subjectMatch,
+        });
+
+        return subjectMatch;
+      });
+
+      console.log("📚 Subject selection - Classes filtering result:", {
+        selectedSubject,
+        initialClassesCount: initialClasses.length,
+        filteredClassesCount: filteredClasses.length,
+        filteredClasses: filteredClasses.map((cl: any) => ({
+          name: cl.name,
+          grade: cl.grade,
+          subject_in_short: cl.subject_in_short,
+          subject_in_all_letter: cl.subject_in_all_letter,
+        })),
+        isAutoPopulating,
+      });
 
       setAllClasses(filteredClasses);
       setCheckedClasses(filteredClasses.map((cl: any) => cl.name));
@@ -432,6 +526,15 @@ export default function DigitalLibrary() {
   };
 
   const handleGradeSelection = async (selectedGrade: string) => {
+    // Guard clause to ensure we have valid parameters
+    if (!selectedGrade || !digitalLibrarySheet.subject) {
+      console.warn("⚠️ handleGradeSelection called with invalid parameters:", {
+        selectedGrade,
+        subject: digitalLibrarySheet.subject,
+      });
+      return;
+    }
+
     handleGradeSelectionWithSubject(selectedGrade, digitalLibrarySheet.subject);
   };
 
@@ -439,6 +542,18 @@ export default function DigitalLibrary() {
     selectedGrade: string,
     selectedSubject: string
   ) => {
+    // Guard clause to ensure we have valid parameters
+    if (!selectedGrade || !selectedSubject) {
+      console.warn(
+        "⚠️ handleGradeSelectionWithSubject called with invalid parameters:",
+        {
+          selectedGrade,
+          selectedSubject,
+        }
+      );
+      return;
+    }
+
     setDigitalLibrarySheet((prev) => {
       console.log("🔍 Previous state in handleGradeSelectionWithSubject:", {
         assignmentType: prev.assignmentType,
@@ -509,25 +624,91 @@ export default function DigitalLibrary() {
       setSheetDomains(domainsData);
     }
 
-    setAllClasses(
-      initialClasses.filter(
-        (cl: any) =>
-          cl.grade === selectedGrade &&
-          (cl.subject_in_short === selectedSubject ||
-            cl.subject_in_all_letter === selectedSubject)
-      )
-    );
+    // Improved classes filtering with better debugging and error handling
+    console.log("🏫 Starting Grade selection - Classes filtering:", {
+      selectedGrade,
+      selectedSubject,
+      initialClassesCount: initialClasses.length,
+      initialClassesLoading: classesIsLoading,
+      isAutoPopulating,
+    });
 
-    setCheckedClasses(
-      initialClasses
-        .filter(
-          (cl: any) =>
-            cl.grade === selectedGrade &&
-            (cl.subject_in_short === selectedSubject ||
-              cl.subject_in_all_letter === selectedSubject)
-        )
-        ?.flatMap((cl: any) => cl.name)
-    );
+    // Wait for classes to be loaded if they're still loading
+    if (classesIsLoading || initialClasses.length === 0) {
+      console.log("⚠️ Classes are still loading or empty, waiting...");
+
+      // For auto-population, wait a bit and retry
+      if (isAutoPopulating) {
+        setTimeout(() => {
+          console.log("🔄 Retrying classes filtering for auto-population...");
+          handleGradeSelectionWithSubject(selectedGrade, selectedSubject);
+        }, 500);
+        return;
+      }
+    }
+
+    // Enhanced filtering with more detailed comparison
+    const filteredClassesForGrade = initialClasses.filter((cl: any) => {
+      // Safely normalize grade values for comparison with null checks
+      const classGrade = cl.grade?.toString().trim();
+      const normalizedSelectedGrade = selectedGrade?.toString().trim();
+
+      // Check grade match (exact or string comparison) with null safety
+      const gradeMatch =
+        cl.grade === selectedGrade ||
+        cl.grade?.toString() === selectedGrade ||
+        (classGrade &&
+          normalizedSelectedGrade &&
+          classGrade === normalizedSelectedGrade) ||
+        (classGrade &&
+          normalizedSelectedGrade &&
+          parseInt(classGrade) === parseInt(normalizedSelectedGrade));
+
+      // Check subject match
+      const subjectMatch =
+        cl.subject_in_short === selectedSubject ||
+        cl.subject_in_all_letter === selectedSubject;
+
+      console.log(`🔍 Class filtering for ${cl.name}:`, {
+        classGrade: cl.grade,
+        classGradeString: cl.grade?.toString(),
+        selectedGrade,
+        normalizedSelectedGrade,
+        gradeMatch,
+        subject_in_short: cl.subject_in_short,
+        subject_in_all_letter: cl.subject_in_all_letter,
+        selectedSubject,
+        subjectMatch,
+        overallMatch: gradeMatch && subjectMatch,
+      });
+
+      return gradeMatch && subjectMatch;
+    });
+
+    console.log("🏫 Grade selection - Classes filtering result:", {
+      selectedGrade,
+      selectedSubject,
+      initialClassesCount: initialClasses.length,
+      filteredClassesCount: filteredClassesForGrade.length,
+      filteredClasses: filteredClassesForGrade.map((cl: any) => ({
+        name: cl.name,
+        grade: cl.grade,
+        subject_in_short: cl.subject_in_short,
+        subject_in_all_letter: cl.subject_in_all_letter,
+      })),
+      isAutoPopulating,
+    });
+
+    setAllClasses(filteredClassesForGrade);
+    setCheckedClasses(filteredClassesForGrade.map((cl: any) => cl.name));
+
+    // Additional verification for auto-population
+    if (isAutoPopulating) {
+      console.log("✅ Auto-population classes filtering completed:", {
+        totalClasses: filteredClassesForGrade.length,
+        classNames: filteredClassesForGrade.map((cl: any) => cl.name),
+      });
+    }
   };
 
   const handleDomainSelection = async (selectedDomain: string) => {
