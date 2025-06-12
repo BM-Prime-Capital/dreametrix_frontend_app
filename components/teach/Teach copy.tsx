@@ -50,7 +50,7 @@ export default function Teach() {
             />
           </div>
         ) : (
-          <FullScreenCalendar onDateSelect={handleDateSelect} />
+          <FullScreenCalendar onDateSelect={handleDateSelect} selectedDate={selectedDate} />
         )}
       </div>
 
