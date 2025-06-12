@@ -1,11 +1,21 @@
+"use client";
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { GanttChartSquare, BookCopy, ClipboardList, ArrowRight, NotebookText } from 'lucide-react';
 import PageTitleH1 from '@/components/ui/page-title-h1';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScopeAndSequenceForm } from '@/components/plan/scope-and-sequence-form';
+import { UnitPlanForm } from '@/components/plan/unit-plan-form';
+import { LessonPlanForm } from '@/components/plan/lesson-plan-form';
 
 export default function PlansPage() {
+  const [isScopeAndSequenceDialogOpen, setIsScopeAndSequenceDialogOpen] = useState(false);
+  const [isUnitPlanDialogOpen, setIsUnitPlanDialogOpen] = useState(false);
+  const [isLessonPlanDialogOpen, setIsLessonPlanDialogOpen] = useState(false);
+
   const planningTools = [
     {
       title: "Scope & Sequence",
@@ -29,6 +39,21 @@ export default function PlansPage() {
       cta: "Manage Lesson Plans",
     },
   ];
+
+  const handleScopeAndSequenceSuccess = () => {
+    setIsScopeAndSequenceDialogOpen(false);
+    // Optionally refresh data or show success message
+  };
+
+  const handleUnitPlanSuccess = () => {
+    setIsUnitPlanDialogOpen(false);
+    // Optionally refresh data or show success message
+  };
+
+  const handleLessonPlanSuccess = () => {
+    setIsLessonPlanDialogOpen(false);
+    // Optionally refresh data or show success message
+  };
 
   return (
     <div className="space-y-8">
@@ -71,23 +96,71 @@ export default function PlansPage() {
           </Card>
         ))}
       </section>
-       <section className="bg-card p-6 rounded-lg shadow">
+      <section className="bg-card p-6 rounded-lg shadow">
         <h2 className="text-2xl font-semibold font-headline mb-3">Quick Create</h2>
         <p className="text-muted-foreground mb-4">
           Start planning right away by creating a new document.
         </p>
         <div className="flex flex-wrap gap-4">
-          <Button asChild className="bg-blue-500 hover:bg-primary/90 text-primary-foreground">
-            <Link href="/teacher/plan/scope-and-sequence/create">New Scope & Sequence</Link>
+          <Button 
+            onClick={() => setIsScopeAndSequenceDialogOpen(true)}
+            className="bg-blue-500 hover:bg-primary/90 text-primary-foreground"
+          >
+            New Scope & Sequence
           </Button>
-          <Button asChild className=" bg-yellow-500 hover:bg-primary/90 text-primary-foreground">
-            <Link href="/teacher/plan/unit-plans/create">New Unit Plan</Link>
+          <Button 
+            onClick={() => setIsUnitPlanDialogOpen(true)}
+            className="bg-yellow-500 hover:bg-primary/90 text-primary-foreground"
+          >
+            New Unit Plan
           </Button>
-          <Button asChild className="bg-green-500 hover:bg-primary/90 text-primary-foreground">
-            <Link href="/teacher/plan/lesson-plans/create">New Lesson Plan</Link>
+          <Button 
+            onClick={() => setIsLessonPlanDialogOpen(true)}
+            className="bg-green-500 hover:bg-primary/90 text-primary-foreground"
+          >
+            New Lesson Plan
           </Button>
         </div>
       </section>
+
+      {/* Dialog for creating new scope & sequence */}
+      <Dialog open={isScopeAndSequenceDialogOpen} onOpenChange={setIsScopeAndSequenceDialogOpen}>
+        <DialogContent onInteractOutside={(e) => e.preventDefault()} className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-headline">Create New Scope & Sequence</DialogTitle>
+            <DialogDescription>
+              Outline the academic year by mapping out units, standards, and pacing month by month.
+            </DialogDescription>
+          </DialogHeader>
+          <ScopeAndSequenceForm onSubmitSuccess={handleScopeAndSequenceSuccess} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog for creating new unit plan */}
+      <Dialog open={isUnitPlanDialogOpen} onOpenChange={setIsUnitPlanDialogOpen}>
+        <DialogContent onInteractOutside={(e) => e.preventDefault()} className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-headline">Create New Unit Plan</DialogTitle>
+            <DialogDescription>
+              Lay the foundation for a series of lessons by defining standards, objectives, and assessments for your unit.
+            </DialogDescription>
+          </DialogHeader>
+          <UnitPlanForm onSubmitSuccess={handleUnitPlanSuccess} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog for creating new lesson plan */}
+      <Dialog open={isLessonPlanDialogOpen} onOpenChange={setIsLessonPlanDialogOpen}>
+        <DialogContent onInteractOutside={(e) => e.preventDefault()} className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-headline">Create New Lesson Plan</DialogTitle>
+            <DialogDescription>
+              Outline your daily instruction, from objectives to assessments.
+            </DialogDescription>
+          </DialogHeader>
+          <LessonPlanForm onSubmitSuccess={handleLessonPlanSuccess} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
