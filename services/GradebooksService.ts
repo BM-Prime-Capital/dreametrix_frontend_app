@@ -173,7 +173,7 @@ export async function saveVoiceRecording(
       method: "PUT",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
+
         // Don't set Content-Type header - let browser set it for FormData
       },
       body: formData, // Send FormData with the file
