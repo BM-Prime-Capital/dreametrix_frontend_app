@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, BookOpenText, Calculator, BookCopy } from 'lucide-react';
+import { PlusCircle, BookOpenText, Calculator, BookCopy, MoreVertical, Pencil, Copy, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { UnitPlan } from '../../../../../lib/types';
 import PageTitleH1 from '@/components/ui/page-title-h1';
@@ -15,6 +15,12 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { UnitPlanForm } from '@/components/plan/unit-plan-form';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Mock data - replace with actual data fetching in a real app
 const mockUnitPlans: UnitPlan[] = [
@@ -61,6 +67,21 @@ export default function UnitPlansPage() {
   const handleSuccess = () => {
     setIsDialogOpen(false);
     // Optionally refresh the unit plans list here
+  };
+
+  const handleEdit = (planId: string) => {
+    // Implement edit functionality
+    console.log('Edit plan:', planId);
+  };
+
+  const handleDuplicate = (planId: string) => {
+    // Implement duplicate functionality
+    console.log('Duplicate plan:', planId);
+  };
+
+  const handleDelete = (planId: string) => {
+    // Implement delete functionality
+    console.log('Delete plan:', planId);
   };
 
   return (
@@ -136,13 +157,41 @@ export default function UnitPlansPage() {
         {unitPlans.map((plan) => (
           <Card key={plan.id} className="flex flex-col">
             <CardHeader>
-              <CardTitle className="font-headline flex items-center gap-2">
-                {plan.subject === 'Math' ?
-                    <Calculator className="h-5 w-5 text-blue-500" /> :
-                    <BookOpenText className="h-5 w-5 text-green-500" />
-                }
-                {plan.title}
-              </CardTitle>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="font-headline">
+                    {plan.subject === 'Math' ?
+                        <Calculator className="h-5 w-5 text-blue-500" /> :
+                        <BookOpenText className="h-5 w-5 text-green-500" />
+                    }
+                    {plan.title}
+                  </CardTitle>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleEdit(plan.id)}>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleDuplicate(plan.id)}>
+                      <Copy className="mr-2 h-4 w-4" />
+                      Duplicate
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleDelete(plan.id)}
+                      className="text-red-600"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
               <CardDescription>{plan.gradeLevel} - {plan.subject}</CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
