@@ -11,9 +11,16 @@ import {
   type ColumnDef,
   type SortingState,
   type VisibilityState,
-  type FilterFn
+  type FilterFn,
 } from "@tanstack/react-table";
-import { Eye, ChevronDown, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import {
+  Eye,
+  ChevronDown,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -42,9 +49,12 @@ interface GradebookTableProps {
   onClassSelect: (selectedClass: ClassData) => void;
 }
 
-export function GradebookTable({ classes, onClassSelect }: GradebookTableProps) {
+export function GradebookTable({
+  classes,
+  onClassSelect,
+}: GradebookTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const columns: ColumnDef<ClassData>[] = [
@@ -52,63 +62,61 @@ export function GradebookTable({ classes, onClassSelect }: GradebookTableProps) 
       accessorKey: "name",
       header: "CLASS",
       cell: ({ row }) => (
-      <div className="text-left"> {/* Ajout de text-left ici */}
-        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-3 py-1 text-sm font-medium">
+        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-3 py-1 text-sm font-medium whitespace-nowrap">
           {row.getValue("name")}
         </span>
-      </div>
       ),
     },
     {
       accessorKey: "average",
-      header: "CLASS AVERAGE",
+      header: "AVERAGE",
       cell: ({ row }) => (
-        <span className="px-2.5 py-1 bg-[#3e81d4]/10 text-[#3e81d4] rounded-full text-sm font-medium text-center">
+        <span className="px-2.5 py-1 bg-[#3e81d4]/10 text-[#3e81d4] rounded-full text-sm font-medium whitespace-nowrap">
           {row.getValue("average")}
         </span>
       ),
     },
     {
       accessorKey: "noOfExams",
-      header: "# TESTS",
+      header: "EXAMS",
       cell: ({ row }) => (
-        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-2 py-1 text-xs font-medium">
+        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap">
           {row.getValue("noOfExams")}
         </span>
       ),
     },
     {
       accessorKey: "noOfTests",
-      header: "# QUIZ",
+      header: "TESTS",
       cell: ({ row }) => (
-        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-2 py-1 text-xs font-medium">
+        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap">
           {row.getValue("noOfTests")}
         </span>
       ),
     },
     {
       accessorKey: "noOfHomeworks",
-      header: "# HOMEWORKS",
+      header: "HOMEWORK",
       cell: ({ row }) => (
-        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-2 py-1 text-xs font-medium">
+        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap">
           {row.getValue("noOfHomeworks")}
         </span>
       ),
     },
     {
       accessorKey: "noOfParticipation",
-      header: "# PARTICIPATIONS",
+      header: "PARTICIPATION",
       cell: ({ row }) => (
-        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-2 py-1 text-xs font-medium">
+        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap">
           {row.getValue("noOfParticipation")}
         </span>
       ),
     },
     {
       accessorKey: "noOfOther",
-      header: "# OTHERS",
+      header: "OTHERS",
       cell: ({ row }) => (
-        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-2 py-1 text-xs font-medium">
+        <span className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap">
           {row.getValue("noOfOther")}
         </span>
       ),
@@ -147,16 +155,16 @@ export function GradebookTable({ classes, onClassSelect }: GradebookTableProps) 
 
   const handleExport = () => {
     const csvContent = [
-      Object.keys(classes[0]).join(','),
-      ...classes.map(item => Object.values(item).join(','))
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      Object.keys(classes[0]).join(","),
+      ...classes.map((item) => Object.values(item).join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'gradebook.csv');
-    link.style.visibility = 'hidden';
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "gradebook.csv");
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -170,36 +178,42 @@ export function GradebookTable({ classes, onClassSelect }: GradebookTableProps) 
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Filter classes..."
-            value={globalFilter ?? ''}
+            value={globalFilter ?? ""}
             onChange={(e) => setGlobalFilter(e.target.value)}
             className="pl-8 w-full md:w-[400px]"
           />
         </div>
-        
+
         <div className="flex items-center gap-2">
-          <Button 
+          <Button
             onClick={handleExport}
-            variant="outline" 
+            variant="outline"
             className="bg-[#3e81d4]/10 text-[#3e81d4] hover:bg-[#3e81d4]/20 border-[#3e81d4]/20"
           >
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="bg-[#3e81d4]/10 text-[#3e81d4] hover:bg-[#3e81d4]/20 border-[#3e81d4]/20">
+              <Button
+                variant="outline"
+                className="bg-[#3e81d4]/10 text-[#3e81d4] hover:bg-[#3e81d4]/20 border-[#3e81d4]/20"
+              >
                 Columns <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {table.getAllColumns()
+              {table
+                .getAllColumns()
                 .filter((column) => column.getCanHide())
                 .map((column) => (
                   <DropdownMenuCheckboxItem
                     key={column.id}
                     checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
@@ -213,16 +227,21 @@ export function GradebookTable({ classes, onClassSelect }: GradebookTableProps) 
       <div className="rounded-lg border border-gray-200 overflow-hidden">
         <Table className="min-w-full">
           <TableHeader className="bg-[#3e81d4]/10">
-            {table.getHeaderGroups().map(headerGroup => (
+            {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <TableHead 
-                    key={header.id} 
-                    className={`px-4 py-3 text-xs font-medium text-[#3e81d4] uppercase tracking-wider ${
-                      header.id === "name" ? "text-left" : "text-center"
+                {headerGroup.headers.map((header, index) => (
+                  <TableHead
+                    key={header.id}
+                    className={`px-4 py-3 text-left text-xs font-medium text-[#3e81d4] uppercase tracking-wider ${
+                      index === 0
+                        ? "sticky left-0 bg-[#3e81d4]/10 z-10 min-w-[150px]"
+                        : "min-w-[120px]"
                     }`}
                   >
-                    {flexRender(header.column.columnDef.header, header.getContext())}
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -230,27 +249,35 @@ export function GradebookTable({ classes, onClassSelect }: GradebookTableProps) 
           </TableHeader>
           <TableBody className="bg-white divide-y divide-gray-200">
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map(row => (
-                <TableRow 
-                  key={row.id} 
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
                   className="hover:bg-[#3e81d4]/5 cursor-pointer"
                   onClick={() => onClassSelect(row.original)}
                 >
-                  {row.getVisibleCells().map(cell => (
-                    <TableCell 
-                        key={cell.id} 
-                        className={`px-4 py-3 whitespace-nowrap text-sm text-gray-800 ${
-                          cell.column.id === "name" ? "text-left" : "text-center"
-                        }`}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
+                  {row.getVisibleCells().map((cell, index) => (
+                    <TableCell
+                      key={cell.id}
+                      className={`px-4 py-3 whitespace-nowrap text-sm text-gray-800 ${
+                        index === 0
+                          ? "sticky left-0 bg-white z-10 font-medium"
+                          : ""
+                      }`}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="px-4 py-3 text-center text-sm text-gray-500">
+                <TableCell
+                  colSpan={columns.length}
+                  className="px-4 py-3 text-center text-sm text-gray-500"
+                >
                   No classes found
                 </TableCell>
               </TableRow>

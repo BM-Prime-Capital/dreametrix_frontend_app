@@ -10,7 +10,7 @@ export async function getGradeBookList(
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
-  const url = `${tenantPrimaryDomain}/gradebooks/`;
+  const url = `${tenantPrimaryDomain}/gradebooks/classes/`;
   let response = await fetch(url, {
     method: "GET",
     headers: {
@@ -43,7 +43,7 @@ export async function getGradeBookFocusList(
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
-  const url = `${tenantPrimaryDomain}/gradebooks/${id}`;
+  const url = `${tenantPrimaryDomain}/gradebooks/classes/${id}`;
   let response = await fetch(url, {
     method: "GET",
     headers: {
@@ -96,7 +96,6 @@ export async function updateStudentGrade(
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
-        "X-Refresh-Token": refreshToken,
       },
       body: JSON.stringify({
         grade: grade,
@@ -174,7 +173,7 @@ export async function saveVoiceRecording(
       method: "PUT",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "X-Refresh-Token": refreshToken,
+        "Content-Type": "application/json",
         // Don't set Content-Type header - let browser set it for FormData
       },
       body: formData, // Send FormData with the file

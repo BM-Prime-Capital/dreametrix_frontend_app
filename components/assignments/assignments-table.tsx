@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -47,13 +47,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useList } from "@/hooks/useList";
-import { getAssignments } from "@/services/AssignmentService";
+import { getAssignments, deleteAssignment } from "@/services/AssignmentService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Loader } from "../ui/loader";
 import Image from "next/image";
 import { generalImages } from "@/constants/images";
 import { Assignment, MiniCourse } from "@/types";
 import { SubmissionsPopup } from "./SubmissionsPopup";
+import { EditAssignmentDialog } from "./EditAssignmentDialog";
 
 const globalFilterFn: FilterFn<Assignment> = (row, columnId, filterValue) => {
   const value = row.getValue(columnId);
@@ -78,8 +79,10 @@ const globalFilterFn: FilterFn<Assignment> = (row, columnId, filterValue) => {
 };
 
 export function AssignmentsTable() {
-  const { list: assignments, isLoading, error } = useList(getAssignments);
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [courseFilter, setCourseFilter] = useState<string>("all");
@@ -87,6 +90,36 @@ export function AssignmentsTable() {
   const [selectedAssignment, setSelectedAssignment] =
     useState<Assignment | null>(null);
   const [isSubmissionsPopupOpen, setIsSubmissionsPopupOpen] = useState(false);
+  const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(
+    null
+  );
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  // Load assignments function
+  const loadAssignments = async () => {
+    if (!tenantDomain || !accessToken || !refreshToken) return;
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const data = await getAssignments(
+        tenantDomain,
+        accessToken,
+        refreshToken
+      );
+      setAssignments(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load assignments on mount
+  useEffect(() => {
+    loadAssignments();
+  }, [tenantDomain, accessToken, refreshToken]);
 
   // Get unique courses for the filter dropdown
   const uniqueCourses = useMemo(() => {
@@ -122,6 +155,41 @@ export function AssignmentsTable() {
   const handleAssignmentClick = (assignment: Assignment) => {
     setSelectedAssignment(assignment);
     setIsSubmissionsPopupOpen(true);
+  };
+
+  const handleEditAssignment = (assignment: Assignment) => {
+    setEditingAssignment(assignment);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteAssignment = async (assignment: Assignment) => {
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      `Are you sure you want to delete the assignment "${assignment.name}"? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await deleteAssignment(
+        assignment.id,
+        tenantDomain,
+        accessToken,
+        refreshToken
+      );
+
+      // Reload assignments list
+      await loadAssignments();
+    } catch (error) {
+      console.error("Error deleting assignment:", error);
+      alert("Failed to delete assignment. Please try again.");
+    }
+  };
+
+  const handleAssignmentUpdate = async (updatedAssignment: Assignment) => {
+    // Reload assignments to get the latest data
+    await loadAssignments();
+    console.log("Assignment updated:", updatedAssignment);
   };
 
   const resetFilters = () => {
@@ -212,6 +280,8 @@ export function AssignmentsTable() {
               variant="ghost"
               size="icon"
               className="h-8 w-8 hover:bg-[#3e81d4]/10"
+              onClick={() => handleAssignmentClick(row.original)}
+              title="View Submissions"
             >
               <Eye className="h-4 w-4 text-[#3e81d4]" />
             </Button>
@@ -219,13 +289,17 @@ export function AssignmentsTable() {
               variant="ghost"
               size="icon"
               className="h-8 w-8 hover:bg-[#3e81d4]/10"
+              onClick={() => handleEditAssignment(row.original)}
+              title="Edit Assignment"
             >
               <Pencil className="h-4 w-4 text-[#3e81d4]" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 hover:bg-[#3e81d4]/10"
+              className="h-8 w-8 hover:bg-red-50"
+              onClick={() => handleDeleteAssignment(row.original)}
+              title="Delete Assignment"
             >
               <Trash2 className="h-4 w-4 text-red-500" />
             </Button>
@@ -474,6 +548,17 @@ export function AssignmentsTable() {
           assessmentName={selectedAssignment.name}
         />
       )}
+
+      {/* Edit Assignment Dialog */}
+      <EditAssignmentDialog
+        assignment={editingAssignment}
+        isOpen={isEditDialogOpen}
+        onClose={() => {
+          setIsEditDialogOpen(false);
+          setEditingAssignment(null);
+        }}
+        onUpdate={handleAssignmentUpdate}
+      />
     </div>
   );
 }
