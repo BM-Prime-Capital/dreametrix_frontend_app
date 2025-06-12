@@ -137,7 +137,6 @@ export default function AlignmentVerifierPage() {
         </Button>
       </div>
 
-      
 
       {/* Main Content - Full width */}
       <div className="w-full px-0 py-4">
