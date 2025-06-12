@@ -123,8 +123,8 @@ export default function Gradebook() {
         {currentClass && <ClassSelect />}
       </div>
 
-      <div className="flex gap-2">
-        <AddGradebookItemDialog />
+      <div className="flex gap-2 mt-3">
+        {/* <AddGradebookItemDialog /> */}
         {currentClass && (
           <Button className="flex gap-2 items-center text-lg bg-yellow-500 hover:bg-yellow-600 rounded-md  px-2 py-4 lg:px-4 lg:py-6">
             <Image
