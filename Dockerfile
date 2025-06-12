@@ -19,5 +19,5 @@ RUN npm run build
 # Exposer le port 80 directement
 EXPOSE 80
 
-# Démarrer l'application sur le port 80
-CMD ["sh", "-c", "echo \"OPENAI_API_KEY=${OPENAI_API_KEY}\nNEXT_PUBLIC_USE_REAL_AI=true\" > .env.production && npm run start -- -p 80"]
+# Démarrer l'application avec les variables d'environnement
+CMD ["sh", "-c", "echo \"GEMINI_API_KEY=${GEMINI_API_KEY}\nOPENAI_API_KEY=${OPENAI_API_KEY}\nNEXT_PUBLIC_USE_REAL_AI=true\" > .env.production && npm run start -- -p 80"]
