@@ -96,7 +96,6 @@ export async function updateStudentGrade(
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
-        "X-Refresh-Token": refreshToken,
       },
       body: JSON.stringify({
         grade: grade,
@@ -174,7 +173,7 @@ export async function saveVoiceRecording(
       method: "PUT",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "X-Refresh-Token": refreshToken,
+        "Content-Type": "application/json",
         // Don't set Content-Type header - let browser set it for FormData
       },
       body: formData, // Send FormData with the file
