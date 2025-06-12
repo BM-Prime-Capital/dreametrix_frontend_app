@@ -9,6 +9,7 @@ export async function getAssignments(
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
     },
   });
 
@@ -36,6 +37,7 @@ export async function createAssignment(
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
       body: formData,
     });
@@ -66,6 +68,7 @@ export async function getSubmissions(
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
     });
 
@@ -96,6 +99,7 @@ export async function getAssessmentWeights(
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
     });
 
@@ -133,6 +137,7 @@ export async function updateAssessmentWeights(
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ weights: weights }),
     });
@@ -174,6 +179,7 @@ export async function updateAssignment(
       method: "PUT",
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
         ...(isFormData ? {} : { "Content-Type": "application/json" }),
       },
       body: isFormData ? assignmentData : JSON.stringify(assignmentData),
@@ -206,6 +212,7 @@ export async function deleteAssignment(
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
     });
 
