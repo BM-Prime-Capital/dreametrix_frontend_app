@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, ClipboardCheck, BookOpenText, Calculator, MoreVertical, Pencil, Copy, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import type { LessonPlan } from '../../../../../lib/types';
+import type { LessonPlan } from '@/lib/types';
 import { format } from 'date-fns';
 import PageTitleH1 from '@/components/ui/page-title-h1';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -68,6 +68,7 @@ export default function LessonPlansPage() {
   const handleEdit = (planId: string) => {
     // Implement edit functionality
     console.log('Edit plan:', planId);
+    setIsDialogOpen(true)
   };
 
   const handleDuplicate = (planId: string) => {
@@ -180,7 +181,7 @@ export default function LessonPlansPage() {
                       <Copy className="mr-2 h-4 w-4" />
                       Duplicate
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={() => handleDelete(plan.id)}
                       className="text-red-600"
                     >
