@@ -61,22 +61,41 @@ export default function Gradebook() {
         console.log("GradeBookList data: ", data);
 
         // Mapper vers le format attendu par GradebookTable
-        const formatted = data.map((item: any) => ({
-          id: item.class_id,
-          name: `Class ${item.class_id}`,
-          average: `${item.average}%`,
-          noOfExams: item.test,
-          noOfTests: item.quiz,
-          noOfHomeworks: item.homework,
-          noOfParticipation: item.participation,
-          noOfOther: item.other,
-          totalWork:
-            item.homework +
-            item.test +
-            item.quiz +
-            item.participation +
-            item.other,
-        }));
+        const formatted = data.map((item: any) => {
+          // Count assessments by type
+          const assessmentCounts = {
+            test: 0,
+            quiz: 0,
+            homework: 0,
+            participation: 0,
+            other: 0,
+          };
+
+          item.assessments.forEach((assessment: any) => {
+            const type = assessment.assessment_type.toLowerCase();
+            if (assessmentCounts.hasOwnProperty(type)) {
+              assessmentCounts[type as keyof typeof assessmentCounts]++;
+            }
+          });
+
+          return {
+            id: item.course_id,
+            name: item.course,
+            average: `${item.class_average}%`,
+            noOfExams: assessmentCounts.test,
+            noOfTests: assessmentCounts.quiz,
+            noOfHomeworks: assessmentCounts.homework,
+            noOfParticipation: assessmentCounts.participation,
+            noOfOther: assessmentCounts.other,
+            totalWork:
+              assessmentCounts.homework +
+              assessmentCounts.test +
+              assessmentCounts.quiz +
+              assessmentCounts.participation +
+              assessmentCounts.other,
+            assessments: item.assessments, // Store full assessment data for detailed view
+          };
+        });
 
         setGradebookData(formatted);
       } catch (err: any) {
@@ -90,7 +109,7 @@ export default function Gradebook() {
   }, []);
 
   return (
-    <section className="flex flex-col gap-2 w-full">
+    <section className="flex flex-col gap-2 w-full overflow-auto">
       <div className="flex justify-between items-center bg-[#3e81d4] px-4 py-3 rounded-md">
         <div className="flex items-center">
           <PageTitleH1 title="Gradebook" className="text-white" />
@@ -104,8 +123,8 @@ export default function Gradebook() {
         {currentClass && <ClassSelect />}
       </div>
 
-      <div className="flex gap-2">
-        <AddGradebookItemDialog />
+      <div className="flex gap-2 mt-3">
+        {/* <AddGradebookItemDialog /> */}
         {currentClass && (
           <Button className="flex gap-2 items-center text-lg bg-yellow-500 hover:bg-yellow-600 rounded-md  px-2 py-4 lg:px-4 lg:py-6">
             <Image
@@ -118,34 +137,95 @@ export default function Gradebook() {
             <span>Layout</span>
           </Button>
         )}
-        {currentClass && <GradebookSettingsDialog />}
+        {currentClass && (
+          <GradebookSettingsDialog courseId={parseInt(currentClass.id)} />
+        )}
       </div>
 
-      <Card className="rounded-md p-4">
+      <Card className="rounded-md">
         {loading ? (
-          <p className="text-center">Loading...</p>
+          <div className="p-4">
+            <p className="text-center">Loading...</p>
+          </div>
         ) : error ? (
-          <p className="text-center text-red-500">{error}</p>
+          <div className="p-4">
+            <p className="text-center text-red-500">{error}</p>
+          </div>
         ) : currentClass ? (
-          // VOICI LA PARTIE MODIFIÉE 👇
+          // Interface de classe détaillée avec scroll horizontal géré ici
           <div className="space-y-4">
-            <Button
-              variant="outline"
-              onClick={handleBackToList}
-              className="mb-4"
-            >
-              ← Back to class list
-            </Button>
-            <GradebookClassTable
-              classData={currentClass} // Ajout de la prop classData
-              onBack={handleBackToList} // Ajout de la prop onBack
-            />
+            <div className="p-4 pb-0">
+              <Button
+                variant="outline"
+                onClick={handleBackToList}
+                className="mb-4"
+              >
+                ← Back to class list
+              </Button>
+            </div>
+
+            {/* Note d'information pour le scroll horizontal */}
+            <div className="px-4 py-2 bg-blue-50 border-b border-blue-200 text-sm text-blue-700 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Scroll horizontally to view all grade columns • Student name and
+              average stay fixed during scroll
+            </div>
+
+            {/* Container avec scroll horizontal */}
+            <div className="overflow-x-auto">
+              <GradebookClassTable
+                classData={currentClass}
+                onBack={handleBackToList}
+                columnCounts={{
+                  test:
+                    gradebookData.find((item) => item.id === currentClass.id)
+                      ?.noOfExams || 1,
+                  quiz:
+                    gradebookData.find((item) => item.id === currentClass.id)
+                      ?.noOfTests || 1,
+                  homework:
+                    gradebookData.find((item) => item.id === currentClass.id)
+                      ?.noOfHomeworks || 1,
+                  participation:
+                    gradebookData.find((item) => item.id === currentClass.id)
+                      ?.noOfParticipation || 1,
+                  other:
+                    gradebookData.find((item) => item.id === currentClass.id)
+                      ?.noOfOther || 1,
+                }}
+              />
+            </div>
           </div>
         ) : (
-          <GradebookTable
-            classes={gradebookData}
-            onClassSelect={handleClassSelect}
-          />
+          // Interface de liste des classes avec scroll horizontal géré ici
+          <div>
+            {/* Note d'information pour le scroll horizontal */}
+            <div className="px-4 py-2 bg-blue-50 border-b border-blue-200 text-sm text-blue-700 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Scroll horizontally to view all columns • Class name column stays
+              fixed during scroll
+            </div>
+
+            {/* Container avec scroll horizontal */}
+            <div className="overflow-x-auto">
+              <GradebookTable
+                classes={gradebookData}
+                onClassSelect={handleClassSelect}
+              />
+            </div>
+          </div>
         )}
       </Card>
     </section>

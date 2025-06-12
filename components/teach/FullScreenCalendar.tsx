@@ -32,7 +32,10 @@ export function FullScreenCalendar({
   useEffect(() => {
     if (externalSelectedDate) {
       setInternalSelectedDate(externalSelectedDate);
-      setCurrentDate(externalSelectedDate);
+      // Also update current month view if needed
+      if (!isSameMonth(currentDate, externalSelectedDate)) {
+        setCurrentDate(externalSelectedDate);
+      }
     } else {
       setInternalSelectedDate(null);
     }

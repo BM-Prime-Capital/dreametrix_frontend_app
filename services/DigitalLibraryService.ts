@@ -60,7 +60,7 @@ export async function getSubjects(
 //       // Log more details about the failed response
 //       console.error('Response status:', response.status);
 //       console.error('Response text:', await response.text());
-      
+
 //       if (response.status === 403) {
 //         throw new Error("Vous n'avez pas la permission d'accéder aux donnees.");
 //       } else {
@@ -100,7 +100,9 @@ export async function getGrades(
         // return ["3", "4", "5", "6", "7", "8"];
         return null;
       }
-      throw new Error(`Erreur ${response.status} lors de la récupération des grades`);
+      throw new Error(
+        `Erreur ${response.status} lors de la récupération des grades`
+      );
     }
 
     const data = await response.json();

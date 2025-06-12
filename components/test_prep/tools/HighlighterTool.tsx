@@ -23,6 +23,9 @@ interface HighlighterToolProps {
   onClose: () => void;
   initialPosition?: { x: number; y: number };
   targetImageRef?: React.RefObject<HTMLImageElement>;
+  highlights?: Highlight[];
+  onHighlightsChange?: (highlights: Highlight[]) => void;
+  onClearHighlights?: () => void;
 }
 
 interface DrawingPoint {
@@ -78,6 +81,9 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
   onClose,
   initialPosition = { x: 50, y: 50 },
   targetImageRef,
+  highlights: externalHighlights,
+  onHighlightsChange,
+  onClearHighlights,
 }) => {
   const draggableNodeRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -91,7 +97,7 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
   const [strokeWidth, setStrokeWidth] = useState(3);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPath, setCurrentPath] = useState<DrawingPoint[]>([]);
-  const [highlights, setHighlights] = useState<Highlight[]>([]);
+  const [internalHighlights, setInternalHighlights] = useState<Highlight[]>([]);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [startPoint, setStartPoint] = useState<DrawingPoint | null>(null);
   const [selectedHighlight, setSelectedHighlight] = useState<Highlight | null>(
@@ -99,6 +105,30 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
   );
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState<DrawingPoint>({ x: 0, y: 0 });
+
+  // Use external highlights if provided, otherwise use internal state
+  const highlights = externalHighlights || internalHighlights;
+
+  // Function to update highlights - use callback if provided, otherwise update internal state
+  const updateHighlights = useCallback(
+    (newHighlights: Highlight[]) => {
+      if (onHighlightsChange) {
+        onHighlightsChange(newHighlights);
+      } else {
+        setInternalHighlights(newHighlights);
+      }
+    },
+    [onHighlightsChange]
+  );
+
+  // Function to clear highlights - use callback if provided, otherwise clear internal state
+  const clearHighlights = useCallback(() => {
+    if (onClearHighlights) {
+      onClearHighlights();
+    } else {
+      setInternalHighlights([]);
+    }
+  }, [onClearHighlights]);
 
   // Create overlay immediately and update position
   useEffect(() => {
@@ -158,25 +188,37 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
           overlay.style.height = `${newRect.height}px`;
 
           // Update canvas size if dimensions changed
-          if (
-            canvas.width !== newRect.width ||
-            canvas.height !== newRect.height
-          ) {
+          const dimensionsChanged =
+            canvas.width !== newRect.width || canvas.height !== newRect.height;
+
+          if (dimensionsChanged) {
             canvas.width = newRect.width;
             canvas.height = newRect.height;
             setCanvasSize({ width: newRect.width, height: newRect.height });
-
-            // Redraw highlights after canvas resize
-            setTimeout(() => {
-              drawOnCanvas();
-            }, 0);
           }
+
+          // Always redraw highlights after position/size update
+          // Use requestAnimationFrame for better performance
+          requestAnimationFrame(() => {
+            drawOnCanvas();
+          });
         }
+      };
+
+      // Throttled version of updateOverlayPosition for scroll events
+      let scrollTimer: NodeJS.Timeout | null = null;
+      const throttledUpdatePosition = () => {
+        if (scrollTimer) {
+          clearTimeout(scrollTimer);
+        }
+        scrollTimer = setTimeout(updateOverlayPosition, 16); // ~60fps
       };
 
       // Set up event listeners for position updates
       window.addEventListener("resize", updateOverlayPosition);
-      window.addEventListener("scroll", updateOverlayPosition);
+      window.addEventListener("scroll", throttledUpdatePosition, {
+        passive: true,
+      });
 
       // Also listen for image load events in case image isn't fully loaded
       if (!img.complete) {
@@ -184,8 +226,11 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
       }
 
       return () => {
+        if (scrollTimer) {
+          clearTimeout(scrollTimer);
+        }
         window.removeEventListener("resize", updateOverlayPosition);
-        window.removeEventListener("scroll", updateOverlayPosition);
+        window.removeEventListener("scroll", throttledUpdatePosition);
         img.removeEventListener("load", updateOverlayPosition);
 
         // Clean up overlay
@@ -325,7 +370,7 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
         const hitHighlight = findHighlightAtPoint(coords);
         if (hitHighlight) {
           console.log("Erasing highlight:", hitHighlight.id);
-          setHighlights((prev) => prev.filter((h) => h.id !== hitHighlight.id));
+          updateHighlights(highlights.filter((h) => h.id !== hitHighlight.id));
         } else {
           console.log("No highlight found to erase at this point");
         }
@@ -358,7 +403,14 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
         }
       }
     },
-    [currentTool, opacity, currentColor, strokeWidth, highlights]
+    [
+      currentTool,
+      opacity,
+      currentColor,
+      strokeWidth,
+      highlights,
+      updateHighlights,
+    ]
   );
 
   const draw = useCallback(
@@ -531,14 +583,11 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
           y: 0,
           points: [...currentPath, coords],
         };
-        setHighlights((prev) => {
-          const updated = [...prev, newHighlight];
-          console.log(
-            "Added freehand highlight, total highlights:",
-            updated.length
-          );
-          return updated;
-        });
+        updateHighlights([...highlights, newHighlight]);
+        console.log(
+          "Added freehand highlight, total highlights:",
+          highlights.length + 1
+        );
         setCurrentPath([]);
       } else if (currentTool === "rectangle") {
         const width = coords.x - startPoint.x;
@@ -556,14 +605,11 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
             width: Math.abs(width),
             height: Math.abs(height),
           };
-          setHighlights((prev) => {
-            const updated = [...prev, newHighlight];
-            console.log(
-              "Added rectangle highlight, total highlights:",
-              updated.length
-            );
-            return updated;
-          });
+          updateHighlights([...highlights, newHighlight]);
+          console.log(
+            "Added rectangle highlight, total highlights:",
+            highlights.length + 1
+          );
         }
       } else if (currentTool === "circle") {
         const radius = Math.sqrt(
@@ -582,14 +628,11 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
             y: startPoint.y,
             radius,
           };
-          setHighlights((prev) => {
-            const updated = [...prev, newHighlight];
-            console.log(
-              "Added circle highlight, total highlights:",
-              updated.length
-            );
-            return updated;
-          });
+          updateHighlights([...highlights, newHighlight]);
+          console.log(
+            "Added circle highlight, total highlights:",
+            highlights.length + 1
+          );
         }
       }
     },
@@ -601,6 +644,8 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
       currentColor,
       opacity,
       strokeWidth,
+      highlights,
+      updateHighlights,
     ]
   );
 
@@ -787,26 +832,25 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
   const moveSelectedHighlight = (deltaX: number, deltaY: number) => {
     if (!selectedHighlight) return;
 
-    setHighlights((prev) =>
-      prev.map((highlight) => {
-        if (highlight.id === selectedHighlight.id) {
-          const moved = { ...highlight };
-          moved.x += deltaX;
-          moved.y += deltaY;
+    const updatedHighlights = highlights.map((highlight) => {
+      if (highlight.id === selectedHighlight.id) {
+        const moved = { ...highlight };
+        moved.x += deltaX;
+        moved.y += deltaY;
 
-          // Move points for freehand
-          if (moved.type === "freehand" && moved.points) {
-            moved.points = moved.points.map((point) => ({
-              x: point.x + deltaX,
-              y: point.y + deltaY,
-            }));
-          }
-
-          return moved;
+        // Move points for freehand
+        if (moved.type === "freehand" && moved.points) {
+          moved.points = moved.points.map((point) => ({
+            x: point.x + deltaX,
+            y: point.y + deltaY,
+          }));
         }
-        return highlight;
-      })
-    );
+
+        return moved;
+      }
+      return highlight;
+    });
+    updateHighlights(updatedHighlights);
 
     // Update selected highlight reference
     setSelectedHighlight((prev) => {
@@ -828,7 +872,7 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
   const deleteSelectedHighlight = () => {
     if (!selectedHighlight) return;
 
-    setHighlights((prev) => prev.filter((h) => h.id !== selectedHighlight.id));
+    updateHighlights(highlights.filter((h) => h.id !== selectedHighlight.id));
     setSelectedHighlight(null);
   };
 
@@ -918,8 +962,8 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
           const hitHighlight = findHighlightAtPoint(coords);
           if (hitHighlight) {
             console.log("Erasing highlight:", hitHighlight.id);
-            setHighlights((prev) =>
-              prev.filter((h) => h.id !== hitHighlight.id)
+            updateHighlights(
+              highlights.filter((h) => h.id !== hitHighlight.id)
             );
             // Clear selection if we erased the selected highlight
             if (selectedHighlight?.id === hitHighlight.id) {
@@ -1122,7 +1166,7 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
             y: 0,
             points: [...currentPath, coords],
           };
-          setHighlights((prev) => [...prev, newHighlight]);
+          updateHighlights([...highlights, newHighlight]);
           setCurrentPath([]);
         } else if (currentTool === "rectangle") {
           const width = coords.x - startPoint.x;
@@ -1139,7 +1183,7 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
               width: Math.abs(width),
               height: Math.abs(height),
             };
-            setHighlights((prev) => [...prev, newHighlight]);
+            updateHighlights([...highlights, newHighlight]);
           }
         } else if (currentTool === "circle") {
           const radius = Math.sqrt(
@@ -1157,7 +1201,7 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
               y: startPoint.y,
               radius,
             };
-            setHighlights((prev) => [...prev, newHighlight]);
+            updateHighlights([...highlights, newHighlight]);
           }
         }
       };
@@ -1206,6 +1250,10 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
     isDrawing,
     startPoint,
     currentPath,
+    updateHighlights,
+    selectedHighlight,
+    isDragging,
+    dragOffset,
   ]);
 
   // Update cursor when tool changes
@@ -1223,11 +1271,13 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
   };
 
   const undoLastHighlight = () => {
-    setHighlights((prev) => prev.slice(0, -1));
+    if (highlights.length > 0) {
+      updateHighlights(highlights.slice(0, -1));
+    }
   };
 
   const clearAllHighlights = () => {
-    setHighlights([]);
+    clearHighlights();
     if (canvasRef.current) {
       const ctx = canvasRef.current.getContext("2d");
       if (ctx) {
@@ -1257,7 +1307,7 @@ const HighlighterTool: React.FC<HighlighterToolProps> = ({
     reader.onload = (e) => {
       try {
         const importedHighlights = JSON.parse(e.target?.result as string);
-        setHighlights(importedHighlights);
+        updateHighlights(importedHighlights);
       } catch (error) {
         console.error("Error importing highlights:", error);
       }

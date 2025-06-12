@@ -24,8 +24,6 @@ import { RecordDialog } from "./RecordDialog";
 import {
   getGradeBookFocusList,
   updateStudentGrade,
-  getVoiceRecordings,
-  getVoiceRecordingAudio,
 } from "@/services/GradebooksService";
 import { localStorageKey } from "@/constants/global";
 import { Input } from "@/components/ui/input";
@@ -42,19 +40,29 @@ import {
 interface GradebookClassTableProps {
   classData: ClassData;
   onBack: () => void;
+  columnCounts?: {
+    test: number;
+    quiz: number;
+    homework: number;
+    participation: number;
+    other: number;
+  };
 }
 
 interface ApiStudent {
+  student: number;
   student_name: string;
-  student_id: number;
-  average_grade: number;
-  assessment_types: {
-    test: number[];
-    homework: number[];
-    quiz: number[];
-    participation: number[];
-    other: number[];
-  };
+  student_email: string;
+  student_average: string;
+  submissions: {
+    assessment: number;
+    assessment_name: string;
+    assessment_type: string;
+    score: number;
+    voice_note: string | null;
+    marked: boolean;
+    submission_id: number;
+  }[];
 }
 
 interface StudentGrade {
@@ -68,20 +76,28 @@ interface StudentGrade {
     participation: number[];
     other: number[];
   };
+  submissionsMap: Map<
+    string,
+    { submissionId: number; voiceNote: string | null }
+  >; // Map assessment key to submission data
+  assessmentNames: {
+    test: string[];
+    homework: string[];
+    quiz: string[];
+    participation: string[];
+    other: string[];
+  }; // Store actual assessment names
 }
 
 export function GradebookClassTable({
   classData,
   onBack,
+  columnCounts,
 }: GradebookClassTableProps) {
   const [students, setStudents] = useState<StudentGrade[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editingCell, setEditingCell] = useState<string | null>(null);
-  const [voiceRecordings, setVoiceRecordings] = useState<Set<string>>(
-    new Set()
-  );
-  const [audioUrls, setAudioUrls] = useState<Map<string, string>>(new Map());
 
   const accessToken: any = localStorage.getItem(localStorageKey.ACCESS_TOKEN);
   const refreshToken: any = localStorage.getItem(localStorageKey.REFRESH_TOKEN);
@@ -100,10 +116,30 @@ export function GradebookClassTable({
   const handleRecordingSaved = (
     studentId: string,
     assessmentType: string,
-    assessmentIndex: number
+    assessmentIndex: number,
+    voiceNotesUrl?: string
   ) => {
-    const recordingKey = `${studentId}-${assessmentType}-${assessmentIndex}`;
-    setVoiceRecordings((prev) => new Set([...prev, recordingKey]));
+    // Update the local state with the new voice note URL
+    setStudents((prevStudents) =>
+      prevStudents.map((student) => {
+        if (student.id === studentId) {
+          const updatedStudent = { ...student };
+          const submissionKey = `${assessmentType}-${assessmentIndex}`;
+          const currentSubmission =
+            updatedStudent.submissionsMap.get(submissionKey);
+
+          if (currentSubmission) {
+            updatedStudent.submissionsMap.set(submissionKey, {
+              ...currentSubmission,
+              voiceNote: voiceNotesUrl || currentSubmission.voiceNote,
+            });
+          }
+
+          return updatedStudent;
+        }
+        return student;
+      })
+    );
   };
 
   const hasVoiceRecording = (
@@ -111,8 +147,12 @@ export function GradebookClassTable({
     assessmentType: string,
     assessmentIndex: number
   ) => {
-    const recordingKey = `${studentId}-${assessmentType}-${assessmentIndex}`;
-    return voiceRecordings.has(recordingKey);
+    const student = students.find((s) => s.id === studentId);
+    if (!student) return false;
+
+    const submissionKey = `${assessmentType}-${assessmentIndex}`;
+    const submissionData = student.submissionsMap.get(submissionKey);
+    return !!submissionData?.voiceNote;
   };
 
   const getAudioUrl = (
@@ -120,8 +160,26 @@ export function GradebookClassTable({
     assessmentType: string,
     assessmentIndex: number
   ) => {
-    const recordingKey = `${studentId}-${assessmentType}-${assessmentIndex}`;
-    return audioUrls.get(recordingKey);
+    const student = students.find((s) => s.id === studentId);
+    if (!student) return undefined;
+
+    const submissionKey = `${assessmentType}-${assessmentIndex}`;
+    const submissionData = student.submissionsMap.get(submissionKey);
+    // console.log("Submission Data:", submissionData);
+    return submissionData?.voiceNote || undefined;
+  };
+
+  const getSubmissionId = (
+    studentId: string,
+    assessmentType: string,
+    assessmentIndex: number
+  ) => {
+    const student = students.find((s) => s.id === studentId);
+    if (!student) return undefined;
+
+    const submissionKey = `${assessmentType}-${assessmentIndex}`;
+    const submissionData = student.submissionsMap.get(submissionKey);
+    return submissionData?.submissionId;
   };
 
   const handleGradeUpdate = async (
@@ -131,10 +189,34 @@ export function GradebookClassTable({
     newGrade: number
   ) => {
     try {
+      const submissionId = getSubmissionId(
+        studentId,
+        assessmentType,
+        assessmentIndex
+      );
+      if (!submissionId) {
+        console.error("❌ No submission ID found for this assessment:", {
+          studentId,
+          assessmentType,
+          assessmentIndex,
+        });
+        alert(
+          "Unable to update grade: No submission data found. Please refresh the page and try again."
+        );
+        return;
+      }
+
+      console.log("🔄 Updating grade with submission-based approach:", {
+        submissionId,
+        assessmentType,
+        assessmentIndex,
+        newGrade,
+      });
+
       await updateStudentGrade(
         tenantPrimaryDomain,
         accessToken,
-        parseInt(studentId),
+        submissionId,
         assessmentType,
         assessmentIndex,
         newGrade,
@@ -187,24 +269,88 @@ export function GradebookClassTable({
         }
 
         const apiData = response as ApiStudent[];
+        console.log("API Data: " + classData.id, apiData);
 
         const formattedStudents = apiData
           .map((student) => {
-            if (!student?.student_name || !student?.assessment_types) {
+            if (!student?.student_name || !student?.submissions) {
               console.warn("Invalid student data:", student);
               return null;
             }
+
+            // Group submissions by assessment type
+            const groupedAssessments = {
+              test: [] as number[],
+              homework: [] as number[],
+              quiz: [] as number[],
+              participation: [] as number[],
+              other: [] as number[],
+            };
+
+            // Store assessment names for each type
+            const assessmentNames = {
+              test: [] as string[],
+              homework: [] as string[],
+              quiz: [] as string[],
+              participation: [] as string[],
+              other: [] as string[],
+            };
+
+            // Create a map to store submission metadata (submission_id, voice_note)
+            const submissionsMap = new Map<
+              string,
+              { submissionId: number; voiceNote: string | null }
+            >();
+
+            // Group assessments by type and index, and track submission metadata
+            const assessmentIndexMap = {
+              test: new Map<string, number>(),
+              homework: new Map<string, number>(),
+              quiz: new Map<string, number>(),
+              participation: new Map<string, number>(),
+              other: new Map<string, number>(),
+            };
+
+            student.submissions.forEach((submission) => {
+              const assessmentType = submission.assessment_type.toLowerCase();
+              if (groupedAssessments.hasOwnProperty(assessmentType)) {
+                const typeKey =
+                  assessmentType as keyof typeof groupedAssessments;
+
+                // Get or create index for this assessment name
+                let assessmentIndex = assessmentIndexMap[typeKey].get(
+                  submission.assessment_name
+                );
+                if (assessmentIndex === undefined) {
+                  assessmentIndex = groupedAssessments[typeKey].length;
+                  assessmentIndexMap[typeKey].set(
+                    submission.assessment_name,
+                    assessmentIndex
+                  );
+                  groupedAssessments[typeKey].push(submission.score);
+                  assessmentNames[typeKey].push(submission.assessment_name); // Store the assessment name
+                } else {
+                  // Update existing entry (in case of duplicates)
+                  groupedAssessments[typeKey][assessmentIndex] =
+                    submission.score;
+                }
+
+                // Store submission metadata
+                const submissionKey = `${assessmentType}-${assessmentIndex}`;
+                submissionsMap.set(submissionKey, {
+                  submissionId: submission.submission_id,
+                  voiceNote: submission.voice_note,
+                });
+              }
+            });
+
             return {
-              id: student.student_id?.toString() || "unknown-id",
+              id: student.student.toString(),
               name: student.student_name,
-              average: student.average_grade || 0,
-              assessments: {
-                test: student.assessment_types.test || [],
-                homework: student.assessment_types.homework || [],
-                quiz: student.assessment_types.quiz || [],
-                participation: student.assessment_types.participation || [],
-                other: student.assessment_types.other || [],
-              },
+              average: parseFloat(student.student_average) || 0,
+              assessments: groupedAssessments,
+              submissionsMap,
+              assessmentNames,
             };
           })
           .filter(Boolean) as StudentGrade[];
@@ -218,70 +364,7 @@ export function GradebookClassTable({
       }
     }
 
-    async function loadExistingVoiceRecordings() {
-      try {
-        const response = await getVoiceRecordings(
-          tenantPrimaryDomain,
-          accessToken,
-          classData.id,
-          refreshToken
-        );
-
-        if (response.success && response.recordings) {
-          const recordingKeys = response.recordings.map(
-            (recording: any) =>
-              `${recording.student_id}-${recording.assessment_type}-${recording.assessment_index}`
-          );
-          setVoiceRecordings(new Set(recordingKeys));
-
-          // Load audio URLs for existing recordings
-          const audioUrlPromises = response.recordings.map(
-            async (recording: any) => {
-              try {
-                const audioResponse = await getVoiceRecordingAudio(
-                  tenantPrimaryDomain,
-                  accessToken,
-                  parseInt(recording.student_id),
-                  recording.assessment_type,
-                  recording.assessment_index,
-                  refreshToken
-                );
-
-                if (audioResponse.success && audioResponse.audioUrl) {
-                  const recordingKey = `${recording.student_id}-${recording.assessment_type}-${recording.assessment_index}`;
-                  return { recordingKey, audioUrl: audioResponse.audioUrl };
-                }
-              } catch (error) {
-                console.error(
-                  "Error loading audio URL for recording:",
-                  recording,
-                  error
-                );
-              }
-              return null;
-            }
-          );
-
-          // Wait for all audio URLs to load
-          const audioResults = await Promise.all(audioUrlPromises);
-          const newAudioUrls = new Map();
-
-          audioResults.forEach((result) => {
-            if (result) {
-              newAudioUrls.set(result.recordingKey, result.audioUrl);
-            }
-          });
-
-          setAudioUrls(newAudioUrls);
-        }
-      } catch (err: any) {
-        console.error("Error loading voice recordings:", err);
-        // Don't show error to user for voice recordings, just log it
-      }
-    }
-
     fetchStudents();
-    loadExistingVoiceRecordings();
   }, [classData.id, tenantPrimaryDomain, accessToken, refreshToken]);
 
   if (loading)
@@ -304,289 +387,425 @@ export function GradebookClassTable({
       </div>
     );
 
+  // Calculate maximum column counts for dynamic rendering
+  // Use provided columnCounts if available, otherwise calculate dynamically
+  const getMaxLength = (assessmentType: keyof StudentGrade["assessments"]) => {
+    if (columnCounts && columnCounts[assessmentType]) {
+      return columnCounts[assessmentType];
+    }
+    if (students.length === 0) return 1;
+    return Math.max(
+      ...students.map((s) => s.assessments[assessmentType].length),
+      1
+    );
+  };
+
+  // Get unique assessment names for each type across all students
+  const getAssessmentNames = (
+    assessmentType: keyof StudentGrade["assessments"]
+  ) => {
+    const allNames = new Set<string>();
+    const nameToIndexMap = new Map<string, number>();
+
+    students.forEach((student) => {
+      student.assessmentNames[assessmentType].forEach((name, index) => {
+        if (!nameToIndexMap.has(name)) {
+          nameToIndexMap.set(name, allNames.size);
+          allNames.add(name);
+        }
+      });
+    });
+
+    return Array.from(allNames);
+  };
+
+  const maxTestCols = getMaxLength("test");
+  const maxQuizCols = getMaxLength("quiz");
+  const maxHomeworkCols = getMaxLength("homework");
+  const maxParticipationCols = getMaxLength("participation");
+  const maxOtherCols = getMaxLength("other");
+
+  // Get assessment names for headers
+  const testNames = getAssessmentNames("test");
+  const quizNames = getAssessmentNames("quiz");
+  const homeworkNames = getAssessmentNames("homework");
+  const participationNames = getAssessmentNames("participation");
+  const otherNames = getAssessmentNames("other");
+
+  // Log dynamic column info for debugging
+  console.log("📊 Dynamic column counts:", {
+    tests: maxTestCols,
+    quizzes: maxQuizCols,
+    homework: maxHomeworkCols,
+    participation: maxParticipationCols,
+    other: maxOtherCols,
+    totalStudents: students.length,
+    usingProvidedCounts: !!columnCounts,
+    providedCounts: columnCounts,
+  });
+
   return (
     <TooltipProvider>
       <div className="w-full">
         <div className="rounded-lg border shadow-sm bg-white">
-          <div className="overflow-x-auto pb-2">
-            {/* Tableau avec largeur fixe adaptée à votre contenu */}
+          <Table>
+            <TableHeader className="bg-gray-50">
+              <TableRow>
+                <TableHead
+                  rowSpan={2}
+                  className="w-[120px] sticky left-0 bg-gray-50 z-20 text-center font-semibold text-gray-700 border-r border-gray-200"
+                >
+                  STUDENT
+                </TableHead>
+                <TableHead
+                  rowSpan={2}
+                  className="w-[90px] sticky left-[120px] bg-gray-50 z-20 text-center font-semibold text-gray-700 border-r border-gray-200"
+                >
+                  AVERAGE
+                </TableHead>
+                <TableHead
+                  colSpan={maxTestCols}
+                  className="text-center font-semibold text-gray-700 min-w-[100px]"
+                >
+                  TESTS
+                </TableHead>
+                <TableHead
+                  colSpan={maxQuizCols}
+                  className="text-center font-semibold text-gray-700 min-w-[100px]"
+                >
+                  QUIZZES
+                </TableHead>
+                <TableHead
+                  colSpan={maxHomeworkCols}
+                  className="text-center font-semibold text-gray-700 min-w-[100px]"
+                >
+                  HOMEWORK
+                </TableHead>
+                <TableHead
+                  colSpan={maxParticipationCols}
+                  className="text-center font-semibold text-gray-700 min-w-[120px]"
+                >
+                  PARTICIPATION
+                </TableHead>
+                <TableHead
+                  colSpan={maxOtherCols}
+                  className="text-center font-semibold text-gray-700 min-w-[100px]"
+                >
+                  OTHER
+                </TableHead>
+                {/* <TableHead
+                  rowSpan={2}
+                  className="w-[150px] font-semibold text-gray-700 sticky right-0 bg-gray-50 z-20 border-l border-gray-200"
+                >
+                  ACTIONS
+                </TableHead> */}
+              </TableRow>
+              <TableRow className="bg-gray-50">
+                {/* Dynamic Test Headers */}
+                {Array.from({ length: maxTestCols }, (_, i) => (
+                  <TableHead
+                    key={`test-header-${i}`}
+                    className="text-xs font-medium text-gray-500 min-w-[80px]"
+                  >
+                    {testNames[i] || `Test ${i + 1}`}
+                  </TableHead>
+                ))}
+                {/* Dynamic Quiz Headers */}
+                {Array.from({ length: maxQuizCols }, (_, i) => (
+                  <TableHead
+                    key={`quiz-header-${i}`}
+                    className="text-xs font-medium text-gray-500 min-w-[80px]"
+                  >
+                    {quizNames[i] || `Quiz ${i + 1}`}
+                  </TableHead>
+                ))}
+                {/* Dynamic Homework Headers */}
+                {Array.from({ length: maxHomeworkCols }, (_, i) => (
+                  <TableHead
+                    key={`homework-header-${i}`}
+                    className="text-xs font-medium text-gray-500 min-w-[80px]"
+                  >
+                    {homeworkNames[i] || `HW ${i + 1}`}
+                  </TableHead>
+                ))}
+                {/* Dynamic Participation Headers */}
+                {Array.from({ length: maxParticipationCols }, (_, i) => (
+                  <TableHead
+                    key={`participation-header-${i}`}
+                    className="text-xs font-medium text-gray-500 min-w-[90px]"
+                  >
+                    {participationNames[i] || `Part ${i + 1}`}
+                  </TableHead>
+                ))}
+                {/* Dynamic Other Headers */}
+                {Array.from({ length: maxOtherCols }, (_, i) => (
+                  <TableHead
+                    key={`other-header-${i}`}
+                    className="text-xs font-medium text-gray-500 min-w-[80px]"
+                  >
+                    {otherNames[i] || `Other ${i + 1}`}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {students.map((student) => (
+                <TableRow key={student.id} className="hover:bg-gray-50/50">
+                  <TableCell className="font-medium sticky left-0 bg-white z-10 w-[120px] truncate border-r border-gray-200">
+                    {student.name}
+                  </TableCell>
 
-            <Table>
-              <TableHeader className="bg-gray-50">
-                <TableRow>
-                  <TableHead
-                    rowSpan={2}
-                    className="w-[120px] sticky left-0 bg-gray-50 z-10 text-center font-semibold text-gray-700"
-                  >
-                    STUDENT
-                  </TableHead>
-                  <TableHead
-                    rowSpan={2}
-                    className="w-[90px] text-center font-semibold text-gray-700"
-                  >
-                    AVERAGE
-                  </TableHead>
-                  <TableHead
-                    colSpan={2}
-                    className="text-center font-semibold text-gray-700"
-                  >
-                    EXAMS
-                  </TableHead>
-                  <TableHead
-                    colSpan={4}
-                    className="text-center font-semibold text-gray-700"
-                  >
-                    QUIZZES
-                  </TableHead>
-                  <TableHead
-                    colSpan={3}
-                    className="text-center font-semibold text-gray-700"
-                  >
-                    HOMEWORK
-                  </TableHead>
-                  <TableHead
-                    rowSpan={2}
-                    className="w-[150px] font-semibold text-gray-700"
-                  >
-                    ACTIONS
-                  </TableHead>
-                </TableRow>
-                <TableRow className="bg-gray-50">
-                  {[
-                    "General",
-                    "Practical",
-                    "General",
-                    "Pop Quiz",
-                    "Unit 1",
-                    "Unit 2",
-                    "Chapter 3",
-                    "General",
-                    "Project",
-                  ].map((header, i) => (
-                    <TableHead
-                      key={i}
-                      className="text-xs font-medium text-gray-500"
+                  <TableCell className="text-center w-[90px] sticky left-[120px] bg-white z-10 border-r border-gray-200">
+                    <Badge
+                      variant={
+                        student.average >= 70
+                          ? "default"
+                          : student.average >= 50
+                          ? "secondary"
+                          : "destructive"
+                      }
+                      className={
+                        student.average >= 70
+                          ? "bg-green-100 text-green-800"
+                          : student.average >= 50
+                          ? "bg-yellow-100 text-yellow-800"
+                          : ""
+                      }
                     >
-                      {header}
-                    </TableHead>
+                      {student.average.toFixed(1)}
+                    </Badge>
+                  </TableCell>
+
+                  {/* Dynamic Test Cells */}
+                  {Array.from({ length: maxTestCols }, (_, i) => (
+                    <TableCell
+                      key={`test-${i}`}
+                      className="text-center min-w-[80px]"
+                    >
+                      <GradeCell
+                        value={student.assessments.test[i]}
+                        studentId={student.id}
+                        submissionId={getSubmissionId(student.id, "test", i)}
+                        assessmentType="test"
+                        assessmentIndex={i}
+                        cellId={`${student.id}-test-${i}`}
+                        editingCell={editingCell}
+                        setEditingCell={setEditingCell}
+                        onGradeUpdate={handleGradeUpdate}
+                        hasVoiceRecording={hasVoiceRecording(
+                          student.id,
+                          "test",
+                          i
+                        )}
+                        onRecordingSaved={(voiceNotesUrl) =>
+                          handleRecordingSaved(
+                            student.id,
+                            "test",
+                            i,
+                            voiceNotesUrl
+                          )
+                        }
+                        audioUrl={getAudioUrl(student.id, "test", i)}
+                      />
+                    </TableCell>
                   ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {students.map((student) => (
-                  <TableRow key={student.id} className="hover:bg-gray-50/50">
-                    <TableCell className="font-medium sticky left-0 bg-white z-10 w-[120px] truncate">
-                      {student.name}
-                    </TableCell>
 
-                    <TableCell className="text-center w-[90px]">
-                      <Badge
-                        variant={
-                          student.average >= 70
-                            ? "default"
-                            : student.average >= 50
-                            ? "secondary"
-                            : "destructive"
-                        }
-                        className={
-                          student.average >= 70
-                            ? "bg-green-100 text-green-800"
-                            : student.average >= 50
-                            ? "bg-yellow-100 text-yellow-800"
-                            : ""
-                        }
-                      >
-                        {student.average.toFixed(1)}
-                      </Badge>
-                    </TableCell>
-
-                    {/* Exam Cells */}
-                    <TableCell className="text-center">
+                  {/* Dynamic Quiz Cells */}
+                  {Array.from({ length: maxQuizCols }, (_, i) => (
+                    <TableCell
+                      key={`quiz-${i}`}
+                      className="text-center min-w-[80px]"
+                    >
                       <GradeCell
-                        value={student.assessments.test[0]}
+                        value={student.assessments.quiz[i]}
                         studentId={student.id}
-                        assessmentType="test"
-                        assessmentIndex={0}
-                        cellId={`${student.id}-test-0`}
+                        submissionId={getSubmissionId(student.id, "quiz", i)}
+                        assessmentType="quiz"
+                        assessmentIndex={i}
+                        cellId={`${student.id}-quiz-${i}`}
                         editingCell={editingCell}
                         setEditingCell={setEditingCell}
                         onGradeUpdate={handleGradeUpdate}
                         hasVoiceRecording={hasVoiceRecording(
                           student.id,
-                          "test",
-                          0
+                          "quiz",
+                          i
                         )}
-                        onRecordingSaved={() =>
-                          handleRecordingSaved(student.id, "test", 0)
-                        }
-                        audioUrl={getAudioUrl(student.id, "test", 0)}
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <GradeCell
-                        value={student.assessments.test[1]}
-                        studentId={student.id}
-                        assessmentType="test"
-                        assessmentIndex={1}
-                        cellId={`${student.id}-test-1`}
-                        editingCell={editingCell}
-                        setEditingCell={setEditingCell}
-                        onGradeUpdate={handleGradeUpdate}
-                        hasVoiceRecording={hasVoiceRecording(
-                          student.id,
-                          "test",
-                          1
-                        )}
-                        onRecordingSaved={() =>
-                          handleRecordingSaved(student.id, "test", 1)
-                        }
-                        audioUrl={getAudioUrl(student.id, "test", 1)}
-                      />
-                    </TableCell>
-
-                    {/* Quiz Cells */}
-                    {[0, 1, 2, 3].map((i) => (
-                      <TableCell key={`quiz-${i}`} className="text-center">
-                        <GradeCell
-                          value={student.assessments.quiz[i]}
-                          studentId={student.id}
-                          assessmentType="quiz"
-                          assessmentIndex={i}
-                          cellId={`${student.id}-quiz-${i}`}
-                          editingCell={editingCell}
-                          setEditingCell={setEditingCell}
-                          onGradeUpdate={handleGradeUpdate}
-                          hasVoiceRecording={hasVoiceRecording(
+                        onRecordingSaved={(voiceNotesUrl) =>
+                          handleRecordingSaved(
                             student.id,
                             "quiz",
-                            i
-                          )}
-                          onRecordingSaved={() =>
-                            handleRecordingSaved(student.id, "quiz", i)
-                          }
-                          audioUrl={getAudioUrl(student.id, "quiz", i)}
-                        />
-                      </TableCell>
-                    ))}
+                            i,
+                            voiceNotesUrl
+                          )
+                        }
+                        audioUrl={getAudioUrl(student.id, "quiz", i)}
+                      />
+                    </TableCell>
+                  ))}
 
-                    {/* Homework Cells */}
-                    <TableCell className="text-center">
+                  {/* Dynamic Homework Cells */}
+                  {Array.from({ length: maxHomeworkCols }, (_, i) => (
+                    <TableCell
+                      key={`homework-${i}`}
+                      className="text-center min-w-[80px]"
+                    >
                       <GradeCell
-                        value={student.assessments.homework[0]}
+                        value={student.assessments.homework[i]}
                         studentId={student.id}
+                        submissionId={getSubmissionId(
+                          student.id,
+                          "homework",
+                          i
+                        )}
                         assessmentType="homework"
-                        assessmentIndex={0}
-                        cellId={`${student.id}-homework-0`}
+                        assessmentIndex={i}
+                        cellId={`${student.id}-homework-${i}`}
                         editingCell={editingCell}
                         setEditingCell={setEditingCell}
                         onGradeUpdate={handleGradeUpdate}
                         hasVoiceRecording={hasVoiceRecording(
                           student.id,
                           "homework",
-                          0
+                          i
                         )}
-                        onRecordingSaved={() =>
-                          handleRecordingSaved(student.id, "homework", 0)
+                        onRecordingSaved={(voiceNotesUrl) =>
+                          handleRecordingSaved(
+                            student.id,
+                            "homework",
+                            i,
+                            voiceNotesUrl
+                          )
                         }
-                        audioUrl={getAudioUrl(student.id, "homework", 0)}
+                        audioUrl={getAudioUrl(student.id, "homework", i)}
                       />
                     </TableCell>
-                    <TableCell className="text-center">
+                  ))}
+
+                  {/* Dynamic Participation Cells */}
+                  {Array.from({ length: maxParticipationCols }, (_, i) => (
+                    <TableCell
+                      key={`participation-${i}`}
+                      className="text-center min-w-[90px]"
+                    >
                       <GradeCell
-                        value={student.assessments.homework[1]}
+                        value={student.assessments.participation[i]}
                         studentId={student.id}
-                        assessmentType="homework"
-                        assessmentIndex={1}
-                        cellId={`${student.id}-homework-1`}
+                        submissionId={getSubmissionId(
+                          student.id,
+                          "participation",
+                          i
+                        )}
+                        assessmentType="participation"
+                        assessmentIndex={i}
+                        cellId={`${student.id}-participation-${i}`}
                         editingCell={editingCell}
                         setEditingCell={setEditingCell}
                         onGradeUpdate={handleGradeUpdate}
                         hasVoiceRecording={hasVoiceRecording(
                           student.id,
-                          "homework",
-                          1
+                          "participation",
+                          i
                         )}
-                        onRecordingSaved={() =>
-                          handleRecordingSaved(student.id, "homework", 1)
+                        onRecordingSaved={(voiceNotesUrl) =>
+                          handleRecordingSaved(
+                            student.id,
+                            "participation",
+                            i,
+                            voiceNotesUrl
+                          )
                         }
-                        audioUrl={getAudioUrl(student.id, "homework", 1)}
+                        audioUrl={getAudioUrl(student.id, "participation", i)}
                       />
                     </TableCell>
-                    <TableCell className="text-center">
+                  ))}
+
+                  {/* Dynamic Other Cells */}
+                  {Array.from({ length: maxOtherCols }, (_, i) => (
+                    <TableCell
+                      key={`other-${i}`}
+                      className="text-center min-w-[80px]"
+                    >
                       <GradeCell
-                        value={student.assessments.homework[2]}
+                        value={student.assessments.other[i]}
                         studentId={student.id}
-                        assessmentType="homework"
-                        assessmentIndex={2}
-                        cellId={`${student.id}-homework-2`}
+                        submissionId={getSubmissionId(student.id, "other", i)}
+                        assessmentType="other"
+                        assessmentIndex={i}
+                        cellId={`${student.id}-other-${i}`}
                         editingCell={editingCell}
                         setEditingCell={setEditingCell}
                         onGradeUpdate={handleGradeUpdate}
                         hasVoiceRecording={hasVoiceRecording(
                           student.id,
-                          "homework",
-                          2
+                          "other",
+                          i
                         )}
-                        onRecordingSaved={() =>
-                          handleRecordingSaved(student.id, "homework", 2)
+                        onRecordingSaved={(voiceNotesUrl) =>
+                          handleRecordingSaved(
+                            student.id,
+                            "other",
+                            i,
+                            voiceNotesUrl
+                          )
                         }
-                        audioUrl={getAudioUrl(student.id, "homework", 2)}
+                        audioUrl={getAudioUrl(student.id, "other", i)}
                       />
                     </TableCell>
+                  ))}
 
-                    <TableCell className="w-[150px]">
-                      <div className="flex gap-1 justify-center">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 hover:bg-blue-50"
-                            >
-                              <Pencil className="h-3.5 w-3.5 text-blue-600" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Edit grades</p>
-                          </TooltipContent>
-                        </Tooltip>
+                  {/* <TableCell className="w-[150px] sticky right-0 bg-white z-10 border-l border-gray-200">
+                    <div className="flex gap-1 justify-center">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 hover:bg-blue-50"
+                          >
+                            <Pencil className="h-3.5 w-3.5 text-blue-600" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Edit grades</p>
+                        </TooltipContent>
+                      </Tooltip>
 
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-3.5 w-3.5 text-red-600" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Delete record</p>
-                          </TooltipContent>
-                        </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-red-600" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Delete record</p>
+                        </TooltipContent>
+                      </Tooltip>
 
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 hover:bg-green-50"
-                            >
-                              <File className="h-3.5 w-3.5 text-green-600" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>View details</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 hover:bg-green-50"
+                          >
+                            <File className="h-3.5 w-3.5 text-green-600" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>View details</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TableCell> */}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </div>
     </TooltipProvider>
@@ -596,6 +815,7 @@ export function GradebookClassTable({
 interface GradeCellProps {
   value?: number;
   studentId: string;
+  submissionId?: number;
   assessmentType: string;
   assessmentIndex: number;
   cellId: string;
@@ -608,13 +828,14 @@ interface GradeCellProps {
     newGrade: number
   ) => void;
   hasVoiceRecording: boolean;
-  onRecordingSaved: () => void;
+  onRecordingSaved: (voiceNotesUrl?: string) => void;
   audioUrl?: string; // Direct audio URL for inline playback
 }
 
 function GradeCell({
   value,
   studentId,
+  submissionId,
   assessmentType,
   assessmentIndex,
   cellId,
@@ -703,12 +924,80 @@ function GradeCell({
         >
           -
         </span>
+        {submissionId ? (
+          <RecordDialog
+            studentId={studentId}
+            submissionId={submissionId}
+            assessmentType={assessmentType}
+            assessmentIndex={assessmentIndex}
+            onRecordingSaved={onRecordingSaved}
+            hasExistingRecording={hasVoiceRecording}
+            voiceUrl={audioUrl}
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-6 w-6 hover:bg-gray-100 ${
+                hasVoiceRecording ? "bg-red-50 hover:bg-red-100" : ""
+              }`}
+              aria-label={
+                hasVoiceRecording
+                  ? "Voice note recorded - Click to view/edit"
+                  : "Add voice note"
+              }
+              title={
+                hasVoiceRecording ? "🎙️ Voice note recorded" : "Add voice note"
+              }
+            >
+              <Mic
+                className={`h-4 w-4 ${
+                  hasVoiceRecording
+                    ? "text-red-600 animate-pulse"
+                    : "text-gray-500"
+                }`}
+              />
+            </Button>
+          </RecordDialog>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 opacity-50 cursor-not-allowed"
+            disabled
+            title="No submission data available for voice recording"
+          >
+            <Mic className="h-4 w-4 text-gray-300" />
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  const colorClass =
+    value >= 70
+      ? "text-green-600 font-medium"
+      : value >= 50
+      ? "text-yellow-600"
+      : "text-red-600";
+
+  return (
+    <div className="flex justify-center items-center gap-1">
+      <span
+        className={`${colorClass} cursor-pointer hover:bg-gray-100 px-2 py-1 rounded min-w-8 text-center`}
+        onClick={handleCellClick}
+        title="Click to edit"
+      >
+        {value}
+      </span>
+      {submissionId ? (
         <RecordDialog
           studentId={studentId}
+          submissionId={submissionId}
           assessmentType={assessmentType}
           assessmentIndex={assessmentIndex}
           onRecordingSaved={onRecordingSaved}
           hasExistingRecording={hasVoiceRecording}
+          voiceUrl={audioUrl}
         >
           <Button
             variant="ghost"
@@ -730,59 +1019,21 @@ function GradeCell({
                 hasVoiceRecording
                   ? "text-red-600 animate-pulse"
                   : "text-gray-500"
-              }`}
+              } hover:text-blue-500`}
             />
           </Button>
         </RecordDialog>
-      </div>
-    );
-  }
-
-  const colorClass =
-    value >= 70
-      ? "text-green-600 font-medium"
-      : value >= 50
-      ? "text-yellow-600"
-      : "text-red-600";
-
-  return (
-    <div className="flex justify-center items-center gap-1">
-      <span
-        className={`${colorClass} cursor-pointer hover:bg-gray-100 px-2 py-1 rounded min-w-8 text-center`}
-        onClick={handleCellClick}
-        title="Click to edit"
-      >
-        {value}
-      </span>
-      <RecordDialog
-        studentId={studentId}
-        assessmentType={assessmentType}
-        assessmentIndex={assessmentIndex}
-        onRecordingSaved={onRecordingSaved}
-        hasExistingRecording={hasVoiceRecording}
-      >
+      ) : (
         <Button
           variant="ghost"
           size="icon"
-          className={`h-6 w-6 hover:bg-gray-100 ${
-            hasVoiceRecording ? "bg-red-50 hover:bg-red-100" : ""
-          }`}
-          aria-label={
-            hasVoiceRecording
-              ? "Voice note recorded - Click to view/edit"
-              : "Add voice note"
-          }
-          title={
-            hasVoiceRecording ? "🎙️ Voice note recorded" : "Add voice note"
-          }
+          className="h-6 w-6 opacity-50 cursor-not-allowed"
+          disabled
+          title="No submission data available for voice recording"
         >
-          <Mic
-            className={`h-4 w-4 ${
-              hasVoiceRecording ? "text-red-600 animate-pulse" : "text-gray-500"
-            } hover:text-blue-500`}
-          />
+          <Mic className="h-4 w-4 text-gray-300" />
         </Button>
-      </RecordDialog>
+      )}
     </div>
   );
 }

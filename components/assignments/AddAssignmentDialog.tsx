@@ -18,6 +18,8 @@ import { useList } from "@/hooks/useList";
 import { getClasses } from "@/services/ClassService";
 import { Loader } from "../ui/loader";
 import { Class } from "@/types";
+import { useRouter } from "next/navigation";
+import { BookOpen } from "lucide-react";
 
 type FormData = {
   name: string;
@@ -30,6 +32,7 @@ type FormData = {
 
 export function AddAssignmentDialog() {
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -67,6 +70,30 @@ export function AddAssignmentDialog() {
 
   const handleChange = (field: keyof FormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleGoToDigitalLibrary = () => {
+    // Find the selected class details
+    const selectedClass = classes?.find(
+      (cls: Class) => cls.id.toString() === formData.course
+    );
+
+    // Create query parameters with assignment data
+    const queryParams = new URLSearchParams();
+
+    if (formData.name) queryParams.set("assignmentName", formData.name);
+    if (formData.course) queryParams.set("courseId", formData.course);
+    if (selectedClass?.name) queryParams.set("courseName", selectedClass.name);
+    if (selectedClass?.subject_in_short)
+      queryParams.set("subject", selectedClass.subject_in_short);
+    if (selectedClass?.grade) queryParams.set("grade", selectedClass.grade);
+    if (formData.due_date) queryParams.set("dueDate", formData.due_date);
+    if (formData.kind) queryParams.set("assignmentType", formData.kind);
+    queryParams.set("published", formData.published.toString());
+
+    // Redirect to digital library with query parameters
+    router.push(`/teacher/digital_library?${queryParams.toString()}`);
+    setOpen(false);
   };
 
   return (
@@ -238,6 +265,27 @@ export function AddAssignmentDialog() {
               onChange={(e) => setFile(e.target.files?.[0] || null)}
               required
             />
+          </div>
+          <div className="w-full flex items-center justify-center my-4">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+            <span className="px-4 text-sm font-medium text-gray-500 bg-white">
+              OR
+            </span>
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+          </div>
+          {/* Go to Digital Library Button */}
+          <div className="w-full">
+            <Button
+              type="button"
+              onClick={handleGoToDigitalLibrary}
+              className="w-full flex gap-2 items-center text-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg px-4 py-3 shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02]"
+            >
+              <BookOpen className="w-5 h-5" />
+              <span>Go to Digital Library</span>
+            </Button>
+            <p className="text-xs text-gray-500 mt-1 text-center">
+              Create worksheets and materials for this assignment
+            </p>
           </div>
 
           <div className="w-full flex justify-end gap-3 mt-6 border-t pt-4">

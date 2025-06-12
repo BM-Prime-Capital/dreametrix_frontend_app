@@ -17,10 +17,7 @@ export default function Teach() {
 
   const handlePopupClose = (open: boolean) => {
     setShowMaterialsPopup(open);
-    if (!open) {
-      // Reset only the popup visibility, not the selected date
-      // so the calendar keeps the selection
-    }
+
   };
 
   return (

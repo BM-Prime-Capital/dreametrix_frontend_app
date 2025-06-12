@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { enrollStudentsToClass, unenrollStudentsFromClass, updateStudent } from "@/services/student-service";
 
 interface Student {
   id: number;
@@ -32,11 +33,7 @@ interface Student {
   characterScore?: number;
   attendance?: number;
   class?: string;
-  user?: {
-    email: string;
-    first_name: string;
-    last_name: string;
-  };
+  user?:any;
   school?: {
     name: string;
   };
@@ -52,9 +49,20 @@ interface ClassRosterDialogProps {
   studentList: any;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  tenantPrimaryDomain: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
-export function ClassRosterDialog({ classData, open, onOpenChange, studentList }: ClassRosterDialogProps) {
+export function ClassRosterDialog({ 
+  classData, 
+  open, 
+  onOpenChange, 
+  studentList,
+  tenantPrimaryDomain,
+  accessToken,
+  refreshToken
+}: ClassRosterDialogProps) {
   const { toast } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
   const [originalStudents, setOriginalStudents] = useState<Student[]>([]);
@@ -63,6 +71,12 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
   const [studentFilter, setStudentFilter] = useState("");
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [changesSummary, setChangesSummary] = useState<{
+    toAdd: Student[];
+    toRemove: Student[];
+  }>({ toAdd: [], toRemove: [] });
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -78,7 +92,7 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
       characterScore: Math.floor(Math.random() * 10) + 1,
       attendance: Math.floor(Math.random() * 100)
     })) || [];
-  }, [studentList]);
+  }, [studentList]);  
 
   const normalizedClassStudents = useMemo(() => {
     if (!classData?.students || !normalizedStudentList) return [];
@@ -143,15 +157,120 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
     setEditingStudent(student);
   }, []);
 
-  const handleSaveStudent = useCallback((updatedStudent: Student) => {
-    setStudents(prev => 
-      prev.map(student => 
-        student.id === updatedStudent.id ? updatedStudent : student
-      )
-    );
-    setEditingStudent(null);
-    setHasChanges(true);
-  }, []);
+  const handleSaveStudent = useCallback(async (updatedStudent: Student) => {
+    setIsEditing(true); 
+    try {
+      const studentData = {
+        user: {
+          first_name: updatedStudent.user?.first_name,
+          last_name: updatedStudent.user?.last_name,
+        }
+      };
+
+      console.log("Saving student data:", updatedStudent);
+      const userId = updatedStudent.user?.id || updatedStudent.id;
+      await updateStudent(
+        userId,
+        studentData.user,
+        tenantPrimaryDomain,
+        accessToken,
+        refreshToken
+      );
+  
+      setStudents(prev => 
+        prev.map(student => 
+          student.id === updatedStudent.id ? {
+            ...student,
+            ...updatedStudent,
+            full_name: `${updatedStudent.user?.first_name} ${updatedStudent.user?.last_name}`
+          } : student
+        )
+      );
+      setEditingStudent(null);  
+      toast({
+        title: "Student updated successfully",
+        description: "The student information has been saved.",
+      });
+    } catch (error) {
+      console.error("Error saving student:", error);
+      toast({
+        title: "Error saving student",
+        description: "There was an error while saving the student information.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsEditing(false);
+    }
+  }, [tenantPrimaryDomain, accessToken, refreshToken, toast]);
+
+  const prepareSaveChanges = useCallback(() => {
+    const currentIds = students.map(s => s.id);
+    const originalIds = originalStudents.map(s => s.id);
+    
+    const toAdd = students.filter(student => !originalIds.includes(student.id));
+    const toRemove = originalStudents.filter(student => !currentIds.includes(student.id));
+    
+    setChangesSummary({ toAdd, toRemove });
+    setShowSaveConfirm(true);
+  }, [students, originalStudents]);
+
+  const executeSaveChanges = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      const currentIds = students.map(s => s.id);
+      const originalIds = originalStudents.map(s => s.id);
+      
+      const studentsToAdd = currentIds.filter(id => !originalIds.includes(id));
+      const studentsToRemove = originalIds.filter(id => !currentIds.includes(id));
+  
+      if (studentsToAdd.length > 0) {
+        await enrollStudentsToClass(
+          classData?.id || 0,
+          studentsToAdd,
+          tenantPrimaryDomain,
+          accessToken,
+          refreshToken
+        );
+      }
+  
+      if (studentsToRemove.length > 0) {
+        await unenrollStudentsFromClass(
+          classData?.id || 0,
+          studentsToRemove,
+          tenantPrimaryDomain,
+          accessToken,
+          refreshToken
+        );
+      }
+  
+      toast({
+        title: "Changes saved successfully",
+        description: "All modifications have been saved.",
+      });
+      setOriginalStudents(students);
+      setHasChanges(false);
+      setShowSaveConfirm(false);
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error saving changes:", error);
+      toast({
+        title: "Error saving changes",
+        description: "There was an error while saving your changes.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }, [
+    students, 
+    originalStudents, 
+    classData?.id, 
+    tenantPrimaryDomain, 
+    accessToken, 
+    refreshToken, 
+    toast,
+    onOpenChange
+  ]);
 
   const handleSearchTermChange = useCallback((value: string) => {
     setSearchTerm(value);
@@ -168,52 +287,6 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
         : [...prev, studentId]
     );
   }, []);
-
-  const handleSaveChanges = useCallback(async () => {
-    setIsSaving(true);
-    try {
-      const updatedStudents = students.filter(student => {
-        const original = originalStudents.find(s => s.id === student.id);
-        return original && JSON.stringify(original) !== JSON.stringify(student);
-      });
-
-      if (updatedStudents.length > 0) {
-        for (const student of updatedStudents) {
-          console.log('Would update student:', student.id);
-        }
-      }
-
-      // 2. Update class roster if students were added/removed
-      const currentIds = students.map(s => s.id);
-      const originalIds = originalStudents.map(s => s.id);
-      
-      if (JSON.stringify(currentIds.sort()) !== JSON.stringify(originalIds.sort())) {
-        const response = await fetch(`/classes/${classData?.id}`, {
-          method: 'PUT',
-          body: JSON.stringify({ students: currentIds }),
-          headers: { 'Content-Type': 'application/json' }
-        });
-
-        console.log('response', response);
-      }
-
-      toast({
-        title: "Changes saved successfully",
-        description: "All modifications have been saved.",
-      });
-      setOriginalStudents(students);
-      setHasChanges(false);
-    } catch (error) {
-      console.log("error",error)
-      toast({
-        title: "Error saving changes",
-        description: "There was an error while saving your changes.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  }, [students, originalStudents, classData?.id, toast]);
 
   const handleCancel = useCallback(() => {
     if (hasChanges) {
@@ -233,7 +306,7 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
   return (
     <>
       <Dialog open={open} onOpenChange={handleCancel}>
-        <DialogContent className="sm:max-w-4xl min-h-[50vh] max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-4xl min-h-[50vh] max-h-[80vh] overflow-y-auto p-4">
           <DialogHeader>
             <DialogTitle>Class Roster: {classData?.name}</DialogTitle>
           </DialogHeader>
@@ -331,8 +404,8 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Character</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance</th>
+                      {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Character</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance</th> */}
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
@@ -349,7 +422,7 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
                           <td className="px-4 py-3 whitespace-nowrap text-sm">
                             <Badge variant="outline">Grade {student.grade}</Badge>
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm">
+                          {/* <td className="px-4 py-3 whitespace-nowrap text-sm">
                             <div className="w-full bg-gray-200 rounded-full h-2.5">
                               <div 
                                 className="bg-blue-600 h-2.5 rounded-full" 
@@ -366,7 +439,7 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
                               ></div>
                             </div>
                             <span className="text-xs text-gray-500">{student.attendance}%</span>
-                          </td>
+                          </td> */}
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                             <div className="flex gap-2">
                               <button 
@@ -411,9 +484,9 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
             </Button>
             <Button 
               variant="primary"
-              onClick={handleSaveChanges}
+              onClick={prepareSaveChanges}
               disabled={!hasChanges || isSaving}
-              className="bg-blue-400 hover:bg-blue-500 text-white" 
+              className="bg-blue-600 hover:bg-blue-700 text-white" 
             >
               <Save className="h-4 w-4 mr-2" />
               {isSaving ? "Saving..." : "Save Changes"}
@@ -423,11 +496,154 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
       </Dialog>
 
       {editingStudent && (
-        <EditStudentDialog
-          student={editingStudent}
-          onSave={handleSaveStudent}
-          onCancel={() => setEditingStudent(null)}
-        />
+        <Dialog open={true} onOpenChange={() => setEditingStudent(null)}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold">Edit Student Information</DialogTitle>
+            </DialogHeader>
+            
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleSaveStudent(editingStudent);
+            }}>
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-gray-900">Personal Information</h3>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="first_name">First Name</Label>
+                      <Input
+                        id="first_name"
+                        name="first_name"
+                        value={editingStudent.user?.first_name || ''}
+                        onChange={(e) => setEditingStudent({
+                          ...editingStudent,
+                          user: {
+                            ...editingStudent.user,
+                            first_name: e.target.value
+                          }
+                        })}
+                        disabled={isSaving}
+                        placeholder="Enter first name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="last_name">Last Name</Label>
+                      <Input
+                        id="last_name"
+                        name="last_name"
+                        value={editingStudent.user?.last_name || ''}
+                        onChange={(e) => setEditingStudent({
+                          ...editingStudent,
+                          user: {
+                            ...editingStudent.user,
+                            last_name: e.target.value
+                          }
+                        })}
+                        disabled={isSaving}
+                        placeholder="Enter last name"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={editingStudent.user?.email || ''}
+                      onChange={(e) => setEditingStudent({
+                        ...editingStudent,
+                        user: {
+                          ...editingStudent.user,
+                          email: e.target.value
+                        }
+                      })}
+                      disabled={isSaving}
+                      placeholder="student@example.com"
+                    />
+                  </div>
+                </div>
+
+                {/* <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-gray-900">Academic Information</h3>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="grade">Grade Level</Label>
+                      <Input
+                        id="grade"
+                        name="grade"
+                        type="number"
+                        value={editingStudent.grade || ''}
+                        disabled
+                        className="bg-gray-100"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="characterScore">Character Score</Label>
+                      <Input
+                        id="characterScore"
+                        name="characterScore"
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={editingStudent.characterScore || ''}
+                        disabled
+                        className="bg-gray-100"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="attendance">Attendance (%)</Label>
+                      <Input
+                        id="attendance"
+                        name="attendance"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={editingStudent.attendance || ''}
+                        disabled
+                        className="bg-gray-100"
+                      />
+                    </div>
+                  </div>
+                </div> */}
+              </div>
+
+              <DialogFooter className="mt-8">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setEditingStudent(null)}
+                  disabled={isSaving}
+                  className="mr-2"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                    type="submit"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    disabled={isEditing}
+                  >
+                    {isEditing ? (
+                      <div className="flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Saving...
+                      </div>
+                    ) : (
+                      <div className="flex items-center">
+                        <Save className="h-4 w-4 mr-2" />
+                        Save
+                      </div>
+                    )}
+                  </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       )}
       
       <AlertDialog open={showCancelConfirm} onOpenChange={setShowCancelConfirm}>
@@ -444,138 +660,64 @@ export function ClassRosterDialog({ classData, open, onOpenChange, studentList }
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
-  );
-}
 
-function EditStudentDialog({ student, onSave, onCancel }: { 
-  student: Student; 
-  onSave: (student: Student) => void; 
-  onCancel: () => void;
-}) {
-  const [editedStudent, setEditedStudent] = useState<Student>(student);
-
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setEditedStudent((prev: any) => ({
-      ...prev,
-      [name]: value,
-      user: {
-        ...prev.user,
-        ...(name === 'first_name' && { first_name: value }),
-        ...(name === 'last_name' && { last_name: value }),
-        ...(name === 'email' && { email: value }),
-      }
-    }));
-  }, []);
-
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(editedStudent);
-  }, [editedStudent, onSave]);
-
-  return (
-    <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit Student</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="first_name" className="text-right">
-                First Name
-              </Label>
-              <Input
-                id="first_name"
-                name="first_name"
-                value={editedStudent.user?.first_name || ''}
-                onChange={handleChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="last_name" className="text-right">
-                Last Name
-              </Label>
-              <Input
-                id="last_name"
-                name="last_name"
-                value={editedStudent.user?.last_name || ''}
-                onChange={handleChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="email" className="text-right">
-                Email
-              </Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                value={editedStudent.user?.email || ''}
-                onChange={handleChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="grade" className="text-right">
-                Grade
-              </Label>
-              <Input
-                id="grade"
-                name="grade"
-                type="number"
-                value={editedStudent.grade || ''}
-                onChange={handleChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="characterScore" className="text-right">
-                Character Score
-              </Label>
-              <Input
-                id="characterScore"
-                name="characterScore"
-                type="number"
-                min="1"
-                max="10"
-                value={editedStudent.characterScore || ''}
-                onChange={handleChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="attendance" className="text-right">
-                Attendance (%)
-              </Label>
-              <Input
-                id="attendance"
-                name="attendance"
-                type="number"
-                min="0"
-                max="100"
-                value={editedStudent.attendance || ''}
-                onChange={handleChange}
-                className="col-span-3"
-              />
-            </div>
+      <AlertDialog open={showSaveConfirm} onOpenChange={setShowSaveConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Changes</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please review the changes before saving:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+            {changesSummary.toAdd.length > 0 && (
+              <div>
+                <h4 className="font-medium text-sm">Students to be added ({changesSummary.toAdd.length}):</h4>
+                <ul className="mt-2 space-y-1">
+                  {changesSummary.toAdd.map(student => (
+                    <li key={student.id} className="text-sm text-green-600">
+                      {student.full_name} (Grade {student.grade})
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {changesSummary.toRemove.length > 0 && (
+              <div>
+                <h4 className="font-medium text-sm">Students to be removed ({changesSummary.toRemove.length}):</h4>
+                <ul className="mt-2 space-y-1">
+                  {changesSummary.toRemove.map(student => (
+                    <li key={student.id} className="text-sm text-red-600">
+                      {student.full_name} (Grade {student.grade})
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
-            <Button 
-              type="submit"
-              className="bg-blue-400 hover:bg-blue-500 text-white"
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSaving}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={executeSaveChanges}
+              disabled={isSaving}
+              className="bg-blue-600 hover:bg-blue-700"
             >
-              Save
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+              {isSaving ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : 'Confirm & Save'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
