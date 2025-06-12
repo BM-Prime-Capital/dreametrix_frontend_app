@@ -44,7 +44,7 @@ const lessonPlanSchema = z.object({
   materials: z.string().min(5, { message: "Materials must be at least 5 characters." }),
   differentiation: z.string().optional(),
   assessmentFormative: z.string().min(5, { message: "Formative assessment description must be at least 5 characters." }),
-  unitPlanId: z.string().optional(), // Assuming unit plans are listed and selectable
+  unitPlanId: z.string().optional(), 
 });
 
 type LessonPlanFormValues = z.infer<typeof lessonPlanSchema>;
