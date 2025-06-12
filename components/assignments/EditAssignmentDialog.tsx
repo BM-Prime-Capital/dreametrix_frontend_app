@@ -58,6 +58,7 @@ export function EditAssignmentDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(false);
   const [courses, setCourses] = useState<MiniCourse[]>([]);
+  const [file, setFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     due_date: "",
@@ -106,6 +107,8 @@ export function EditAssignmentDialog({
         published: assignment.published,
         course: assignment.course.id,
       });
+      // Reset file when switching assignments
+      setFile(null);
     }
   }, [assignment]);
 
@@ -117,9 +120,22 @@ export function EditAssignmentDialog({
     setIsLoading(true);
 
     try {
+      // Create FormData object to handle file upload
+      const formDataWithFile = new FormData();
+      formDataWithFile.append("name", formData.name);
+      formDataWithFile.append("due_date", formData.due_date);
+      formDataWithFile.append("kind", formData.kind);
+      formDataWithFile.append("published", formData.published.toString());
+      formDataWithFile.append("course", formData.course.toString());
+
+      // Add file if selected
+      if (file) {
+        formDataWithFile.append("file", file);
+      }
+
       const updatedAssignment = await updateAssignment(
         assignment.id,
-        formData,
+        formDataWithFile,
         tenantDomain,
         accessToken,
         refreshToken
@@ -132,7 +148,7 @@ export function EditAssignmentDialog({
       };
 
       onUpdate(updatedAssignmentWithCourse);
-      onClose();
+      handleClose();
     } catch (error) {
       console.error("Error updating assignment:", error);
       alert("Failed to update assignment. Please try again.");
@@ -148,8 +164,13 @@ export function EditAssignmentDialog({
     }));
   };
 
+  const handleClose = () => {
+    setFile(null); // Reset file when dialog closes
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-gradient-to-br from-blue-50/50 to-indigo-50/50 border-0 shadow-2xl">
         <DialogHeader className="text-center pb-6">
           <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-r from-[#3e81d4] to-[#1D8CB3] rounded-full flex items-center justify-center">
@@ -282,6 +303,23 @@ export function EditAssignmentDialog({
             </div>
           </div>
 
+          {/* File Upload */}
+          <div className="space-y-3">
+            <Label
+              htmlFor="file"
+              className="text-base font-semibold text-gray-700 flex items-center gap-2"
+            >
+              <FileText className="h-4 w-4 text-[#3e81d4]" />
+              Assignment File
+            </Label>
+            <Input
+              type="file"
+              className="w-full file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#3e81d4]/10 file:text-[#3e81d4] hover:file:bg-[#3e81d4]/20"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              required
+            />
+          </div>
+
           {/* Published Status */}
           <div className="flex items-center space-x-3 p-4 bg-white/70 rounded-lg border-2 border-gray-100">
             <Checkbox
@@ -304,7 +342,7 @@ export function EditAssignmentDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isLoading}
               className="h-12 px-6 text-base border-2 border-gray-300 hover:bg-gray-50 transition-all duration-200"
             >

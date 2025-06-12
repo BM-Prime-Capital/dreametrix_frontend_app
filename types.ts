@@ -92,6 +92,7 @@ export interface DigitalLibrarySheet {
   noOfQuestions: string;
   generateAnswerSheet: boolean;
   includeAnswerKey: boolean;
+  assignmentType: string;
 }
 export interface SheetDomain {
   subject: string;

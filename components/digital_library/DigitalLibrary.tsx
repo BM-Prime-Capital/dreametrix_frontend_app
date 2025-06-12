@@ -49,6 +49,7 @@ const GRADEBOOK_SHEET_INIT_STATE = {
   noOfQuestions: "",
   generateAnswerSheet: false,
   includeAnswerKey: false,
+  assignmentType: "homework",
 };
 
 export default function DigitalLibrary() {
@@ -121,6 +122,23 @@ export default function DigitalLibrary() {
     published?: string;
   } | null>(null);
 
+  // Auto-population state
+  const [pendingAutoPopulation, setPendingAutoPopulation] = useState<{
+    extractedSubject?: string;
+    extractedGrade?: string;
+    extractedAssignmentType?: string;
+  } | null>(null);
+
+  // Flag to track if we're in auto-population mode
+  const [isAutoPopulating, setIsAutoPopulating] = useState(false);
+
+  // Auto-population progress state
+  const [autoPopulationProgress, setAutoPopulationProgress] = useState<{
+    currentStep: string;
+    totalSteps: number;
+    currentStepIndex: number;
+  } | null>(null);
+
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -134,6 +152,15 @@ export default function DigitalLibrary() {
     const assignmentType = searchParams.get("assignmentType");
     const published = searchParams.get("published");
 
+    // Set assignment type immediately and independently
+    if (assignmentType) {
+      console.log("🎯 Setting assignment type from URL:", assignmentType);
+      setDigitalLibrarySheet((prev) => ({
+        ...prev,
+        assignmentType: assignmentType,
+      }));
+    }
+
     if (assignmentName || courseId) {
       setAssignmentContext({
         assignmentName: assignmentName || undefined,
@@ -144,30 +171,213 @@ export default function DigitalLibrary() {
         published: published || undefined,
       });
 
-      // Auto-populate digital library form with assignment data
-      if (subject) {
-        handleSubjectSelection(subject);
+      // Extract subject and grade for auto-population
+      let extractedSubject = subject;
+      let extractedGrade = grade;
+
+      // Parse course name for grade and subject (e.g., "Class 8 - ELA")
+      if (courseName && !subject && !grade) {
+        const courseNameMatch = courseName.match(/class\s+(\d+)\s*-\s*(.+)/i);
+        if (courseNameMatch) {
+          extractedGrade = courseNameMatch[1]; // Extract grade number
+          const subjectPart = courseNameMatch[2].trim().toUpperCase();
+
+          // Map common subject abbreviations to full names
+          const subjectMapping: { [key: string]: string } = {
+            ELA: "ELA",
+            ENGLISH: "ELA",
+            MATH: "Math",
+            MATHEMATICS: "Math",
+            SCIENCE: "Science",
+            "SOCIAL STUDIES": "Social Studies",
+            SS: "Social Studies",
+            HISTORY: "Social Studies",
+          };
+
+          extractedSubject = subjectMapping[subjectPart] || subjectPart;
+        }
       }
-      if (grade) {
-        setDigitalLibrarySheet((prev) => ({
-          ...prev,
-          grade: grade,
-        }));
-      }
+
+      // Store extracted values for later auto-population including assignmentType
+      setPendingAutoPopulation({
+        extractedSubject: extractedSubject || undefined,
+        extractedGrade: extractedGrade || undefined,
+        extractedAssignmentType: assignmentType || undefined,
+      });
     }
   }, [searchParams]);
+
+  // Handle auto-population when subjects are loaded
+  useEffect(() => {
+    if (
+      pendingAutoPopulation &&
+      !isLoadingSubjects &&
+      subjects.length > 0 &&
+      !isAutoPopulating
+    ) {
+      const { extractedSubject, extractedAssignmentType } =
+        pendingAutoPopulation;
+
+      console.log("🚀 Starting auto-population:", {
+        extractedSubject,
+        extractedAssignmentType,
+      });
+
+      // First ensure assignmentType is set if available
+      if (extractedAssignmentType) {
+        console.log(
+          "🎯 Re-setting assignment type before subject auto-population:",
+          extractedAssignmentType
+        );
+        setDigitalLibrarySheet((prev) => ({
+          ...prev,
+          assignmentType: extractedAssignmentType,
+        }));
+      }
+
+      // Auto-populate subject if it exists in subjects list
+      if (extractedSubject && subjects.includes(extractedSubject)) {
+        console.log("Auto-populating subject:", extractedSubject);
+        setIsAutoPopulating(true);
+        setAutoPopulationProgress({
+          currentStep: "Setting up subject and assignment type...",
+          totalSteps: 3,
+          currentStepIndex: 1,
+        });
+
+        // Use setTimeout to ensure the assignmentType state update is applied first
+        setTimeout(() => {
+          handleSubjectSelection(extractedSubject);
+        }, 0);
+      } else {
+        // Clear pending if subject not found
+        setPendingAutoPopulation(null);
+      }
+    }
+  }, [pendingAutoPopulation, isLoadingSubjects, subjects, isAutoPopulating]);
+
+  // Handle auto-population of grade after subject selection completes
+  useEffect(() => {
+    if (
+      isAutoPopulating &&
+      pendingAutoPopulation?.extractedGrade &&
+      pendingAutoPopulation?.extractedSubject &&
+      grades.length > 0
+    ) {
+      const { extractedGrade, extractedSubject } = pendingAutoPopulation;
+
+      console.log("🔍 Auto-population grade check:", {
+        extractedGrade,
+        availableGrades: grades,
+        directMatch: grades.includes(extractedGrade),
+      });
+
+      // Check if the extracted grade exists in the loaded grades (direct match first)
+      let matchedGrade = extractedGrade;
+      if (grades.includes(extractedGrade)) {
+        console.log("✅ Direct grade match found:", extractedGrade);
+      } else {
+        // Try to find a fuzzy match
+        const gradeNumber = extractedGrade;
+        const possibleMatches = grades.filter(
+          (grade) =>
+            String(grade).includes(gradeNumber) ||
+            grade === `Grade ${gradeNumber}` ||
+            grade === `${gradeNumber}th Grade` ||
+            grade === `${gradeNumber}th` ||
+            String(grade)
+              .toLowerCase()
+              .includes(`grade ${gradeNumber.toLowerCase()}`)
+        );
+
+        console.log("🔍 Fuzzy grade matches:", possibleMatches);
+
+        if (possibleMatches.length > 0) {
+          matchedGrade = possibleMatches[0];
+          console.log("✅ Fuzzy grade match found:", matchedGrade);
+        } else {
+          console.log("❌ No grade match found for:", extractedGrade);
+          // Clear pending auto-population and flag
+          setPendingAutoPopulation(null);
+          setIsAutoPopulating(false);
+          setAutoPopulationProgress(null);
+          return;
+        }
+      }
+
+      console.log("Auto-populating grade:", matchedGrade);
+
+      // Update progress
+      setAutoPopulationProgress({
+        currentStep: "Loading grade options and setting grade...",
+        totalSteps: 3,
+        currentStepIndex: 2,
+      });
+
+      // Set the grade in the state first
+      setDigitalLibrarySheet((prev) => ({
+        ...prev,
+        grade: matchedGrade,
+      }));
+
+      // Then trigger grade selection with explicit subject and grade
+      handleGradeSelectionWithSubject(matchedGrade, extractedSubject);
+
+      // Update to final step
+      setTimeout(() => {
+        setAutoPopulationProgress({
+          currentStep: "Finalizing form setup...",
+          totalSteps: 3,
+          currentStepIndex: 3,
+        });
+      }, 500);
+
+      // Clear pending auto-population and flag after a short delay
+      setTimeout(() => {
+        setPendingAutoPopulation(null);
+        setIsAutoPopulating(false);
+        setAutoPopulationProgress(null);
+      }, 1500);
+    }
+  }, [isAutoPopulating, pendingAutoPopulation, grades]);
 
   const handleSubjectSelection = async (selectedSubject: string) => {
     console.log("🔄 Subject Selection:", {
       selectedSubject,
       currentSubject: digitalLibrarySheet.subject,
+      currentAssignmentType: digitalLibrarySheet.assignmentType,
     });
 
-    setDigitalLibrarySheet({
-      ...digitalLibrarySheet,
-      subject: selectedSubject,
-      grade: "",
-      domain: "",
+    // Update progress if we're in auto-population mode
+    if (isAutoPopulating) {
+      setAutoPopulationProgress({
+        currentStep: "Loading available grades for subject...",
+        totalSteps: 3,
+        currentStepIndex: 2,
+      });
+    }
+
+    setDigitalLibrarySheet((prev) => {
+      console.log("🔍 Previous state in handleSubjectSelection:", {
+        assignmentType: prev.assignmentType,
+        subject: prev.subject,
+      });
+
+      const newState = {
+        ...prev,
+        subject: selectedSubject,
+        grade: "",
+        domain: "",
+        // Explicitly preserve assignmentType
+        assignmentType: prev.assignmentType,
+      };
+
+      console.log("✅ New state in handleSubjectSelection:", {
+        assignmentType: newState.assignmentType,
+        subject: newState.subject,
+      });
+
+      return newState;
     });
 
     // Reset ELA-specific state for all subjects
@@ -222,10 +432,33 @@ export default function DigitalLibrary() {
   };
 
   const handleGradeSelection = async (selectedGrade: string) => {
-    setDigitalLibrarySheet({
-      ...digitalLibrarySheet,
-      grade: selectedGrade,
-      domain: "",
+    handleGradeSelectionWithSubject(selectedGrade, digitalLibrarySheet.subject);
+  };
+
+  const handleGradeSelectionWithSubject = async (
+    selectedGrade: string,
+    selectedSubject: string
+  ) => {
+    setDigitalLibrarySheet((prev) => {
+      console.log("🔍 Previous state in handleGradeSelectionWithSubject:", {
+        assignmentType: prev.assignmentType,
+        grade: prev.grade,
+      });
+
+      const newState = {
+        ...prev,
+        grade: selectedGrade,
+        domain: "",
+        // Explicitly preserve assignmentType during grade selection
+        assignmentType: prev.assignmentType,
+      };
+
+      console.log("✅ New state in handleGradeSelectionWithSubject:", {
+        assignmentType: newState.assignmentType,
+        grade: newState.grade,
+      });
+
+      return newState;
     });
 
     // Reset standards-related state when changing grade
@@ -235,7 +468,7 @@ export default function DigitalLibrary() {
     setQuestionsLinks(null);
 
     // Handle ELA-specific flow
-    if (isElaSubjectSelected) {
+    if (selectedSubject === "ELA") {
       // Reset ELA-specific state when changing grade
       setSelectedElaStandard("");
       setSelectedElaStrand("");
@@ -248,7 +481,7 @@ export default function DigitalLibrary() {
       try {
         // Fetch ELA standards using the real API
         const elaStandardsData = await fetchElaStandards(
-          digitalLibrarySheet.subject,
+          selectedSubject,
           selectedGrade,
           tenantDomain,
           accessToken,
@@ -265,7 +498,7 @@ export default function DigitalLibrary() {
       // Regular flow for non-ELA subjects
       const domainsData = await getDomains(
         {
-          subject: digitalLibrarySheet.subject,
+          subject: selectedSubject,
           grade: Number.parseInt(selectedGrade),
         },
         tenantDomain,
@@ -280,8 +513,8 @@ export default function DigitalLibrary() {
       initialClasses.filter(
         (cl: any) =>
           cl.grade === selectedGrade &&
-          (cl.subject_in_short === digitalLibrarySheet.subject ||
-            cl.subject_in_all_letter === digitalLibrarySheet.subject)
+          (cl.subject_in_short === selectedSubject ||
+            cl.subject_in_all_letter === selectedSubject)
       )
     );
 
@@ -290,8 +523,8 @@ export default function DigitalLibrary() {
         .filter(
           (cl: any) =>
             cl.grade === selectedGrade &&
-            (cl.subject_in_short === digitalLibrarySheet.subject ||
-              cl.subject_in_all_letter === digitalLibrarySheet.subject)
+            (cl.subject_in_short === selectedSubject ||
+              cl.subject_in_all_letter === selectedSubject)
         )
         ?.flatMap((cl: any) => cl.name)
     );
@@ -501,7 +734,7 @@ export default function DigitalLibrary() {
       include_answer_key: digitalLibrarySheet.includeAnswerKey,
       teacher_name: userData.username,
       student_id: 1,
-      assignment_type: "Homework",
+      assignment_type: digitalLibrarySheet.assignmentType || "Homework",
       number_of_questions: digitalLibrarySheet.noOfQuestions,
       links: questionsLinks?.links,
     };
@@ -753,6 +986,68 @@ export default function DigitalLibrary() {
         </Card>
       )}
 
+      {/* Auto-population Loading Banner */}
+      {isAutoPopulating && (
+        <Card className="rounded-lg shadow-md p-4 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full">
+              <svg
+                className="w-5 h-5 text-green-600 animate-spin"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-green-800">
+                Auto-populating form fields...
+              </h3>
+              <div className="text-sm text-green-600 mt-1">
+                {autoPopulationProgress ? (
+                  <div className="space-y-2">
+                    <div>{autoPopulationProgress.currentStep}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-green-200 rounded-full h-2">
+                        <div
+                          className="bg-green-600 h-2 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${
+                              (autoPopulationProgress.currentStepIndex /
+                                autoPopulationProgress.totalSteps) *
+                              100
+                            }%`,
+                          }}
+                        ></div>
+                      </div>
+                      <span className="text-xs font-medium">
+                        {autoPopulationProgress.currentStepIndex}/
+                        {autoPopulationProgress.totalSteps}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  "We're automatically filling out the form based on your assignment details. Please wait..."
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <Card className="rounded-lg shadow-lg p-8 bg-white border border-gray-200">
         <form
           className="flex flex-col gap-6"
@@ -873,7 +1168,58 @@ export default function DigitalLibrary() {
                 </SelectContent>
               </Select>
             </div>
-
+            {/* Assignment Type Section */}
+            <div className="space-y-2 bg-orange-50 p-4 rounded-lg border border-orange-100 col-span-2">
+              <Label className="text-orange-800 font-medium">
+                Assignment Type
+              </Label>
+              <Select
+                disabled={isDreaMetrixBankOfQuestion}
+                value={digitalLibrarySheet.assignmentType}
+                onValueChange={(value) =>
+                  setDigitalLibrarySheet({
+                    ...digitalLibrarySheet,
+                    assignmentType: value,
+                  })
+                }
+              >
+                <SelectTrigger className="w-full bg-white border-orange-300 hover:border-orange-400">
+                  <SelectValue placeholder="Select Assignment Type" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                  <SelectItem
+                    value="homework"
+                    className="hover:bg-orange-50 focus:bg-orange-50"
+                  >
+                    Homework
+                  </SelectItem>
+                  <SelectItem
+                    value="test"
+                    className="hover:bg-orange-50 focus:bg-orange-50"
+                  >
+                    Test
+                  </SelectItem>
+                  <SelectItem
+                    value="quiz"
+                    className="hover:bg-orange-50 focus:bg-orange-50"
+                  >
+                    Quiz
+                  </SelectItem>
+                  <SelectItem
+                    value="participation"
+                    className="hover:bg-orange-50 focus:bg-orange-50"
+                  >
+                    Participation
+                  </SelectItem>
+                  <SelectItem
+                    value="other"
+                    className="hover:bg-orange-50 focus:bg-orange-50"
+                  >
+                    Other
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             {/* ELA-specific selection section */}
             {elaStepActive && (
               <>

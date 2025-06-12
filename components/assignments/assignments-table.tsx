@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -79,8 +79,10 @@ const globalFilterFn: FilterFn<Assignment> = (row, columnId, filterValue) => {
 };
 
 export function AssignmentsTable() {
-  const { list: assignments, isLoading, error } = useList(getAssignments);
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [courseFilter, setCourseFilter] = useState<string>("all");
@@ -92,6 +94,32 @@ export function AssignmentsTable() {
     null
   );
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  // Load assignments function
+  const loadAssignments = async () => {
+    if (!tenantDomain || !accessToken || !refreshToken) return;
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const data = await getAssignments(
+        tenantDomain,
+        accessToken,
+        refreshToken
+      );
+      setAssignments(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load assignments on mount
+  useEffect(() => {
+    loadAssignments();
+  }, [tenantDomain, accessToken, refreshToken]);
 
   // Get unique courses for the filter dropdown
   const uniqueCourses = useMemo(() => {
@@ -150,19 +178,18 @@ export function AssignmentsTable() {
         refreshToken
       );
 
-      // Refresh the page to update the assignments list
-      window.location.reload();
+      // Reload assignments list
+      await loadAssignments();
     } catch (error) {
       console.error("Error deleting assignment:", error);
       alert("Failed to delete assignment. Please try again.");
     }
   };
 
-  const handleAssignmentUpdate = (updatedAssignment: Assignment) => {
-    // Update the assignment in the local state
-    // Note: In a real app, you might want to refetch the data or use a state management solution
+  const handleAssignmentUpdate = async (updatedAssignment: Assignment) => {
+    // Reload assignments to get the latest data
+    await loadAssignments();
     console.log("Assignment updated:", updatedAssignment);
-    // You could trigger a refetch here or update local state
   };
 
   const resetFilters = () => {

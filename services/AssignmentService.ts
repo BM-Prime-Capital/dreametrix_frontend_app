@@ -153,13 +153,15 @@ export async function updateAssessmentWeights(
 
 export async function updateAssignment(
   id: number,
-  assignmentData: {
-    name: string;
-    due_date: string;
-    kind: string;
-    published: boolean;
-    course: number;
-  },
+  assignmentData:
+    | FormData
+    | {
+        name: string;
+        due_date: string;
+        kind: string;
+        published: boolean;
+        course: number;
+      },
   tenantPrimaryDomain: string,
   accessToken: string,
   refreshToken: string
@@ -167,13 +169,14 @@ export async function updateAssignment(
   const url = `${tenantPrimaryDomain}/assessments/${id}/`;
 
   try {
+    const isFormData = assignmentData instanceof FormData;
     const response = await fetch(url, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
       },
-      body: JSON.stringify(assignmentData),
+      body: isFormData ? assignmentData : JSON.stringify(assignmentData),
     });
 
     if (!response.ok) {
