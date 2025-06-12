@@ -38,6 +38,7 @@ import {
 } from "../ui/select";
 import { Checkbox } from "../ui/checkbox";
 import { Alert, AlertDescription } from "../ui/alert";
+import { useSearchParams } from "next/navigation";
 
 const GRADEBOOK_SHEET_INIT_STATE = {
   subject: "",
@@ -48,6 +49,7 @@ const GRADEBOOK_SHEET_INIT_STATE = {
   noOfQuestions: "",
   generateAnswerSheet: false,
   includeAnswerKey: false,
+  assignmentType: "homework",
 };
 
 export default function DigitalLibrary() {
@@ -110,17 +112,328 @@ export default function DigitalLibrary() {
   const [isSubjectLoadAutomaticaly, setIsSubjectLoadAutomaticaly] =
     useState<boolean>(false);
 
+  // Assignment context state
+  const [assignmentContext, setAssignmentContext] = useState<{
+    assignmentName?: string;
+    courseId?: string;
+    courseName?: string;
+    dueDate?: string;
+    assignmentType?: string;
+    published?: string;
+  } | null>(null);
+
+  // Auto-population state
+  const [pendingAutoPopulation, setPendingAutoPopulation] = useState<{
+    extractedSubject?: string;
+    extractedGrade?: string;
+    extractedAssignmentType?: string;
+  } | null>(null);
+
+  // Flag to track if we're in auto-population mode
+  const [isAutoPopulating, setIsAutoPopulating] = useState(false);
+
+  // Auto-population progress state
+  const [autoPopulationProgress, setAutoPopulationProgress] = useState<{
+    currentStep: string;
+    totalSteps: number;
+    currentStepIndex: number;
+  } | null>(null);
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Parse and set assignment context from query parameters
+    const assignmentName = searchParams.get("assignmentName");
+    const courseId = searchParams.get("courseId");
+    const courseName = searchParams.get("courseName");
+    const subject = searchParams.get("subject");
+    const grade = searchParams.get("grade");
+    const dueDate = searchParams.get("dueDate");
+    const assignmentType = searchParams.get("assignmentType");
+    const published = searchParams.get("published");
+
+    // Set assignment type immediately and independently
+    if (assignmentType) {
+      console.log("🎯 Setting assignment type from URL:", assignmentType);
+      setDigitalLibrarySheet((prev) => ({
+        ...prev,
+        assignmentType: assignmentType,
+      }));
+    }
+
+    if (assignmentName || courseId) {
+      setAssignmentContext({
+        assignmentName: assignmentName || undefined,
+        courseId: courseId || undefined,
+        courseName: courseName || undefined,
+        dueDate: dueDate || undefined,
+        assignmentType: assignmentType || undefined,
+        published: published || undefined,
+      });
+
+      // Extract subject and grade for auto-population
+      let extractedSubject = subject;
+      let extractedGrade = grade;
+
+      // Parse course name for grade and subject (e.g., "Class 8 - ELA")
+      if (courseName && !subject && !grade) {
+        const courseNameMatch = courseName.match(/class\s+(\d+)\s*-\s*(.+)/i);
+        if (courseNameMatch) {
+          extractedGrade = courseNameMatch[1]; // Extract grade number
+          const subjectPart = courseNameMatch[2].trim().toUpperCase();
+
+          // Map common subject abbreviations to full names
+          const subjectMapping: { [key: string]: string } = {
+            ELA: "ELA",
+            ENGLISH: "ELA",
+            MATH: "Math",
+            MATHEMATICS: "Math",
+            SCIENCE: "Science",
+            "SOCIAL STUDIES": "Social Studies",
+            SS: "Social Studies",
+            HISTORY: "Social Studies",
+          };
+
+          extractedSubject = subjectMapping[subjectPart] || subjectPart;
+        }
+      }
+
+      // Store extracted values for later auto-population including assignmentType
+      setPendingAutoPopulation({
+        extractedSubject: extractedSubject || undefined,
+        extractedGrade: extractedGrade || undefined,
+        extractedAssignmentType: assignmentType || undefined,
+      });
+    }
+  }, [searchParams]);
+
+  // Handle auto-population when subjects are loaded
+  useEffect(() => {
+    if (
+      pendingAutoPopulation &&
+      !isLoadingSubjects &&
+      subjects.length > 0 &&
+      !classesIsLoading &&
+      initialClasses.length > 0 &&
+      !isAutoPopulating
+    ) {
+      const { extractedSubject, extractedAssignmentType } =
+        pendingAutoPopulation;
+
+      console.log("🚀 Starting auto-population:", {
+        extractedSubject,
+        extractedAssignmentType,
+        classesCount: initialClasses.length,
+        subjectsCount: subjects.length,
+      });
+
+      // First ensure assignmentType is set if available
+      if (extractedAssignmentType) {
+        console.log(
+          "🎯 Re-setting assignment type before subject auto-population:",
+          extractedAssignmentType
+        );
+        setDigitalLibrarySheet((prev) => ({
+          ...prev,
+          assignmentType: extractedAssignmentType,
+        }));
+      }
+
+      // Auto-populate subject if it exists in subjects list
+      if (extractedSubject && subjects.includes(extractedSubject)) {
+        console.log("Auto-populating subject:", extractedSubject);
+        setIsAutoPopulating(true);
+        setAutoPopulationProgress({
+          currentStep: "Setting up subject and assignment type...",
+          totalSteps: 3,
+          currentStepIndex: 1,
+        });
+
+        // Use setTimeout to ensure the assignmentType state update is applied first
+        setTimeout(() => {
+          handleSubjectSelection(extractedSubject);
+        }, 0);
+      } else {
+        // Clear pending if subject not found
+        setPendingAutoPopulation(null);
+      }
+    }
+  }, [
+    pendingAutoPopulation,
+    isLoadingSubjects,
+    subjects,
+    isAutoPopulating,
+    classesIsLoading,
+    initialClasses,
+  ]);
+
+  // Handle auto-population of grade after subject selection completes
+  useEffect(() => {
+    if (
+      isAutoPopulating &&
+      pendingAutoPopulation?.extractedGrade &&
+      pendingAutoPopulation?.extractedSubject &&
+      grades.length > 0 &&
+      !classesIsLoading &&
+      initialClasses.length > 0
+    ) {
+      const { extractedGrade, extractedSubject } = pendingAutoPopulation;
+
+      console.log("🔍 Auto-population grade check:", {
+        extractedGrade,
+        availableGrades: grades,
+        directMatch: grades.includes(extractedGrade),
+        classesLoaded: !classesIsLoading,
+        classesCount: initialClasses.length,
+      });
+
+      // Check if the extracted grade exists in the loaded grades (direct match first)
+      let matchedGrade = extractedGrade;
+      if (grades.includes(extractedGrade)) {
+        console.log("✅ Direct grade match found:", extractedGrade);
+      } else {
+        // Try to find a fuzzy match
+        const gradeNumber = extractedGrade;
+        const possibleMatches = grades.filter(
+          (grade) =>
+            String(grade).includes(gradeNumber) ||
+            grade === `Grade ${gradeNumber}` ||
+            grade === `${gradeNumber}th Grade` ||
+            grade === `${gradeNumber}th` ||
+            String(grade)
+              .toLowerCase()
+              .includes(`grade ${gradeNumber.toLowerCase()}`)
+        );
+
+        console.log("🔍 Fuzzy grade matches:", possibleMatches);
+
+        if (possibleMatches.length > 0) {
+          matchedGrade = possibleMatches[0];
+          console.log("✅ Fuzzy grade match found:", matchedGrade);
+        } else {
+          console.log("❌ No grade match found for:", extractedGrade);
+          // Clear pending auto-population and flag
+          setPendingAutoPopulation(null);
+          setIsAutoPopulating(false);
+          setAutoPopulationProgress(null);
+          return;
+        }
+      }
+
+      console.log("Auto-populating grade:", matchedGrade);
+
+      // Update progress
+      setAutoPopulationProgress({
+        currentStep: "Loading grade options and filtering classes...",
+        totalSteps: 3,
+        currentStepIndex: 2,
+      });
+
+      // Set the grade in the state first
+      setDigitalLibrarySheet((prev) => ({
+        ...prev,
+        grade: matchedGrade,
+      }));
+
+      // Then trigger grade selection with explicit subject and grade
+      // Add a small delay to ensure classes are fully loaded
+      setTimeout(() => {
+        handleGradeSelectionWithSubject(matchedGrade, extractedSubject);
+      }, 100);
+
+      // Update to final step
+      setTimeout(() => {
+        setAutoPopulationProgress({
+          currentStep: "Finalizing form setup...",
+          totalSteps: 3,
+          currentStepIndex: 3,
+        });
+      }, 800);
+
+      // Clear pending auto-population and flag after a longer delay to ensure completion
+      setTimeout(() => {
+        setPendingAutoPopulation(null);
+        setIsAutoPopulating(false);
+        setAutoPopulationProgress(null);
+        console.log("✅ Auto-population completed successfully!");
+      }, 2000);
+    }
+  }, [
+    isAutoPopulating,
+    pendingAutoPopulation,
+    grades,
+    classesIsLoading,
+    initialClasses,
+  ]);
+
+  // Additional effect to handle classes loading completion during auto-population
+  useEffect(() => {
+    if (
+      isAutoPopulating &&
+      !classesIsLoading &&
+      initialClasses.length > 0 &&
+      digitalLibrarySheet.grade &&
+      digitalLibrarySheet.subject &&
+      allClasses.length === 0 // Classes haven't been filtered yet
+    ) {
+      console.log(
+        "🔄 Classes just finished loading during auto-population, re-filtering..."
+      );
+
+      // Re-trigger classes filtering since classes just finished loading
+      setTimeout(() => {
+        handleGradeSelectionWithSubject(
+          digitalLibrarySheet.grade,
+          digitalLibrarySheet.subject
+        );
+      }, 100);
+    }
+  }, [
+    classesIsLoading,
+    initialClasses,
+    isAutoPopulating,
+    digitalLibrarySheet.grade,
+    digitalLibrarySheet.subject,
+    allClasses.length,
+  ]);
+
   const handleSubjectSelection = async (selectedSubject: string) => {
     console.log("🔄 Subject Selection:", {
       selectedSubject,
       currentSubject: digitalLibrarySheet.subject,
+      currentAssignmentType: digitalLibrarySheet.assignmentType,
     });
 
-    setDigitalLibrarySheet({
-      ...digitalLibrarySheet,
-      subject: selectedSubject,
-      grade: "",
-      domain: "",
+    // Update progress if we're in auto-population mode
+    if (isAutoPopulating) {
+      setAutoPopulationProgress({
+        currentStep: "Loading available grades for subject...",
+        totalSteps: 3,
+        currentStepIndex: 2,
+      });
+    }
+
+    setDigitalLibrarySheet((prev) => {
+      console.log("🔍 Previous state in handleSubjectSelection:", {
+        assignmentType: prev.assignmentType,
+        subject: prev.subject,
+      });
+
+      const newState = {
+        ...prev,
+        subject: selectedSubject,
+        grade: "",
+        domain: "",
+        // Explicitly preserve assignmentType
+        assignmentType: prev.assignmentType,
+      };
+
+      console.log("✅ New state in handleSubjectSelection:", {
+        assignmentType: newState.assignmentType,
+        subject: newState.subject,
+      });
+
+      return newState;
     });
 
     // Reset ELA-specific state for all subjects
@@ -160,11 +473,49 @@ export default function DigitalLibrary() {
       );
       setGrades(gradeData || []); // Fallback à un tableau vide si gradeData est null/undefined
 
-      const filteredClasses = initialClasses.filter(
-        (cl: any) =>
+      // Enhanced classes filtering with better handling for loading states
+      console.log("📚 Starting Subject selection - Classes filtering:", {
+        selectedSubject,
+        initialClassesCount: initialClasses.length,
+        classesIsLoading,
+        isAutoPopulating,
+      });
+
+      // Wait for classes to be loaded if they're still loading during auto-population
+      if (classesIsLoading && isAutoPopulating) {
+        console.log(
+          "⚠️ Classes still loading during auto-population, will retry after load..."
+        );
+        return; // The useEffect will handle re-triggering once classes are loaded
+      }
+
+      const filteredClasses = initialClasses.filter((cl: any) => {
+        const subjectMatch =
           cl.subject_in_short === selectedSubject ||
-          cl.subject_in_all_letter === selectedSubject
-      );
+          cl.subject_in_all_letter === selectedSubject;
+
+        console.log(`🔍 Subject filtering for ${cl.name}:`, {
+          subject_in_short: cl.subject_in_short,
+          subject_in_all_letter: cl.subject_in_all_letter,
+          selectedSubject,
+          subjectMatch,
+        });
+
+        return subjectMatch;
+      });
+
+      console.log("📚 Subject selection - Classes filtering result:", {
+        selectedSubject,
+        initialClassesCount: initialClasses.length,
+        filteredClassesCount: filteredClasses.length,
+        filteredClasses: filteredClasses.map((cl: any) => ({
+          name: cl.name,
+          grade: cl.grade,
+          subject_in_short: cl.subject_in_short,
+          subject_in_all_letter: cl.subject_in_all_letter,
+        })),
+        isAutoPopulating,
+      });
 
       setAllClasses(filteredClasses);
       setCheckedClasses(filteredClasses.map((cl: any) => cl.name));
@@ -175,10 +526,54 @@ export default function DigitalLibrary() {
   };
 
   const handleGradeSelection = async (selectedGrade: string) => {
-    setDigitalLibrarySheet({
-      ...digitalLibrarySheet,
-      grade: selectedGrade,
-      domain: "",
+    // Guard clause to ensure we have valid parameters
+    if (!selectedGrade || !digitalLibrarySheet.subject) {
+      console.warn("⚠️ handleGradeSelection called with invalid parameters:", {
+        selectedGrade,
+        subject: digitalLibrarySheet.subject,
+      });
+      return;
+    }
+
+    handleGradeSelectionWithSubject(selectedGrade, digitalLibrarySheet.subject);
+  };
+
+  const handleGradeSelectionWithSubject = async (
+    selectedGrade: string,
+    selectedSubject: string
+  ) => {
+    // Guard clause to ensure we have valid parameters
+    if (!selectedGrade || !selectedSubject) {
+      console.warn(
+        "⚠️ handleGradeSelectionWithSubject called with invalid parameters:",
+        {
+          selectedGrade,
+          selectedSubject,
+        }
+      );
+      return;
+    }
+
+    setDigitalLibrarySheet((prev) => {
+      console.log("🔍 Previous state in handleGradeSelectionWithSubject:", {
+        assignmentType: prev.assignmentType,
+        grade: prev.grade,
+      });
+
+      const newState = {
+        ...prev,
+        grade: selectedGrade,
+        domain: "",
+        // Explicitly preserve assignmentType during grade selection
+        assignmentType: prev.assignmentType,
+      };
+
+      console.log("✅ New state in handleGradeSelectionWithSubject:", {
+        assignmentType: newState.assignmentType,
+        grade: newState.grade,
+      });
+
+      return newState;
     });
 
     // Reset standards-related state when changing grade
@@ -188,7 +583,7 @@ export default function DigitalLibrary() {
     setQuestionsLinks(null);
 
     // Handle ELA-specific flow
-    if (isElaSubjectSelected) {
+    if (selectedSubject === "ELA") {
       // Reset ELA-specific state when changing grade
       setSelectedElaStandard("");
       setSelectedElaStrand("");
@@ -201,7 +596,7 @@ export default function DigitalLibrary() {
       try {
         // Fetch ELA standards using the real API
         const elaStandardsData = await fetchElaStandards(
-          digitalLibrarySheet.subject,
+          selectedSubject,
           selectedGrade,
           tenantDomain,
           accessToken,
@@ -218,7 +613,7 @@ export default function DigitalLibrary() {
       // Regular flow for non-ELA subjects
       const domainsData = await getDomains(
         {
-          subject: digitalLibrarySheet.subject,
+          subject: selectedSubject,
           grade: Number.parseInt(selectedGrade),
         },
         tenantDomain,
@@ -229,25 +624,91 @@ export default function DigitalLibrary() {
       setSheetDomains(domainsData);
     }
 
-    setAllClasses(
-      initialClasses.filter(
-        (cl: any) =>
-          cl.grade === selectedGrade &&
-          (cl.subject_in_short === digitalLibrarySheet.subject ||
-            cl.subject_in_all_letter === digitalLibrarySheet.subject)
-      )
-    );
+    // Improved classes filtering with better debugging and error handling
+    console.log("🏫 Starting Grade selection - Classes filtering:", {
+      selectedGrade,
+      selectedSubject,
+      initialClassesCount: initialClasses.length,
+      initialClassesLoading: classesIsLoading,
+      isAutoPopulating,
+    });
 
-    setCheckedClasses(
-      initialClasses
-        .filter(
-          (cl: any) =>
-            cl.grade === selectedGrade &&
-            (cl.subject_in_short === digitalLibrarySheet.subject ||
-              cl.subject_in_all_letter === digitalLibrarySheet.subject)
-        )
-        ?.flatMap((cl: any) => cl.name)
-    );
+    // Wait for classes to be loaded if they're still loading
+    if (classesIsLoading || initialClasses.length === 0) {
+      console.log("⚠️ Classes are still loading or empty, waiting...");
+
+      // For auto-population, wait a bit and retry
+      if (isAutoPopulating) {
+        setTimeout(() => {
+          console.log("🔄 Retrying classes filtering for auto-population...");
+          handleGradeSelectionWithSubject(selectedGrade, selectedSubject);
+        }, 500);
+        return;
+      }
+    }
+
+    // Enhanced filtering with more detailed comparison
+    const filteredClassesForGrade = initialClasses.filter((cl: any) => {
+      // Safely normalize grade values for comparison with null checks
+      const classGrade = cl.grade?.toString().trim();
+      const normalizedSelectedGrade = selectedGrade?.toString().trim();
+
+      // Check grade match (exact or string comparison) with null safety
+      const gradeMatch =
+        cl.grade === selectedGrade ||
+        cl.grade?.toString() === selectedGrade ||
+        (classGrade &&
+          normalizedSelectedGrade &&
+          classGrade === normalizedSelectedGrade) ||
+        (classGrade &&
+          normalizedSelectedGrade &&
+          parseInt(classGrade) === parseInt(normalizedSelectedGrade));
+
+      // Check subject match
+      const subjectMatch =
+        cl.subject_in_short === selectedSubject ||
+        cl.subject_in_all_letter === selectedSubject;
+
+      console.log(`🔍 Class filtering for ${cl.name}:`, {
+        classGrade: cl.grade,
+        classGradeString: cl.grade?.toString(),
+        selectedGrade,
+        normalizedSelectedGrade,
+        gradeMatch,
+        subject_in_short: cl.subject_in_short,
+        subject_in_all_letter: cl.subject_in_all_letter,
+        selectedSubject,
+        subjectMatch,
+        overallMatch: gradeMatch && subjectMatch,
+      });
+
+      return gradeMatch && subjectMatch;
+    });
+
+    console.log("🏫 Grade selection - Classes filtering result:", {
+      selectedGrade,
+      selectedSubject,
+      initialClassesCount: initialClasses.length,
+      filteredClassesCount: filteredClassesForGrade.length,
+      filteredClasses: filteredClassesForGrade.map((cl: any) => ({
+        name: cl.name,
+        grade: cl.grade,
+        subject_in_short: cl.subject_in_short,
+        subject_in_all_letter: cl.subject_in_all_letter,
+      })),
+      isAutoPopulating,
+    });
+
+    setAllClasses(filteredClassesForGrade);
+    setCheckedClasses(filteredClassesForGrade.map((cl: any) => cl.name));
+
+    // Additional verification for auto-population
+    if (isAutoPopulating) {
+      console.log("✅ Auto-population classes filtering completed:", {
+        totalClasses: filteredClassesForGrade.length,
+        classNames: filteredClassesForGrade.map((cl: any) => cl.name),
+      });
+    }
   };
 
   const handleDomainSelection = async (selectedDomain: string) => {
@@ -454,7 +915,7 @@ export default function DigitalLibrary() {
       include_answer_key: digitalLibrarySheet.includeAnswerKey,
       teacher_name: userData.username,
       student_id: 1,
-      assignment_type: "Homework",
+      assignment_type: digitalLibrarySheet.assignmentType || "Homework",
       number_of_questions: digitalLibrarySheet.noOfQuestions,
       links: questionsLinks?.links,
     };
@@ -664,6 +1125,110 @@ export default function DigitalLibrary() {
         <PageTitleH1 title="Create Worksheet" className="text-white" />
       </div>
 
+      {/* Assignment Context Banner */}
+      {assignmentContext && (
+        <Card className="rounded-lg shadow-md p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full">
+              <svg
+                className="w-5 h-5 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-blue-800">
+                Creating worksheet for: {assignmentContext.assignmentName}
+              </h3>
+              <div className="flex flex-wrap gap-4 text-sm text-blue-600 mt-1">
+                {assignmentContext.courseName && (
+                  <span>Course: {assignmentContext.courseName}</span>
+                )}
+                {assignmentContext.dueDate && (
+                  <span>
+                    Due:{" "}
+                    {new Date(assignmentContext.dueDate).toLocaleDateString()}
+                  </span>
+                )}
+                {assignmentContext.assignmentType && (
+                  <span>Type: {assignmentContext.assignmentType}</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Auto-population Loading Banner */}
+      {isAutoPopulating && (
+        <Card className="rounded-lg shadow-md p-4 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full">
+              <svg
+                className="w-5 h-5 text-green-600 animate-spin"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-green-800">
+                Auto-populating form fields...
+              </h3>
+              <div className="text-sm text-green-600 mt-1">
+                {autoPopulationProgress ? (
+                  <div className="space-y-2">
+                    <div>{autoPopulationProgress.currentStep}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-green-200 rounded-full h-2">
+                        <div
+                          className="bg-green-600 h-2 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${
+                              (autoPopulationProgress.currentStepIndex /
+                                autoPopulationProgress.totalSteps) *
+                              100
+                            }%`,
+                          }}
+                        ></div>
+                      </div>
+                      <span className="text-xs font-medium">
+                        {autoPopulationProgress.currentStepIndex}/
+                        {autoPopulationProgress.totalSteps}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  "We're automatically filling out the form based on your assignment details. Please wait..."
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <Card className="rounded-lg shadow-lg p-8 bg-white border border-gray-200">
         <form
           className="flex flex-col gap-6"
@@ -765,8 +1330,10 @@ export default function DigitalLibrary() {
                 }}
               >
                 <SelectTrigger className="w-full bg-gray-50 border-gray-300 hover:border-blue-400">
-                  <SelectValue>
-                    {digitalLibrarySheet.grade || "Select Grade"}
+                  <SelectValue placeholder="Select Grade">
+                    {isLoadingSubjects
+                      ? "Loading grades..."
+                      : digitalLibrarySheet.grade || "Select Grade"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-white border border-gray-200 shadow-lg">
@@ -782,7 +1349,58 @@ export default function DigitalLibrary() {
                 </SelectContent>
               </Select>
             </div>
-
+            {/* Assignment Type Section */}
+            <div className="space-y-2 bg-orange-50 p-4 rounded-lg border border-orange-100 col-span-2">
+              <Label className="text-orange-800 font-medium">
+                Assignment Type
+              </Label>
+              <Select
+                disabled={isDreaMetrixBankOfQuestion}
+                value={digitalLibrarySheet.assignmentType}
+                onValueChange={(value) =>
+                  setDigitalLibrarySheet({
+                    ...digitalLibrarySheet,
+                    assignmentType: value,
+                  })
+                }
+              >
+                <SelectTrigger className="w-full bg-white border-orange-300 hover:border-orange-400">
+                  <SelectValue placeholder="Select Assignment Type" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                  <SelectItem
+                    value="homework"
+                    className="hover:bg-orange-50 focus:bg-orange-50"
+                  >
+                    Homework
+                  </SelectItem>
+                  <SelectItem
+                    value="test"
+                    className="hover:bg-orange-50 focus:bg-orange-50"
+                  >
+                    Test
+                  </SelectItem>
+                  <SelectItem
+                    value="quiz"
+                    className="hover:bg-orange-50 focus:bg-orange-50"
+                  >
+                    Quiz
+                  </SelectItem>
+                  <SelectItem
+                    value="participation"
+                    className="hover:bg-orange-50 focus:bg-orange-50"
+                  >
+                    Participation
+                  </SelectItem>
+                  <SelectItem
+                    value="other"
+                    className="hover:bg-orange-50 focus:bg-orange-50"
+                  >
+                    Other
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             {/* ELA-specific selection section */}
             {elaStepActive && (
               <>

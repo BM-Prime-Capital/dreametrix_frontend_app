@@ -4,13 +4,8 @@ import { CharacterObservationEntry } from "@/types";
 export function createCharacterObservationEntry(
   trait: string,
   comment?: string
-): CharacterObservationEntry {
-  return {
-    id: `obs_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    trait,
-    timestamp: new Date().toISOString(),
-    comment,
-  };
+): string {
+  return trait;
 }
 
 // Helper function to convert legacy string arrays to CharacterObservationEntry arrays
@@ -21,7 +16,12 @@ export function convertToObservationEntries(
 
   return characters.map((item) => {
     if (typeof item === "string") {
-      return createCharacterObservationEntry(item);
+      // Create a proper CharacterObservationEntry object from the string
+      return {
+        id: `obs_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        trait: item,
+        timestamp: new Date().toISOString(),
+      };
     }
     return item;
   });
@@ -185,15 +185,12 @@ export function generateDomainKey(
   parsedDomain: any,
   index: number
 ): string {
-  console.log("generateDomainKey input:", { domain, parsedDomain, index });
-
   // If it's a simple string that's not JSON, use it as key
   if (
     typeof domain === "string" &&
     !domain.trim().startsWith("{") &&
     !domain.trim().startsWith("[")
   ) {
-    console.log("Using string domain as key:", domain);
     return `domain-${domain}-${index}`;
   }
 
@@ -204,7 +201,6 @@ export function generateDomainKey(
     parsedDomain?.domain ||
     parsedDomain?.id ||
     `domain-${index}`;
-  console.log("Generated key:", key);
 
   return `domain-${key}-${index}`;
 }

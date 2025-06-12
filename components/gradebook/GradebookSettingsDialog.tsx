@@ -90,7 +90,11 @@ export function GradebookSettingsDialog({
   };
 
   const handleChange = (field: keyof Weights, value: number) => {
-    setWeights((prev) => ({ ...prev, [field]: value }));
+    // Ensure the value is a proper number without leading zeros
+    const cleanValue = isNaN(value)
+      ? 0
+      : Math.max(0, Math.min(100, Math.round(value)));
+    setWeights((prev) => ({ ...prev, [field]: cleanValue }));
   };
 
   const handleSave = async () => {
@@ -220,10 +224,13 @@ export function GradebookSettingsDialog({
                     type="number"
                     min="0"
                     max="100"
-                    value={weights.test}
-                    onChange={(e) =>
-                      handleChange("test", parseFloat(e.target.value) || 0)
-                    }
+                    value={weights.test.toString()}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Handle empty string or just parse the number
+                      const numValue = value === "" ? 0 : parseInt(value, 10);
+                      handleChange("test", numValue);
+                    }}
                     className="text-center font-medium border-2 focus:border-blue-500 transition-colors"
                     required
                   />
@@ -243,10 +250,12 @@ export function GradebookSettingsDialog({
                     type="number"
                     min="0"
                     max="100"
-                    value={weights.quiz}
-                    onChange={(e) =>
-                      handleChange("quiz", parseFloat(e.target.value) || 0)
-                    }
+                    value={weights.quiz.toString()}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const numValue = value === "" ? 0 : parseInt(value, 10);
+                      handleChange("quiz", numValue);
+                    }}
                     className="text-center font-medium border-2 focus:border-green-500 transition-colors"
                     required
                   />
@@ -266,10 +275,12 @@ export function GradebookSettingsDialog({
                     type="number"
                     min="0"
                     max="100"
-                    value={weights.homework}
-                    onChange={(e) =>
-                      handleChange("homework", parseFloat(e.target.value) || 0)
-                    }
+                    value={weights.homework.toString()}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const numValue = value === "" ? 0 : parseInt(value, 10);
+                      handleChange("homework", numValue);
+                    }}
                     className="text-center font-medium border-2 focus:border-yellow-500 transition-colors"
                     required
                   />
@@ -289,13 +300,12 @@ export function GradebookSettingsDialog({
                     type="number"
                     min="0"
                     max="100"
-                    value={weights.participation}
-                    onChange={(e) =>
-                      handleChange(
-                        "participation",
-                        parseFloat(e.target.value) || 0
-                      )
-                    }
+                    value={weights.participation.toString()}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const numValue = value === "" ? 0 : parseInt(value, 10);
+                      handleChange("participation", numValue);
+                    }}
                     className="text-center font-medium border-2 focus:border-purple-500 transition-colors"
                     required
                   />
@@ -315,10 +325,12 @@ export function GradebookSettingsDialog({
                     type="number"
                     min="0"
                     max="100"
-                    value={weights.other}
-                    onChange={(e) =>
-                      handleChange("other", parseFloat(e.target.value) || 0)
-                    }
+                    value={weights.other.toString()}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const numValue = value === "" ? 0 : parseInt(value, 10);
+                      handleChange("other", numValue);
+                    }}
                     className="text-center font-medium border-2 focus:border-gray-500 transition-colors"
                     required
                   />

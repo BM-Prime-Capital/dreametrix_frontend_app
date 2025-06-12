@@ -1,7 +1,4 @@
-"use server";
-
 import { ISchoolClass } from "@/types";
-import { redirect } from "next/navigation";
 
 interface ScheduleItem {
   date?: string;
@@ -30,7 +27,7 @@ export async function getClasses(
 
   if (!response.ok) {
     if (response.status === 401) {
-      return redirect("/");
+      throw new Error("Session expired. Please log in again.");
     } else if (response.status === 403) {
       throw new Error("Vous n'avez pas la permission d'accéder aux classes.");
     } else {

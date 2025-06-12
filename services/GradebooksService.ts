@@ -10,7 +10,7 @@ export async function getGradeBookList(
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
-  const url = `${tenantPrimaryDomain}/gradebooks/`;
+  const url = `${tenantPrimaryDomain}/gradebooks/classes/`;
   let response = await fetch(url, {
     method: "GET",
     headers: {
@@ -43,7 +43,7 @@ export async function getGradeBookFocusList(
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
-  const url = `${tenantPrimaryDomain}/gradebooks/${id}`;
+  const url = `${tenantPrimaryDomain}/gradebooks/classes/${id}`;
   let response = await fetch(url, {
     method: "GET",
     headers: {
