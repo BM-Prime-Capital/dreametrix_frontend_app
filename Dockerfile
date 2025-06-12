@@ -1,4 +1,3 @@
-# Utilise une image de base légère avec Node.js
 FROM node:20.15-alpine
 
 # Définir le répertoire de travail dans le conteneur
