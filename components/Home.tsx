@@ -109,9 +109,9 @@ export default function Login() {
           <DreaMetrixLogo />
         </div>
 
-        <div className="text-left mb-1">
+        <div className="text-left mb-3">
           <h2 className="text-[#1A73E8] text-lg font-medium ml-2.5">
-            Login here
+            Login to Your Account
           </h2>
         </div>
 
@@ -169,7 +169,7 @@ export default function Login() {
             </div>
           )}
 
-          <div className="text-right flex gap-2 justify-center items-center text-sm mt-1">
+          <div className="text-right flex gap-2 justify-center py-3 items-center text-sm mt-1">
             <label className="text-gray-600">Forgot your password?</label>
             <Link
               href="/forgot_password"
@@ -182,14 +182,14 @@ export default function Login() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-2 rounded-full 
-                     transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1] 
+            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-2 rounded-full
+                     transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1]
                      focus:ring-offset-2 disabled:opacity-50 text-base font-medium"
           >
             {isLoading ? "Logging in..." : "Login"}
           </button>
 
-          <div className="text-center text-sm text-gray-600 mt-1">
+          <div className="text-center text-sm text-gray-600 mt-3">
             Not registered yet?{" "}
             <Link
               href={userPath.SCHOOL_ADMIN_REGISTER_PATH}

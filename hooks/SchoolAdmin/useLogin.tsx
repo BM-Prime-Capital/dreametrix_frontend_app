@@ -53,11 +53,11 @@ export function useLogin() {
 
         console.log("LoginData => ", data);
 
-        // Stocker les tokens
+        // Stocking tokens
         localStorage.setItem(localStorageKey.ACCESS_TOKEN, data.access);
         localStorage.setItem(localStorageKey.REFRESH_TOKEN, data.refresh);
 
-        // Stocker les informations de l'utilisateur
+        // Stocking user info
         localStorage.setItem(
           localStorageKey.USER_DATA,
           JSON.stringify({
@@ -76,7 +76,7 @@ export function useLogin() {
           })
         );
 
-        // Stocker les informations du tenant
+        // Stocking tenant data
         localStorage.setItem(
           localStorageKey.TENANT_DATA,
           JSON.stringify({
@@ -86,11 +86,11 @@ export function useLogin() {
           })
         );
 
-        // Stocker les infos utiles pour le middleware dans les cookies
+        // Stocking useful data for the middleware in cookies
         Cookies.set("tenantDomain", data.tenant.primary_domain);
         Cookies.set(localStorageKey.ACCESS_TOKEN, data.access);
 
-        // Redirection basée sur le rôle de l'utilisateur
+        // user role based redirection
         switch (data.user.role) {
           case "school_admin":
             router.push("/school_admin");
