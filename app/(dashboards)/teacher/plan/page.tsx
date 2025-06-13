@@ -1,9 +1,9 @@
-"use client";
+// "use client";
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { GanttChartSquare, BookCopy, ClipboardList, ArrowRight, NotebookText } from 'lucide-react';
+import { GanttChartSquare, BookCopy, ClipboardList, ArrowRight, NotebookText, Wand2 } from 'lucide-react';
 import PageTitleH1 from '@/components/ui/page-title-h1';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -56,7 +56,7 @@ export default function PlansPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <header className="bg-[#3e81d4] px-4 py-3 rounded-md">
         <div className="flex items-center gap-4">
           <NotebookText className="h-8 w-8 text-white" />
@@ -96,6 +96,51 @@ export default function PlansPage() {
           </Card>
         ))}
       </section>
+
+        {/* Nouvelle section pour les outils AI avec plus d'options */}
+      <section className="bg-card p-6 rounded-lg shadow">
+        <h2 className="text-2xl font-semibold font-headline mb-4">AI-Powered Tools</h2>
+        <p className="text-muted-foreground mb-4 text-sm">
+          Leverage AI for activity suggestions and curriculum alignment verification.
+          Enhance your planning with intelligent tools designed to save time.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Wand2 className="h-5 w-5 text-purple-500" />
+                Activity Suggester
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm">Get creative and engaging activity ideas for your lessons.</p>
+            </CardContent>
+            <CardFooter>
+              <Button asChild variant="outline" className="w-full">
+                <Link href="plan/tools/activity-suggester">Try Now</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+          
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Wand2 className="h-5 w-5 text-purple-500" />
+                Alignment Verifier
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm">Ensure your plans are perfectly aligned with state standards using AI.</p>
+            </CardContent>
+            <CardFooter>
+              <Button asChild variant="outline" className="w-full">
+                <Link href="plan/tools/alignment-verifier">Try Now</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      </section>
+      
       <section className="bg-card p-6 rounded-lg shadow">
         <h2 className="text-2xl font-semibold font-headline mb-3">Quick Create</h2>
         <p className="text-muted-foreground mb-4">

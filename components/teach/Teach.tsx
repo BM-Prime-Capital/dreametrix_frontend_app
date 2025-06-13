@@ -25,7 +25,7 @@ export default function Teach() {
       <div className="flex justify-between items-center bg-[#3e81d4] custom-calendar-primary px-6 py-4 rounded-md shadow-md">
         <PageTitleH1 title="Teach" className="text-white" />
         <div className="flex items-center gap-6">
-          <TeachFiltersPopUp />
+          {/* <TeachFiltersPopUp /> */}
         </div>
       </div>
 

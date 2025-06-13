@@ -403,7 +403,7 @@ export function AttendanceTable({
                             <StatBadge value={0} color="green" title="Present" />
                             <StatBadge value={0} color="red" title="Absent" />
                             <StatBadge value={0} color="yellow" title="Late" />
-                            <StatBadge value={0} color="orange" title="Half Day" />
+                            <StatBadge value={0} color="orange" title="HalfDay" />
                           </div>
                         )}
                       </TableCell>
