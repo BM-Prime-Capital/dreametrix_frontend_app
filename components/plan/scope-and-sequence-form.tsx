@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { SUBJECTS, GRADE_LEVELS, type ScopeAndSequence, type Subject } from "../../lib/types";
+import { SUBJECTS, GRADE_LEVELS, type ScopeAndSequence,  } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
@@ -96,7 +96,7 @@ export function ScopeAndSequenceForm({ initialData, onSubmitSuccess }: ScopeAndS
                 </FormItem>
               )}
             />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -164,7 +164,7 @@ export function ScopeAndSequenceForm({ initialData, onSubmitSuccess }: ScopeAndS
                 )}
               />
             </div>
-            
+
             <FormField
               control={form.control}
               name="overview"
