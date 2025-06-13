@@ -51,7 +51,7 @@ const lessonPlanSchema = z.object({
 export type LessonPlanFormValues = z.infer<typeof lessonPlanSchema>;
 
 interface LessonPlanFormProps {
-  initialData?: LessonPlan;
+  initialData?: LessonPlan | null;
   unitPlans?: { id: string, title: string }[]; // For linking to a unit plan
   onSubmitSuccess?: (lessonPlan: LessonPlanFormValues) => void;
 }
