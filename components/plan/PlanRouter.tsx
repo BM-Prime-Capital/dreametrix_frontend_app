@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState } from 'react';
-import InitialScreen from './InitialScreen';
+//import InitialScreen from './InitialScreen';
 import ScopeSequenceView from './core/ScopeSequence/ScopeSequenceView';
 import UnitPlanView from './core/UnitPlan/UnitPlanView';
 import LessonPlanView from './core/LessonPlan/LessonPlanView';
@@ -28,7 +29,7 @@ export default function PlanRouter() {
 
   return (
     <div className="plan-container bg-gray-50 min-h-screen p-4">
-      {currentView === 'initial' && <InitialScreen navigateTo={navigateTo} />}
+      {/* {currentView === 'initial' && <InitialScreen navigateTo={navigateTo} />} */}
       
       {/* Scope and Sequence Views */}
       {currentView === 'scope-sequence-view' && (

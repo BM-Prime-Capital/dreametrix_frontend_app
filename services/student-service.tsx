@@ -82,8 +82,7 @@ export async function updateStudent(
   studentId: number,
   studentData: any,
   tenantPrimaryDomain: string,
-  accessToken: string,
-  refreshToken: string
+  accessToken: string
 ) {
   if (!accessToken) {
     throw new Error("You are not logged in. Please log in again.");
@@ -122,8 +121,7 @@ export async function enrollStudentsToClass(
   classId: number,
   studentIds: number[],
   tenantPrimaryDomain: string,
-  accessToken: string,
-  refreshToken: string
+  accessToken: string
 ) {
   if (!accessToken) {
     throw new Error("You are not logged in. Please log in again.");
@@ -161,8 +159,7 @@ export async function unenrollStudentsFromClass(
   classId: number,
   studentIds: number[],
   tenantPrimaryDomain: string,
-  accessToken: string,
-  refreshToken: string
+  accessToken: string
 ) {
   if (!accessToken) {
     throw new Error("You are not logged in. Please log in again.");
