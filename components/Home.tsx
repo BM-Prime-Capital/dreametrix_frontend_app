@@ -2,11 +2,13 @@
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
-import {  AlertTriangle } from "lucide-react";
+import { AlertTriangle, Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 import { userPath } from "@/constants/userConstants";
 import DreaMetrixLogo from "./ui/dreametrix-logo";
 import { useLogin } from "@/hooks/SchoolAdmin/useLogin";
 import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 
 export interface LoginFormData {
   email: string;
@@ -25,6 +27,7 @@ export default function Login() {
     password: "",
   });
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errors, setErrors] = useState<LoginErrors>({
     email: null,
     password: null,
@@ -79,127 +82,125 @@ export default function Login() {
         } else if (errorMessage.includes("password")) {
           setErrors((prev) => ({ ...prev, password: errorMessage }));
         } else {
-          // Handle general error
           console.error(errorMessage);
         }
       } else {
-        // Handle case where err is not an Error object
         console.error("An unknown error occurred");
       }
     }
   };
 
-  const renderErrorMessage = (errorMessage: string | null) => {
-    if (!errorMessage) return null;
-    return (
-      <div className="absolute right-[-160px] top-1/2 transform -translate-y-1/2 bg-red-100 text-red-700 px-3 py-1 rounded-md shadow-md">
-        <div className="absolute left-[-6px] top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-red-100"></div>
-        <div className="flex items-center">
-          <AlertTriangle className="h-4 w-4 mr-2" />
-          <span className="text-sm">{errorMessage}</span>
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="min-h-screen bg-[url('/assets/images/bg.png')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-2">
-      <div className="w-full max-w-[450px] bg-[rgba(230,230,230,0.90)] p-3 sm:p-6 rounded-[15px] shadow-[0px_4px_20px_rgba(0,0,0,0.1)]">
-        <div className="flex justify-center mb-4">
-          <DreaMetrixLogo />
-        </div>
-
-        <div className="text-left mb-3">
-          <h2 className="text-[#1A73E8] text-lg font-medium ml-2.5">
-            Login to Your Account
-          </h2>
-        </div>
-
-        {isLoading && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#25AAE1]"></div>
+    <div className="min-h-screen bg-[url('/assets/images/bg.png')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-4">
+      <Card className="w-full max-w-[450px] shadow-lg border-0 bg-[rgba(230,230,230,0.90)]">
+        <CardHeader className="space-y-4">
+          <div className="flex justify-center">
+            <DreaMetrixLogo />
           </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div className="relative mb-3">
-            <div
-              className={`relative rounded-full overflow-hidden border ${
-                formSubmitted && errors.email
-                  ? "border-red-500"
-                  : "border-gray-200"
-              }`}
-            >
-              <Input
-                type="email"
-                placeholder="Email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-              />
-            </div>
-            {renderErrorMessage(errors.email)}
+          <div className="text-center space-y-2">
+            <CardTitle className="text-2xl font-bold text-[#25AAE1]">Welcome Back</CardTitle>
+            <CardDescription className="text-gray-500">
+              Sign in to your account to continue
+            </CardDescription>
           </div>
-
-          <div className="relative">
-            <div
-              className={`relative rounded-full overflow-hidden border ${
-                formSubmitted && errors.password
-                  ? "border-red-500"
-                  : "border-gray-200"
-              }`}
-            >
-              <Input
-                type="password"
-                placeholder="Password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-              />
-            </div>
-            {renderErrorMessage(errors.password)}
-          </div>
-
-          {error && (
-            <div className="bg-red-100 text-red-700 px-4 py-2 rounded-md">
-              <div className="flex items-center">
-                <AlertTriangle className="h-5 w-5 mr-2" />
-                <span>{error}</span>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className={`pl-10 ${formSubmitted && errors.email ? 'border-red-500' : ''}`}
+                />
               </div>
+              {formSubmitted && errors.email && (
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertTriangle className="h-4 w-4" />
+                  {errors.email}
+                </p>
+              )}
             </div>
-          )}
 
-          <div className="text-right flex gap-2 justify-center py-3 items-center text-sm mt-1">
-            <label className="text-gray-600">Forgot your password?</label>
-            <Link
-              href="/forgot_password"
-              className="text-[#1A73E8] hover:text-[#1453B8]"
+            <div className="space-y-2">
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className={`pl-10 pr-10 ${formSubmitted && errors.password ? 'border-red-500' : ''}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+              {formSubmitted && errors.password && (
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertTriangle className="h-4 w-4" />
+                  {errors.password}
+                </p>
+              )}
+            </div>
+
+            {error && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-md flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5" />
+                <span className="text-sm">{error}</span>
+              </div>
+            )}
+
+            <div className="flex justify-end">
+              <Link
+                href="/forgot_password"
+                className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                Forgot your password?
+              </Link>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white"
             >
-              Reset it here.
-            </Link>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-2 rounded-full
-                     transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1]
-                     focus:ring-offset-2 disabled:opacity-50 text-base font-medium"
-          >
-            {isLoading ? "Logging in..." : "Login"}
-          </button>
-
-          <div className="text-center text-sm text-gray-600 mt-3">
-            Not registered yet?{" "}
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Login"
+              )}
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{" "}
             <Link
               href={userPath.SCHOOL_ADMIN_REGISTER_PATH}
-              className="text-[#1A73E8] hover:text-[#1453B8]"
+              className="text-blue-600 hover:text-blue-700 font-medium"
             >
-              Register your School here.
+              Register your School
             </Link>
-          </div>
-        </form>
-      </div>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
 }
