@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { SUBJECTS, GRADE_LEVELS, type UnitPlan } from "../../lib/types";
+import { SUBJECTS, GRADE_LEVELS, type UnitPlan } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation"; // Corrected import
 
