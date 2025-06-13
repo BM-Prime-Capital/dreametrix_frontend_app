@@ -109,9 +109,9 @@ export default function Login() {
           <DreaMetrixLogo />
         </div>
 
-        <div className="text-left mb-1">
+        <div className="text-left mb-3">
           <h2 className="text-[#1A73E8] text-lg font-medium ml-2.5">
-            Login here
+            Login to Your Account
           </h2>
         </div>
 
@@ -169,8 +169,8 @@ export default function Login() {
             </div>
           )}
 
-          <div className="text-right flex gap-2 justify-center items-center text-sm mt-4">
-            <label className="text-gray-600">Forgot your password ?</label>
+          <div className="text-right flex gap-2 justify-center py-3 items-center text-sm mt-1">
+            <label className="text-gray-600">Forgot your password?</label>
             <Link
               href="/forgot_password"
               className="text-[#1A73E8] hover:text-[#1453B8]"
@@ -189,24 +189,19 @@ export default function Login() {
             {isLoading ? "Logging in..." : "Login"}
           </button>
 
-          <div className="flex flex-col items-center gap-2 text-sm text-gray-600 mt-4">
-            <div>
-              <Link
-                href={userPath.SCHOOL_ADMIN_REGISTER_PATH}
-                className="text-[#1A73E8] hover:text-[#1453B8]"
-              >
-                School Registration
-              </Link>
-            </div>
-
-            <div>
-              <Link
-                href={userPath.PARENT_REGISTER_PATH}
-                className="text-[#1A73E8] hover:text-[#1453B8]"
-              >
-                Parent Portal
-              </Link>
-            </div>
+          <div className="flex flex-row justify-around gap-4 text-sm text-gray-600 mt-4">
+            <Link
+              href={userPath.SCHOOL_ADMIN_REGISTER_PATH}
+              className="text-[#1A73E8] hover:text-[#1453B8]"
+            >
+              School Registration
+            </Link>
+            <Link
+              href={userPath.PARENT_REGISTER_PATH}
+              className="text-[#1A73E8] hover:text-[#1453B8]"
+            >
+              Parent Portal
+            </Link>
           </div>
         </form>
       </div>

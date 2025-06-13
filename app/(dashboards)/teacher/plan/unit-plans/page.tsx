@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, BookOpenText, Calculator, BookCopy, MoreVertical, Pencil, Copy, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import type { UnitPlan } from '../../../../../lib/types';
+import type { UnitPlan } from '@/lib/types';
 import PageTitleH1 from '@/components/ui/page-title-h1';
 import {
   Dialog,
@@ -21,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 
 // Mock data - replace with actual data fetching in a real app
 const mockUnitPlans: UnitPlan[] = [
@@ -56,6 +57,23 @@ const mockUnitPlans: UnitPlan[] = [
 export default function UnitPlansPage() {
   const [unitPlans, setUnitPlans] = useState<UnitPlan[]>(mockUnitPlans);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [currentUnitPlan, setCurrentUnitPlan] = useState<UnitPlan | null>({
+    activities: "",
+    assessmentsFormative: "",
+    assessmentsSummative: "",
+    endDate: "",
+    gradeLevel: "",
+    id: "",
+    learningObjectives: "",
+    materials: "",
+    pacingCalendar: "",
+    standards: "",
+    startDate: "",
+    subject: undefined,
+    title: ""
+  })
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -64,24 +82,51 @@ export default function UnitPlansPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleSuccess = () => {
+  const handleSuccess = (unitPlan:any) => {
+    const updatedUnitPlan = {
+      ...unitPlan,
+      id: editingId || String(unitPlans.length + 1),
+    };
+
+    if (editingId) {
+      setUnitPlans(prev => prev.map(plan =>
+          plan.id === editingId ? updatedUnitPlan : plan
+      ));
+    } else {
+      setUnitPlans(prev => [...prev, updatedUnitPlan]);
+    }
+    console.log("All of them", unitPlans)
+    setIsDialogOpen(false);
     setIsDialogOpen(false);
     // Optionally refresh the unit plans list here
   };
 
-  const handleEdit = (planId: string) => {
+  const handleEdit = (clickedUnitPlan: UnitPlan) => {
     // Implement edit functionality
-    console.log('Edit plan:', planId);
+    const unitPlanToEdit = mockUnitPlans.find((unitPlan) => unitPlan.id === clickedUnitPlan.id);
+    if(unitPlanToEdit){
+      setEditingId(clickedUnitPlan.id)
+      console.log('Edit unit:', clickedUnitPlan);
+      setCurrentUnitPlan(clickedUnitPlan)
+      setIsDialogOpen(true)
+    }
   };
 
-  const handleDuplicate = (planId: string) => {
+  const handleDuplicate = (clickedUnitPlan: UnitPlan) => {
     // Implement duplicate functionality
-    console.log('Duplicate plan:', planId);
+    const unitPlanToDuplicate = mockUnitPlans.find((unitPlan) => unitPlan.id === clickedUnitPlan.id);
+    if(unitPlanToDuplicate){
+      console.log('Duplicate plan:', clickedUnitPlan);
+      setCurrentUnitPlan({...clickedUnitPlan, title:`${clickedUnitPlan.title} (Copy)`})
+      setIsDialogOpen(true)
+    }
+    console.log('Duplicate plan:', clickedUnitPlan);
   };
 
-  const handleDelete = (planId: string) => {
+  const handleDelete = (unitPlanId: string) => {
     // Implement delete functionality
-    console.log('Delete plan:', planId);
+    setUnitPlans(prev => prev.filter(unitPlan => unitPlan.id !== unitPlanId));
+    console.log('Delete plan:', unitPlanId);
   };
 
   return (
@@ -117,7 +162,10 @@ export default function UnitPlansPage() {
           Back
         </Button>
         <Button
-          onClick={() => setIsDialogOpen(true)}
+          onClick={() => {
+            setCurrentUnitPlan(null)
+            setIsDialogOpen(true)
+          }}
           className="bg-[#3e81d4] hover:bg-[#2e71c4] text-white"
         >
           <PlusCircle className="mr-2 h-5 w-5" /> New Unit Plan
@@ -133,11 +181,11 @@ export default function UnitPlansPage() {
               Lay the foundation for a series of lessons by defining standards, objectives, and assessments for your unit.
             </DialogDescription>
           </DialogHeader>
-          <UnitPlanForm onSubmitSuccess={handleSuccess} />
+          <UnitPlanForm onSubmitSuccess={(unitPlanToSubmit)=>handleSuccess(unitPlanToSubmit)} initialData={currentUnitPlan} />
         </DialogContent>
       </Dialog>
 
-
+      {/*Empty list Component*/}
       {unitPlans.length === 0 && (
          <div className="text-center py-10">
             <BookCopy className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -174,15 +222,15 @@ export default function UnitPlansPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleEdit(plan.id)}>
+                    <DropdownMenuItem onClick={() => handleEdit(plan)}>
                       <Pencil className="mr-2 h-4 w-4" />
                       Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleDuplicate(plan.id)}>
+                    <DropdownMenuItem onClick={() => handleDuplicate(plan)}>
                       <Copy className="mr-2 h-4 w-4" />
                       Duplicate
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={() => handleDelete(plan.id)}
                       className="text-red-600"
                     >
