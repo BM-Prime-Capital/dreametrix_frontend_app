@@ -2,7 +2,7 @@
 export interface UnitPlan {
   id: string;
   title: string;
-  subject: Subject;
+  subject: Subject | undefined;
   gradeLevel: string;
   standards: string;
   learningObjectives: string;
