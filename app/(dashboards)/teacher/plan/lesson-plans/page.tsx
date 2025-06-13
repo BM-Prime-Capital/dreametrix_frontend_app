@@ -52,7 +52,7 @@ export default function LessonPlansPage() {
   // const router = useRouter();
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const [currentPlan, setCurrentPlan] = useState<LessonPlan>({
+  const [currentPlan, setCurrentPlan] = useState<LessonPlan| null>({
     assessmentFormative: "",
     date: "",
     differentiation: "",
@@ -79,7 +79,7 @@ export default function LessonPlansPage() {
     { id: 'unit2', title: 'Narrative Writing (ELA 6th)' },
   ];
 
-  const handleSuccess = (plan: LessonPlan) => {
+  const handleSuccess = (plan: any) => {
     setIsDialogOpen(false);
     console.log("Plan at submission ===>", plan)
     // Optionally refresh data here
@@ -97,8 +97,8 @@ export default function LessonPlansPage() {
     } else {
       setLessonPlans(prev => [...prev, updatedLessonPlan]);
     }
+    console.log("Alll of them", lessonPlans)
 
-    // setOpen(false);
   };
 
   const handleEdit = (clickedLessonPlan: LessonPlan) => {
@@ -128,6 +128,7 @@ export default function LessonPlansPage() {
     setLessonPlans(prev => prev.filter(plan => plan.id !== planId));
     console.log('Delete plan:', planId);
   };
+
 
 
   return (
@@ -163,7 +164,10 @@ export default function LessonPlansPage() {
           Back
         </Button>
         <Button
-          onClick={() => setIsDialogOpen(true)}
+          onClick={() => {
+            setCurrentPlan(null)
+            setIsDialogOpen(true)
+          }}
           className="bg-[#3e81d4] hover:bg-[#2e71c4] text-white"
         >
           <PlusCircle className="mr-2 h-5 w-5" /> New Lesson Plan
