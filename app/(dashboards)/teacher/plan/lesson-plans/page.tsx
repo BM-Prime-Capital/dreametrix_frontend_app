@@ -80,7 +80,7 @@ export default function LessonPlansPage() {
   ];
 
   const handleSuccess = (plan: any) => {
-    setIsDialogOpen(false);
+
     console.log("Plan at submission ===>", plan)
     // Optionally refresh data here
 
@@ -97,7 +97,8 @@ export default function LessonPlansPage() {
     } else {
       setLessonPlans(prev => [...prev, updatedLessonPlan]);
     }
-    console.log("Alll of them", lessonPlans)
+    console.log("All of them", lessonPlans)
+    setIsDialogOpen(false);
 
   };
 
