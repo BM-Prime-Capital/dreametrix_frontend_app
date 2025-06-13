@@ -28,6 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation"; // Corrected import
 
 const unitPlanSchema = z.object({
+  id:z.string().optional(),
   title: z.string().min(3, { message: "Title must be at least 3 characters." }),
   subject: z.enum(SUBJECTS as [string, ...string[]], { required_error: "Subject is required." }),
   gradeLevel: z.string({ required_error: "Grade level is required." }),
@@ -43,8 +44,8 @@ const unitPlanSchema = z.object({
 type UnitPlanFormValues = z.infer<typeof unitPlanSchema>;
 
 interface UnitPlanFormProps {
-  initialData?: UnitPlan;
-  onSubmitSuccess?: () => void;
+  initialData?: UnitPlan | null;
+  onSubmitSuccess?: (unitPlan :UnitPlanFormValues ) => void;
 }
 
 export function UnitPlanForm({ initialData, onSubmitSuccess }: UnitPlanFormProps) {
@@ -54,6 +55,7 @@ export function UnitPlanForm({ initialData, onSubmitSuccess }: UnitPlanFormProps
   const form = useForm<UnitPlanFormValues>({
     resolver: zodResolver(unitPlanSchema),
     defaultValues: initialData || {
+      id:"",
       title: "",
       subject: undefined,
       gradeLevel: undefined,
@@ -76,7 +78,7 @@ export function UnitPlanForm({ initialData, onSubmitSuccess }: UnitPlanFormProps
       variant: "default",
     });
     if (onSubmitSuccess) {
-      onSubmitSuccess();
+      onSubmitSuccess(values);
     } else {
       router.push('/unit-plans'); // Navigate to unit plans list after creation
     }
@@ -193,7 +195,7 @@ export function UnitPlanForm({ initialData, onSubmitSuccess }: UnitPlanFormProps
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="activities"
@@ -267,7 +269,7 @@ export function UnitPlanForm({ initialData, onSubmitSuccess }: UnitPlanFormProps
                 )}
                 />
             </div>
-            
+
             <FormField
               control={form.control}
               name="pacingCalendar"
