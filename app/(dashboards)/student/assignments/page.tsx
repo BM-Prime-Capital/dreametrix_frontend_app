@@ -1,61 +1,113 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { AssignmentsTable } from "../../../../components/student/assignments/assignments-table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar } from "lucide-react"
-import { DatePickerDialog } from "../../../../components/student/assignments/date-picker-dialog"
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { AssignmentsTable } from "../../../../components/student/assignments/assignments-table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar, ArrowLeft } from "lucide-react";
+import { DatePickerDialog } from "../../../../components/student/assignments/date-picker-dialog";
 
 export default function AssignmentsPage() {
-  const [selectedClass, setSelectedClass] = useState<string>("all-classes")
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
-  const [, setSelectedDates] = useState<number[]>([])
+  const [selectedClass, setSelectedClass] = useState<string>("all-classes");
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [selectedDates, setSelectedDates] = useState<number[]>([]);
+  const [dateFilter, setDateFilter] = useState<string>("all-days");
 
   const handleDateSelection = (dates: number[]) => {
-    setSelectedDates(dates)
-  }
+    setSelectedDates(dates);
+    setDateFilter(dates.length > 0 ? "custom" : "all-days");
+  };
 
   return (
-    <section className="flex flex-col gap-4 w-full  mx-auto p-4 ">
-      <div className="flex items-center justify-between">
-        <h1 className="text-[#4CAF50] text-xl font-bold">ASSIGNMENTS</h1>
-        <div className="flex gap-4">
-          <button
-            className="bg-white border rounded-md px-4 py-2 flex items-center justify-center"
-            onClick={() => setIsDatePickerOpen(true)}
+    <div className="flex flex-col gap-6 w-full min-h-screen">
+      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-6 rounded-lg shadow-lg">
+        <div className="flex items-center gap-4 text-white">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-white hover:bg-white/20 p-2"
+            onClick={() => window.history.back()}
           >
-            <span>All Days</span>
-            <Calendar className="ml-2 h-5 w-5 text-gray-500" />
-          </button>
-
-          <Select value={selectedClass} onValueChange={setSelectedClass}>
-            <SelectTrigger className="w-[180px] bg-white">
-              <SelectValue placeholder="All Classes" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all-classes">All Classes</SelectItem>
-              <SelectItem value="class-5-math">Class 5 - Math</SelectItem>
-              <SelectItem value="class-n-1">Class N</SelectItem>
-              <SelectItem value="class-n-2">Class N</SelectItem>
-              <SelectItem value="class-n-3">Class N</SelectItem>
-              <SelectItem value="class-n-4">Class N</SelectItem>
-              <SelectItem value="class-n-5">Class N</SelectItem>
-            </SelectContent>
-          </Select>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-bold text-white tracking-wide">
+            ASSIGNMENTS
+          </h1>
         </div>
       </div>
+      <section className="flex flex-col gap-6 w-full mx-auto p-6 bg-gray-50 min-h-screen">
+        {/* Header Section */}
 
-      <Card className="rounded-lg shadow-sm p-0 overflow-hidden border-0">
-        <AssignmentsTable />
-      </Card>
+        <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border">
+          <div className="flex items-center gap-4">
+            <div className="text-gray-600 font-medium">Filter Assignments</div>
+            {(selectedClass !== "all-classes" || dateFilter !== "all-days") && (
+              <button
+                onClick={() => {
+                  setSelectedClass("all-classes");
+                  setSelectedDates([]);
+                  setDateFilter("all-days");
+                }}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+          <div className="flex gap-3">
+            <button
+              className="bg-white border border-gray-300 rounded-lg px-4 py-2 flex items-center gap-2 hover:bg-gray-50 transition-colors shadow-sm"
+              onClick={() => setIsDatePickerOpen(true)}
+            >
+              <span className="text-gray-700 font-medium">
+                {dateFilter === "custom" && selectedDates.length > 0
+                  ? `${selectedDates.length} day${
+                      selectedDates.length > 1 ? "s" : ""
+                    } selected`
+                  : "All Days"}
+              </span>
+              <Calendar className="h-4 w-4 text-gray-500" />
+            </button>
 
-      <DatePickerDialog
-        isOpen={isDatePickerOpen}
-        onClose={() => setIsDatePickerOpen(false)}
-        onApply={handleDateSelection}
-      />
-    </section>
-  )
+            <Select value={selectedClass} onValueChange={setSelectedClass}>
+              <SelectTrigger className="w-[200px] bg-white border-gray-300 shadow-sm">
+                <SelectValue placeholder="All Classes" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all-classes">All Classes</SelectItem>
+                <SelectItem value="class-5-math">Class 5 - Math</SelectItem>
+                <SelectItem value="class-5-sci">Class 5 - Sci</SelectItem>
+                <SelectItem value="class-5-bio">Class 5 - Bio</SelectItem>
+                <SelectItem value="class-5-lit">Class 5 - Lit</SelectItem>
+                <SelectItem value="class-5-che">Class 5 - Che</SelectItem>
+                <SelectItem value="class-5-spa">Class 5 - Spa</SelectItem>
+                <SelectItem value="class-5-phy">Class 5 - Phy</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <Card className="rounded-2xl shadow-sm p-0 overflow-hidden border border-gray-200 bg-white">
+          <AssignmentsTable
+            selectedClass={selectedClass}
+            selectedDates={selectedDates}
+            dateFilter={dateFilter}
+          />
+        </Card>
+
+        <DatePickerDialog
+          isOpen={isDatePickerOpen}
+          onClose={() => setIsDatePickerOpen(false)}
+          onApply={handleDateSelection}
+        />
+      </section>
+    </div>
+  );
 }
-

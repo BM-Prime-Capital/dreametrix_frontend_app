@@ -1,23 +1,60 @@
-"use client"
+"use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { X, Download, Printer, ChevronLeft, ChevronRight } from "lucide-react"
-import { Assignment } from "@/app/api/student/assignment/assignment.model"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { X, Download, Printer, ChevronLeft, ChevronRight } from "lucide-react";
+import { Assignment } from "@/app/api/student/assignment/assignment.model";
 
 interface ViewAssignmentDialogProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
   assignment: Assignment | null;
 }
-export function ViewAssignmentDialog({ isOpen, onClose, assignment }: ViewAssignmentDialogProps) {
+export function ViewAssignmentDialog({
+  isOpen,
+  onClose,
+  assignment,
+}: ViewAssignmentDialogProps) {
+  const getAssignmentContent = (assignmentName: string) => {
+    const content = {
+      "Science Homework":
+        "Complete Chapter 5 exercises on photosynthesis. Answer questions 1-10 and conduct the leaf experiment.",
+      "Math Test":
+        "Solve algebraic equations and word problems. Topics: Linear equations, quadratic formulas, and geometry.",
+      "Biology Assignment":
+        "Research and write a 2-page report on cellular respiration. Include diagrams and references.",
+      "Literature Essay":
+        "Write a 500-word essay analyzing the main themes in 'Romeo and Juliet'. Focus on love and conflict.",
+      "Chemistry Lab Report":
+        "Complete the acid-base titration experiment and submit a detailed lab report with observations.",
+      "Spanish Vocabulary Quiz":
+        "Study vocabulary from Unit 3. Quiz will cover 50 words including verbs, nouns, and adjectives.",
+      "Physics Problem Set":
+        "Solve problems 1-15 from Chapter 8 on motion and forces. Show all work and calculations.",
+    };
+    return (
+      content[assignmentName as keyof typeof content] ||
+      "Assignment details will be displayed here."
+    );
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[400px] p-0 overflow-hidden gap-0 bg-gray-50">
         <DialogHeader className="p-4 pb-2">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-gray-700">Assignment</DialogTitle>
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-6 w-6">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="h-6 w-6"
+            >
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -29,16 +66,11 @@ export function ViewAssignmentDialog({ isOpen, onClose, assignment }: ViewAssign
             {assignment?.kind}
           </div>
 
-          <div className="bg-white rounded-lg p-4 min-h-[200px] flex flex-col justify-center items-center">
-            <div className="w-full space-y-3 px-4">
-              <div className="h-4 bg-gray-400 rounded w-1/3"></div>
-              <div className="h-4 bg-gray-400 rounded w-1/2"></div>
-              <div className="h-4 bg-gray-400 rounded w-full"></div>
-              <div className="h-4 bg-gray-400 rounded w-full"></div>
-              <div className="h-4 bg-gray-400 rounded w-full"></div>
-              <div className="h-4 bg-gray-400 rounded w-full"></div>
-              <div className="h-4 bg-gray-400 rounded w-full"></div>
-              <div className="h-4 bg-gray-400 rounded w-3/4"></div>
+          <div className="bg-white rounded-lg p-4 min-h-[200px]">
+            <div className="text-gray-700 text-sm leading-relaxed">
+              {assignment
+                ? getAssignmentContent(assignment.name)
+                : "Loading assignment..."}
             </div>
           </div>
 
@@ -63,6 +95,5 @@ export function ViewAssignmentDialog({ isOpen, onClose, assignment }: ViewAssign
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-
