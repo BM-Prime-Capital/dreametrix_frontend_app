@@ -169,8 +169,8 @@ export default function Login() {
             </div>
           )}
 
-          <div className="text-right flex gap-2 justify-center items-center text-sm mt-1">
-            <label className="text-gray-600">Forgot your password?</label>
+          <div className="text-right flex gap-2 justify-center items-center text-sm mt-4">
+            <label className="text-gray-600">Forgot your password ?</label>
             <Link
               href="/forgot_password"
               className="text-[#1A73E8] hover:text-[#1453B8]"
@@ -182,21 +182,31 @@ export default function Login() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-2 rounded-full 
+            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-2 rounded-full mt-2
                      transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1] 
                      focus:ring-offset-2 disabled:opacity-50 text-base font-medium"
           >
             {isLoading ? "Logging in..." : "Login"}
           </button>
 
-          <div className="text-center text-sm text-gray-600 mt-1">
-            Not registered yet?{" "}
-            <Link
-              href={userPath.SCHOOL_ADMIN_REGISTER_PATH}
-              className="text-[#1A73E8] hover:text-[#1453B8]"
-            >
-              Register your School here.
-            </Link>
+          <div className="flex flex-col items-center gap-2 text-sm text-gray-600 mt-4">
+            <div>
+              <Link
+                href={userPath.SCHOOL_ADMIN_REGISTER_PATH}
+                className="text-[#1A73E8] hover:text-[#1453B8]"
+              >
+                School Registration
+              </Link>
+            </div>
+
+            <div>
+              <Link
+                href={userPath.PARENT_REGISTER_PATH}
+                className="text-[#1A73E8] hover:text-[#1453B8]"
+              >
+                Parent Portal
+              </Link>
+            </div>
           </div>
         </form>
       </div>
