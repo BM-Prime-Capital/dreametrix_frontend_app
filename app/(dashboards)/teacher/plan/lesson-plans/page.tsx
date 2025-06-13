@@ -9,13 +9,15 @@ import type { LessonPlan } from '@/lib/types';
 import { format } from 'date-fns';
 import PageTitleH1 from '@/components/ui/page-title-h1';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { LessonPlanForm } from '@/components/plan/lesson-plan-form';
+import {LessonPlanForm} from '@/components/plan/lesson-plan-form';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+// import {useRouter} from "next/navigation";
+// import {undefined} from "zod";
 
 // Mock data - replace with actual data fetching in a real app
 const mockLessonPlans: LessonPlan[] = [
@@ -47,6 +49,23 @@ const mockLessonPlans: LessonPlan[] = [
 export default function LessonPlansPage() {
   const [lessonPlans, setLessonPlans] = useState<LessonPlan[]>(mockLessonPlans);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  // const router = useRouter();
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const [currentPlan, setCurrentPlan] = useState<LessonPlan>({
+    assessmentFormative: "",
+    date: "",
+    differentiation: "",
+    gradeLevel: "",
+    id: "",
+    materials: "",
+    objectives: "",
+    procedures: "",
+    subject: undefined,
+    title: "",
+    unitPlanId: ""
+  })
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -60,26 +79,56 @@ export default function LessonPlansPage() {
     { id: 'unit2', title: 'Narrative Writing (ELA 6th)' },
   ];
 
-  const handleSuccess = () => {
+  const handleSuccess = (plan: LessonPlan) => {
     setIsDialogOpen(false);
+    console.log("Plan at submission ===>", plan)
     // Optionally refresh data here
+
+
+    const updatedLessonPlan = {
+      ...plan,
+      id: editingId || String(lessonPlans.length + 1),
+    };
+
+    if (editingId) {
+      setLessonPlans(prev => prev.map(plan =>
+          plan.id === editingId ? updatedLessonPlan : plan
+      ));
+    } else {
+      setLessonPlans(prev => [...prev, updatedLessonPlan]);
+    }
+
+    // setOpen(false);
   };
 
-  const handleEdit = (planId: string) => {
+  const handleEdit = (clickedLessonPlan: LessonPlan) => {
     // Implement edit functionality
-    console.log('Edit plan:', planId);
-    setIsDialogOpen(true)
+    const lessonPlanToEdit = mockLessonPlans.find((lessonPlan) => lessonPlan.id === clickedLessonPlan.id);
+    if(lessonPlanToEdit){
+      setEditingId(clickedLessonPlan.id)
+      console.log('Edit plan:', clickedLessonPlan);
+      setCurrentPlan(clickedLessonPlan)
+      setIsDialogOpen(true)
+    }
+
   };
 
-  const handleDuplicate = (planId: string) => {
+  const handleDuplicate = (clickedLessonPlan: LessonPlan) => {
     // Implement duplicate functionality
-    console.log('Duplicate plan:', planId);
+    const lessonPlanToDuplicate = mockLessonPlans.find((lessonPlan) => lessonPlan.id === clickedLessonPlan.id);
+    if(lessonPlanToDuplicate){
+      console.log('Duplicate plan:', clickedLessonPlan);
+      setCurrentPlan({...clickedLessonPlan, title:`${clickedLessonPlan.title} (Copy)`})
+      setIsDialogOpen(true)
+    }
   };
 
   const handleDelete = (planId: string) => {
     // Implement delete functionality
+    setLessonPlans(prev => prev.filter(plan => plan.id !== planId));
     console.log('Delete plan:', planId);
   };
+
 
   return (
     <div className="space-y-8">
@@ -90,7 +139,7 @@ export default function LessonPlansPage() {
         </div>
       </header>
 
-      {/* Bouton Create New Lesson Plan */}
+      {/* Button Create New Lesson Plan */}
       <div className="flex justify-between items-center">
         <Button
           variant="outline"
@@ -131,12 +180,12 @@ export default function LessonPlansPage() {
                     Outline your daily instruction, from objectives to assessments.
                   </DialogDescription>
                 </DialogHeader>
-                <LessonPlanForm unitPlans={mockUnitPlans} onSubmitSuccess={handleSuccess} />
+                <LessonPlanForm unitPlans={mockUnitPlans} onSubmitSuccess={(lessonPlanToSubmit)=>handleSuccess(lessonPlanToSubmit)} initialData={currentPlan} />
               </DialogContent>
       </Dialog>
 
 
-
+       {/*Empty List component*/}
        {lessonPlans.length === 0 && (
          <div className="text-center py-10">
             <ClipboardCheck className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -173,11 +222,11 @@ export default function LessonPlansPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleEdit(plan.id)}>
+                    <DropdownMenuItem onClick={() => handleEdit(plan)}>
                       <Pencil className="mr-2 h-4 w-4" />
                       Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleDuplicate(plan.id)}>
+                    <DropdownMenuItem onClick={() => handleDuplicate(plan)}>
                       <Copy className="mr-2 h-4 w-4" />
                       Duplicate
                     </DropdownMenuItem>
@@ -192,7 +241,7 @@ export default function LessonPlansPage() {
                 </DropdownMenu>
               </div>
               <CardDescription>
-                {format(new Date(plan.date), "PPP")} - {plan.gradeLevel} {plan.subject}
+                {format(new Date(plan.date).toISOString(), "PPP")} - {plan.gradeLevel} {plan.subject}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
