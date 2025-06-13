@@ -71,9 +71,10 @@ export default function AttendanceItem({
       </span>
 
       <span
-        className={`py-2 px-4 rounded-full cursor-pointer ${currentAttendanceLabel.toLocaleLowerCase() === HALF_DAY.toLocaleLowerCase()
-            ? `bg-${HALF_DAY_COLOR} text-orange-900`
-            : `border-2 border-${HALF_DAY_COLOR}`
+        className={`py-2 px-4 rounded-full cursor-pointer ${
+          currentAttendanceLabel.toLocaleLowerCase() === HALF_DAY.toLocaleLowerCase()
+            ? `bg-[#ffa571] text-orange-900`
+            : `border-2 border-[#ffa571]`
         }`}
         onClick={() => handleClick(HALF_DAY)}
       >

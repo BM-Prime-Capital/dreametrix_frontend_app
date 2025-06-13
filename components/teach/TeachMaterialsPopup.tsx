@@ -1,9 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { FileText, BookOpen, Home, FileArchive, Download, Upload, X } from "lucide-react";
+import { FileText, BookOpen, Home, FileArchive, Download, Upload } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
-import { addDays, format } from "date-fns";
+import { format } from "date-fns";
 import PlanGeneralView from "./PlanGeneralView";
 import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -20,6 +20,19 @@ export function TeachMaterialsPopup({
 }: TeachMaterialsPopupProps) {
   const [activeTab, setActiveTab] = useState("lesson-plan");
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [selectedDate, setSelectedDate] = useState(date);
+
+  // Update when the prop date changes
+  useEffect(() => {
+    setSelectedDate(date);
+  }, [date]);
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = new Date(e.target.value);
+    if (!isNaN(newDate.getTime())) {
+      setSelectedDate(newDate);
+    }
+  };
 
   // Subject-specific resources
   const mathResources = {
@@ -94,26 +107,9 @@ export function TeachMaterialsPopup({
     }
   };
 
-  const handleClose = () => {
-    onOpenChange(false);
-  };
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} modal>
-      
-      <DialogContent 
-        className="max-w-6xl h-[90vh] p-0 overflow-hidden"
-        onInteractOutside={(e) => e.preventDefault()} // Empêche la fermeture au clic extérieur
-      >
-                {/* Bouton de fermeture en haut à droite */}
-        {/* <button 
-          onClick={handleClose}
-          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
-        >
-          <X className="h-6 w-6" />
-          <span className="sr-only">Fermer</span>
-        </button> */}
-
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-6xl h-[90vh] p-0 overflow-hidden">
         <div className="flex h-full">
           {/* Sidebar */}
           <div className="w-64 border-r bg-gray-50 p-4 flex flex-col">
@@ -121,16 +117,16 @@ export function TeachMaterialsPopup({
               <div className="mb-2">
                 <input
                   type="date"
-                  value={format(date, "yyyy-MM-dd")}
-                  readOnly 
+                  value={format(selectedDate, "yyyy-MM-dd")}
+                  onChange={handleDateChange}
                   className="w-full p-2 border rounded"
                 />
               </div>
               <h2 className="text-xl font-semibold">
-                {format(date, "EEEE, MMMM d, yyyy")}
+                {format(selectedDate, "EEEE, MMMM d, yyyy")}
               </h2>
               <p className="text-sm text-gray-500">
-                {format(date, "'Week' w")}
+                {format(selectedDate, "'Week' w")}
               </p>
             </DialogHeader>
 
@@ -189,17 +185,11 @@ export function TeachMaterialsPopup({
 
           {/* Main content */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* En-tête avec boutons */}
-            <div className="border-b p-4 flex justify-between items-center sticky top-0 bg-white z-10">
-              {/* Titre centré avec padding pour éviter le chevauchement */}
-              <div className="flex-1 text-center px-10"> {/* Ajout de px-10 pour l'espace */}
-                <h3 className="text-lg font-medium inline-block">
-                  {materials.find(m => m.id === activeTab)?.name}
-                </h3>
-              </div>
-
-              {/* Boutons de droite */}
-              <div className="flex gap-4 items-center">
+            <div className="border-b p-4 flex justify-between items-center">
+              <h3 className="text-lg font-medium">
+                {materials.find(m => m.id === activeTab)?.name}
+              </h3>
+              <div className="flex gap-2">
                 <Button variant="outline" size="sm">
                   <Download className="w-4 h-4 mr-2" />
                   Download
@@ -207,14 +197,6 @@ export function TeachMaterialsPopup({
                 <Button size="sm">
                   <span>Share</span>
                 </Button>
-                {/* Bouton de fermeture intégré dans le groupe */}
-                <button 
-                  onClick={handleClose}
-                  className="p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-colors"
-                  aria-label="Fermer"
-                >
-                  <X className="h-5 w-5" />
-                </button>
               </div>
             </div>
 
@@ -224,7 +206,7 @@ export function TeachMaterialsPopup({
                   <Card className="h-full overflow-hidden">
                     <PlanGeneralView 
                       changeView={() => {}} 
-                      selectedDate={date}
+                      selectedDate={selectedDate} // Use the local selected date
                     />
                   </Card>
                 </TabsContent>
@@ -286,7 +268,7 @@ export function TeachMaterialsPopup({
                           </ul>
                           
                           <p className="text-sm text-gray-500 mt-4">
-                            Due: {format(addDays(date, 2), "EEEE, MMMM d")}
+                            Due: {format(new Date(date.setDate(date.getDate() + 2)), "EEEE, MMMM d")}
                           </p>
                         </div>
                       </div>

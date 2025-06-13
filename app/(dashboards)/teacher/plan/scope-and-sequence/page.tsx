@@ -3,12 +3,29 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, GanttChartSquare, Calculator, BookOpenText } from 'lucide-react';
+import { PlusCircle, GanttChartSquare, Calculator, BookOpenText, GripVertical } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { ScopeAndSequence } from '../../../../../lib/types';
 import PageTitleH1 from '@/components/ui/page-title-h1';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScopeAndSequenceForm } from '@/components/plan/scope-and-sequence-form';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const mockScopeAndSequences: ScopeAndSequence[] = [
   {
@@ -31,10 +48,69 @@ const mockScopeAndSequences: ScopeAndSequence[] = [
   },
 ];
 
+function SortableCard({ plan }: { plan: ScopeAndSequence }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: plan.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Card ref={setNodeRef} style={style} className="flex flex-col">
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2">
+            <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+              <GripVertical className="h-5 w-5 text-gray-400" />
+            </div>
+            <CardTitle className="font-headline">
+              {plan.subject === 'Math' ?
+                  <Calculator className="h-5 w-5 text-blue-500" /> :
+              plan.subject === 'ELA' ?
+                  <BookOpenText className="h-5 w-5 text-green-500" /> :
+                  <GanttChartSquare className="h-5 w-5 text-primary" />
+              }
+              {plan.title}
+            </CardTitle>
+          </div>
+        </div>
+        <CardDescription>
+          {plan.academicYear} - {plan.gradeLevel} {plan.subject}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex-grow">
+        <p className="text-sm text-muted-foreground line-clamp-3">
+          <strong>Overview:</strong> {plan.overview}
+        </p>
+      </CardContent>
+      <CardFooter>
+         <Button variant="outline" size="sm" className="w-full" asChild>
+          <Link href={`/teacher/plan/scope-and-sequence/${plan.id}`}>View Details</Link>
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
 
 export default function ScopeAndSequencePage() {
   const [scopeAndSequences, setScopeAndSequences] = useState<ScopeAndSequence[]>(mockScopeAndSequences);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -46,6 +122,19 @@ export default function ScopeAndSequencePage() {
   const handleSuccess = () => {
     setIsDialogOpen(false);
     // Optionally refresh the data here
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      setScopeAndSequences((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
   };
 
   return (
@@ -89,7 +178,6 @@ export default function ScopeAndSequencePage() {
       </div>
 
       {/* Dialog for creating new scope & sequence */}
-
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent onInteractOutside={(e) => e.preventDefault()} className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -102,7 +190,7 @@ export default function ScopeAndSequencePage() {
         </DialogContent>
       </Dialog>
 
-       {scopeAndSequences.length === 0 && (
+      {scopeAndSequences.length === 0 && (
          <div className="text-center py-10">
             <GanttChartSquare className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-2 text-sm font-medium text-muted-foreground">No scope & sequence plans yet</h3>
@@ -117,37 +205,22 @@ export default function ScopeAndSequencePage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {scopeAndSequences.map((plan) => (
-          <Card key={plan.id} className="flex flex-col">
-            <CardHeader>
-              <CardTitle className="font-headline flex items-center gap-2">
-                {plan.subject === 'Math' ?
-                    <Calculator className="h-5 w-5 text-blue-500" /> :
-                plan.subject === 'ELA' ?
-                    <BookOpenText className="h-5 w-5 text-green-500" /> :
-                    <GanttChartSquare className="h-5 w-5 text-primary" />
-                }
-                {plan.title}
-              </CardTitle>
-              <CardDescription>
-                {plan.academicYear} - {plan.gradeLevel} {plan.subject}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-grow">
-              <p className="text-sm text-muted-foreground line-clamp-3">
-                <strong>Overview:</strong> {plan.overview}
-              </p>
-            </CardContent>
-            <CardFooter>
-               <Button variant="outline" size="sm" className="w-full" asChild>
-                {/* Link to view/edit page - not implemented in this iteration */}
-                <Link href={`/teacher/plan/scope-and-sequence/${plan.id}`}>View Details</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={scopeAndSequences.map(plan => plan.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {scopeAndSequences.map((plan) => (
+              <SortableCard key={plan.id} plan={plan} />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
     </div>
   );
 }
