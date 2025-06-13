@@ -182,20 +182,25 @@ export default function Login() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-2 rounded-full
-                     transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1]
+            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-2 rounded-full mt-2
+                     transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1] 
                      focus:ring-offset-2 disabled:opacity-50 text-base font-medium"
           >
             {isLoading ? "Logging in..." : "Login"}
           </button>
 
-          <div className="text-center text-sm text-gray-600 mt-3">
-            Not registered yet?{" "}
+          <div className="flex flex-row justify-around gap-4 text-sm text-gray-600 mt-4">
             <Link
               href={userPath.SCHOOL_ADMIN_REGISTER_PATH}
               className="text-[#1A73E8] hover:text-[#1453B8]"
             >
-              Register your School here.
+              School Registration
+            </Link>
+            <Link
+              href={userPath.PARENT_REGISTER_PATH}
+              className="text-[#1A73E8] hover:text-[#1453B8]"
+            >
+              Parent Portal
             </Link>
           </div>
         </form>
