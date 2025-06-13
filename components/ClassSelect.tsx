@@ -2,7 +2,7 @@
 
 import { localStorageKey } from "@/constants/global";
 import { ISchoolClass } from "@/types";
-//import { usePathname, useRouter } from "next/navigation";
+
 import React, { useEffect, useState } from "react";
 
 export default function ClassSelect({ 

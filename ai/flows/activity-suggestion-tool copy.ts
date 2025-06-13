@@ -1,31 +1,22 @@
-
 // src/ai/flows/activity-suggestion-tool.ts
 'use server';
-
-/**
- * @fileOverview AI-powered tool to suggest engaging activities for teachers based on lesson objectives.
- *
- * - suggestActivities - A function that suggests activities based on lesson objectives.
- * - SuggestActivitiesInput - The input type for the suggestActivities function.
- * - SuggestActivitiesOutput - The return type for the suggestActivities function.
- */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
+const SUBJECTS = ['ELA', 'Math', 'Science', 'History', 'Art'] as const;
+type Subject = typeof SUBJECTS[number];
+
 const SuggestActivitiesInputSchema = z.object({
-  lessonObjective: z
-    .string()
-    .describe('The specific learning objective of the lesson.'),
-  subject: z.enum(['ELA', 'Math']).describe('The subject of the lesson.'),
+  lessonObjective: z.string().describe('The specific learning objective of the lesson.'),
+  subject: z.enum(SUBJECTS).describe('The subject of the lesson.'),
   gradeLevel: z.number().int().describe('The grade level of the lesson.'),
 });
 export type SuggestActivitiesInput = z.infer<typeof SuggestActivitiesInputSchema>;
 
 const SuggestActivitiesOutputSchema = z.object({
-  suggestedActivities: z
-    .array(z.string())
-    .describe('A list of suggested engaging activities for the lesson.'),
+  suggestedActivities: z.array(z.string()).describe('A list of suggested engaging activities for the lesson.'),
+  subjectMismatchWarning: z.boolean().optional().describe('Flag indicating if there was a potential subject mismatch.'),
 });
 export type SuggestActivitiesOutput = z.infer<typeof SuggestActivitiesOutputSchema>;
 
@@ -39,7 +30,6 @@ const prompt = ai.definePrompt({
   output: {schema: SuggestActivitiesOutputSchema},
   prompt: `You are an expert curriculum designer and AI assistant for teachers.
 Your goal is to suggest 3 to 5 engaging and varied instructional activities based on the provided lesson details.
-Ensure the activities are specific, actionable, and appropriate for the subject and grade level.
 
 **Important Guidelines:**
 1. First analyze if the lesson objective matches the subject area. If not, either:
@@ -47,24 +37,27 @@ Ensure the activities are specific, actionable, and appropriate for the subject 
    - OR note the subject mismatch
 2. Ensure activities are specific, actionable, and appropriate for the grade level.
 3. For ELA, focus on reading, writing, speaking, and listening skills.
-   For Math, focus on problem-solving, reasoning, real-world application, and conceptual understanding.
 
 Lesson Details:
 Subject: {{{subject}}}
 Grade Level: {{{gradeLevel}}}
 Lesson Objective: {{{lessonObjective}}}
 
-Please provide your response as a JSON object with a single key "suggestedActivities".
-The value of "suggestedActivities" must be an array of strings, where each string is a unique activity suggestion.
-For example:
+Response Requirements:
+- Return a JSON object with "suggestedActivities" array
+- If subject mismatch detected, set "subjectMismatchWarning": true
+- Each activity should be a complete description (1-3 sentences)
+- Include varied activity types (individual, group, creative, analytical, etc.)
+
+Example for Science objective in ELA class:
 {
   "suggestedActivities": [
-    "Example Activity 1: [Detailed description of activity]",
-    "Example Activity 2: [Detailed description of activity]",
-    "Example Activity 3: [Detailed description of activity]"
-  ]
+    "Research and Presentation: Have students research one type of rock and present their findings in a formal report or oral presentation, focusing on clear communication of scientific concepts.",
+    "Creative Writing: Write a short story from the perspective of a rock going through the rock cycle, emphasizing descriptive language and narrative structure.",
+    "Debate: Organize a debate about which rock type is most useful to humans, focusing on argument construction and persuasive speaking skills."
+  ],
+  "subjectMismatchWarning": true
 }
-Focus on quality and relevance of the activities.
 `,
   config: {
     safetySettings: [
@@ -95,19 +88,19 @@ const suggestActivitiesFlow = ai.defineFlow(
     outputSchema: SuggestActivitiesOutputSchema,
   },
   async (input: SuggestActivitiesInput): Promise<SuggestActivitiesOutput> => {
-    const { output } = await prompt(input); // Call the defined prompt object
+    const { output } = await prompt(input);
 
-    // If 'output' is null, or doesn't conform, or suggestedActivities is not an array,
-    // it means the LLM failed to produce valid structured output or an empty list.
-    // We return an empty array in such cases to match the expected schema.
     if (output && Array.isArray(output.suggestedActivities)) {
-      // Filter out any empty strings just in case the AI returns them
-      const filteredActivities = output.suggestedActivities.filter(activity => typeof activity === 'string' && activity.trim() !== '');
-      return { suggestedActivities: filteredActivities };
+      return {
+        suggestedActivities: output.suggestedActivities.filter(activity => 
+          typeof activity === 'string' && activity.trim() !== ''),
+        subjectMismatchWarning: output.subjectMismatchWarning
+      };
     }
     
-    // Fallback if output is not as expected
-    return { suggestedActivities: [] };
+    return { 
+      suggestedActivities: [],
+      subjectMismatchWarning: true
+    };
   }
 );
-

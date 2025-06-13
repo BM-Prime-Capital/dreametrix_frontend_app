@@ -9,6 +9,7 @@ function DreaMetrixLogo({
 }: {
   width?: number;
   height?: number;
+  className?: string;
 }) {
   return (
     <Link href={"/"}>

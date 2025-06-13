@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
+  // FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -23,18 +23,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { SUBJECTS, GRADE_LEVELS, type LessonPlan, type Subject } from "../../lib/types";
+import { SUBJECTS, GRADE_LEVELS, type LessonPlan, type Subject } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { CalendarIcon, Lightbulb } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { cn } from "../../lib/utils";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { ActivitySuggesterDialog } from "./activity-suggester-dialog";
 import { useState } from "react";
 
 const lessonPlanSchema = z.object({
+  id: z.string().optional(),
   title: z.string().min(3, { message: "Title must be at least 3 characters." }),
   date: z.date({ required_error: "A date for the lesson is required." }),
   subject: z.enum(SUBJECTS as [string, ...string[]], { required_error: "Subject is required." }),
@@ -44,15 +45,15 @@ const lessonPlanSchema = z.object({
   materials: z.string().min(5, { message: "Materials must be at least 5 characters." }),
   differentiation: z.string().optional(),
   assessmentFormative: z.string().min(5, { message: "Formative assessment description must be at least 5 characters." }),
-  unitPlanId: z.string().optional(), // Assuming unit plans are listed and selectable
+  unitPlanId: z.string().optional(),
 });
 
-type LessonPlanFormValues = z.infer<typeof lessonPlanSchema>;
+export type LessonPlanFormValues = z.infer<typeof lessonPlanSchema>;
 
 interface LessonPlanFormProps {
-  initialData?: LessonPlan;
+  initialData?: LessonPlan | null;
   unitPlans?: { id: string, title: string }[]; // For linking to a unit plan
-  onSubmitSuccess?: () => void;
+  onSubmitSuccess?: (lessonPlan: LessonPlanFormValues) => void;
 }
 
 export function LessonPlanForm({ initialData, unitPlans = [], onSubmitSuccess }: LessonPlanFormProps) {
@@ -65,6 +66,7 @@ export function LessonPlanForm({ initialData, unitPlans = [], onSubmitSuccess }:
     defaultValues: initialData
       ? { ...initialData, date: new Date(initialData.date) }
       : {
+        id:"",
         title: "",
         date: new Date(),
         subject: undefined,
@@ -85,7 +87,7 @@ export function LessonPlanForm({ initialData, unitPlans = [], onSubmitSuccess }:
       description: `The lesson plan "${values.title}" has been successfully ${initialData ? 'updated' : 'saved'}.`,
     });
     if (onSubmitSuccess) {
-      onSubmitSuccess();
+      onSubmitSuccess(values);
     } else {
        router.push('/lesson-plans');
     }
@@ -138,11 +140,13 @@ export function LessonPlanForm({ initialData, unitPlans = [], onSubmitSuccess }:
                               !field.value && "text-muted-foreground"
                             )}
                           >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
+                            {
+                               field.value instanceof Date && !isNaN(field.value.getTime()) ? (
+                                format(field.value, "PPP")
+                              ) : (
                               <span>Pick a date</span>
-                            )}
+                            )
+                            }
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
@@ -248,7 +252,7 @@ export function LessonPlanForm({ initialData, unitPlans = [], onSubmitSuccess }:
               name="objectives"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Lesson Objectives ("I Can" Statements)</FormLabel>
+                  <FormLabel>Lesson Objectives (&#34;I Can&#34; Statements)</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="e.g., I can solve equations using complementary angles."
