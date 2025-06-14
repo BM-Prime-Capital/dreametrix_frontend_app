@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+// import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,11 +38,11 @@ export default function ActivitySuggesterPage() {
       const input: SuggestActivitiesInput = {
         lessonObjective,
         subject,
-        gradeLevel: parseInt(gradeLevel.match(/\d+/)?.toString() || "0") || 7, 
+        gradeLevel: parseInt(gradeLevel.match(/\d+/)?.toString() || "0") || 7,
       };
       const result = await suggestActivities(input);
       setSuggestions(result.suggestedActivities);
-      
+
       if (result.suggestedActivities.length === 0) {
         toast({
           title: "No Suggestions Found",
@@ -74,6 +74,7 @@ export default function ActivitySuggesterPage() {
         description: "Suggestions copied to clipboard.",
       });
     } catch (err) {
+      console.log(err)
       toast({
         title: "Error",
         description: "Failed to copy suggestions.",
@@ -181,9 +182,9 @@ export default function ActivitySuggesterPage() {
               </div>
             </CardContent>
             <CardFooter className="pt-0">
-              <Button 
-                type="submit" 
-                disabled={isLoading} 
+              <Button
+                type="submit"
+                disabled={isLoading}
                 className="w-full h-12 text-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-md"
               >
                 {isLoading ? (
@@ -215,12 +216,12 @@ export default function ActivitySuggesterPage() {
               <ScrollArea className="h-[400px] rounded-md">
                 <ol className="space-y-4 p-6">
                   {suggestions.map((activity, index) => (
-                    <li 
-                      key={index} 
+                    <li
+                      key={index}
                       className="text-base pb-4 border-b border-gray-100 last:border-0 group hover:bg-blue-50/50 p-2 rounded transition-colors"
                     >
                       <div className="flex items-start">
-                        <span className="font-medium text-blue-600 mr-2">{index + 1}.</span> 
+                        <span className="font-medium text-blue-600 mr-2">{index + 1}.</span>
                         <span className="group-hover:text-blue-800 transition-colors">{activity}</span>
                       </div>
                     </li>
@@ -229,9 +230,9 @@ export default function ActivitySuggesterPage() {
               </ScrollArea>
             </CardContent>
             <CardFooter>
-              <Button 
-                variant="outline" 
-                onClick={copySuggestions} 
+              <Button
+                variant="outline"
+                onClick={copySuggestions}
                 className="w-full h-12 text-lg gap-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
               >
                 <Copy className="h-5 w-5" />
@@ -248,7 +249,7 @@ export default function ActivitySuggesterPage() {
               </div>
               <h3 className="text-xl font-headline text-gray-700">Your Suggestions Will Appear Here</h3>
               <p className="text-gray-500">
-                Fill out the lesson details and click "Generate" to see AI-powered activity ideas.
+                Fill out the lesson details and click &#34;Generate&#34; to see AI-powered activity ideas.
               </p>
             </div>
           </Card>
