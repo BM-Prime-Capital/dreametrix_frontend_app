@@ -18,7 +18,7 @@ const nextConfig = {
             key: 'Access-Control-Allow-Origin',
             value: process.env.NODE_ENV === 'development' 
               ? '*' // Autoriser toutes les origines en développement
-              : 'https://votre-domaine.com' // Restreindre en production
+              : 'https://dreametrix-app.com/' // Restreindre en production
           },
           {
             key: 'Access-Control-Allow-Methods',
