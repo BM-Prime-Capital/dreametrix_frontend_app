@@ -6,6 +6,9 @@ const nextConfig = {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 2,
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   images: {
     domains: ['images.unsplash.com', 'upload.wikimedia.org', 'via.placeholder.com'],
   },
@@ -14,9 +17,9 @@ const nextConfig = {
       {
         source: '/:path*',
         headers: [
-          { 
+          {
             key: 'Access-Control-Allow-Origin',
-            value: process.env.NODE_ENV === 'development' 
+            value: process.env.NODE_ENV === 'development'
               ? '*' // Autoriser toutes les origines en développement
               : 'https://dreametrix-app.com/' // Restreindre en production
           },

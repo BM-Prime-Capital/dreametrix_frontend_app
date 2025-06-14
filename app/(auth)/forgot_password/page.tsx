@@ -42,7 +42,8 @@ export default function ForgotPasswordPage() {
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated API call
       setSuccess(true);
     } catch (err) {
-      setError("Failed to send reset link. Please try again.");
+      setError("Failed to send reset link. Please try again.", );
+      console.log("Failed to send reset link. Please try again.",err)
     } finally {
       setIsLoading(false);
     }
@@ -119,7 +120,7 @@ export default function ForgotPasswordPage() {
               type="submit"
               disabled={isLoading}
               className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-3 rounded-lg
-                       transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1] 
+                       transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1]
                        focus:ring-offset-2 disabled:opacity-50 text-base font-semibold"
             >
               {isLoading ? "Sending..." : "Send Reset Link"}
