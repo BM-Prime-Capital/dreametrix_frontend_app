@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -9,14 +9,37 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileIcon, FileTextIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  FileIcon,
+  FileTextIcon,
+  Search,
+  Download,
+  X,
+  Send,
+} from "lucide-react";
 import { SubmitAssignmentDialog } from "./submit-assignment-dialog";
 import { ViewAssignmentDialog } from "./view-assignment-dialog";
 import { ViewSubmissionDialog } from "./view-submission-dialog";
-import { getAssignments } from "@/app/api/student/assignment/assignment.controller";
-import { getClassById } from "@/app/api/student/class/classController";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
-import { Assignment } from "@/app/api/student/assignment/assignment.model";
+import {
+  Assignment,
+  AssignmentsResponse,
+} from "@/app/api/student/assignment/assignment.model";
+import { getAssignments } from "@/services/AssignmentService";
+
+interface MiniCourse {
+  id: number;
+  name: string;
+}
 
 interface AssignmentsTableProps {
   selectedClass?: string;
@@ -33,11 +56,14 @@ export function AssignmentsTable({
   const [filteredAssignments, setFilteredAssignments] = useState<Assignment[]>(
     []
   );
+  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+
+  // New state for enhanced filtering
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [courseFilter, setCourseFilter] = useState<string>("all");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [teacherNames, setTeacherNames] = useState<{ [key: number]: string }>(
-    {}
-  );
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [isViewAssignmentModalOpen, setIsViewAssignmentModalOpen] =
     useState(false);
@@ -45,160 +71,103 @@ export function AssignmentsTable({
     useState(false);
   const [selectedAssignment, setSelectedAssignment] =
     useState<Assignment | null>(null);
-  const { accessToken } = useRequestInfo();
+
+  const uniqueCourses = useMemo(() => {
+    if (!allAssignments || allAssignments.length === 0) {
+      return [];
+    }
+    const courseMap = new Map();
+    allAssignments.forEach((assignment: Assignment) => {
+      if (assignment.course && assignment.course.id) {
+        courseMap.set(assignment.course.id, assignment.course);
+      }
+    });
+    const courses = Array.from(courseMap.values()) as MiniCourse[];
+    return courses.sort((a, b) => a.name.localeCompare(b.name));
+  }, [allAssignments]);
 
   useEffect(() => {
     const fetchAssignments = async () => {
       setLoading(true);
       setError(null);
 
-      // Mock data instead of API call
-      const mockAssignments: Assignment[] = [
-        {
-          id: 1,
-          name: "Science Homework",
-          teacher: "Eve Parker",
-          file: "",
-          due_date: "2025-06-12",
-          weight: 10,
-          kind: "Homework",
-          class: "Class 5 - Sci",
-          published: true,
-          created_at: "2025-06-10",
-          updated_at: "2025-06-10",
-          published_at: "2025-06-10",
-          course: 1,
-        },
-        {
-          id: 2,
-          name: "Math Test",
-          teacher: "Eve Parker",
-          file: "",
-          due_date: "2025-06-13",
-          weight: 25,
-          kind: "Test",
-          class: "Class 5 - Math",
-          published: false,
-          created_at: "2025-06-11",
-          updated_at: "2025-06-11",
-          published_at: "",
-          course: 2,
-        },
-        {
-          id: 3,
-          name: "Biology Assignment",
-          teacher: "Sam Burke",
-          file: "",
-          due_date: "2025-06-14",
-          weight: 15,
-          kind: "Homework",
-          class: "Class 5 - Bio",
-          published: false,
-          created_at: "2025-06-12",
-          updated_at: "2025-06-12",
-          published_at: "",
-          course: 3,
-        },
-        {
-          id: 4,
-          name: "Literature Essay",
-          teacher: "Anne Blake",
-          file: "",
-          due_date: "2025-06-14",
-          weight: 20,
-          kind: "Homework",
-          class: "Class 5 - Lit",
-          published: false,
-          created_at: "2025-06-13",
-          updated_at: "2025-06-13",
-          published_at: "",
-          course: 4,
-        },
-        {
-          id: 5,
-          name: "Chemistry Lab Report",
-          teacher: "Sam Burke",
-          file: "",
-          due_date: "2025-06-15",
-          weight: 30,
-          kind: "Test",
-          class: "Class 5 - Che",
-          published: false,
-          created_at: "2025-06-13",
-          updated_at: "2025-06-13",
-          published_at: "",
-          course: 5,
-        },
-        {
-          id: 6,
-          name: "Spanish Vocabulary Quiz",
-          teacher: "Anne Blake",
-          file: "",
-          due_date: "2025-06-17",
-          weight: 15,
-          kind: "Test",
-          class: "Class 5 - Spa",
-          published: false,
-          created_at: "2025-06-13",
-          updated_at: "2025-06-13",
-          published_at: "",
-          course: 6,
-        },
-        {
-          id: 7,
-          name: "Physics Problem Set",
-          teacher: "Eve Parker",
-          file: "",
-          due_date: "2025-06-18",
-          weight: 20,
-          kind: "Test",
-          class: "Class 5 - Phy",
-          published: false,
-          created_at: "2025-06-13",
-          updated_at: "2025-06-13",
-          published_at: "",
-          course: 7,
-        },
-      ];
+      if (!accessToken) {
+        setError("Authentication required.");
+        setLoading(false);
+        setAllAssignments([]);
+        return;
+      }
 
-      // Mock teacher names
-      const mockTeacherNames = {
-        1: "Eve Parker",
-        2: "Eve Parker",
-        3: "Sam Burke",
-        4: "Anne Blake",
-        5: "Sam Burke",
-        6: "Anne Blake",
-        7: "Eve Parker",
-      };
+      try {
+        const res = await getAssignments(
+          tenantDomain,
+          accessToken,
+          refreshToken
+        );
 
-      setAllAssignments(mockAssignments);
-      setTeacherNames(mockTeacherNames);
-      setLoading(false);
+        if (res && Array.isArray(res)) {
+          const fetchedAssignments: Assignment[] = res;
+          setAllAssignments(fetchedAssignments);
+        } else {
+          setAllAssignments([]);
+          setError("Unexpected data format received from API.");
+        }
+      } catch (err) {
+        setError("Failed to load assignments.");
+        setAllAssignments([]);
+        console.error("Error fetching assignments:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchAssignments();
-  }, []);
+    if (accessToken) {
+      fetchAssignments();
+    }
+  }, [accessToken]);
 
-  // Filter assignments based on selected filters
+  // Enhanced filter assignments with global search and course filter
   useEffect(() => {
     let filtered = [...allAssignments];
 
-    // Filter by class
+    // Global search filter
+    if (globalFilter) {
+      filtered = filtered.filter((assignment) => {
+        const searchTerm = globalFilter.toLowerCase();
+        return (
+          assignment.name.toLowerCase().includes(searchTerm) ||
+          assignment.course?.name?.toLowerCase().includes(searchTerm) ||
+          assignment.kind?.toLowerCase().includes(searchTerm) ||
+          new Date(assignment.due_date)
+            .toLocaleDateString()
+            .includes(searchTerm) ||
+          (assignment.weight &&
+            assignment.weight.toString().includes(searchTerm))
+        );
+      });
+    }
+
+    // Filter by course (new enhanced version)
+    if (courseFilter !== "all") {
+      filtered = filtered.filter(
+        (assignment) =>
+          assignment.course &&
+          assignment.course.id &&
+          assignment.course.id.toString() === courseFilter
+      );
+    }
+
+    // Legacy filter by class (maintain backward compatibility)
     if (selectedClass !== "all-classes") {
       const courseMapping: { [key: string]: number } = {
-        "class-5-math": 2,
-        "class-5-sci": 1,
-        "class-5-bio": 3,
-        "class-5-lit": 4,
-        "class-5-che": 5,
-        "class-5-spa": 6,
-        "class-5-phy": 7,
+        "class-8-ela": 2,
+        "class-8-math": 3,
+        // Add more mappings as needed based on actual course IDs
       };
       const courseId = courseMapping[selectedClass];
       if (courseId) {
         filtered = filtered.filter(
-          (assignment) => assignment.course === courseId
+          (assignment) => assignment.course.id === courseId
         );
       }
     }
@@ -213,7 +182,14 @@ export function AssignmentsTable({
     }
 
     setFilteredAssignments(filtered);
-  }, [allAssignments, selectedClass, selectedDates, dateFilter]);
+  }, [
+    allAssignments,
+    globalFilter,
+    courseFilter,
+    selectedClass,
+    selectedDates,
+    dateFilter,
+  ]);
 
   const handleAssignmentClick = (assignment: Assignment) => {
     console.log("Opening assignment dialog for:", assignment.name);
@@ -224,11 +200,63 @@ export function AssignmentsTable({
   const handleSubmissionClick = (assignment: Assignment) => {
     console.log("Opening submission dialog for:", assignment.name);
     setSelectedAssignment(assignment);
-    if (assignment.published) {
+
+    // Vérifier si une soumission existe réellement (pas seulement published)
+    const hasSubmission =
+      assignment.submission &&
+      (assignment.submission.file ||
+        assignment.submission.grade !== null ||
+        assignment.submission.marked);
+
+    if (hasSubmission) {
       setIsViewSubmissionModalOpen(true);
     } else {
       setIsSubmitModalOpen(true);
     }
+  };
+
+  // Reset all filters
+  const resetFilters = () => {
+    setGlobalFilter("");
+    setCourseFilter("all");
+  };
+
+  // Export functionality
+  const handleExport = () => {
+    const dataToExport =
+      filteredAssignments.length > 0 ? filteredAssignments : allAssignments;
+
+    if (dataToExport.length === 0) {
+      console.warn("No data to export");
+      return;
+    }
+
+    // Create CSV content
+    const headers = ["Name", "Course", "Type", "Due Date", "Weight", "Status"];
+    const csvContent = [
+      headers.join(","),
+      ...dataToExport.map((assignment: Assignment) =>
+        [
+          `"${assignment.name}"`,
+          `"${assignment.course?.name || ""}"`,
+          `"${assignment.kind || ""}"`,
+          `"${new Date(assignment.due_date).toLocaleDateString()}"`,
+          `"${assignment.weight || ""}%"`,
+          `"${assignment.published ? "Published" : "Draft"}"`,
+        ].join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "student-assignments.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handleDialogClose = () => {
@@ -239,19 +267,17 @@ export function AssignmentsTable({
   };
 
   if (loading) {
-    return <div className="p-6 text-center">Loading assignments...</div>;
+    return (
+      <div className="w-full space-y-6 p-4 bg-white rounded-lg shadow-sm">
+        <div className="p-6 text-center">Loading assignments...</div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="p-6 text-center text-red-500">Error: {error}</div>;
-  }
-
-  if (filteredAssignments.length === 0) {
     return (
-      <div className="p-6 text-center text-gray-500">
-        {allAssignments.length === 0
-          ? "No assignments found."
-          : "No assignments match the selected filters."}
+      <div className="w-full space-y-6 p-4 bg-white rounded-lg shadow-sm">
+        <div className="p-6 text-center text-red-500">Error: {error}</div>
       </div>
     );
   }
@@ -275,135 +301,248 @@ export function AssignmentsTable({
     }
   };
 
-  // Helper function to get class name from course ID
-  const getClassName = (courseId: number) => {
-    // This is a simplified mapping - you might want to fetch actual class names
-    const classMap: { [key: number]: string } = {
-      1: "Class 5 - Sci",
-      2: "Class 5 - Math",
-      3: "Class 5 - Bio",
-      4: "Class 5 - Lit",
-      5: "Class 5 - Che",
-      6: "Class 5 - Spa",
-      7: "Class 5 - Phy",
-    };
-    return classMap[courseId] || `Class ${courseId}`;
-  };
-
   return (
-    <div className="w-full relative bg-white ">
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent border-b border-gray-200">
-            <TableHead className="font-bold text-gray-600 py-4 px-6 text-left">
-              ASSIGNMENT
-            </TableHead>
-            <TableHead className="font-bold text-gray-600 py-4 px-6 text-left">
-              CLASS
-            </TableHead>
-            <TableHead className="font-bold text-gray-600 py-4 px-6 text-left">
-              DAY
-            </TableHead>
-            <TableHead className="font-bold text-gray-600 py-4 px-6 text-left">
-              TYPE
-            </TableHead>
-            <TableHead className="font-bold text-gray-600 py-4 px-6 text-center">
-              VIEW
-            </TableHead>
-            <TableHead className="font-bold text-gray-600 py-4 px-6 text-center">
-              YOUR FILES
-            </TableHead>
-            <TableHead className="font-bold text-gray-600 py-4 px-6 text-left">
-              TEACHER
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredAssignments.map((assignment: Assignment, index: number) => {
-            const isEvenRow = index % 2 === 0;
-            const formattedDate = formatDate(assignment.due_date);
-            const isToday = formattedDate === "TODAY";
-            const isYesterday = formattedDate === "YESTERDAY";
+    <div className="w-full space-y-6 p-4 bg-white rounded-lg shadow-sm">
+      {/* Enhanced Filter Header */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto md:flex-1">
+          {/* Global Search */}
+          <div className="relative w-full md:w-auto md:flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search assignments..."
+              value={globalFilter ?? ""}
+              onChange={(event) => setGlobalFilter(event.target.value)}
+              className="pl-8 w-full md:w-[400px]"
+            />
+          </div>
 
-            return (
-              <TableRow
-                key={assignment.id}
-                className={`${
-                  isEvenRow ? "bg-[#EDF7FF]" : "bg-white"
-                } hover:bg-gray-50 transition-colors`}
-              >
-                <TableCell className="font-semibold text-gray-700 py-4 px-6">
-                  {assignment.name}
-                </TableCell>
-                <TableCell className="font-medium text-gray-600 py-4 px-6">
-                  {getClassName(assignment.course)}
-                </TableCell>
-                <TableCell className="py-4 px-6">
-                  <span
-                    className={`
-                  ${
-                    isToday
-                      ? "bg-orange-500 text-white px-2 py-1 rounded text-sm font-medium"
-                      : ""
-                  }
-                  ${
-                    isYesterday
-                      ? "bg-red-500 text-white px-2 py-1 rounded text-sm font-medium"
-                      : ""
-                  }
-                  ${!isToday && !isYesterday ? "text-gray-600" : ""}
-                `}
-                  >
-                    {formattedDate}
-                  </span>
-                </TableCell>
-                <TableCell className="text-gray-600 py-4 px-6 capitalize">
-                  {assignment.kind}
-                </TableCell>
-                <TableCell className="py-4 px-6">
-                  <div className="flex items-center justify-center">
-                    <button
-                      className="bg-[#4A90E2] hover:bg-[#357ABD] text-white p-2 rounded transition-colors"
-                      onClick={() => handleAssignmentClick(assignment)}
-                      title="View Assignment"
-                    >
-                      <FileTextIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                </TableCell>
-                <TableCell className="py-4 px-6">
-                  <div className="flex items-center justify-center">
-                    <button
+          {/* Course Filter */}
+          <div className="w-full md:w-auto">
+            <Select
+              value={courseFilter}
+              onValueChange={setCourseFilter}
+              disabled={loading || allAssignments.length === 0}
+            >
+              <SelectTrigger className="w-full md:w-[200px]">
+                <SelectValue placeholder="Filter by course" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Courses</SelectItem>
+                {uniqueCourses.map((course) => (
+                  <SelectItem key={course.id} value={course.id.toString()}>
+                    {course.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
+          {(globalFilter || courseFilter !== "all") && (
+            <Button
+              onClick={resetFilters}
+              variant="outline"
+              className="bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-300"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Clear Filters
+            </Button>
+          )}
+
+          <Button
+            onClick={handleExport}
+            variant="outline"
+            className="bg-[#3e81d4]/10 text-[#3e81d4] hover:bg-[#3e81d4]/20 border-[#3e81d4]/20"
+            disabled={filteredAssignments.length === 0}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+        </div>
+      </div>
+
+      {/* Filter Summary */}
+      {(globalFilter || courseFilter !== "all") && (
+        <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+          Showing {filteredAssignments.length} of {allAssignments.length}{" "}
+          assignments
+          {globalFilter && (
+            <span className="ml-2">
+              • Search: "<strong>{globalFilter}</strong>"
+            </span>
+          )}
+          {courseFilter !== "all" && (
+            <span className="ml-2">
+              • Course:{" "}
+              <strong>
+                {
+                  uniqueCourses.find((c) => c.id.toString() === courseFilter)
+                    ?.name
+                }
+              </strong>
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Table Container */}
+      <div className="rounded-lg border border-gray-200 overflow-hidden">
+        <Table>
+          <TableHeader className="bg-[#3e81d4]/10">
+            <TableRow className="hover:bg-transparent border-b border-gray-200">
+              <TableHead className="font-bold text-[#3e81d4] py-4 px-6 text-left uppercase tracking-wider">
+                CLASS
+              </TableHead>
+              <TableHead className="font-bold text-[#3e81d4] py-4 px-6 text-left uppercase tracking-wider">
+                DAY
+              </TableHead>
+              <TableHead className="font-bold text-[#3e81d4] py-4 px-6 text-left uppercase tracking-wider">
+                TYPE
+              </TableHead>
+              <TableHead className="font-bold text-[#3e81d4] py-4 px-6 text-left uppercase tracking-wider">
+                ASSIGNMENT
+              </TableHead>
+              <TableHead className="font-bold text-[#3e81d4] py-4 px-6 text-center uppercase tracking-wider">
+                VIEW
+              </TableHead>
+              <TableHead className="font-bold text-[#3e81d4] py-4 px-6 text-center uppercase tracking-wider">
+                YOUR FILES
+              </TableHead>
+              <TableHead className="font-bold text-[#3e81d4] py-4 px-6 text-left uppercase tracking-wider">
+                TEACHER
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="bg-white divide-y divide-gray-200">
+            {filteredAssignments.length > 0 ? (
+              filteredAssignments.map(
+                (assignment: Assignment, index: number) => {
+                  const isEvenRow = index % 2 === 0;
+                  const formattedDate = formatDate(assignment.due_date);
+                  const isToday = formattedDate === "TODAY";
+                  const isYesterday = formattedDate === "YESTERDAY";
+
+                  return (
+                    <TableRow
+                      key={assignment.id}
                       className={`${
-                        assignment.published
-                          ? "bg-[#4CAF50] hover:bg-[#45A049] text-white"
-                          : "bg-gray-300 hover:bg-gray-400 text-gray-600"
-                      } p-2 rounded transition-colors`}
-                      onClick={() => handleSubmissionClick(assignment)}
-                      title={
-                        assignment.published
-                          ? "View Submission"
-                          : "Submit Assignment"
-                      }
+                        isEvenRow ? "bg-[#EDF7FF]" : "bg-white"
+                      } hover:bg-[#3e81d4]/5 transition-colors`}
                     >
-                      <FileIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                </TableCell>
-                <TableCell className="text-gray-600 py-4 px-6">
-                  <div className="flex items-center">
-                    <span className="mr-2">
-                      {teacherNames[assignment.course] || "Loading..."}
-                    </span>
-                    <MessageIcon />
-                  </div>
+                      <TableCell className="font-medium text-gray-600 py-4 px-6">
+                        {assignment.course.name}
+                      </TableCell>
+                      <TableCell className="py-4 px-6">
+                        <span
+                          className={`
+                      ${
+                        isToday
+                          ? "bg-orange-500 text-white px-2 py-1 rounded text-sm font-medium"
+                          : ""
+                      }
+                      ${
+                        isYesterday
+                          ? "bg-red-500 text-white px-2 py-1 rounded text-sm font-medium"
+                          : ""
+                      }
+                      ${!isToday && !isYesterday ? "text-gray-600" : ""}
+                    `}
+                        >
+                          {formattedDate}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-gray-600 py-4 px-6 capitalize">
+                        {assignment.kind}
+                      </TableCell>
+                      <TableCell className="font-semibold text-gray-700 py-4 px-6">
+                        <span>{assignment.name}</span>
+                      </TableCell>
+                      <TableCell className="py-4 px-6">
+                        <div className="flex items-center justify-center">
+                          <button
+                            className="bg-[#4A90E2] hover:bg-[#357ABD] text-white p-2 rounded transition-colors"
+                            onClick={() => handleAssignmentClick(assignment)}
+                            title="View Assignment"
+                          >
+                            <FileTextIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4 px-6">
+                        <div className="flex items-center justify-center">
+                          {(() => {
+                            // Vérifier si une soumission existe réellement
+                            const hasSubmission =
+                              assignment.submission &&
+                              (assignment.submission.file ||
+                                assignment.submission.grade !== null ||
+                                assignment.submission.marked);
+
+                            return (
+                              <button
+                                className={`${
+                                  hasSubmission
+                                    ? "bg-[#4CAF50] hover:bg-[#45A049] text-white"
+                                    : "bg-gray-300 hover:bg-gray-400 text-gray-600"
+                                } p-2 rounded transition-colors`}
+                                onClick={() =>
+                                  handleSubmissionClick(assignment)
+                                }
+                                title={
+                                  hasSubmission
+                                    ? "View Submission"
+                                    : "Submit Assignment"
+                                }
+                              >
+                                <FileIcon className="h-4 w-4" />
+                              </button>
+                            );
+                          })()}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-gray-600 py-4 px-6">
+                        <div className="flex items-center">
+                          <span className="mr-2">Teacher</span>
+                          <Send className="h-4 w-4 text-[#4A90E2] cursor-pointer hover:text-[#357ABD]" />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
+              )
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={7}
+                  className="px-4 py-8 text-center text-sm text-gray-500"
+                >
+                  {allAssignments.length === 0
+                    ? "No assignments found."
+                    : "No assignments match the selected filters."}
                 </TableCell>
               </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
+      {/* Pagination Info */}
+      <div className="flex items-center justify-between px-4 py-3 bg-[#3e81d4]/5 rounded-lg">
+        <div className="text-sm text-[#3e81d4]">
+          Showing{" "}
+          <span className="font-medium">{filteredAssignments.length}</span> of{" "}
+          <span className="font-medium">{allAssignments.length}</span>{" "}
+          assignments
+          {(globalFilter || courseFilter !== "all") && (
+            <span className="text-gray-600"> (filtered)</span>
+          )}
+        </div>
+      </div>
+
+      {/* Modal Dialogs */}
       {selectedAssignment && (
         <>
           <SubmitAssignmentDialog
@@ -425,33 +564,6 @@ export function AssignmentsTable({
           />
         </>
       )}
-
-      {(isSubmitModalOpen ||
-        isViewAssignmentModalOpen ||
-        isViewSubmissionModalOpen) && (
-        <div className="absolute inset-0 bg-white/50 backdrop-blur-sm" />
-      )}
     </div>
-  );
-}
-
-function MessageIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-[#4A90E2] cursor-pointer hover:text-[#357ABD] transition-colors"
-    >
-      <path
-        d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }

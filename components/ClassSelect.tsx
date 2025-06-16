@@ -5,12 +5,12 @@ import { ISchoolClass } from "@/types";
 
 import React, { useEffect, useState } from "react";
 
-export default function ClassSelect({ 
-  className, 
-  onClassChange 
-}: { 
+export default function ClassSelect({
+  className,
+  onClassChange,
+}: {
   className?: string;
-  onClassChange?: (classId: string | null) => void; 
+  onClassChange?: (classId: string | null) => void;
 }) {
   const loadedClasses = localStorage.getItem("classes");
   const loadedSelectedClass = localStorage.getItem(
@@ -28,13 +28,16 @@ export default function ClassSelect({
       return;
     }
 
-    const foundClass = classes.find((cl) => cl.id === value);
+    // Convert string value to number for comparison
+    const numericValue = parseInt(value);
+    const foundClass = classes.find((cl) => cl.id === numericValue);
     localStorage.setItem(
       localStorageKey.CURRENT_SELECTED_CLASS,
       JSON.stringify(foundClass)
     );
     setSelectedClass(foundClass);
-    if (onClassChange) onClassChange(foundClass?.id || null);
+    // Pass the string version of the ID to maintain consistency
+    if (onClassChange) onClassChange(foundClass?.id?.toString() || null);
   };
 
   useEffect(() => {
@@ -55,21 +58,30 @@ export default function ClassSelect({
         localStorage.removeItem(localStorageKey.CURRENT_SELECTED_CLASS);
         return;
       }
-      const parsed = JSON.parse(loadedSelectedClass);
-      setSelectedClass(parsed);
-      if (onClassChange) onClassChange(parsed?.id || null);
+      try {
+        const parsed = JSON.parse(loadedSelectedClass);
+        setSelectedClass(parsed);
+        // Pass the string version of the ID to maintain consistency
+        if (onClassChange) onClassChange(parsed?.id?.toString() || null);
+      } catch (error) {
+        console.error(
+          "Failed to parse selected class from localStorage:",
+          error
+        );
+        localStorage.removeItem(localStorageKey.CURRENT_SELECTED_CLASS);
+      }
     }
-  }, [loadedSelectedClass]);
+  }, [loadedSelectedClass, onClassChange]);
 
   return (
     <select
-      value={selectedClass ? selectedClass.id : ""}
+      value={selectedClass?.id?.toString() || ""}
       onChange={(e) => handleClassChange(e.target.value)}
       className={`text-white bg-bgPurple font-bold p-1 rounded-md ${className}`}
     >
       <option value={""}>All Classes</option>
       {classes.map((classEl: any, index) => (
-        <option key={index} value={classEl.id}>
+        <option key={index} value={classEl.id?.toString()}>
           {classEl.name}
         </option>
       ))}

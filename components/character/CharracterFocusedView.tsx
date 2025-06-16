@@ -9,18 +9,45 @@ import Link from "next/link";
 import CharacterFiltersPopUp from "./CharacterFiltersPopUp";
 import ClassSelect from "../ClassSelect";
 import { views } from "@/constants/global";
+import { useState, useEffect } from "react";
+import { localStorageKey } from "@/constants/global";
 
 export default function CharacterFocusedView({
   changeView,
 }: {
   changeView: Function;
 }) {
+  const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
+
+  // Initialize with the currently selected class from localStorage
+  useEffect(() => {
+    const loadedSelectedClass = localStorage.getItem(
+      localStorageKey.CURRENT_SELECTED_CLASS
+    );
+    if (loadedSelectedClass && loadedSelectedClass !== "undefined") {
+      try {
+        const parsed = JSON.parse(loadedSelectedClass);
+        setSelectedClassId(parsed?.id?.toString() || null);
+      } catch (error) {
+        console.error(
+          "Failed to parse selected class from localStorage:",
+          error
+        );
+      }
+    }
+  }, []);
+
+  const handleClassChange = (classId: string | null) => {
+    console.log("CharacterFocusedView: Class changed to:", classId);
+    setSelectedClassId(classId);
+  };
+
   return (
     <section className="flex flex-col gap-2 w-full">
       <div className="flex justify-between items-center">
         <PageTitleH1 title="CHARACTER FOCUSED VIEW" />
         <div className="flex items-center flex-wrap gap-2">
-          <ClassSelect />
+          <ClassSelect onClassChange={handleClassChange} />
 
           <CharacterFiltersPopUp />
         </div>
@@ -52,7 +79,10 @@ export default function CharacterFocusedView({
         </Link>
       </div>
       <Card className="rounded-md">
-        <CharacterTable />
+        <CharacterTable
+          key={selectedClassId}
+          selectedClassId={selectedClassId}
+        />
       </Card>
     </section>
   );

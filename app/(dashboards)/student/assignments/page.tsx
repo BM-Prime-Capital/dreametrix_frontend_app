@@ -76,21 +76,16 @@ export default function AssignmentsPage() {
               <Calendar className="h-4 w-4 text-gray-500" />
             </button>
 
-            <Select value={selectedClass} onValueChange={setSelectedClass}>
+            {/* <Select value={selectedClass} onValueChange={setSelectedClass}>
               <SelectTrigger className="w-[200px] bg-white border-gray-300 shadow-sm">
                 <SelectValue placeholder="All Classes" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all-classes">All Classes</SelectItem>
-                <SelectItem value="class-5-math">Class 5 - Math</SelectItem>
-                <SelectItem value="class-5-sci">Class 5 - Sci</SelectItem>
-                <SelectItem value="class-5-bio">Class 5 - Bio</SelectItem>
-                <SelectItem value="class-5-lit">Class 5 - Lit</SelectItem>
-                <SelectItem value="class-5-che">Class 5 - Che</SelectItem>
-                <SelectItem value="class-5-spa">Class 5 - Spa</SelectItem>
-                <SelectItem value="class-5-phy">Class 5 - Phy</SelectItem>
+                <SelectItem value="class-8-ela">Class 8 - ELA</SelectItem>
+                <SelectItem value="class-8-math">Class 8 - Math</SelectItem>
               </SelectContent>
-            </Select>
+            </Select> */}
           </div>
         </div>
 
