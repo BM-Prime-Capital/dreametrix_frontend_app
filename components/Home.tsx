@@ -2,13 +2,13 @@
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
-import { AlertTriangle, Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
+import { AlertTriangle, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { userPath } from "@/constants/userConstants";
 import DreaMetrixLogo from "./ui/dreametrix-logo";
 import { useLogin } from "@/hooks/SchoolAdmin/useLogin";
 import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
+// import { Button } from "./ui/button";
+// import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 
 export interface LoginFormData {
   email: string;
@@ -108,7 +108,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-[url('/assets/images/bg.png')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-2">
       <div className="w-full max-w-[500px] bg-[rgba(230,230,230,0.95)] p-6 sm:p-8 rounded-[20px] shadow-[0px_4px_20px_rgba(0,0,0,0.15)]">
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-5">
           <DreaMetrixLogo />
         </div>
 
@@ -212,7 +212,7 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-gray-200">
+        <div className="mt-5 pt-6 border-t border-gray-200">
           <p className="text-center text-gray-600 mb-4">Don&apos;t have an account?</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Link
