@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Phone, User, Lock, Hash, FileText } from "lucide-react";
+import { Mail, Phone, User, Lock, Hash, FileText, AlertTriangle, Eye, EyeOff } from "lucide-react";
 import DreaMetrixLogo from "../ui/dreametrix-logo";
 import { userPath } from "@/constants/userConstants";
+import { Input } from "../ui/input";
 
 export interface RegisterFormData {
   firstName: string;
@@ -32,10 +32,8 @@ export interface RegisterErrors {
 
 export default function ParentRegister({
   userType,
-  userBasePath,
 }: {
   userType: string;
-  userBasePath: string;
 }) {
   const router = useRouter();
   const [formData, setFormData] = useState<RegisterFormData>({
@@ -48,6 +46,8 @@ export default function ParentRegister({
     password: "",
     confirmPassword: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errors, setErrors] = useState<RegisterErrors>({
@@ -108,21 +108,40 @@ export default function ParentRegister({
       return;
     }
 
-    // Simulation d'un appel API
+    // API call simulation
     setTimeout(() => {
       setIsLoading(false);
       router.push(userPath.PARENT_LOGIN_PATH);
     }, 1000);
   };
 
+  const renderErrorMessage = (errorMessage: string | null) => {
+    if (!errorMessage) return null;
+    return (
+      <div className="absolute right-[-160px] top-1/2 transform -translate-y-1/2 bg-red-100 text-red-700 px-3 py-1 rounded-md shadow-md">
+        <div className="absolute left-[-6px] top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-red-100"></div>
+        <div className="flex items-center">
+          <AlertTriangle className="h-4 w-4 mr-2" />
+          <span className="text-sm">{errorMessage}</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div
-      className="flex items-center justify-center min-h-screen bg-cover bg-center"
-      style={{ backgroundImage: `url('/assets/images/bg.png')` }}
-    >
-      <div className="bg-[#f1f1f1e6] p-6 sm:p-8 rounded-[15px] shadow-[0px_4px_20px_rgba(0,0,0,0.1)] w-full max-w-[600px] mx-4">
+    <div className="min-h-screen bg-[url('/assets/images/bg.png')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-2">
+      <div className="w-full max-w-[600px] bg-[rgba(230,230,230,0.95)] p-6 sm:p-8 rounded-[20px] shadow-[0px_4px_20px_rgba(0,0,0,0.15)]">
         <div className="flex justify-center mb-6">
           <DreaMetrixLogo />
+        </div>
+
+        <div className="text-center mb-6">
+          <h2 className="text-[#1A73E8] text-2xl font-semibold">
+            Create Parent Account
+          </h2>
+          <p className="text-gray-600 mt-2">
+            Fill in your details to create your account
+          </p>
         </div>
 
         {isLoading && (
@@ -131,205 +150,202 @@ export default function ParentRegister({
           </div>
         )}
 
-        <form className="space-y-7" onSubmit={handleSubmit}>
-          <div className="text-left">
-            <h2 className="text-2xl font-bold text-[#25AAE1]">{`Sign up as ${userType}`}</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-8">
-            {/* Parent first name */}
-            <div>
-              <label className="flex flex-col space-y-1">
-                <span className="text-sm text-gray-600">First name <span className="text-red-500">*</span></span>
-                <div className="flex items-center px-4 py-2 bg-white border rounded-full">
-                  <User className="h-5 w-5 text-gray-400 mr-2" />
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    className="flex-1 bg-transparent focus:outline-none"
-                    placeholder="Enter your first name"
-                    maxLength={255}
-                    required
-                  />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* First Name */}
+            <div className="relative">
+              <div className={`relative overflow-hidden border ${formSubmitted && errors.firstName ? "border-red-500" : "border-gray-200"} rounded-lg`}>
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <User size={20} />
                 </div>
-                {formSubmitted && errors.firstName && <span className="text-red-500 text-sm">First name is required</span>}
-              </label>
+                <Input
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  placeholder="First Name"
+                  className="h-12 pl-10 rounded-lg"
+                  disabled={isLoading}
+                />
+              </div>
+              {formSubmitted && errors.firstName && renderErrorMessage("First name is required")}
             </div>
 
-            {/* Parent last name */}
-            <div>
-              <label className="flex flex-col space-y-1">
-                <span className="text-sm text-gray-600">Last name <span className="text-red-500">*</span></span>
-                <div className="flex items-center px-4 py-2 bg-white border rounded-full">
-                  <User className="h-5 w-5 text-gray-400 mr-2" />
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    className="flex-1 bg-transparent focus:outline-none"
-                    placeholder="Enter your last name"
-                    required
-                  />
+            {/* Last Name */}
+            <div className="relative">
+              <div className={`relative overflow-hidden border ${formSubmitted && errors.lastName ? "border-red-500" : "border-gray-200"} rounded-lg`}>
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <User size={20} />
                 </div>
-                {formSubmitted && errors.lastName && <span className="text-red-500 text-sm">Last name is required</span>}
-              </label>
+                <Input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  placeholder="Last Name"
+                  className="h-12 pl-10 rounded-lg"
+                  disabled={isLoading}
+                />
+              </div>
+              {formSubmitted && errors.lastName && renderErrorMessage("Last name is required")}
             </div>
 
-            {/* Parent Email */}
-            <div>
-              <label className="flex flex-col space-y-1">
-                <span className="text-sm text-gray-600">Parent Email <span className="text-red-500">*</span></span>
-                <div className="flex items-center px-4 py-2 bg-white border rounded-full">
-                  <Mail className="h-5 w-5 text-gray-400 mr-2" />
-                  <input
-                    type="email"
-                    name="parentEmail"
-                    value={formData.parentEmail}
-                    onChange={handleInputChange}
-                    className="flex-1 bg-transparent focus:outline-none"
-                    placeholder="Enter parent email"
-                    required
-                  />
+            {/* Email */}
+            <div className="relative">
+              <div className={`relative overflow-hidden border ${formSubmitted && errors.parentEmail ? "border-red-500" : "border-gray-200"} rounded-lg`}>
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <Mail size={20} />
                 </div>
-                {formSubmitted && errors.parentEmail && <span className="text-red-500 text-sm">Parent email is required</span>}
-              </label>
+                <Input
+                  type="email"
+                  name="parentEmail"
+                  value={formData.parentEmail}
+                  onChange={handleInputChange}
+                  placeholder="Email"
+                  className="h-12 pl-10 rounded-lg"
+                  disabled={isLoading}
+                />
+              </div>
+              {formSubmitted && errors.parentEmail && renderErrorMessage("Email is required")}
             </div>
 
             {/* Phone */}
-            <div>
-              <label className="flex flex-col space-y-1">
-                <span className="text-sm text-gray-600">Phone <span className="text-red-500">*</span></span>
-                <div className="flex items-center px-4 py-2 bg-white border rounded-full">
-                  <Phone className="h-5 w-5 text-gray-400 mr-2" />
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="flex-1 bg-transparent focus:outline-none"
-                    placeholder="Enter phone number"
-                    maxLength={20}
-                    required
-                  />
+            <div className="relative">
+              <div className={`relative overflow-hidden border ${formSubmitted && errors.phone ? "border-red-500" : "border-gray-200"} rounded-lg`}>
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <Phone size={20} />
                 </div>
-                {formSubmitted && errors.phone && <span className="text-red-500 text-sm">Phone number is required</span>}
-              </label>
+                <Input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  placeholder="Phone Number"
+                  className="h-12 pl-10 rounded-lg"
+                  disabled={isLoading}
+                />
+              </div>
+              {formSubmitted && errors.phone && renderErrorMessage("Phone number is required")}
             </div>
 
-            {/* Student Code & Identity Card Group */}
-            <div className="md:col-span-2 flex flex-col md:flex-row gap-x-4 gap-y-4 items-center">
-              {/* Student Code */}
-              <div className="md:w-5/12">
-                <label className="flex flex-col space-y-1">
-                  <span className="text-sm text-gray-600">Student Code <span className="text-red-500">*</span></span>
-                  <div className="flex items-center py-2 bg-white border rounded-full h-10 relative pl-10 pr-4">
-                    <Hash className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      name="studentCode"
-                      value={formData.studentCode}
-                      onChange={handleInputChange}
-                      className="flex-1 bg-transparent focus:outline-none"
-                      placeholder="Student Code"
-                      required
-                    />
-                  </div>
-                  {formSubmitted && errors.studentCode && <span className="text-red-500 text-sm">Student code is required</span>}
-                </label>
+            {/* Student Code */}
+            <div className="relative">
+              <div className={`relative overflow-hidden border ${formSubmitted && errors.studentCode ? "border-red-500" : "border-gray-200"} rounded-lg`}>
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <Hash size={20} />
+                </div>
+                <Input
+                  type="text"
+                  name="studentCode"
+                  value={formData.studentCode}
+                  onChange={handleInputChange}
+                  placeholder="Student Code"
+                  className="h-12 pl-10 rounded-lg"
+                  disabled={isLoading}
+                />
               </div>
+              {formSubmitted && errors.studentCode && renderErrorMessage("Student code is required")}
+            </div>
 
-              {/* Identity Card (Custom File Input) */}
-              <div className="md:w-7/12">
-                <label className="flex flex-col space-y-1">
-                  <span className="text-sm text-gray-600">Identity Card <span className="text-red-500">*</span></span>
-                  <div className="flex items-center py-2 bg-white border rounded-full h-10 px-4">
-                    <label htmlFor="identityCardInput" className="flex items-center cursor-pointer">
-                      <FileText className="h-5 w-5 text-gray-400 mr-2" />
-                    </label>
-                    <input
-                      id="identityCardInput"
-                      type="file"
-                      name="identityCard"
-                      onChange={handleFileChange}
-                      className="sr-only" // Cache l'input natif
-                      required
-                    />
-                    <span className="flex-1 text-sm text-gray-600 truncate ml-2">
-                      {formData.identityCard ? formData.identityCard.name : "Aucun fichier choisi"}
-                    </span>
-                  </div>
-                  {formSubmitted && errors.identityCard && <span className="text-red-500 text-sm">Identity card is required</span>}
+            {/* Identity Card */}
+            <div className="relative">
+              <div className={`relative overflow-hidden border ${formSubmitted && errors.identityCard ? "border-red-500" : "border-gray-200"} rounded-lg`}>
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <FileText size={20} />
+                </div>
+                <label className="flex items-center h-12 pl-10 pr-4 cursor-pointer">
+                  <span className="text-gray-500 truncate">
+                    {formData.identityCard ? formData.identityCard.name : "Upload Identity Card"}
+                  </span>
+                  <input
+                    type="file"
+                    name="identityCard"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    disabled={isLoading}
+                    accept=".pdf,.jpg,.jpeg,.png"
+                  />
                 </label>
               </div>
+              {formSubmitted && errors.identityCard && renderErrorMessage("Identity card is required")}
             </div>
 
             {/* Password */}
-            <div>
-              <label className="flex flex-col space-y-1">
-                <span className="text-sm text-gray-600">Password <span className="text-red-500">*</span></span>
-                <div className="flex items-center px-4 py-2 bg-white border rounded-full">
-                  <Lock className="h-5 w-5 text-gray-400 mr-2" />
-                  <input
-                    type="password"
-                    placeholder="Enter password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="flex-1 bg-transparent focus:outline-none"
-                    required
-                  />
+            <div className="relative">
+              <div className={`relative overflow-hidden border ${formSubmitted && errors.password ? "border-red-500" : "border-gray-200"} rounded-lg`}>
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <Lock size={20} />
                 </div>
-                {formSubmitted && errors.password && <span className="text-red-500 text-sm">Password is required</span>}
-              </label>
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="Password"
+                  className="h-12 pl-10 pr-10 rounded-lg"
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isLoading}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {formSubmitted && errors.password && renderErrorMessage("Password is required")}
             </div>
 
-            {/* Confirm password */}
-            <div>
-              <label className="flex flex-col space-y-1">
-                <span className="text-sm text-gray-600">Confirm password <span className="text-red-500">*</span></span>
-                <div className="flex items-center px-4 py-2 bg-white border rounded-full">
-                  <Lock className="h-5 w-5 text-gray-400 mr-2" />
-                  <input
-                    type="password"
-                    placeholder="Confirm password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    className="flex-1 bg-transparent focus:outline-none"
-                    required
-                  />
+            {/* Confirm Password */}
+            <div className="relative">
+              <div className={`relative overflow-hidden border ${formSubmitted && errors.confirmPassword ? "border-red-500" : "border-gray-200"} rounded-lg`}>
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <Lock size={20} />
                 </div>
-                {formSubmitted && errors.confirmPassword && <span className="text-red-500 text-sm">Passwords do not match</span>}
-              </label>
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  placeholder="Confirm Password"
+                  className="h-12 pl-10 pr-10 rounded-lg"
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isLoading}
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {formSubmitted && errors.confirmPassword && renderErrorMessage("Passwords do not match")}
             </div>
           </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-center mt-8">
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#25AAE1] text-white py-3 rounded-full
-                       transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1]
-                       focus:ring-offset-2 disabled:opacity-50 text-base font-medium"
-            >
-              {isLoading ? "REGISTERING..." : "SIGN UP"}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-3 rounded-lg
+                     transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1]
+                     focus:ring-offset-2 disabled:opacity-50 text-base font-semibold mt-6"
+          >
+            {isLoading ? "Creating Account..." : "Create Account"}
+          </button>
 
-          {/* Login Link */}
-          <p className="text-center text-sm text-gray-500">
-            Already registered?{" "}
-            <Link
-              href={userPath.LOGIN}
-              className="text-[#25AAE1] hover:text-[#1453B8]"
-            >
-              Login here
-            </Link>
-          </p>
+          <div className="text-center mt-4">
+            <p className="text-gray-600">
+              Already have an account?{" "}
+              <Link
+                href={userPath.LOGIN}
+                className="text-[#1A73E8] hover:text-[#1453B8] font-medium"
+              >
+                Login instead
+              </Link>
+            </p>
+          </div>
         </form>
       </div>
     </div>
