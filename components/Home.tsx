@@ -7,6 +7,8 @@ import { userPath } from "@/constants/userConstants";
 import DreaMetrixLogo from "./ui/dreametrix-logo";
 import { useLogin } from "@/hooks/SchoolAdmin/useLogin";
 import { Input } from "./ui/input";
+// import { Button } from "./ui/button";
+// import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 
 export interface LoginFormData {
   email: string;
@@ -24,8 +26,8 @@ export default function Login() {
     email: "",
     password: "",
   });
-  const [showPassword, setShowPassword] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errors, setErrors] = useState<LoginErrors>({
     email: null,
     password: null,
@@ -106,7 +108,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-[url('/assets/images/bg.png')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-2">
       <div className="w-full max-w-[500px] bg-[rgba(230,230,230,0.95)] p-6 sm:p-8 rounded-[20px] shadow-[0px_4px_20px_rgba(0,0,0,0.15)]">
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-5">
           <DreaMetrixLogo />
         </div>
 
@@ -188,7 +190,7 @@ export default function Login() {
             {renderErrorMessage(errors.password)}
           </div>
 
-          
+
 
           <div className="text-right">
             <Link
@@ -203,14 +205,14 @@ export default function Login() {
             type="submit"
             disabled={isLoading}
             className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-3 rounded-lg
-                     transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1] 
+                     transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1]
                      focus:ring-offset-2 disabled:opacity-50 text-base font-semibold"
           >
             {isLoading ? "Logging in..." : "Log In"}
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-gray-200">
+        <div className="mt-5 pt-6 border-t border-gray-200">
           <p className="text-center text-gray-600 mb-4">Don&apos;t have an account?</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Link
