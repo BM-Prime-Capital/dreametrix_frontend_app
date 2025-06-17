@@ -2,20 +2,26 @@
 "use server";
 
 export async function getConversations(accessToken: string, tenantDomain: string) {
+  console.log("accessToken", accessToken)
+  console.log("tenantDomain",tenantDomain)
   
   if (!accessToken) {
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  const url = `${tenantDomain}/api/chat`;
+  
+
+  const url = `${tenantDomain}/bigbraain-chat/conversations/`;
 
   try {
     const response = await fetch(url, {
+      method:'GET',
       headers: {
-        Authorization: `/Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
 
+    console.log("response", response)
     if (!response.ok) {
       if (response.status === 403) {
         throw new Error("You don't have permission to access conversations.");
