@@ -2,20 +2,21 @@
 
 import { Button } from "@/components/ui/button";
 import { FileText, BookOpen, Home, FileArchive, Download, Upload } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import PlanGeneralView from "./PlanGeneralView";
 import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import {VisuallyHidden} from "@radix-ui/react-visually-hidden";
 
 type SubjectType = "math" | "ela";
 
-export function TeachMaterialsPopup({ 
-  date, 
-  open, 
-  onOpenChange, 
+export function TeachMaterialsPopup({
+  date,
+  open,
+  onOpenChange,
   subject = "math"
 }: TeachMaterialsPopupProps) {
   const [activeTab, setActiveTab] = useState("lesson-plan");
@@ -58,30 +59,30 @@ export function TeachMaterialsPopup({
   const currentSubjectResources = subject === "math" ? mathResources : elaResources;
 
   const materials = [
-    { 
-      id: "lesson-plan", 
-      name: "Lesson Plan", 
+    {
+      id: "lesson-plan",
+      name: "Lesson Plan",
       icon: <FileText className="w-5 h-5" />,
       lastModified: "Modified 2 hours ago",
       status: "complete"
     },
-    { 
-      id: "student-handout", 
-      name: "Student Handout", 
+    {
+      id: "student-handout",
+      name: "Student Handout",
       icon: <BookOpen className="w-5 h-5" />,
       lastModified: "Modified today",
       status: "complete"
     },
-    { 
-      id: "homework", 
-      name: "Homework", 
+    {
+      id: "homework",
+      name: "Homework",
       icon: <Home className="w-5 h-5" />,
       lastModified: "Modified yesterday",
       status: "draft"
     },
-    { 
-      id: "other-materials", 
-      name: "Additional Resources", 
+    {
+      id: "other-materials",
+      name: "Additional Resources",
       icon: <FileArchive className="w-5 h-5" />,
       lastModified: "Added 3 days ago",
       status: "empty"
@@ -110,6 +111,9 @@ export function TeachMaterialsPopup({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl h-[90vh] p-0 overflow-hidden">
+        <DialogTitle>
+          <VisuallyHidden>Hidden Accessible Title</VisuallyHidden>
+        </DialogTitle>
         <div className="flex h-full">
           {/* Sidebar */}
           <div className="w-64 border-r bg-gray-50 p-4 flex flex-col">
@@ -130,15 +134,15 @@ export function TeachMaterialsPopup({
               </p>
             </DialogHeader>
 
-            <Tabs 
-              value={activeTab} 
+            <Tabs
+              value={activeTab}
               onValueChange={setActiveTab}
               className="flex-1 flex flex-col"
               orientation="vertical"
             >
               <TabsList className="flex-col items-start h-auto bg-transparent p-0 space-y-1">
                 {materials.map((material) => (
-                  <TabsTrigger 
+                  <TabsTrigger
                     key={material.id}
                     value={material.id}
                     className={`w-full justify-start px-3 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm ${
@@ -164,9 +168,9 @@ export function TeachMaterialsPopup({
                   <label className="cursor-pointer">
                     <Upload className="w-4 h-4 mr-2" />
                     Upload File
-                    <input 
-                      type="file" 
-                      className="hidden" 
+                    <input
+                      type="file"
+                      className="hidden"
                       onChange={handleFileUpload}
                     />
                   </label>
@@ -204,8 +208,8 @@ export function TeachMaterialsPopup({
               <Tabs value={activeTab} className="h-full">
                 <TabsContent value="lesson-plan" className="m-0 h-full">
                   <Card className="h-full overflow-hidden">
-                    <PlanGeneralView 
-                      changeView={() => {}} 
+                    <PlanGeneralView
+                      changeView={() => {}}
                       selectedDate={selectedDate} // Use the local selected date
                     />
                   </Card>
@@ -223,10 +227,10 @@ export function TeachMaterialsPopup({
                         Download PDF
                       </Button>
                     </div>
-                    
+
                     <div className="border rounded-lg p-4 flex-1">
                       <div className="prose max-w-none">
-                        <h5 className="font-medium mb-3">Today's Lesson</h5>
+                        <h5 className="font-medium mb-3">Today&#39;s Lesson</h5>
                         {subject === "math" ? (
                           <>
                             <p className="mb-3">1. Introduction to quadratic equations</p>
@@ -259,14 +263,14 @@ export function TeachMaterialsPopup({
                         <div className="prose prose-sm max-w-none">
                           <p className="font-medium mb-2">Instructions:</p>
                           <p className="mb-4">{currentSubjectResources.homework}</p>
-                          
+
                           <p className="font-medium mb-2">Requirements:</p>
                           <ul className="list-disc pl-5 mb-4">
                             <li>Show all work (Math) / Cite evidence (ELA)</li>
                             <li>Submit by the due date</li>
                             <li>Format according to class guidelines</li>
                           </ul>
-                          
+
                           <p className="text-sm text-gray-500 mt-4">
                             Due: {format(new Date(date.setDate(date.getDate() + 2)), "EEEE, MMMM d")}
                           </p>
@@ -305,58 +309,58 @@ export function TeachMaterialsPopup({
                           Add Resources
                         </Button>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
                         {subject === "math" ? (
                           <>
-                            <ResourceCard 
-                              title="Algebra Cheat Sheet" 
-                              type="Reference" 
+                            <ResourceCard
+                              title="Algebra Cheat Sheet"
+                              type="Reference"
                               format="PDF"
                               size="1.2MB"
                             />
-                            <ResourceCard 
-                              title="Problem Solving Video" 
-                              type="Tutorial" 
+                            <ResourceCard
+                              title="Problem Solving Video"
+                              type="Tutorial"
                               format="MP4"
                               size="45MB"
                             />
-                            <ResourceCard 
-                              title="Geometry Flashcards" 
-                              type="Study Aid" 
+                            <ResourceCard
+                              title="Geometry Flashcards"
+                              type="Study Aid"
                               format="PDF"
                               size="800KB"
                             />
-                            <ResourceCard 
-                              title="Calculator Guide" 
-                              type="Instructional" 
+                            <ResourceCard
+                              title="Calculator Guide"
+                              type="Instructional"
                               format="PDF"
                               size="2.1MB"
                             />
                           </>
                         ) : (
                           <>
-                            <ResourceCard 
-                              title="Literary Analysis Template" 
-                              type="Writing Aid" 
+                            <ResourceCard
+                              title="Literary Analysis Template"
+                              type="Writing Aid"
                               format="DOCX"
                               size="350KB"
                             />
-                            <ResourceCard 
-                              title="Shakespeare Glossary" 
-                              type="Reference" 
+                            <ResourceCard
+                              title="Shakespeare Glossary"
+                              type="Reference"
                               format="PDF"
                               size="1.5MB"
                             />
-                            <ResourceCard 
-                              title="Essay Rubric" 
-                              type="Assessment" 
+                            <ResourceCard
+                              title="Essay Rubric"
+                              type="Assessment"
                               format="PDF"
                               size="500KB"
                             />
-                            <ResourceCard 
-                              title="Grammar Guide" 
-                              type="Reference" 
+                            <ResourceCard
+                              title="Grammar Guide"
+                              type="Reference"
                               format="PDF"
                               size="1.8MB"
                             />

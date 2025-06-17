@@ -98,7 +98,7 @@ export default function PlansPage() {
         ))}
       </section>
 
-        {/* Nouvelle section pour les outils AI avec plus d'options */}
+        {/* New section for AI tools with extra options */}
       <section className="bg-card p-6 rounded-lg shadow">
         <h2 className="text-2xl font-semibold font-headline mb-4">AI-Powered Tools</h2>
         <p className="text-muted-foreground mb-4 text-sm">
@@ -122,7 +122,7 @@ export default function PlansPage() {
               </Button>
             </CardFooter>
           </Card>
-          
+
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -141,26 +141,26 @@ export default function PlansPage() {
           </Card>
         </div>
       </section>
-      
+
       <section className="bg-card p-6 rounded-lg shadow">
         <h2 className="text-2xl font-semibold font-headline mb-3">Quick Create</h2>
         <p className="text-muted-foreground mb-4">
           Start planning right away by creating a new document.
         </p>
         <div className="flex flex-wrap gap-4">
-          <Button 
+          <Button
             onClick={() => setIsScopeAndSequenceDialogOpen(true)}
             className="bg-blue-500 hover:bg-primary/90 text-primary-foreground"
           >
             New Scope & Sequence
           </Button>
-          <Button 
+          <Button
             onClick={() => setIsUnitPlanDialogOpen(true)}
             className="bg-yellow-500 hover:bg-primary/90 text-primary-foreground"
           >
             New Unit Plan
           </Button>
-          <Button 
+          <Button
             onClick={() => setIsLessonPlanDialogOpen(true)}
             className="bg-green-500 hover:bg-primary/90 text-primary-foreground"
           >
