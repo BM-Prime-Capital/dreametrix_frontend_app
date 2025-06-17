@@ -1,3 +1,10 @@
+import webpack from 'webpack';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path'; // Added resolve import
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -9,6 +16,7 @@ const nextConfig = {
   images: {
     domains: ['images.unsplash.com', 'upload.wikimedia.org', 'via.placeholder.com'],
   },
+
   async headers() {
     return [
       {
@@ -17,8 +25,8 @@ const nextConfig = {
           { 
             key: 'Access-Control-Allow-Origin',
             value: process.env.NODE_ENV === 'development' 
-              ? '*' // Autoriser toutes les origines en développement
-              : 'https://dreametrix-app.com/' // Restreindre en production
+              ? '*' 
+              : 'https://dreametrix-app.com/'
           },
           {
             key: 'Access-Control-Allow-Methods',
@@ -31,6 +39,58 @@ const nextConfig = {
         ],
       },
     ];
+  },
+
+  webpack(config, { isServer }) {
+    const { IgnorePlugin, ContextReplacementPlugin } = webpack;
+
+        // Add Handlebars alias to use the runtime-only version
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      handlebars: 'handlebars/dist/handlebars.runtime.js'
+    };
+
+    // Add fallbacks for Node.js modules
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      path: false,
+      os: false,
+      module: false,
+      inspector: false,
+    };
+
+    // Ignore problematic modules
+    config.plugins.push(
+      new IgnorePlugin({
+        resourceRegExp: /^\.\/locale$/,
+        contextRegExp: /moment$/,
+      }),
+      new IgnorePlugin({
+        resourceRegExp: /^require-in-the-middle$/,
+      })
+    );
+
+    // Only apply OpenTelemetry config on server side
+    if (isServer) {
+      config.plugins.push(
+        new ContextReplacementPlugin(
+          /@opentelemetry/,
+          resolve(__dirname, 'node_modules/@opentelemetry') // Using resolve instead of path.resolve
+        )
+      );
+    }
+
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@opentelemetry/sdk-node': false,
+        '@genkit-ai/core': false,
+        'genkit': false
+      };
+    }
+
+    return config;
   },
 };
 
