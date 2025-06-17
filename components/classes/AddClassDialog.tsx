@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, Plus } from "lucide-react";
+import { Pencil,  } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Select,
@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Class, ISchoolClass} from "@/types";
+import {  ISchoolClass} from "@/types";
 import { useList } from "@/hooks/useList";
 import { getTeachers } from "@/services/TeacherService";
 import { dayOfTheWeek, localStorageKey } from "@/constants/global";
@@ -27,7 +27,7 @@ import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { getGrades, getSubjects } from "@/services/DigitalLibraryService";
 import { convertToClassDays, convertToClassSchedule } from "@/utils/global";
 import SimpleLoader from "../ui/simple-loader";
-import AlertMessage from "../ui/alert-message";
+// import AlertMessage from "../ui/alert-message";
 import { Checkbox } from "@/components/ui/checkbox";
 import Swal from "sweetalert2";
 
@@ -89,7 +89,7 @@ export function AddClassDialog({
 
   // const [schoolClass, setSchoolClass] = useState<ISchoolClass>(schoolClassInit);
   const [schoolClass, setSchoolClass] = useState<ISchoolClass>(schoolClassInit);
-  
+
 
   const [classDays, setClassDays] = useState<ClassDay[]>([]);
 
@@ -124,7 +124,7 @@ export function AddClassDialog({
   const handleDeleteClassDay = (id: number) => {
     setClassDays(classDays.filter((day) => day.id !== id));
   };
-  
+
 
   const resetForm = () => {
     setSchoolClass(schoolClassInit);
@@ -143,7 +143,7 @@ export function AddClassDialog({
           Swal.showLoading();
         }
       });
-    
+
     try {
       setIsSubmitting(true);
 
@@ -152,11 +152,11 @@ export function AddClassDialog({
         hours_and_dates_of_course_schedule: convertToClassSchedule(classDays),
         name: `Class ${schoolClass.grade} - ${schoolClass.subject_in_short}`,
       };
-  
+
       const rep = existingClass
         ? await updateClass(data, tenantDomain, accessToken, refreshToken)
         : await createClass(data, tenantDomain, accessToken, refreshToken);
-  
+
       if (!rep) {
         await Swal.close();
         setOpen(false); // Fermer le modal de mise à jour
@@ -174,7 +174,7 @@ export function AddClassDialog({
           confirmButtonColor: '#3085d6',
         });
       } else {
-        await Swal.close(); 
+        await Swal.close();
         setOpen(false); // Fermer le modal de mise à jour
         await Swal.fire({
           title: 'Success!',
@@ -189,8 +189,8 @@ export function AddClassDialog({
           },
           confirmButtonColor: '#3085d6',
         });
-        
-        
+
+
         setRefreshTime(new Date().toISOString());
         if (!existingClass) {
           resetForm();
@@ -217,7 +217,7 @@ export function AddClassDialog({
     }
   };
 
-  
+
 
   const handleSubjectChange = async (value: string) => {
     const fullSubject = (subjects as Subject[])?.find(
@@ -242,7 +242,7 @@ export function AddClassDialog({
 
   const fetchStudentsByGrade = async (grade: string) => {
     if (!tenantDomain || !accessToken) return;
-    
+
     setAreStudentsLoading(true);
     try {
       const response = await fetch(
@@ -273,7 +273,7 @@ export function AddClassDialog({
     if (open && existingClass) {
       setSchoolClass(existingClass);
       setClassDays(convertToClassDays(existingClass.hours_and_dates_of_course_schedule));
-      
+
       // Chargez les étudiants si nécessaire
       if (existingClass.grade) {
         fetchStudentsByGrade(existingClass.grade);
@@ -285,8 +285,8 @@ export function AddClassDialog({
       setStudents([]);
     }
   }, [open, existingClass]);
-  
-  // Modifiez le useEffect de chargement des grades
+
+  // Modify grades loading useEffect
   useEffect(() => {
     const loadGrades = async () => {
       if (schoolClass.subject_in_short && tenantDomain && accessToken && refreshToken) {
@@ -331,25 +331,25 @@ export function AddClassDialog({
         ) : (
           <Button className="gap-2 text-base bg-[#f59e0b] hover:bg-[#f59e0b]/90 text-white rounded-xl px-5 py-4 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] group">
             <div className="relative flex items-center justify-center">
-                 <svg 
-                  width="24" 
-                  height="24" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
+                 <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
                   className="w-7 h-7 transform group-hover:rotate-180 transition-transform duration-300"
                 >
-                  <path 
-                    d="M12 5V19M5 12H19" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
+                  <path
+                    d="M12 5V19M5 12H19"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
                     strokeLinejoin="round"
                   />
-                  <path 
-                    d="M12 5V19M5 12H19" 
-                    stroke="white" 
-                    strokeWidth="1.5" 
-                    strokeLinecap="round" 
+                  <path
+                    d="M12 5V19M5 12H19"
+                    stroke="white"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
                     strokeLinejoin="round"
                     className="opacity-30"
                   />
@@ -368,7 +368,7 @@ export function AddClassDialog({
         </DialogHeader>
         <div className="flex flex-col gap-4">
           {/* {message && <AlertMessage content={message.content} color={message.color} />} */}
-          
+
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 gap-4 py-4">
               <Input
@@ -406,7 +406,7 @@ export function AddClassDialog({
                 required
               >
                 <option disabled value="">Select Grade</option>
-                {(grades || []).length > 0 ? ( // Ajout d'une vérification de null
+                {(grades || []).length > 0 ? ( //  Add a "null" verification condition
                   grades.map((grade) => (
                     <option key={grade} value={grade}>
                       Grade {grade}
@@ -457,7 +457,7 @@ export function AddClassDialog({
                 <label className="text-sm font-medium text-gray-700">
                   Students (Grade {schoolClass.grade})
                 </label>
-                
+
                 {areStudentsLoading ? (
                   <SimpleLoader />
                 ) : students.length > 0 ? (
@@ -573,10 +573,10 @@ export function AddClassDialog({
       variant="ghost"
       className="text-red-500 hover:text-red-600 hover:bg-red-50"
       onClick={(e) => {
-        e.preventDefault(); // Ajout de cette ligne
+        e.preventDefault(); // Adding the next line
         handleDeleteClassDay(schedule.id);
       }}
-      type="button" // Important pour éviter la soumission du formulaire
+      type="button" // Important to avoid form submission
     >
       Remove
     </Button>
@@ -593,9 +593,9 @@ export function AddClassDialog({
             </div>
 
             <div className="flex justify-end gap-2 mt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => {
                   setOpen(false);
                   resetForm();
