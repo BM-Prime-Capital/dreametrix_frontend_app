@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { cn } from "../../libs/utils"
+import { cn } from "@/libs/utils"
 import Image from "next/image"
 import { Card } from "@/components/ui/card"
 import type { MenuRoute } from "@/types"
