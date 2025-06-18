@@ -36,6 +36,8 @@ export default function SchoolAdminRegister() {
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
   const [openCityPopover, setOpenCityPopover] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Fetch US states on component mount
   useEffect(() => {
@@ -81,17 +83,25 @@ export default function SchoolAdminRegister() {
         setLoadingCities(false);
       }
     };
-
     loadCities();
   }, [formData.state]);
+
+  useEffect(() => {
+    handleInputChange('country', 'United States');
+  }, []);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await handleSubmit();
-      router.push(userPath.SCHOOL_ADMIN_LOGIN_PATH);
+      const result = await handleSubmit();
+      console.log("Registration result:", result);
+      
+      if (result?.task_id) {
+        setSuccessMessage("School created successfully. Credentials will be sent to the provided email shortly.");
+      }
     } catch (error) {
       console.error('Registration failed:', error);
+      setSuccessMessage("An error occurred while creating the school.");
     }
   };
 
@@ -205,21 +215,23 @@ export default function SchoolAdminRegister() {
             </div>
 
             {/* Country (readonly) */}
-            <div className="relative">
-              <div className="relative overflow-hidden border border-gray-200 rounded-lg">
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <Globe size={20} />
+              <div>
+              <label className="flex flex-col space-y-1">
+                <span className="text-sm text-gray-600">Country <span className="text-red-500">*</span></span>
+                <div className="flex items-center px-4 py-2 bg-white border rounded-full">
+                  <Globe className="h-5 w-5 text-gray-400 mr-2" />
+                  <input
+                    type="text"
+                    name="country"
+                    value="United States"
+                    className="flex-1 bg-transparent focus:outline-none"
+                    onChange={(e) => handleInputChange('country', e.target.value)}
+                    readOnly
+                    disabled
+                  />
                 </div>
-                <Input
-                  type="text"
-                  value="United States"
-                  className="h-12 pl-10 rounded-lg bg-gray-50"
-                  readOnly
-                  disabled
-                />
-              </div>
+              </label>
             </div>
-
             {/* State Select */}
             <div className="relative">
               <Popover>
@@ -384,7 +396,20 @@ export default function SchoolAdminRegister() {
             </p>
           </div>
         </form>
+
+        {successMessage && (
+          <div className={`p-4 mb-4 mt-4 text-sm rounded-lg ${
+            successMessage.includes("successfully") 
+              ? "text-green-700 bg-green-100" 
+              : "text-red-700 bg-red-100"
+          }`}>
+            {successMessage}
+          </div>
+        )}
       </div>
-    </div>
+      
+    </div> 
+
+
   );
 }
