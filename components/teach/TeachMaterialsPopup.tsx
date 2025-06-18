@@ -355,7 +355,7 @@ export function TeachMaterialsPopup({
                     
                     <div className="border rounded-lg p-4 flex-1">
                       <div className="prose max-w-none">
-                        <h5 className="font-medium mb-3">Today's Lesson</h5>
+                        <h5 className="font-medium mb-3">Today&apos;s Lesson</h5>
                         {subject === "math" ? (
                           <>
                             <p className="mb-3">1. Introduction to quadratic equations</p>
@@ -476,7 +476,7 @@ export function TeachMaterialsPopup({
                               <div className="col-span-2 flex flex-col items-center justify-center h-64 text-gray-400">
                                 <FileArchive className="w-12 h-12 mb-4" />
                                 <p>No additional resources uploaded yet</p>
-                                <p className="text-sm mt-2">Click "Add Resources" to upload files</p>
+                                <p className="text-sm mt-2">Click &quot;Add Resources&quot; to upload files</p>
                               </div>
                             )}
                           </div>
