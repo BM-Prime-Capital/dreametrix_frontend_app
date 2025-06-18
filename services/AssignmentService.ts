@@ -20,7 +20,7 @@ export async function getAssignments(
   }
 
   const data = await response.json();
-  console.log("Assignments data: ", data.results[0].course);
+  console.log("Assignments data: ", data);
   return data.results; // Retourne directement le tableau des assignments
 }
 
