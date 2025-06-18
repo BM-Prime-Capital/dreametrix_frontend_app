@@ -2,36 +2,174 @@
 
 import { Button } from "@/components/ui/button";
 import { FileText, BookOpen, Home, FileArchive, Download, Upload } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import PlanGeneralView from "./PlanGeneralView";
 import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import {VisuallyHidden} from "@radix-ui/react-visually-hidden";
+import { getTeachMaterials, uploadTeachMaterial, downloadTeachMaterial } from "@/services/TeachService";
+import { useToast } from "@/components/ui/use-toast";
+import { useRequestInfo } from "@/hooks/useRequestInfo";
 
 type SubjectType = "math" | "ela";
 
-export function TeachMaterialsPopup({
-  date,
-  open,
-  onOpenChange,
+interface TeachMaterial {
+  id: number;
+  title: string;
+  description: string;
+  material_type: string;
+  file_type: string;
+  file_size: number;
+  file: {
+    name: string;
+    url: string;
+  };
+  uploaded_by: {
+    name: string;
+  };
+  date_uploaded: string;
+  last_modified: string;
+  subject: string;
+  associated_date: string;
+}
+
+interface MaterialTab {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  lastModified: string;
+  status: "complete" | "draft" | "empty";
+}
+
+export function TeachMaterialsPopup({ 
+  date, 
+  open, 
+  onOpenChange, 
   subject = "math"
-}: TeachMaterialsPopupProps) {
+}: {
+  date: Date;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  subject?: SubjectType;
+}) {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("lesson-plan");
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState(date);
+  const [additionalResources, setAdditionalResources] = useState<TeachMaterial[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
 
   // Update when the prop date changes
   useEffect(() => {
     setSelectedDate(date);
   }, [date]);
 
+  // Fetch additional resources when tab or date changes
+  useEffect(() => {
+    if (activeTab === 'other-materials') {
+      fetchAdditionalResources();
+    }
+  }, [activeTab, selectedDate, subject]);
+
+  const fetchAdditionalResources = async () => {
+    if (!tenantDomain || !accessToken || !refreshToken) return;
+    setIsLoading(true);
+    try {
+      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      const data = await getTeachMaterials(
+        tenantDomain,
+        accessToken,
+        {
+          material_type: 'additional-resources',
+          subject,
+          date: dateStr
+        }
+      );
+      setAdditionalResources(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch additional resources",
+        variant: "destructive",
+      });
+      console.error('Error fetching resources:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = new Date(e.target.value);
     if (!isNaN(newDate.getTime())) {
       setSelectedDate(newDate);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('title', file.name);
+    formData.append('material_type', 'additional-resources');
+    formData.append('subject', subject);
+    formData.append('associated_date', format(selectedDate, 'yyyy-MM-dd'));
+
+    try {
+        // The uploadTeachMaterial function does not support onUploadProgress, so we remove it.
+        const response = await uploadTeachMaterial(
+          formData,
+          tenantDomain,
+          accessToken
+        );
+
+      setAdditionalResources(prev => [response, ...prev]);
+      toast({
+        title: "Success",
+        description: "File uploaded successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to upload file",
+        variant: "destructive",
+      });
+      console.error('Upload failed:', error);
+    } finally {
+      setIsUploading(false);
+      setTimeout(() => setUploadProgress(null), 2000);
+    }
+  };
+
+  const handleDownload = async (materialId: number, fileName: string) => {
+    try {
+      const blob = await downloadTeachMaterial(
+        materialId,
+        tenantDomain,
+        accessToken
+      );
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download file",
+        variant: "destructive",
+      });
+      console.error('Download failed:', error);
     }
   };
 
@@ -58,62 +196,48 @@ export function TeachMaterialsPopup({
 
   const currentSubjectResources = subject === "math" ? mathResources : elaResources;
 
-  const materials = [
-    {
-      id: "lesson-plan",
-      name: "Lesson Plan",
+  const materials: MaterialTab[] = [
+    { 
+      id: "lesson-plan", 
+      name: "Lesson Plan", 
       icon: <FileText className="w-5 h-5" />,
       lastModified: "Modified 2 hours ago",
       status: "complete"
     },
-    {
-      id: "student-handout",
-      name: "Student Handout",
+    { 
+      id: "student-handout", 
+      name: "Student Handout", 
       icon: <BookOpen className="w-5 h-5" />,
       lastModified: "Modified today",
       status: "complete"
     },
-    {
-      id: "homework",
-      name: "Homework",
+    { 
+      id: "homework", 
+      name: "Homework", 
       icon: <Home className="w-5 h-5" />,
       lastModified: "Modified yesterday",
       status: "draft"
     },
-    {
-      id: "other-materials",
-      name: "Additional Resources",
+    { 
+      id: "other-materials", 
+      name: "Additional Resources", 
       icon: <FileArchive className="w-5 h-5" />,
-      lastModified: "Added 3 days ago",
-      status: "empty"
+      lastModified: additionalResources.length > 0 
+        ? `Last updated ${format(new Date(additionalResources[0].date_uploaded), 'MMM d, yyyy')}`
+        : "No resources yet",
+      status: additionalResources.length > 0 ? "complete" : "empty"
     },
   ];
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploadProgress(0);
-      // Upload simulation
-      const interval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev === null) return 10;
-          if (prev >= 100) {
-            clearInterval(interval);
-            setTimeout(() => setUploadProgress(null), 2000);
-            return 100;
-          }
-          return prev + 10;
-        });
-      }, 300);
-    }
+  const getFileSizeDisplay = (size: number): string => {
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl h-[90vh] p-0 overflow-hidden">
-        <DialogTitle>
-          <VisuallyHidden>Hidden Accessible Title</VisuallyHidden>
-        </DialogTitle>
         <div className="flex h-full">
           {/* Sidebar */}
           <div className="w-64 border-r bg-gray-50 p-4 flex flex-col">
@@ -134,15 +258,15 @@ export function TeachMaterialsPopup({
               </p>
             </DialogHeader>
 
-            <Tabs
-              value={activeTab}
+            <Tabs 
+              value={activeTab} 
               onValueChange={setActiveTab}
               className="flex-1 flex flex-col"
               orientation="vertical"
             >
               <TabsList className="flex-col items-start h-auto bg-transparent p-0 space-y-1">
                 {materials.map((material) => (
-                  <TabsTrigger
+                  <TabsTrigger 
                     key={material.id}
                     value={material.id}
                     className={`w-full justify-start px-3 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm ${
@@ -168,10 +292,11 @@ export function TeachMaterialsPopup({
                   <label className="cursor-pointer">
                     <Upload className="w-4 h-4 mr-2" />
                     Upload File
-                    <input
-                      type="file"
-                      className="hidden"
+                    <input 
+                      type="file" 
+                      className="hidden" 
                       onChange={handleFileUpload}
+                      disabled={isUploading}
                     />
                   </label>
                 </Button>
@@ -208,9 +333,9 @@ export function TeachMaterialsPopup({
               <Tabs value={activeTab} className="h-full">
                 <TabsContent value="lesson-plan" className="m-0 h-full">
                   <Card className="h-full overflow-hidden">
-                    <PlanGeneralView
-                      changeView={() => {}}
-                      selectedDate={selectedDate} // Use the local selected date
+                    <PlanGeneralView 
+                      changeView={() => {}} 
+                      selectedDate={selectedDate}
                     />
                   </Card>
                 </TabsContent>
@@ -227,10 +352,10 @@ export function TeachMaterialsPopup({
                         Download PDF
                       </Button>
                     </div>
-
+                    
                     <div className="border rounded-lg p-4 flex-1">
                       <div className="prose max-w-none">
-                        <h5 className="font-medium mb-3">Today&#39;s Lesson</h5>
+                        <h5 className="font-medium mb-3">Today&apos;s Lesson</h5>
                         {subject === "math" ? (
                           <>
                             <p className="mb-3">1. Introduction to quadratic equations</p>
@@ -263,14 +388,14 @@ export function TeachMaterialsPopup({
                         <div className="prose prose-sm max-w-none">
                           <p className="font-medium mb-2">Instructions:</p>
                           <p className="mb-4">{currentSubjectResources.homework}</p>
-
+                          
                           <p className="font-medium mb-2">Requirements:</p>
                           <ul className="list-disc pl-5 mb-4">
                             <li>Show all work (Math) / Cite evidence (ELA)</li>
                             <li>Submit by the due date</li>
                             <li>Format according to class guidelines</li>
                           </ul>
-
+                          
                           <p className="text-sm text-gray-500 mt-4">
                             Due: {format(new Date(date.setDate(date.getDate() + 2)), "EEEE, MMMM d")}
                           </p>
@@ -302,71 +427,61 @@ export function TeachMaterialsPopup({
                       <div className="flex justify-between items-center mb-6">
                         <div>
                           <h4 className="text-xl font-medium mb-1">Additional Resources</h4>
-                          <p className="text-gray-500">Supplementary materials for {subject.toUpperCase()}</p>
+                          <p className="text-gray-500">
+                            {additionalResources.length} resource{additionalResources.length !== 1 ? 's' : ''} available
+                          </p>
                         </div>
-                        <Button>
-                          <Upload className="w-4 h-4 mr-2" />
-                          Add Resources
+                        <Button asChild>
+                          <label className="cursor-pointer">
+                            <Upload className="w-4 h-4 mr-2" />
+                            Add Resources
+                            <input 
+                              type="file" 
+                              className="hidden" 
+                              onChange={handleFileUpload}
+                              disabled={isUploading}
+                            />
+                          </label>
                         </Button>
                       </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
-                        {subject === "math" ? (
-                          <>
-                            <ResourceCard
-                              title="Algebra Cheat Sheet"
-                              type="Reference"
-                              format="PDF"
-                              size="1.2MB"
-                            />
-                            <ResourceCard
-                              title="Problem Solving Video"
-                              type="Tutorial"
-                              format="MP4"
-                              size="45MB"
-                            />
-                            <ResourceCard
-                              title="Geometry Flashcards"
-                              type="Study Aid"
-                              format="PDF"
-                              size="800KB"
-                            />
-                            <ResourceCard
-                              title="Calculator Guide"
-                              type="Instructional"
-                              format="PDF"
-                              size="2.1MB"
-                            />
-                          </>
-                        ) : (
-                          <>
-                            <ResourceCard
-                              title="Literary Analysis Template"
-                              type="Writing Aid"
-                              format="DOCX"
-                              size="350KB"
-                            />
-                            <ResourceCard
-                              title="Shakespeare Glossary"
-                              type="Reference"
-                              format="PDF"
-                              size="1.5MB"
-                            />
-                            <ResourceCard
-                              title="Essay Rubric"
-                              type="Assessment"
-                              format="PDF"
-                              size="500KB"
-                            />
-                            <ResourceCard
-                              title="Grammar Guide"
-                              type="Reference"
-                              format="PDF"
-                              size="1.8MB"
-                            />
-                          </>
-                        )}
-                      </div>
+                      
+                      {isLoading ? (
+                        <div className="flex-1 flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-400"></div>
+                        </div>
+                      ) : (
+                        <>
+                          {uploadProgress !== null && (
+                            <div className="mb-4">
+                              <Progress value={uploadProgress} className="h-2" />
+                              <p className="text-xs text-center mt-1 text-gray-500">
+                                {uploadProgress}% uploaded
+                              </p>
+                            </div>
+                          )}
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                            {additionalResources.length > 0 ? (
+                              additionalResources.map((resource) => (
+                                <ResourceCard 
+                                  key={resource.id}
+                                  title={resource.title}
+                                  type={resource.material_type}
+                                  format={resource.file_type.toUpperCase()}
+                                  size={getFileSizeDisplay(resource.file_size)}
+                                  onDownload={() => handleDownload(resource.id, resource.file.name)}
+                                />
+                              ))
+                            ) : (
+                              <div className="col-span-2 flex flex-col items-center justify-center h-64 text-gray-400">
+                                <FileArchive className="w-12 h-12 mb-4" />
+                                <p>No additional resources uploaded yet</p>
+                                <p className="text-sm mt-2">Click &quot;Add Resources&quot; to upload files</p>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </Card>
                 </TabsContent>
@@ -379,26 +494,22 @@ export function TeachMaterialsPopup({
   );
 }
 
-interface TeachMaterialsPopupProps {
-  date: Date;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  subject?: SubjectType;
-}
-
 interface ResourceCardProps {
   title: string;
   type: string;
   format: string;
   size: string;
+  onDownload: () => void;
 }
 
-function ResourceCard({ title, type, format, size }: ResourceCardProps) {
+function ResourceCard({ title, type, format, size, onDownload }: ResourceCardProps) {
   return (
     <div className="p-4 border rounded-lg hover:bg-gray-50">
       <div className="flex items-center justify-between mb-2">
         <h5 className="font-medium">{title}</h5>
-        <Download className="w-4 h-4 text-gray-500" />
+        <button onClick={onDownload} className="text-gray-500 hover:text-gray-700">
+          <Download className="w-4 h-4" />
+        </button>
       </div>
       <div className="text-sm text-gray-500">
         <span>{type}</span> • <span>{format}</span> • <span>{size}</span>

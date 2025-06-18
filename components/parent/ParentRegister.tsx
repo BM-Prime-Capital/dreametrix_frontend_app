@@ -30,11 +30,7 @@ export interface RegisterErrors {
   confirmPassword: boolean;
 }
 
-export default function ParentRegister({
-  userType,
-}: {
-  userType: string;
-}) {
+export default function ParentRegister() {
   const router = useRouter();
   const [formData, setFormData] = useState<RegisterFormData>({
     firstName: "",
