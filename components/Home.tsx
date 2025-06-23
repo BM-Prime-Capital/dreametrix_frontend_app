@@ -2,11 +2,13 @@
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
-import {  AlertTriangle } from "lucide-react";
+import { AlertTriangle, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { userPath } from "@/constants/userConstants";
 import DreaMetrixLogo from "./ui/dreametrix-logo";
 import { useLogin } from "@/hooks/SchoolAdmin/useLogin";
 import { Input } from "./ui/input";
+// import { Button } from "./ui/button";
+// import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 
 export interface LoginFormData {
   email: string;
@@ -25,6 +27,7 @@ export default function Login() {
     password: "",
   });
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errors, setErrors] = useState<LoginErrors>({
     email: null,
     password: null,
@@ -104,15 +107,16 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[url('/assets/images/bg.png')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-2">
-      <div className="w-full max-w-[450px] bg-[rgba(230,230,230,0.90)] p-3 sm:p-6 rounded-[15px] shadow-[0px_4px_20px_rgba(0,0,0,0.1)]">
-        <div className="flex justify-center mb-4">
+      <div className="w-full max-w-[500px] bg-[rgba(230,230,230,0.95)] p-6 sm:p-8 rounded-[20px] shadow-[0px_4px_20px_rgba(0,0,0,0.15)]">
+        <div className="flex justify-center mb-5">
           <DreaMetrixLogo />
         </div>
 
-        <div className="text-left mb-3">
-          <h2 className="text-[#1A73E8] text-lg font-medium ml-2.5">
-            Login to Your Account
+        <div className="text-center mb-6">
+          <h2 className="text-[#1A73E8] text-2xl font-semibold">
+            Welcome to DreaMetrix
           </h2>
+          <p className="text-gray-600 mt-2">Log in to access your account</p>
         </div>
 
         {isLoading && (
@@ -120,48 +124,8 @@ export default function Login() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#25AAE1]"></div>
           </div>
         )}
-
-        <form onSubmit={handleSubmit}>
-          <div className="relative mb-3">
-            <div
-              className={`relative rounded-full overflow-hidden border ${
-                formSubmitted && errors.email
-                  ? "border-red-500"
-                  : "border-gray-200"
-              }`}
-            >
-              <Input
-                type="email"
-                placeholder="Email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-              />
-            </div>
-            {renderErrorMessage(errors.email)}
-          </div>
-
-          <div className="relative">
-            <div
-              className={`relative rounded-full overflow-hidden border ${
-                formSubmitted && errors.password
-                  ? "border-red-500"
-                  : "border-gray-200"
-              }`}
-            >
-              <Input
-                type="password"
-                placeholder="Password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-              />
-            </div>
-            {renderErrorMessage(errors.password)}
-          </div>
-
-          {error && (
-            <div className="bg-red-100 text-red-700 px-4 py-2 rounded-md">
+        {error && (
+            <div className="bg-red-50 text-red-700 px-4 py-3 mb-2 rounded-lg">
               <div className="flex items-center">
                 <AlertTriangle className="h-5 w-5 mr-2" />
                 <span>{error}</span>
@@ -169,41 +133,104 @@ export default function Login() {
             </div>
           )}
 
-          <div className="text-right flex gap-2 justify-center py-3 items-center text-sm mt-1">
-            <label className="text-gray-600">Forgot your password?</label>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <div
+              className={`relative overflow-hidden border ${
+                formSubmitted && errors.email
+                  ? "border-red-500"
+                  : "border-gray-200"
+              } rounded-lg`}
+            >
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <Mail size={20} />
+              </div>
+              <Input
+                type="email"
+                placeholder="Email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="h-12 pl-10 rounded-lg"
+                disabled={isLoading}
+              />
+            </div>
+            {renderErrorMessage(errors.email)}
+          </div>
+
+          <div className="relative">
+            <div
+              className={`relative overflow-hidden border ${
+                formSubmitted && errors.password
+                  ? "border-red-500"
+                  : "border-gray-200"
+              } rounded-lg`}
+            >
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <Lock size={20} />
+              </div>
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className="h-12 pl-10 rounded-lg"
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            {renderErrorMessage(errors.password)}
+          </div>
+
+
+
+          <div className="text-right">
             <Link
               href="/forgot_password"
-              className="text-[#1A73E8] hover:text-[#1453B8]"
+              className="text-[#1A73E8] hover:text-[#1453B8] text-sm font-medium"
             >
-              Reset it here.
+              Forgot your password?
             </Link>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-2 rounded-full mt-2
-                     transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1] 
-                     focus:ring-offset-2 disabled:opacity-50 text-base font-medium"
+            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-3 rounded-lg
+                     transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1]
+                     focus:ring-offset-2 disabled:opacity-50 text-base font-semibold"
           >
-            {isLoading ? "Logging in..." : "Login"}
+            {isLoading ? "Logging in..." : "Log In"}
           </button>
+        </form>
 
-          <div className="flex flex-row justify-around gap-4 text-sm text-gray-600 mt-4">
+        <div className="mt-5 pt-6 border-t border-gray-200">
+          <p className="text-center text-gray-600 mb-4">Don&apos;t have an account?</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Link
               href={userPath.SCHOOL_ADMIN_REGISTER_PATH}
-              className="text-[#1A73E8] hover:text-[#1453B8]"
+              className="flex flex-col items-center p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 hover:border-[#25AAE1]"
             >
-              School Registration
+              <span className="text-[#1A73E8] font-semibold text-center">School Registration</span>
+              <span className="text-sm text-gray-500 mt-1 text-center">For educational institutions</span>
             </Link>
             <Link
               href={userPath.PARENT_REGISTER_PATH}
-              className="text-[#1A73E8] hover:text-[#1453B8]"
+              className="flex flex-col items-center p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 hover:border-[#25AAE1]"
             >
-              Parent Portal
+              <span className="text-[#1A73E8] font-semibold text-center">Parent Portal</span>
+              <span className="text-sm text-gray-500 mt-1 text-center">For parents and guardians</span>
             </Link>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

@@ -167,7 +167,7 @@ export const TeacherRoutes = [
   {
     path: `${userPath.TEACHER_BASE_PATH}/big_braain`,
     icon: menuImages.big_braain,
-    label: "BIG BRAA.I.N",
+    label: "BIG BRA.I.N",
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/test_prep`,

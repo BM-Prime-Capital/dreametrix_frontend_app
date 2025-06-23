@@ -167,14 +167,12 @@ export function ClassRosterDialog({
         }
       };
 
-      console.log("Saving student data:", updatedStudent);
       const userId = updatedStudent.user?.id || updatedStudent.id;
       await updateStudent(
         userId,
         studentData.user,
         tenantPrimaryDomain,
-        accessToken,
-        refreshToken
+        accessToken
       );
   
       setStudents(prev => 
@@ -228,8 +226,7 @@ export function ClassRosterDialog({
           classData?.id || 0,
           studentsToAdd,
           tenantPrimaryDomain,
-          accessToken,
-          refreshToken
+          accessToken
         );
       }
   
@@ -238,8 +235,7 @@ export function ClassRosterDialog({
           classData?.id || 0,
           studentsToRemove,
           tenantPrimaryDomain,
-          accessToken,
-          refreshToken
+          accessToken
         );
       }
   
