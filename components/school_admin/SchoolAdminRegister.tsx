@@ -13,6 +13,7 @@ import {
   Search,
   ArrowLeft,
   ArrowRight,
+  AlertTriangle,
 } from "lucide-react";
 import { userPath } from "@/constants/userConstants";
 import DreaMetrixLogo from "../ui/dreametrix-logo";
@@ -83,6 +84,7 @@ export default function SchoolAdminRegister() {
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
   const [openCityPopover, setOpenCityPopover] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Select school from search results
   const handleSchoolSelect = (school: SchoolDisplay) => {
@@ -364,168 +366,178 @@ export default function SchoolAdminRegister() {
   );
 
   // Render manual form step
-  const renderManualForm = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-[#25AAE1]">
-          Create School Profile
-        </h2>
-        <Button
-          variant="outline"
-          onClick={goBackToSearch}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Search
-        </Button>
-      </div>
+  const renderManualForm = () => {
+    const renderErrorMessage = (errorMessage: string | null) => {
+      if (!errorMessage) return null;
+      return (
+        <div className="absolute right-[-160px] top-1/2 transform -translate-y-1/2 bg-red-100 text-red-700 px-3 py-1 rounded-md shadow-md">
+          <div className="absolute left-[-6px] top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-red-100"></div>
+          <div className="flex items-center">
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            <span className="text-sm">{errorMessage}</span>
+          </div>
+        </div>
+      );
+    };
 
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* School Name */}
-          <div>
-            <label className="flex flex-col space-y-1">
-              <span className="text-sm text-gray-600">
-                School Name <span className="text-red-500">*</span>
-              </span>
-              <div className="flex items-center px-4 py-2 bg-white border rounded-full">
-                <Building2 className="h-5 w-5 text-gray-400 mr-2" />
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-[#25AAE1]">
+            Create School Profile
+          </h2>
+          <Button
+            variant="outline"
+            onClick={goBackToSearch}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Search
+          </Button>
+        </div>
+
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* School Name */}
+            <div className="relative">
+              <div
+                className={`relative overflow-hidden border ${
+                  errors.name ? "border-red-500" : "border-gray-200"
+                } rounded-lg`}
+              >
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <Building2 size={20} />
+                </div>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
-                  className="flex-1 bg-transparent focus:outline-none"
-                  placeholder="Enter school name"
-                  maxLength={255}
-                  required
+                  placeholder="School Name"
+                  className="h-12 pl-10 w-full rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#25AAE1]"
+                  disabled={isLoading}
                 />
               </div>
-              {errors.name && (
-                <span className="text-red-500 text-sm">{errors.name}</span>
-              )}
-            </label>
-          </div>
+              {errors.name && renderErrorMessage(errors.name)}
+            </div>
 
-          {/* School Email */}
-          <div>
-            <label className="flex flex-col space-y-1">
-              <span className="text-sm text-gray-600">
-                School Email <span className="text-red-500">*</span>
-              </span>
-              <div className="flex items-center px-4 py-2 bg-white border rounded-full">
-                <Mail className="h-5 w-5 text-gray-400 mr-2" />
+            {/* School Email */}
+            <div className="relative">
+              <div
+                className={`relative overflow-hidden border ${
+                  errors.school_email ? "border-red-500" : "border-gray-200"
+                } rounded-lg`}
+              >
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <Mail size={20} />
+                </div>
                 <input
                   type="email"
                   value={formData.school_email}
                   onChange={(e) =>
                     handleInputChange("school_email", e.target.value)
                   }
-                  className="flex-1 bg-transparent focus:outline-none"
-                  placeholder="Enter school email"
-                  required
+                  placeholder="School Email"
+                  className="h-12 pl-10 w-full rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#25AAE1]"
+                  disabled={isLoading}
                 />
               </div>
-              {errors.school_email && (
-                <span className="text-red-500 text-sm">
-                  {errors.school_email}
-                </span>
-              )}
-            </label>
-          </div>
+              {errors.school_email && renderErrorMessage(errors.school_email)}
+            </div>
 
-          {/* Administrator Email */}
-          <div>
-            <label className="flex flex-col space-y-1">
-              <span className="text-sm text-gray-600">
-                Administrator Email <span className="text-red-500">*</span>
-              </span>
-              <div className="flex items-center px-4 py-2 bg-white border rounded-full">
-                <Mail className="h-5 w-5 text-gray-400 mr-2" />
+            {/* Administrator Email */}
+            <div className="relative">
+              <div
+                className={`relative overflow-hidden border ${
+                  errors.administrator_email
+                    ? "border-red-500"
+                    : "border-gray-200"
+                } rounded-lg`}
+              >
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <Mail size={20} />
+                </div>
                 <input
                   type="email"
                   value={formData.administrator_email}
                   onChange={(e) =>
                     handleInputChange("administrator_email", e.target.value)
                   }
-                  className="flex-1 bg-transparent focus:outline-none"
-                  placeholder="Enter administrator email"
-                  required
+                  placeholder="Administrator Email"
+                  className="h-12 pl-10 w-full rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#25AAE1]"
+                  disabled={isLoading}
                 />
               </div>
-              {errors.administrator_email && (
-                <span className="text-red-500 text-sm">
-                  {errors.administrator_email}
-                </span>
-              )}
-            </label>
-          </div>
+              {errors.administrator_email &&
+                renderErrorMessage(errors.administrator_email)}
+            </div>
 
-          {/* Phone */}
-          <div>
-            <label className="flex flex-col space-y-1">
-              <span className="text-sm text-gray-600">
-                Phone <span className="text-red-500">*</span>
-              </span>
-              <div className="flex items-center px-4 py-2 bg-white border rounded-full">
-                <Phone className="h-5 w-5 text-gray-400 mr-2" />
+            {/* Phone */}
+            <div className="relative">
+              <div
+                className={`relative overflow-hidden border ${
+                  errors.phone ? "border-red-500" : "border-gray-200"
+                } rounded-lg`}
+              >
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <Phone size={20} />
+                </div>
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
-                  className="flex-1 bg-transparent focus:outline-none"
-                  placeholder="Enter phone number"
-                  maxLength={20}
-                  required
+                  placeholder="Phone Number"
+                  className="h-12 pl-10 w-full rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#25AAE1]"
+                  disabled={isLoading}
                 />
               </div>
-              {errors.phone && (
-                <span className="text-red-500 text-sm">{errors.phone}</span>
-              )}
-            </label>
-          </div>
+              {errors.phone && renderErrorMessage(errors.phone)}
+            </div>
 
-          {/* Country (readonly) */}
-          <div>
-            <label className="flex flex-col space-y-1">
-              <span className="text-sm text-gray-600">
-                Country <span className="text-red-500">*</span>
-              </span>
-              <div className="flex items-center px-4 py-2 bg-white border rounded-full">
-                <Globe className="h-5 w-5 text-gray-400 mr-2" />
-                <input
-                  type="text"
-                  value="United States"
-                  className="flex-1 bg-transparent focus:outline-none"
-                  readOnly
-                  disabled
-                />
-              </div>
-            </label>
-          </div>
+            {/* Country (readonly) */}
+            <div>
+              <label className="flex flex-col space-y-1">
+                <span className="text-sm text-gray-600">
+                  Country <span className="text-red-500">*</span>
+                </span>
+                <div className="flex items-center px-4 py-2 bg-white border rounded-full">
+                  <Globe className="h-5 w-5 text-gray-400 mr-2" />
+                  <input
+                    type="text"
+                    name="country"
+                    value="United States"
+                    className="flex-1 bg-transparent focus:outline-none"
+                    onChange={(e) =>
+                      handleInputChange("country", e.target.value)
+                    }
+                    readOnly
+                    disabled
+                  />
+                </div>
+              </label>
+            </div>
 
-          {/* State Select with Search */}
-          <div>
-            <label className="flex flex-col space-y-1">
-              <span className="text-sm text-gray-600">
-                State <span className="text-red-500">*</span>
-              </span>
+            {/* State Select */}
+            <div className="relative">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     role="combobox"
                     className={cn(
-                      "w-full flex justify-between items-center px-3",
+                      "w-full h-12 flex justify-between items-center px-3 rounded-lg",
                       !formData.state && "text-muted-foreground"
                     )}
-                    disabled={loadingStates}
+                    disabled={loadingStates || isLoading}
                   >
-                    <span className="truncate flex-1 text-left">
-                      {loadingStates
-                        ? "Loading states..."
-                        : formData.state || "Select a state"}
-                    </span>
-                    <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+                    <div className="flex items-center justify-between flex-1">
+                      <MapPin className="h-5 w-5 text-gray-400 mr-2" />
+                      <span className="truncate">
+                        {loadingStates
+                          ? "Loading states..."
+                          : formData.state || "Select a state"}
+                      </span>
+                    </div>
+                    <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 ml-20" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[400px] p-0">
@@ -538,9 +550,7 @@ export default function SchoolAdminRegister() {
                           <CommandItem
                             value={state}
                             key={state}
-                            onSelect={() => {
-                              handleInputChange("state", state);
-                            }}
+                            onSelect={() => handleInputChange("state", state)}
                           >
                             <Check
                               className={cn(
@@ -558,18 +568,11 @@ export default function SchoolAdminRegister() {
                   </Command>
                 </PopoverContent>
               </Popover>
-              {errors.state && (
-                <span className="text-red-500 text-sm">{errors.state}</span>
-              )}
-            </label>
-          </div>
+              {errors.state && renderErrorMessage(errors.state)}
+            </div>
 
-          {/* City Select with Search */}
-          <div>
-            <label className="flex flex-col space-y-1">
-              <span className="text-sm text-gray-600">
-                City <span className="text-red-500">*</span>
-              </span>
+            {/* City Select */}
+            <div className="relative">
               <Popover open={openCityPopover} onOpenChange={setOpenCityPopover}>
                 <PopoverTrigger asChild>
                   <Button
@@ -581,12 +584,15 @@ export default function SchoolAdminRegister() {
                     )}
                     disabled={!formData.state || loadingCities || isLoading}
                   >
-                    <span className="truncate">
-                      {loadingCities
-                        ? "Loading cities..."
-                        : formData.city || "Select a city"}
-                    </span>
-                    <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+                    <div className="flex items-center flex-1">
+                      <MapPin className="h-5 w-5 text-gray-400 mr-2" />
+                      <span className="truncate">
+                        {loadingCities
+                          ? "Loading cities..."
+                          : formData.city || "Select a city"}
+                      </span>
+                    </div>
+                    <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 ml-20" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[400px] p-0">
@@ -620,74 +626,79 @@ export default function SchoolAdminRegister() {
                   </Command>
                 </PopoverContent>
               </Popover>
-              {errors.city && (
-                <span className="text-red-500 text-sm">{errors.city}</span>
-              )}
-            </label>
+              {errors.city && renderErrorMessage(errors.city)}
+            </div>
+
+            {/* Region */}
+            <div className="relative">
+              <div
+                className={`relative overflow-hidden border ${
+                  errors.region ? "border-red-500" : "border-gray-200"
+                } rounded-lg`}
+              >
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <Globe size={20} />
+                </div>
+                <input
+                  type="text"
+                  value={formData.region}
+                  onChange={(e) => handleInputChange("region", e.target.value)}
+                  placeholder="Region"
+                  className="h-12 pl-10 w-full rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#25AAE1]"
+                  disabled={isLoading}
+                />
+              </div>
+              {errors.region && renderErrorMessage(errors.region)}
+            </div>
+
+            {/* Address - Full Width */}
+            <div className="relative md:col-span-2">
+              <div
+                className={`relative overflow-hidden border ${
+                  errors.address ? "border-red-500" : "border-gray-200"
+                } rounded-lg`}
+              >
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  <MapPin size={20} />
+                </div>
+                <input
+                  type="text"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange("address", e.target.value)}
+                  placeholder="Full Address"
+                  className="h-12 pl-10 w-full rounded-lg border-0 focus:outline-none focus:ring-2 focus:ring-[#25AAE1]"
+                  disabled={isLoading}
+                />
+              </div>
+              {errors.address && renderErrorMessage(errors.address)}
+            </div>
           </div>
-        </div>
 
-        {/* Region */}
-        <div>
-          <label className="flex flex-col space-y-1">
-            <span className="text-sm text-gray-600">
-              Region <span className="text-red-500">*</span>
-            </span>
-            <div className="flex items-center px-4 py-2 bg-white border rounded-full">
-              <Globe className="h-5 w-5 text-gray-400 mr-2" />
-              <input
-                type="text"
-                value={formData.region}
-                onChange={(e) => handleInputChange("region", e.target.value)}
-                className="flex-1 bg-transparent focus:outline-none"
-                placeholder="Enter region"
-                maxLength={255}
-                required
-              />
-            </div>
-            {errors.region && (
-              <span className="text-red-500 text-sm">{errors.region}</span>
-            )}
-          </label>
-        </div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-3 rounded-lg
+                     transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1]
+                     focus:ring-offset-2 disabled:opacity-50 text-base font-semibold mt-6"
+          >
+            {isLoading ? "Registering..." : "Register School"}
+          </button>
+        </form>
 
-        {/* Address */}
-        <div>
-          <label className="flex flex-col space-y-1">
-            <span className="text-sm text-gray-600">
-              Address <span className="text-red-500">*</span>
-            </span>
-            <div className="flex items-center px-4 py-2 bg-white border rounded-full">
-              <MapPin className="h-5 w-5 text-gray-400 mr-2" />
-              <input
-                type="text"
-                value={formData.address}
-                onChange={(e) => handleInputChange("address", e.target.value)}
-                className="flex-1 bg-transparent focus:outline-none"
-                placeholder="Enter full address"
-                maxLength={255}
-                required
-              />
-            </div>
-            {errors.address && (
-              <span className="text-red-500 text-sm">{errors.address}</span>
-            )}
-          </label>
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full bg-[#25AAE1] text-white py-3 rounded-full 
-                   transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1] 
-                   focus:ring-offset-2 disabled:opacity-50 text-base font-medium"
-        >
-          {isLoading ? "REGISTERING..." : "REGISTER SCHOOL"}
-        </button>
-      </form>
-    </div>
-  );
+        {successMessage && (
+          <div
+            className={`p-4 mb-4 mt-4 text-sm rounded-lg ${
+              successMessage.includes("successfully")
+                ? "text-green-700 bg-green-100"
+                : "text-red-700 bg-red-100"
+            }`}
+          >
+            {successMessage}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Get current step content
   const getCurrentStepContent = () => {

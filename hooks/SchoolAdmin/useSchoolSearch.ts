@@ -1,9 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  SchoolDisplay,
-  searchSchools,
-  mockSearchSchools,
-} from "@/services/user-service";
+import { SchoolDisplay, searchSchools } from "@/services/user-service";
 
 export const useSchoolSearch = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,10 +20,11 @@ export const useSchoolSearch = () => {
       setHasSearched(true);
       try {
         // Use mock data in development, real API in production
-        const results =
-          process.env.NODE_ENV === "development"
-            ? await mockSearchSchools(searchQuery)
-            : await searchSchools(searchQuery);
+        console.log("Searching for schools with query:", searchQuery);
+        //check if we are in development or production
+        console.log(`Environment: ${process.env.NODE_ENV}`);
+        const results = await searchSchools(searchQuery);
+        console.log("Search results:", results);
         setSearchResults(results);
       } catch (error) {
         console.error("School search error:", error);
