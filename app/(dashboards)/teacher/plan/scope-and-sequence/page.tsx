@@ -126,19 +126,19 @@ export default function ScopeAndSequencePage() {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    
+
     if (over && active.id !== over.id) {
       setScopeAndSequences((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
-        
+
         return arrayMove(items, oldIndex, newIndex);
       });
     }
   };
 
   return (
-    <div className="space-y-8">
+    <div className="w-full space-y-8">
       {/* Header */}
       <header className="bg-[#3e81d4] px-4 py-3 rounded-md">
         <div className="flex items-center gap-4">

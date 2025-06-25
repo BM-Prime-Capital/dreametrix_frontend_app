@@ -54,13 +54,7 @@ enum RegistrationStep {
   MANUAL_FORM = "manual",
 }
 
-export default function SchoolAdminRegister({
-  userType,
-  userBasePath,
-}: {
-  userType: string;
-  userBasePath: string;
-}) {
+export default function SchoolAdminRegister() {
   const router = useRouter();
   const { formData, errors, isLoading, handleInputChange, handleSubmit } =
     useSchoolRegistration();
@@ -154,15 +148,20 @@ export default function SchoolAdminRegister({
         setLoadingCities(false);
       }
     };
-
     loadCities();
   }, [formData.state, currentStep]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await handleSubmit();
-      router.push(userPath.SCHOOL_ADMIN_LOGIN_PATH);
+      const result = await handleSubmit();
+      console.log("Registration result:", result);
+
+      if (result?.task_id) {
+        setSuccessMessage(
+          "School created successfully. Credentials will be sent to the provided email shortly."
+        );
+      }
     } catch (error) {
       console.error("Registration failed:", error);
     }
@@ -576,12 +575,11 @@ export default function SchoolAdminRegister({
                   <Button
                     variant="outline"
                     role="combobox"
-                    aria-expanded={openCityPopover}
                     className={cn(
-                      "w-full flex justify-between items-center",
+                      "w-full h-12 flex justify-between items-center px-3 rounded-lg",
                       !formData.city && "text-muted-foreground"
                     )}
-                    disabled={!formData.state || loadingCities}
+                    disabled={!formData.state || loadingCities || isLoading}
                   >
                     <span className="truncate">
                       {loadingCities

@@ -7,11 +7,20 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { curriculumAlignmentVerifier, type CurriculumAlignmentInput } from "@/ai/flows/curriculum-alignment-verifier";
-import { Loader2, ShieldCheck, CheckCircle2, XCircle, ChevronRight, Copy, ArrowLeft, Trash2, PlusCircle } from "lucide-react";
+import { Loader2,
+  ShieldCheck,
+  CheckCircle2,
+  XCircle,
+  // ChevronRight,
+  Copy,
+  // ArrowLeft,
+  Trash2,
+  // PlusCircle
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import Link from "next/link";
+// import Link from "next/link";
 
 interface AlignmentResult {
   isAligned: boolean;
@@ -52,8 +61,8 @@ export default function AlignmentVerifierPage() {
       setIsDialogOpen(true);
       toast({
         title: "Alignment Check Complete!",
-        description: verificationResult.isAligned 
-          ? "Curriculum appears to be aligned." 
+        description: verificationResult.isAligned
+          ? "Curriculum appears to be aligned."
           : "Alignment issues found. Review the report.",
       });
     } catch (error) {
@@ -76,6 +85,7 @@ export default function AlignmentVerifierPage() {
         description: "Report copied to clipboard",
       });
     } catch (err) {
+      console.log(err)
       toast({
         title: "Error",
         description: "Failed to copy report",
@@ -152,9 +162,9 @@ export default function AlignmentVerifierPage() {
                   Paste your documents below to check alignment with standards
                 </CardDescription>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={clearForm}
                 className="text-gray-600 hover:text-red-600"
               >
@@ -163,7 +173,7 @@ export default function AlignmentVerifierPage() {
               </Button>
             </div>
           </CardHeader>
-          
+
           <form onSubmit={handleSubmit}>
             <CardContent className="px-4 py-2 space-y-4">
               <div className="space-y-2">
@@ -179,7 +189,7 @@ export default function AlignmentVerifierPage() {
                   className="text-sm min-h-[120px]"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="unit-plan" className="text-sm">
                   Unit Plan
@@ -193,7 +203,7 @@ export default function AlignmentVerifierPage() {
                   className="text-sm min-h-[120px]"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="lesson-plan" className="text-sm">
                   Lesson Plan
@@ -207,7 +217,7 @@ export default function AlignmentVerifierPage() {
                   className="text-sm min-h-[120px]"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="state-standards" className="text-sm">
                   State Standards
@@ -222,11 +232,11 @@ export default function AlignmentVerifierPage() {
                 />
               </div>
             </CardContent>
-            
+
             <CardFooter className="px-4 py-3 flex gap-3">
-              <Button 
-                type="submit" 
-                disabled={isLoading} 
+              <Button
+                type="submit"
+                disabled={isLoading}
                 className="flex-1 h-10 text-sm"
               >
                 {isLoading ? (
@@ -249,7 +259,7 @@ export default function AlignmentVerifierPage() {
               Alignment Report
             </DialogTitle>
           </DialogHeader>
-          
+
           {result && (
             <div className="space-y-4">
               <Alert variant={result.isAligned ? "default" : "destructive"} className="text-sm">
@@ -262,8 +272,8 @@ export default function AlignmentVerifierPage() {
                   {result.isAligned ? "Curriculum is Aligned" : "Alignment Issues Detected"}
                 </AlertTitle>
                 <AlertDescription>
-                  {result.isAligned 
-                    ? "All documents are properly aligned." 
+                  {result.isAligned
+                    ? "All documents are properly aligned."
                     : "Potential misalignments found."}
                 </AlertDescription>
               </Alert>
@@ -271,8 +281,8 @@ export default function AlignmentVerifierPage() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label className="font-medium">Detailed Report:</Label>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={copyReport}
                     size="sm"
                     className="h-8 text-sm"
@@ -281,14 +291,14 @@ export default function AlignmentVerifierPage() {
                     Copy
                   </Button>
                 </div>
-                
+
                 <ScrollArea className="h-[60vh] rounded-md border p-3 text-sm">
                   {result.alignmentReport}
                 </ScrollArea>
               </div>
 
               <div className="flex justify-end pt-2 gap-2">
-                <Button 
+                <Button
                   variant="outline"
                   onClick={() => setIsDialogOpen(false)}
                   size="sm"
@@ -296,7 +306,7 @@ export default function AlignmentVerifierPage() {
                 >
                   Close
                 </Button>
-                <Button 
+                <Button
                   onClick={clearForm}
                   variant="outline"
                   size="sm"
