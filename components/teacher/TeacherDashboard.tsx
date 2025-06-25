@@ -69,7 +69,7 @@ export default function TeacherDashboard() {
 
   return (
     <section className="flex flex-col w-full gap-6">
-      {/* Header amélioré */}
+      {/* Header improved */}
       <div className="flex justify-between items-center bg-[#3e81d4] px-6 py-4 rounded-lg shadow-sm">
         <PageTitleH1 title="Teacher Dashboard" className="text-white font-semibold" />
         <div className="flex items-center gap-2">

@@ -14,7 +14,7 @@ import {
   type FilterFn,
 } from "@tanstack/react-table";
 import {
-  X,
+  // X,
   Search,
   ChevronLeft,
   ChevronRight,
@@ -26,8 +26,8 @@ import {
   XCircle,
   Mic,
   Play,
-  Pause,
-  Pencil,
+  // Pause,
+  // Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,8 +52,8 @@ import { Loader } from "@/components/ui/loader";
 import { RecordDialog } from "@/components/gradebook/RecordDialog";
 import {
   updateStudentGrade,
-  getVoiceRecordings,
-  getVoiceRecordingAudio,
+  // getVoiceRecordings,
+  // getVoiceRecordingAudio,
 } from "@/services/GradebooksService";
 import {
   Tooltip,
@@ -175,7 +175,7 @@ export function SubmissionsPopup({
     try {
       // Correction systématique de l'URL S3
       const s3Url = fixS3Url(filePath);
-      
+
       // Si c'est une URL S3 corrigée, on l'ouvre directement
       if (s3Url.includes(`s3.${S3_CONFIG.region}.amazonaws.com`)) {
         window.open(s3Url, '_blank');
@@ -201,7 +201,7 @@ export function SubmissionsPopup({
       const blobUrl = URL.createObjectURL(blob);
       window.open(blobUrl, '_blank');
       setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-      
+
     } catch (error) {
       console.error("Error viewing file:", error);
       // Fallback final vers l'URL S3 corrigée
@@ -272,9 +272,9 @@ export function SubmissionsPopup({
     const submission = submissions.find(
       (sub) => sub.student.id.toString() === studentId
     );
-    
+
     if (!submission?.submission?.voice_notes) return null;
-    
+
     return fixS3Url(submission.submission.voice_notes);
   };
 

@@ -252,6 +252,7 @@ export const useSchoolRegistration = () => {
 
   const validateForm = (): boolean => {
     const newErrors = { ...errors }
+    
     let isValid = true
 
     // Required fields validation

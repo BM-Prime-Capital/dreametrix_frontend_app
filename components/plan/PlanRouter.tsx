@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState } from 'react';
+
 import InitialScreen from './InitialScreen';
 import ScopeSequenceView from './core/ScopeSequence/ScopeSequenceView';
 import UnitPlanView from './core/UnitPlan/UnitPlanView';
@@ -8,18 +10,18 @@ import ScopeSequenceEditor from './core/ScopeSequence/ScopeSequenceEditor';
 import UnitPlanEditor from './core/UnitPlan/UnitPlanEditor';
 import LessonPlanEditor from './core/LessonPlan/LessonPlanEditor';
 
-export type PlanView = 
-  | 'initial' 
-  | 'scope-sequence-view' 
+export type PlanView =
+  | 'initial'
+  | 'scope-sequence-view'
   | 'scope-sequence-edit'
-  | 'unit-plan-view' 
+  | 'unit-plan-view'
   | 'unit-plan-edit'
-  | 'lesson-plan-view' 
+  | 'lesson-plan-view'
   | 'lesson-plan-edit';
 
 export default function PlanRouter() {
   const [currentView, setCurrentView] = useState<PlanView>('initial');
-  const [selectedData, setSelectedData] = useState<any>(null);
+  const [selectedData, setSelectedData] = useState(null);
 
   const navigateTo = (view: PlanView, data?: any) => {
     setCurrentView(view);
@@ -28,46 +30,47 @@ export default function PlanRouter() {
 
   return (
     <div className="plan-container bg-gray-50 min-h-screen p-4">
-      {currentView === 'initial' && <InitialScreen navigateTo={navigateTo} />}
-      
+      {/*{currentView === 'initial' && <InitialScreen  />}*/}
+
+
       {/* Scope and Sequence Views */}
       {currentView === 'scope-sequence-view' && (
-        <ScopeSequenceView 
-          navigateTo={navigateTo} 
+        <ScopeSequenceView
+          navigateTo={navigateTo}
           initialData={selectedData}
         />
       )}
       {currentView === 'scope-sequence-edit' && (
-        <ScopeSequenceEditor 
-          navigateTo={navigateTo} 
+        <ScopeSequenceEditor
+          navigateTo={navigateTo}
           data={selectedData}
         />
       )}
-      
+
       {/* Unit Plan Views */}
       {currentView === 'unit-plan-view' && (
-        <UnitPlanView 
-          navigateTo={navigateTo} 
+        <UnitPlanView
+          navigateTo={navigateTo}
           initialData={selectedData}
         />
       )}
       {currentView === 'unit-plan-edit' && (
-        <UnitPlanEditor 
-          navigateTo={navigateTo} 
+        <UnitPlanEditor
+          navigateTo={navigateTo}
           data={selectedData}
         />
       )}
-      
+
       {/* Lesson Plan Views */}
       {currentView === 'lesson-plan-view' && (
-        <LessonPlanView 
-          navigateTo={navigateTo} 
+        <LessonPlanView
+          navigateTo={navigateTo}
           initialData={selectedData}
         />
       )}
       {currentView === 'lesson-plan-edit' && (
-        <LessonPlanEditor 
-          navigateTo={navigateTo} 
+        <LessonPlanEditor
+          navigateTo={navigateTo}
           data={selectedData}
         />
       )}

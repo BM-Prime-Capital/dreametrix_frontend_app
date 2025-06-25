@@ -57,6 +57,9 @@ export default function Seating({
   const [seatingConditions, setSeatingConditions] = useState<SeatingCondition[]>([]);
   const [draggedStudent, setDraggedStudent] = useState<any>(null);
 
+  console.log("tenantPrimaryDomain",tenantPrimaryDomain)
+  console.log("accessToken",accessToken)
+
   const loadArrangements = useCallback(async (courseId?: number) => {
     try {
       setLoading(true);
@@ -633,6 +636,8 @@ export default function Seating({
   useEffect(() => {
     loadArrangements();
   }, [loadArrangements]);
+
+
 
   return (
     <section className="flex flex-col gap-2 w-full">
