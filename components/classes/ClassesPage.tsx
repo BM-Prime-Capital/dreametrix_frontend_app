@@ -6,25 +6,48 @@ import AllClassFiltersPopUp from "./AllClassFiltersPopUp";
 import { AddClassDialog } from "./AddClassDialog";
 import { useState } from "react";
 import PageTitleH1 from "../ui/page-title-h1";
+import { BookOpen, Users, Calendar, Filter } from "lucide-react";
 
 export default function ClassesPage() {
   const [refreshTime, setRefreshTime] = useState<string>("");
 
   return (
-    <section className="flex flex-col gap-2 w-full">
-
-      {/* Première ligne : Titre à gauche, filtre à droite */}
-      <div className="flex justify-between items-center bg-[#3e81d4] px-4 py-3 rounded-md">
-        <PageTitleH1 title="Classes" className="text-white" />
-        <AllClassFiltersPopUp />
+    <section className="flex flex-col h-full w-full bg-gradient-to-br from-blue-50/30 to-purple-50/20">
+      {/* Enhanced Header */}
+      <div className="flex justify-between items-center bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 px-8 py-6 shadow-xl">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+            <BookOpen className="h-6 w-6 text-white" />
+          </div>
+          <PageTitleH1 title="Classes" className="text-white font-bold text-2xl" />
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2">
+            <AllClassFiltersPopUp />
+          </div>
+        </div>
       </div>
 
-      <div>
-        <AddClassDialog setRefreshTime={setRefreshTime} />
+      {/* Content Area */}
+      <div className="flex-1 p-8 space-y-6">
+        {/* Action Bar */}
+        <div className="flex justify-between items-center">
+          <AddClassDialog setRefreshTime={setRefreshTime} />
+          <div className="flex items-center gap-4 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              <span>Manage your classes</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Table Card */}
+        <Card className="rounded-2xl shadow-xl border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
+          <div className="p-6">
+            <ClassesTable refreshTime={refreshTime} setRefreshTime={setRefreshTime} />
+          </div>
+        </Card>
       </div>
-      <Card className="rounded-lg shadow-sm">
-        <ClassesTable refreshTime={refreshTime} setRefreshTime={setRefreshTime} />
-      </Card>
     </section>
   );
 }

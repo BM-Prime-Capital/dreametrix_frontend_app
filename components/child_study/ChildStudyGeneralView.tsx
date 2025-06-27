@@ -9,8 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye } from "lucide-react";
+import { Eye, Search, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import NoData from "../ui/no-data";
 import { Loader } from "../ui/loader";
@@ -36,7 +37,10 @@ export default function ChildStudyView({ changeView }: ChildStudyViewProps) {
   
   const [isLoading, setIsLoading] = useState(false);
   const [students, setStudents] = useState<any[]>([]);
-  const [rewardsCount, ] = useState(0);
+  const [filteredStudents, setFilteredStudents] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [studentsPerPage] = useState(10);
   const [, setFromDate] = useState("");
   const [, setToDate] = useState("");
 
@@ -78,6 +82,7 @@ export default function ChildStudyView({ changeView }: ChildStudyViewProps) {
         );
 
         setStudents(transformedData);
+        setFilteredStudents(transformedData);
       } catch (error) {
         console.error("Failed to load students:", error);
       } finally {
@@ -87,6 +92,31 @@ export default function ChildStudyView({ changeView }: ChildStudyViewProps) {
 
     loadStudents();
   }, [tenantPrimaryDomain, accessToken, refreshToken, currentClass?.id]);
+
+  // Filter students based on search term
+  useEffect(() => {
+    const filtered = students.filter(student => 
+      student.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.grade.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.class.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredStudents(filtered);
+    setCurrentPage(1);
+  }, [searchTerm, students]);
+
+  // Pagination logic
+  const indexOfLastStudent = currentPage * studentsPerPage;
+  const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
+  const currentStudents = filteredStudents.slice(indexOfFirstStudent, indexOfLastStudent);
+  const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleExport = () => {
+    console.log("Exporting student data...");
+  };
 
   const extractGradeFromClassName = (className: string) => {
     const match = className.match(/(\d+)(th|rd|nd|st)?\s?Grade/i);
@@ -98,98 +128,200 @@ export default function ChildStudyView({ changeView }: ChildStudyViewProps) {
   };
 
   return (
-    <section className="flex flex-col gap-4 w-full">
-      <div className="flex justify-between items-center bg-[#3e81d4] px-4 py-3 rounded-md">
-        <PageTitleH1 title="Child Study Team" className="text-white" />
-        <ClassSelect className="text-white bg-[#3e81d4] hover:bg-[#3e81d4]" />
+    <section className="flex flex-col h-full w-full bg-gradient-to-br from-teal-50/30 to-cyan-50/20">
+      {/* Enhanced Header */}
+      <div className="flex justify-between items-center bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-700 px-8 py-6 shadow-xl">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+            <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <div>
+            <PageTitleH1 title="Child Study Team" className="text-white font-bold text-2xl" />
+            <p className="text-teal-100 text-sm mt-1">Student profiles and assessments</p>
+          </div>
+        </div>
+        <ClassSelect className="text-white bg-white/20 hover:bg-white/30 border-white/30 rounded-xl backdrop-blur-sm" />
       </div>
 
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-gray-500 ml-1">
-          Results found: <span className="font-bold text-primaryText">{rewardsCount}</span>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">From:</span>
-            <input
-              className="bg-white border rounded-md p-1 text-sm cursor-pointer"
-              type="date"
-              onChange={(e) => setFromDate(e.target.value)}
-            />
-          </label>
-
-          <label className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">To:</span>
-            <input
-              className="bg-white border rounded-md p-1 text-sm cursor-pointer"
-              type="date"
-              onChange={(e) => setToDate(e.target.value)}
-            />
-          </label>
+      {/* Content Area */}
+      <div className="flex-1 p-8 space-y-6 overflow-auto">
+        {/* Stats and Search Bar */}
+        <div className="flex justify-between items-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
+          <div className="flex items-center gap-6">
+            <div className="text-lg text-gray-700">
+              <span className="font-bold text-teal-700 text-2xl">{filteredStudents.length}</span>
+              <span className="text-sm text-gray-600 ml-2">students</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                type="date"
+                placeholder="From"
+                onChange={(e) => setFromDate(e.target.value)}
+              />
+              <span className="text-gray-400">to</span>
+              <input
+                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                type="date"
+                placeholder="To"
+                onChange={(e) => setToDate(e.target.value)}
+              />
+            </div>
+          </div>
           <AllRewardFiltersPopUp />
         </div>
-      </div>
 
-      <Card className="rounded-lg shadow-sm">
-        {isLoading ? (
-          <div className="p-4 flex justify-center">
-            <Loader />
+        {/* Search and Export */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search students..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 h-10 rounded-lg border-gray-300"
+            />
           </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="font-bold">Student</TableHead>
-                <TableHead className="font-bold">Grade</TableHead>
-                <TableHead className="font-bold">Class</TableHead>
-                <TableHead className="font-bold text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {students.length > 0 ? (
-                students.map((student) => (
-                  <TableRow key={student.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage 
-                            src={student.photoUrl} 
-                            alt={`Photo of ${student.fullName}`}
-                          />
-                          <AvatarFallback>
-                            {student.firstName?.charAt(0) || 'S'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{student.fullName}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{student.grade}</TableCell>
-                    <TableCell>{student.class}</TableCell>
-                    
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 hover:bg-blue-50"
-                        onClick={() => handleViewDetails(student)}
-                      >
-                        <Eye className="h-4 w-4 text-[#25AAE1]" />
-                      </Button>
-                    </TableCell>
+          <Button 
+            onClick={handleExport}
+            className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white rounded-lg px-4 py-2"
+            disabled={filteredStudents.length === 0}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+        </div>
+
+        {/* Students Table */}
+        <Card className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border-0 overflow-hidden">
+          {isLoading ? (
+            <div className="p-8 flex justify-center">
+              <Loader />
+            </div>
+          ) : (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent border-b border-gray-200">
+                    <TableHead className="font-bold text-gray-800 py-4">Student</TableHead>
+                    <TableHead className="font-bold text-gray-800">Grade</TableHead>
+                    <TableHead className="font-bold text-gray-800">Class</TableHead>
+                    <TableHead className="font-bold text-gray-800">Status</TableHead>
+                    <TableHead className="font-bold text-gray-800">IEP</TableHead>
+                    <TableHead className="font-bold text-gray-800 text-right">Actions</TableHead>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center">
-                    <NoData />
-                  </TableCell>
-                </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {currentStudents.length > 0 ? (
+                    currentStudents.map((student) => (
+                      <TableRow key={student.id} className="hover:bg-teal-50/50 transition-colors">
+                        <TableCell className="font-medium py-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10 border-2 border-teal-100">
+                              <AvatarImage 
+                                src={student.photoUrl} 
+                                alt={`Photo of ${student.fullName}`}
+                              />
+                              <AvatarFallback className="bg-teal-100 text-teal-700">
+                                {student.firstName?.charAt(0) || 'S'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium text-gray-800">{student.fullName}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-gray-600">{student.grade}</TableCell>
+                        <TableCell className="text-gray-600">{student.class}</TableCell>
+                        <TableCell>
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            student.status === 'Active' 
+                              ? 'bg-green-100 text-green-700' 
+                              : 'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {student.status}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            student.iep === 'Yes' 
+                              ? 'bg-blue-100 text-blue-700' 
+                              : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {student.iep}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-10 w-10 hover:bg-teal-100 rounded-xl"
+                            onClick={() => handleViewDetails(student)}
+                          >
+                            <Eye className="h-4 w-4 text-teal-600" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-12">
+                        <NoData />
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+              
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-gray-50/50">
+                  <div className="text-sm text-gray-600">
+                    Showing {indexOfFirstStudent + 1} to {Math.min(indexOfLastStudent, filteredStudents.length)} of {filteredStudents.length} students
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="rounded-lg"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                      <Button
+                        key={pageNumber}
+                        variant={currentPage === pageNumber ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(pageNumber)}
+                        className={`rounded-lg ${
+                          currentPage === pageNumber 
+                            ? 'bg-gradient-to-r from-teal-500 to-cyan-600 text-white' 
+                            : ''
+                        }`}
+                      >
+                        {pageNumber}
+                      </Button>
+                    ))}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="rounded-lg"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               )}
-            </TableBody>
-          </Table>
-        )}
-      </Card>
+            </>
+          )}
+        </Card>
+      </div>
     </section>
   );
 }

@@ -8,9 +8,11 @@ export default function TeacherDashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col lg:flex-row gap-12">
+    <>
       <Sidebar routes={TeacherRoutes} />
-      {children}
-    </div>
+      <div className="ml-64 transition-all duration-500">
+        {children}
+      </div>
+    </>
   );
 }

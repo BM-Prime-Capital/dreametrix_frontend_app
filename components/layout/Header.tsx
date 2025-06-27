@@ -44,8 +44,12 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="container flex h-16 items-center justify-between gap-4">
+    <header className="sticky top-0 z-50 w-full border-b border-white/20 bg-gradient-to-r from-white/10 via-white/5 to-white/10 backdrop-blur-xl shadow-lg">
+      {/* Glass overlay effects */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/5"></div>
+      
+      <div className="relative container flex h-16 items-center justify-between gap-4 z-10">
         {/* Logo and navigation */}
         <div className="flex items-center gap-4 lg:gap-6">
           <DreaMetrixLogo height={28} />
@@ -65,14 +69,14 @@ export function Header() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input 
               placeholder="Search..." 
-              className="pl-9 h-9 w-full bg-muted/50 border-muted focus-visible:bg-background" 
+              className="pl-9 h-9 w-full bg-white/20 backdrop-blur-md border-white/30 focus-visible:bg-white/30 rounded-xl" 
             />
           </div>
           
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
+          <Button variant="ghost" size="icon" className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-300">
             <Bell className="h-5 w-5" />
-            <span className="absolute top-1.5 right-1.5 flex h-2 w-2 rounded-full bg-primary"></span>
+            <span className="absolute top-1.5 right-1.5 flex h-2 w-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 shadow-lg"></span>
             <span className="sr-only">Notifications</span>
           </Button>
           
@@ -81,7 +85,7 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="ghost" 
-                className="group flex items-center gap-2 rounded-full p-1 pr-3 hover:bg-muted focus-visible:ring-primary"
+                className="group flex items-center gap-2 rounded-2xl p-1 pr-3 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 focus-visible:ring-white/30 transition-all duration-300"
               >
                 <UserAvatar className="h-8 w-8 border border-border shadow-sm" />
                 <span className="hidden md:inline text-sm font-medium">{full_name}</span>

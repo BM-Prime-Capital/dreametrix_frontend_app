@@ -171,47 +171,51 @@ export default function ChildStudyFocusedView({
   }
 
   return (
-    <section className="flex flex-col gap-4 w-full">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
+    <section className="flex flex-col h-full w-full bg-gradient-to-br from-teal-50/30 to-cyan-50/20">
+      {/* Enhanced Header */}
+      <div className="flex justify-between items-center bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-700 px-8 py-6 shadow-xl">
+        <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
             onClick={() => changeView(views.GENERAL_VIEW)}
-            className="p-2"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
-          <PageTitleH1 title="Student Details" />
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            onClick={() => changeView(views.GENERAL_VIEW)}
-            className="flex items-center gap-1 text-muted-foreground p-0 hover:text-primary"
+            className="text-white hover:bg-white/20 rounded-xl p-2"
           >
             <ChevronLeft className="h-5 w-5" />
-            <span>Back</span>
           </Button>
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+              <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div>
+              <PageTitleH1 title="Student Profile" className="text-white font-bold text-2xl" />
+              <p className="text-teal-100 text-sm mt-1">{studentData.personalInfo.fullName}</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="grid w-full grid-cols-7 gap-1">
-          {["overview", "personal", "academic", "medical", "behavior", "contacts", "activities"].map((tab) => (
-            <TabsTrigger
-              key={tab}
-              value={tab}
-              className="transition-colors duration-200 hover:bg-primaryText/10 data-[state=active]:bg-primaryText data-[state=active]:text-white data-[state=active]:font-medium capitalize"
-            >
-              {tab}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      {/* Content Area */}
+      <div className="flex-1 p-8 space-y-6 overflow-auto">
 
-        {/* Overview Tab - Consolidated View */}
-        <TabsContent value="overview" className="space-y-6">
-          {/* Personal Information Section */}
-          <Card className="p-6">
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-7 gap-1 bg-white/80 backdrop-blur-sm p-2 rounded-2xl shadow-lg">
+            {["overview", "personal", "academic", "medical", "behavior", "contacts", "activities"].map((tab) => (
+              <TabsTrigger
+                key={tab}
+                value={tab}
+                className="transition-all duration-200 hover:bg-teal-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:font-medium capitalize rounded-xl px-4 py-2"
+              >
+                {tab}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {/* Overview Tab - Consolidated View */}
+          <TabsContent value="overview" className="space-y-6">
+            {/* Personal Information Section */}
+            <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
             <h2 className="text-xl font-bold mb-6">Personal Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col items-center gap-4">
@@ -255,8 +259,8 @@ export default function ChildStudyFocusedView({
             </div>
           </Card>
 
-          {/* Academic Information Section */}
-          <Card className="p-6">
+            {/* Academic Information Section */}
+            <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
             <h2 className="text-xl font-bold mb-6">Academic Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -296,8 +300,8 @@ export default function ChildStudyFocusedView({
             </div>
           </Card>
 
-          {/* Medical Information Section */}
-          <Card className="p-6">
+            {/* Medical Information Section */}
+            <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
             <h2 className="text-xl font-bold mb-6">Medical Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -325,8 +329,8 @@ export default function ChildStudyFocusedView({
             </div>
           </Card>
 
-          {/* Behavior Information Section */}
-          <Card className="p-6">
+            {/* Behavior Information Section */}
+            <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
             <h2 className="text-xl font-bold mb-6">Behavior Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -387,8 +391,8 @@ export default function ChildStudyFocusedView({
             </div>
           </Card>
 
-          {/* Emergency Contacts Section */}
-          <Card className="p-6">
+            {/* Emergency Contacts Section */}
+            <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
             <h2 className="text-xl font-bold mb-6">Emergency Contacts</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {studentData.emergencyContacts.map((contact: any, index: number) => (
@@ -409,8 +413,8 @@ export default function ChildStudyFocusedView({
             </div>
           </Card>
 
-          {/* Extracurricular Activities Section */}
-          <Card className="p-6">
+            {/* Extracurricular Activities Section */}
+            <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
             <h2 className="text-xl font-bold mb-6">Extracurricular Activities</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {studentData.extracurriculars.map((activity: any, index: number) => (
@@ -424,8 +428,8 @@ export default function ChildStudyFocusedView({
         </TabsContent>
 
         {/* Individual Tabs (unchanged from original) */}
-        <TabsContent value="personal">
-          <Card className="p-6">
+          <TabsContent value="personal">
+            <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
             <h2 className="text-xl font-bold mb-6">A. Personal Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col items-center gap-4">
@@ -470,8 +474,8 @@ export default function ChildStudyFocusedView({
           </Card>
         </TabsContent>
 
-        <TabsContent value="academic">
-          <Card className="p-6">
+          <TabsContent value="academic">
+            <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
             <h2 className="text-xl font-bold mb-6">B. Academic Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -520,8 +524,8 @@ export default function ChildStudyFocusedView({
           </Card>
         </TabsContent>
 
-        <TabsContent value="medical">
-          <Card className="p-6">
+          <TabsContent value="medical">
+            <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
             <h2 className="text-xl font-bold mb-6">C. Medical & Special Needs</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -546,8 +550,8 @@ export default function ChildStudyFocusedView({
           </Card>
         </TabsContent>
 
-        <TabsContent value="behavior">
-          <Card className="p-6">
+          <TabsContent value="behavior">
+            <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
             <h2 className="text-xl font-bold mb-6">D. Behavior & Discipline</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -609,8 +613,8 @@ export default function ChildStudyFocusedView({
           </Card>
         </TabsContent>
 
-        <TabsContent value="contacts">
-          <Card className="p-6">
+          <TabsContent value="contacts">
+            <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
             <h2 className="text-xl font-bold mb-6">E. Emergency Contacts</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {studentData.emergencyContacts.map((contact: any, index: number) => (
@@ -640,8 +644,8 @@ export default function ChildStudyFocusedView({
           </Card>
         </TabsContent>
 
-        <TabsContent value="activities">
-          <Card className="p-6">
+          <TabsContent value="activities">
+            <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
             <h2 className="text-xl font-bold mb-6">F. Extracurricular Activities</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {studentData.extracurriculars.map((activity: any, index: number) => (
@@ -653,7 +657,8 @@ export default function ChildStudyFocusedView({
             </div>
           </Card>
         </TabsContent>
-      </Tabs>
+        </Tabs>
+      </div>
     </section>
   );
 }

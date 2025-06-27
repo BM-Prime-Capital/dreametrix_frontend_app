@@ -68,204 +68,235 @@ export default function TeacherDashboard() {
   }, [classes]);
 
   return (
-    <section className="flex flex-col w-full gap-6">
-      {/* Header improved */}
-      <div className="flex justify-between items-center bg-[#3e81d4] px-6 py-4 rounded-lg shadow-sm">
-        <PageTitleH1 title="Teacher Dashboard" className="text-white font-semibold" />
-        <div className="flex items-center gap-2">
-          <span className="text-white/90 text-sm flex items-center">
-            Welcome back, {userData.full_name.split(' ')[0]}
-            <span className="ml-2 animate-waving-hand">👋</span>
+    <section className="flex flex-col w-full h-full bg-gradient-to-br from-blue-50/30 to-purple-50/20">
+      {/* Enhanced Header */}
+      <div className="flex justify-between items-center bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 px-8 py-6 shadow-xl">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+            <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 21l4-4 4 4" />
+            </svg>
+          </div>
+          <div>
+            <PageTitleH1 title="Teacher Dashboard" className="text-white font-bold text-2xl" />
+            <p className="text-blue-100 text-sm mt-1">Your teaching command center</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2">
+            <span className="text-white text-sm font-medium">
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+            </span>
+          </div>
+          <span className="text-white/95 text-base flex items-center font-medium">
+            Welcome, {userData.full_name.split(' ')[0]}
+            <span className="ml-2 text-xl">👋</span>
           </span>
         </div>
       </div>
 
-      {/* Grid principale améliorée */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 px-4 sm:px-6">
-        <div className="space-y-6">
-          {/* Carte de profil améliorée */}
-          <Card className="p-6">
-            <div className="flex flex-col sm:flex-row items-center gap-6">
-              <UserAvatar className="h-20 w-20 border-2 border-white shadow-md" />
-              <div className="text-center sm:text-left space-y-2">
-                <PageTitleH2 title={userData.full_name} className="text-gray-800" />
-                <p className="text-gray-600 text-sm">{tenantData.name}</p>
-                <div className="flex gap-3 justify-center sm:justify-start pt-2">
-                  {[teacherImages.ai, teacherImages.profile, teacherImages.settings].map((img, i) => (
-                    <button key={i} className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
-                      <Image src={img} alt="" width={20} height={20} className="opacity-70" />
-                    </button>
-                  ))}
+      {/* Main Content */}
+      <div className="flex-1 p-8 space-y-8 overflow-auto">
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-blue-100 rounded-xl">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-800">{classes.length}</p>
+                <p className="text-sm font-medium text-gray-600">Active Classes</p>
+              </div>
+            </div>
+          </Card>
+          
+          <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-green-100 rounded-xl">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-800">{subjects.length}</p>
+                <p className="text-sm font-medium text-gray-600">Subjects</p>
+              </div>
+            </div>
+          </Card>
+          
+          <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-purple-100 rounded-xl">
+                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-800">12</p>
+                <p className="text-sm font-medium text-gray-600">Assignments</p>
+              </div>
+            </div>
+          </Card>
+          
+          <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-orange-100 rounded-xl">
+                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-800">3</p>
+                <p className="text-sm font-medium text-gray-600">Pending Reviews</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* AI Assistant */}
+          <Card className="p-8 bg-gradient-to-br from-blue-50/80 to-purple-50/60 border-blue-200/50 shadow-lg backdrop-blur-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <PageTitleH2 title="AI Assistant" className="text-blue-800" />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 p-4 bg-white/60 rounded-xl">
+                <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                <div>
+                  <p className="font-medium text-gray-800">Parent Contact Needed</p>
+                  <p className="text-sm text-gray-600 mt-1">2 students require parent communication</p>
+                  <div className="flex gap-2 mt-2">
+                    {["Marta Sae", "John Smith"].map((name) => (
+                      <ContactParentDialog key={name} childrenName={name} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3 p-4 bg-white/60 rounded-xl">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                <div>
+                  <p className="font-medium text-gray-800">Upcoming Exams</p>
+                  <p className="text-sm text-gray-600 mt-1">Class 5 - Math & Science exams tomorrow</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3 p-4 bg-white/60 rounded-xl">
+                <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                <div>
+                  <p className="font-medium text-gray-800">All Caught Up</p>
+                  <p className="text-sm text-gray-600 mt-1">No other urgent tasks at this time</p>
                 </div>
               </div>
             </div>
           </Card>
 
-          {/* Section AI Assistant améliorée */}
-          <Card className="p-6 bg-[#f0f9ff] border-[#bfdbfe]">
-            <div className="flex items-center gap-3 mb-4">
-              <Image
-                src={teacherImages.ai}
-                alt="AI Assistant"
-                width={24}
-                height={24}
-                className="opacity-90"
-              />
-              <PageTitleH2
-                title="AI Teacher Assistance"
-                className="text-[#1e40af]"
-              />
-            </div>
-
-            <div className="space-y-5 pl-2">
-              {/* Item 1 */}
-              <div className="flex gap-4">
-                <div className="flex-shrink-0 pt-1">
-                  <Image
-                    src={teacherImages.ai1}
-                    alt="Alert"
-                    width={24}
-                    height={24}
-                    className="opacity-80"
-                  />
-                </div>
-                <div>
-                  <p className="text-gray-800">
-                    Students who need you to{" "}
-                    <span className="font-semibold text-[#1e40af]">
-                      contact their parents
-                    </span>
-                  </p>
-                  <ul className="mt-2 space-y-2 pl-1">
-                    {["Marta Sae", "John Smith"].map((name) => (
-                      <li key={name} className="flex items-center gap-2">
-                        <span className="font-medium text-gray-700">{name}</span>
-                        <ContactParentDialog childrenName={name} />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+          {/* Quick Actions */}
+          <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-lg border-0">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
               </div>
-
-              {/* Items 2 et 3 */}
+              <PageTitleH2 title="Quick Actions" className="text-gray-800" />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
               {[
-                {
-                  icon: teacherImages.ai2,
-                  text: "Reminder that tomorrow",
-                  highlight: "Class 5 - Math has exam"
-                },
-                {
-                  icon: teacherImages.ai2,
-                  text: "Reminder that tomorrow",
-                  highlight: "Class 5 - Science has exam"
-                }
-              ].map((item, index) => (
-                <div key={index} className="flex gap-4">
-                  <div className="flex-shrink-0 pt-1">
-                    <Image
-                      src={item.icon}
-                      alt="Reminder"
-                      width={24}
-                      height={24}
-                      className="opacity-80"
-                    />
-                  </div>
-                  <p className="text-gray-800">
-                    {item.text}{" "}
-                    <span className="font-semibold text-[#1e40af]">
-                      {item.highlight}
-                    </span>
-                  </p>
-                </div>
+                { icon: "📝", title: "Create Assignment", desc: "New homework or task" },
+                { icon: "📊", title: "View Reports", desc: "Student progress" },
+                { icon: "💬", title: "Send Message", desc: "Contact parents" },
+                { icon: "📅", title: "Schedule Event", desc: "Plan activities" },
+                { icon: "🎯", title: "Test Prep", desc: "Practice questions" },
+                { icon: "⭐", title: "Give Rewards", desc: "Student recognition" }
+              ].map((action, index) => (
+                <button key={index} className="p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors text-left">
+                  <div className="text-2xl mb-2">{action.icon}</div>
+                  <p className="font-medium text-gray-800 text-sm">{action.title}</p>
+                  <p className="text-xs text-gray-600">{action.desc}</p>
+                </button>
               ))}
             </div>
           </Card>
+        </div>
 
-          <Card className="p-6">
-            <div className="space-y-6">
-              {/* En-tête */}
-              <div className="flex items-center gap-3 border-b pb-4 border-gray-200">
-                <Image
-                  src={teacherImages.settings}
-                  alt="Settings"
-                  width={24}
-                  height={24}
-                  className="opacity-80"
-                />
-                <PageTitleH2 title="Settings" className="text-gray-800" />
-              </div>
-
-              {/* Section Subjects */}
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-700">Subjects</label>
-                <div className="flex flex-wrap gap-2 p-3 bg-gray-100 rounded-xl">
-                  {subjects.map((subject, index) => (
-                    <MultiSelectionItem
-                      key={index}
-                      title={subject}
-                      deleteCallback={() => deleteSubject(subject)}
-                    />
-                  ))}
-                  <div className="flex items-center w-full">
-                    <Input
-                      value={newSubject}
-                      onChange={(e) => setNewSubject(e.target.value)}
-                      placeholder="Add subject"
-                      className="flex-1 rounded-l-full bg-white border-r-0 focus:ring-2 focus:ring-blue-500"
-                    />
-                    <Button
-                      onClick={() => addSubject(newSubject)}
-                      className="rounded-r-full bg-blue-600 hover:bg-blue-700 px-4"
-                    >
-                      <PlusIcon className="h-5 w-5 text-white" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Section Feedback Duration */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Maximum duration for feedback audio (minutes)
-                </label>
-                <div className="flex items-center">
+        {/* Settings - Simplified */}
+        <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-lg border-0">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-gray-100 rounded-lg">
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <PageTitleH2 title="Quick Settings" className="text-gray-800" />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <label className="block text-sm font-semibold text-gray-700">Teaching Subjects</label>
+              <div className="flex flex-wrap gap-2 p-4 bg-gray-50 rounded-xl">
+                {subjects.map((subject, index) => (
+                  <MultiSelectionItem
+                    key={index}
+                    title={subject}
+                    deleteCallback={() => deleteSubject(subject)}
+                  />
+                ))}
+                <div className="flex items-center gap-2 mt-2">
+                  <Input
+                    value={newSubject}
+                    onChange={(e) => setNewSubject(e.target.value)}
+                    placeholder="Add subject"
+                    className="flex-1 rounded-lg bg-white"
+                  />
                   <Button
-                    variant="outline"
-                    onClick={decrementFeedbackDuration}
-                    disabled={feedbackDuration <= 2}
-                    className="h-10 w-10 rounded-r-none border-r-0"
-                  >
-                    <MinusIcon className="h-4 w-4" />
-                  </Button>
-                  <div className="flex items-center justify-center h-10 w-12 border-y border-gray-300 bg-white text-gray-800 font-medium">
-                    {feedbackDuration.toString().padStart(2, '0')}
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={incrementFeedbackDuration}
-                    disabled={feedbackDuration >= 9}
-                    className="h-10 w-10 rounded-l-none border-l-0"
+                    onClick={() => addSubject(newSubject)}
+                    className="bg-blue-600 hover:bg-blue-700 rounded-lg px-4"
                   >
                     <PlusIcon className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-
-              {/* Boutons d'action */}
-              <div className="flex gap-3 pt-4">
-                <Button className="flex-1 bg-blue-600 hover:bg-blue-700 rounded-full">
-                  Save Changes
+            </div>
+            
+            <div className="space-y-4">
+              <label className="block text-sm font-semibold text-gray-700">Feedback Duration (minutes)</label>
+              <div className="flex items-center justify-center">
+                <Button
+                  variant="outline"
+                  onClick={decrementFeedbackDuration}
+                  disabled={feedbackDuration <= 2}
+                  className="h-12 w-12 rounded-l-xl"
+                >
+                  <MinusIcon className="h-5 w-5" />
                 </Button>
-                <Button variant="outline" className="flex-1 rounded-full">
-                  Cancel
+                <div className="flex items-center justify-center h-12 w-16 border-y border-gray-300 bg-white text-gray-800 font-bold text-lg">
+                  {feedbackDuration}
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={incrementFeedbackDuration}
+                  disabled={feedbackDuration >= 9}
+                  className="h-12 w-12 rounded-r-xl"
+                >
+                  <PlusIcon className="h-5 w-5" />
                 </Button>
               </div>
             </div>
-          </Card>
-        </div>
-
-        {/* Activity Feed à droite */}
-        <ActivityFeed />
+          </div>
+        </Card>
       </div>
     </section>
   );

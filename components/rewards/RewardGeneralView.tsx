@@ -245,172 +245,159 @@ export default function RewardsGeneralView({
   };
 
   return (
-    <section className="flex flex-col gap-4 w-full">
-      {/* Première ligne : Titre à gauche, filtre à droite */}
-      <div className="flex justify-between items-center bg-[#3e81d4] px-4 py-3 rounded-md">
-        <PageTitleH1 title="Student Rewards" className="text-white" />
-        <ClassSelect className="text-white bg-[#3e81d4] hover:bg-[#3e81d4]" />
+    <section className="flex flex-col h-full w-full bg-gradient-to-br from-amber-50/30 to-orange-50/20">
+      {/* Enhanced Header */}
+      <div className="flex justify-between items-center bg-gradient-to-r from-amber-600 via-amber-700 to-orange-700 px-8 py-6 shadow-xl">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+            <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+            </svg>
+          </div>
+          <PageTitleH1 title="Student Rewards" className="text-white font-bold text-2xl" />
+        </div>
+        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2">
+          <ClassSelect className="text-white bg-transparent hover:bg-white/10" />
+        </div>
       </div>
 
-      {/* Deuxième ligne : "Results found" à gauche, dates à droite */}
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-gray-500 ml-1">
-          Results found:{" "}
-          <span className="font-bold text-primaryText">{rewardsCount}</span>
-        </div>
+      {/* Content Area */}
+      <div className="flex-1 p-8 space-y-6">
 
-        <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">From:</span>
-            <input
-              className="bg-white border rounded-md p-1 text-sm cursor-pointer"
-              type="date"
-              onChange={(e) => setFromDate(e.target.value)}
-            />
-          </label>
-
-          <label className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">To:</span>
-            <input
-              className="bg-white border rounded-md p-1 text-sm cursor-pointer"
-              type="date"
-              onChange={(e) => setToDate(e.target.value)}
-            />
-          </label>
+        {/* Simplified Stats Bar */}
+        <div className="flex justify-between items-center bg-white/80 backdrop-blur-sm p-4 rounded-xl shadow-lg">
+          <div className="flex items-center gap-6">
+            <div className="text-lg text-gray-700">
+              <span className="font-bold text-amber-700 text-2xl">{rewardsCount}</span>
+              <span className="text-sm text-gray-600 ml-2">students</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                type="date"
+                placeholder="From"
+                onChange={(e) => setFromDate(e.target.value)}
+              />
+              <span className="text-gray-400">to</span>
+              <input
+                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                type="date"
+                placeholder="To"
+                onChange={(e) => setToDate(e.target.value)}
+              />
+            </div>
+          </div>
           <AllRewardFiltersPopUp />
         </div>
-      </div>
 
-      {/* Filtres et export */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="relative w-full md:w-auto md:flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Filter students..."
-            value={globalFilter ?? ''}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            className="pl-8 w-full md:w-[400px]"
-          />
-        </div>
-        
-        <div className="flex items-center gap-2">
+        {/* Simplified Search Bar */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search students..."
+              value={globalFilter ?? ''}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              className="pl-10 h-10 rounded-lg border-gray-300"
+            />
+          </div>
           <Button 
             onClick={handleExport}
-            variant="outline" 
-            className="bg-[#3e81d4]/10 text-[#3e81d4] hover:bg-[#3e81d4]/20 border-[#3e81d4]/20"
+            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg px-4 py-2"
             disabled={rewards.length === 0}
           >
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="bg-[#3e81d4]/10 text-[#3e81d4] hover:bg-[#3e81d4]/20 border-[#3e81d4]/20">
-                Columns <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table.getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
-      </div>
 
-      {/* Tableau */}
-      <Card className="rounded-lg shadow-sm">
-        {isLoading ? (
-          <div className="p-4 flex justify-center">
-            <Loader />
-          </div>
-        ) : (
-          <div className="rounded-lg border border-gray-200 overflow-hidden">
-            <Table className="min-w-full">
-              <TableHeader className="bg-[#3e81d4]/10">
-                {table.getHeaderGroups().map(headerGroup => (
-                  <TableRow key={headerGroup.id} className="hover:bg-transparent">
-                    {headerGroup.headers.map(header => (
-                      <TableHead 
-                        key={header.id} 
-                        className={`px-4 py-3 text-xs font-medium text-[#3e81d4] uppercase tracking-wider ${
-                          header.id === "student" ? "text-left" : "text-center"
-                        }`}
-                      >
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                      </TableHead>
+        {/* Enhanced Table Card */}
+        <Card className="rounded-2xl shadow-xl border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
+          <div className="p-6">
+            {isLoading ? (
+              <div className="p-4 flex justify-center">
+                <Loader />
+              </div>
+            ) : (
+              <div className="rounded-lg border border-gray-200 overflow-hidden">
+                <Table className="min-w-full">
+                  <TableHeader className="bg-[#3e81d4]/10">
+                    {table.getHeaderGroups().map(headerGroup => (
+                      <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                        {headerGroup.headers.map(header => (
+                          <TableHead 
+                            key={header.id} 
+                            className={`px-4 py-3 text-xs font-medium text-[#3e81d4] uppercase tracking-wider ${
+                              header.id === "student" ? "text-left" : "text-center"
+                            }`}
+                          >
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                          </TableHead>
+                        ))}
+                      </TableRow>
                     ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody className="bg-white divide-y divide-gray-200">
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map(row => (
-                    <TableRow key={row.id} className="hover:bg-[#3e81d4]/5 cursor-pointer">
-                      {row.getVisibleCells().map(cell => (
-                        <TableCell 
-                          key={cell.id} 
-                          className={`px-4 py-3 whitespace-nowrap text-sm text-gray-800 ${
-                            cell.column.id === "student" ? "text-left" : "text-center"
-                          }`}
-                        >
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableHeader>
+                  <TableBody className="bg-white divide-y divide-gray-200">
+                    {table.getRowModel().rows?.length ? (
+                      table.getRowModel().rows.map(row => (
+                        <TableRow key={row.id} className="hover:bg-[#3e81d4]/5 cursor-pointer">
+                          {row.getVisibleCells().map(cell => (
+                            <TableCell 
+                              key={cell.id} 
+                              className={`px-4 py-3 whitespace-nowrap text-sm text-gray-800 ${
+                                cell.column.id === "student" ? "text-left" : "text-center"
+                              }`}
+                            >
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={columns.length} className="px-4 py-3 text-center text-sm text-gray-500">
+                          <NoData />
                         </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="px-4 py-3 text-center text-sm text-gray-500">
-                      <NoData />
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* Pagination */}
+        {rewards.length > 0 && (
+          <div className="flex flex-col md:flex-row items-center justify-between px-4 py-3 bg-[#3e81d4]/5 rounded-b-lg">
+            <div className="text-sm text-[#3e81d4] mb-4 md:mb-0">
+              Showing {table.getRowModel().rows.length} of {rewards.length} students
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+                className="px-3 py-1 border border-[#3e81d4]/20 rounded-md text-sm font-medium text-[#3e81d4] bg-[#3e81d4]/10 hover:bg-[#3e81d4]/20"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+                className="px-3 py-1 border border-[#3e81d4]/20 rounded-md text-sm font-medium text-[#3e81d4] bg-[#3e81d4]/10 hover:bg-[#3e81d4]/20"
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
           </div>
         )}
-      </Card>
-
-      {/* Pagination */}
-      {rewards.length > 0 && (
-        <div className="flex flex-col md:flex-row items-center justify-between px-4 py-3 bg-[#3e81d4]/5 rounded-b-lg">
-          <div className="text-sm text-[#3e81d4] mb-4 md:mb-0">
-            Showing {table.getRowModel().rows.length} of {rewards.length} students
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-              className="px-3 py-1 border border-[#3e81d4]/20 rounded-md text-sm font-medium text-[#3e81d4] bg-[#3e81d4]/10 hover:bg-[#3e81d4]/20"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-              className="px-3 py-1 border border-[#3e81d4]/20 rounded-md text-sm font-medium text-[#3e81d4] bg-[#3e81d4]/10 hover:bg-[#3e81d4]/20"
-            >
-              Next
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
-        </div>
-      )}
+      </div>
     </section>
   );
 }
