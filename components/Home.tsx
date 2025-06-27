@@ -2,13 +2,12 @@
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
-import { AlertTriangle, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { AlertTriangle, Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 import { userPath } from "@/constants/userConstants";
 import DreaMetrixLogo from "./ui/dreametrix-logo";
 import { useLogin } from "@/hooks/SchoolAdmin/useLogin";
 import { Input } from "./ui/input";
-// import { Button } from "./ui/button";
-// import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
 
 export interface LoginFormData {
   email: string;
@@ -95,140 +94,141 @@ export default function Login() {
   const renderErrorMessage = (errorMessage: string | null) => {
     if (!errorMessage) return null;
     return (
-      <div className="absolute right-[-160px] top-1/2 transform -translate-y-1/2 bg-red-100 text-red-700 px-3 py-1 rounded-md shadow-md">
-        <div className="absolute left-[-6px] top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-red-100"></div>
-        <div className="flex items-center">
-          <AlertTriangle className="h-4 w-4 mr-2" />
-          <span className="text-sm">{errorMessage}</span>
-        </div>
+      <div className="text-destructive text-sm flex items-center mt-1 ml-1">
+        <AlertTriangle className="h-3 w-3 mr-1 flex-shrink-0" />
+        <span>{errorMessage}</span>
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-[url('/assets/images/bg.png')] bg-cover bg-center bg-no-repeat flex items-center justify-center p-2">
-      <div className="w-full max-w-[500px] bg-[rgba(230,230,230,0.95)] p-6 sm:p-8 rounded-[20px] shadow-[0px_4px_20px_rgba(0,0,0,0.15)]">
-        <div className="flex justify-center mb-5">
-          <DreaMetrixLogo />
-        </div>
-
-        <div className="text-center mb-6">
-          <h2 className="text-[#1A73E8] text-2xl font-semibold">
-            Welcome to DreaMetrix
-          </h2>
-          <p className="text-gray-600 mt-2">Log in to access your account</p>
-        </div>
-
-        {isLoading && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#25AAE1]"></div>
+    <div className="min-h-screen bg-gradient-to-br from-primary-muted via-background to-secondary-muted flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-card rounded-2xl shadow-soft overflow-hidden animate-fade-in">
+        <div className="relative bg-gradient-primary p-6 pb-10">
+          <div className="absolute inset-0 bg-[url('/assets/images/bg.png')] bg-cover bg-center opacity-10"></div>
+          <div className="relative flex justify-center mb-2">
+            <DreaMetrixLogo />
           </div>
-        )}
-        {error && (
-            <div className="bg-red-50 text-red-700 px-4 py-3 mb-2 rounded-lg">
+          <div className="relative text-center">
+            <h1 className="text-white text-2xl font-bold mb-1">
+              Welcome to DreaMetrix
+            </h1>
+            <p className="text-white/80 text-sm">
+              The complete educational platform
+            </p>
+          </div>
+        </div>
+        
+        <div className="px-6 py-8 -mt-6 bg-card rounded-t-3xl">
+          {error && (
+            <div className="bg-destructive-muted text-destructive px-4 py-3 mb-4 rounded-lg animate-slide-in">
               <div className="flex items-center">
-                <AlertTriangle className="h-5 w-5 mr-2" />
-                <span>{error}</span>
+                <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0" />
+                <span className="text-sm">{error}</span>
               </div>
             </div>
           )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="relative">
-            <div
-              className={`relative overflow-hidden border ${
-                formSubmitted && errors.email
-                  ? "border-red-500"
-                  : "border-gray-200"
-              } rounded-lg`}
-            >
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                <Mail size={20} />
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5 ml-1">
+                Email Address
+              </label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                  <Mail size={18} />
+                </div>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className={`h-11 pl-10 rounded-lg border-2 ${formSubmitted && errors.email ? "border-destructive focus:border-destructive" : "border-input"}`}
+                  disabled={isLoading}
+                  aria-invalid={!!errors.email}
+                  aria-describedby={errors.email ? "email-error" : undefined}
+                />
               </div>
-              <Input
-                type="email"
-                placeholder="Email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="h-12 pl-10 rounded-lg"
-                disabled={isLoading}
-              />
+              {errors.email && (
+                <div id="email-error">{renderErrorMessage(errors.email)}</div>
+              )}
             </div>
-            {renderErrorMessage(errors.email)}
-          </div>
 
-          <div className="relative">
-            <div
-              className={`relative overflow-hidden border ${
-                formSubmitted && errors.password
-                  ? "border-red-500"
-                  : "border-gray-200"
-              } rounded-lg`}
-            >
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                <Lock size={20} />
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <label htmlFor="password" className="block text-sm font-medium text-foreground ml-1">
+                  Password
+                </label>
+                <Link
+                  href="/forgot_password"
+                  className="text-primary text-xs hover:text-primary-hover transition-colors"
+                >
+                  Forgot password?
+                </Link>
               </div>
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className="h-12 pl-10 rounded-lg"
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isLoading}
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                  <Lock size={18} />
+                </div>
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className={`h-11 pl-10 pr-10 rounded-lg border-2 ${formSubmitted && errors.password ? "border-destructive focus:border-destructive" : "border-input"}`}
+                  disabled={isLoading}
+                  aria-invalid={!!errors.password}
+                  aria-describedby={errors.password ? "password-error" : undefined}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={isLoading}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              {errors.password && (
+                <div id="password-error">{renderErrorMessage(errors.password)}</div>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              variant="gradient"
+              size="lg"
+              className="w-full mt-2 font-semibold"
+              isLoading={isLoading}
+              leftIcon={!isLoading && <LogIn size={18} />}
+            >
+              {isLoading ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
+
+          <div className="mt-8 pt-6 border-t border-border">
+            <p className="text-center text-muted-foreground mb-4">Don&apos;t have an account?</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Link
+                href={userPath.SCHOOL_ADMIN_REGISTER_PATH}
+                className="flex flex-col items-center p-4 bg-card hover:bg-card-hover rounded-xl shadow-card hover:shadow-md transition-all border border-border hover:border-primary"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
+                <span className="text-primary font-semibold text-center">School Registration</span>
+                <span className="text-xs text-muted-foreground mt-1 text-center">For educational institutions</span>
+              </Link>
+              <Link
+                href={userPath.PARENT_REGISTER_PATH}
+                className="flex flex-col items-center p-4 bg-card hover:bg-card-hover rounded-xl shadow-card hover:shadow-md transition-all border border-border hover:border-primary"
+              >
+                <span className="text-primary font-semibold text-center">Parent Portal</span>
+                <span className="text-xs text-muted-foreground mt-1 text-center">For parents and guardians</span>
+              </Link>
             </div>
-            {renderErrorMessage(errors.password)}
-          </div>
-
-
-
-          <div className="text-right">
-            <Link
-              href="/forgot_password"
-              className="text-[#1A73E8] hover:text-[#1453B8] text-sm font-medium"
-            >
-              Forgot your password?
-            </Link>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-3 rounded-lg
-                     transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1]
-                     focus:ring-offset-2 disabled:opacity-50 text-base font-semibold"
-          >
-            {isLoading ? "Logging in..." : "Log In"}
-          </button>
-        </form>
-
-        <div className="mt-5 pt-6 border-t border-gray-200">
-          <p className="text-center text-gray-600 mb-4">Don&apos;t have an account?</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Link
-              href={userPath.SCHOOL_ADMIN_REGISTER_PATH}
-              className="flex flex-col items-center p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 hover:border-[#25AAE1]"
-            >
-              <span className="text-[#1A73E8] font-semibold text-center">School Registration</span>
-              <span className="text-sm text-gray-500 mt-1 text-center">For educational institutions</span>
-            </Link>
-            <Link
-              href={userPath.PARENT_REGISTER_PATH}
-              className="flex flex-col items-center p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 hover:border-[#25AAE1]"
-            >
-              <span className="text-[#1A73E8] font-semibold text-center">Parent Portal</span>
-              <span className="text-sm text-gray-500 mt-1 text-center">For parents and guardians</span>
-            </Link>
           </div>
         </div>
       </div>

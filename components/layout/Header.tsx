@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import Cookies from "js-cookie"
-import { ChevronDown, LogOut, User, Settings } from "lucide-react"
+import { Bell, ChevronDown, LogOut, User, Settings, Search } from "lucide-react"
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -11,14 +11,18 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
 import { localStorageKey } from "@/constants/global"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils/tailwind"
 import DreaMetrixLogo from "../ui/dreametrix-logo"
 import UserAvatar from "../ui/user-avatar"
+import { Button } from "../ui/button"
+import { Input } from "../ui/input"
 
 export function Header() {
   const router = useRouter()
 
   const getUserData = (): { full_name: string } => {
+    if (typeof window === 'undefined') return { full_name: "Guest" }
+    
     try {
       const userData = localStorage.getItem(localStorageKey.USER_DATA)
       return userData 
@@ -40,61 +44,89 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/90 backdrop-blur-lg">
-      <div className="mx-auto grid h-20 max-w-7xl grid-cols-3 items-center px-4 sm:px-6 lg:px-8">
-        {/* Espace gauche (vide mais structurant) */}
-        <div className="flex items-center justify-start">
-          {/* Élément invisible pour équilibrer la grille */}
-          <div className="opacity-0">
-            <UserAvatar className="h-9 w-9" />
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <div className="container flex h-16 items-center justify-between gap-4">
+        {/* Logo and navigation */}
+        <div className="flex items-center gap-4 lg:gap-6">
+          <DreaMetrixLogo height={28} />
+          
+          <div className="hidden md:flex md:gap-6">
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Dashboard</Button>
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Classes</Button>
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Students</Button>
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Resources</Button>
           </div>
         </div>
 
-        {/* Logo parfaitement centré */}
-        <div className="flex items-center justify-center">
-          <DreaMetrixLogo height={28} className="mx-auto" />
-        </div>
-
-        {/* Menu utilisateur aligné à droite */}
-        <div className="flex items-center justify-end">
+        {/* Search and user actions */}
+        <div className="flex items-center gap-4">
+          {/* Search */}
+          <div className="hidden md:block relative w-full max-w-[240px] lg:max-w-[280px]">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input 
+              placeholder="Search..." 
+              className="pl-9 h-9 w-full bg-muted/50 border-muted focus-visible:bg-background" 
+            />
+          </div>
+          
+          {/* Notifications */}
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="h-5 w-5" />
+            <span className="absolute top-1.5 right-1.5 flex h-2 w-2 rounded-full bg-primary"></span>
+            <span className="sr-only">Notifications</span>
+          </Button>
+          
+          {/* User menu */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="group flex items-center gap-2 rounded-full p-1 pr-3 transition-all duration-200 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
-              <UserAvatar className="h-9 w-9 border-2 border-white shadow-sm" />
-              <span className="text-sm font-medium text-gray-800">{full_name}</span>
-              <ChevronDown className="h-4 w-4 text-gray-400 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                className="group flex items-center gap-2 rounded-full p-1 pr-3 hover:bg-muted focus-visible:ring-primary"
+              >
+                <UserAvatar className="h-8 w-8 border border-border shadow-sm" />
+                <span className="hidden md:inline text-sm font-medium">{full_name}</span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+              </Button>
             </DropdownMenuTrigger>
             
             <DropdownMenuContent 
               align="end" 
-              className="min-w-[200px] rounded-xl border border-gray-100 p-2 shadow-xl"
+              className="min-w-[220px] rounded-xl p-2 shadow-dropdown"
             >
-              <DropdownMenuItem className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-gray-50">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 group-hover:bg-primary/10">
+              <div className="px-3 py-2 mb-1">
+                <p className="text-sm font-medium">{full_name}</p>
+                <p className="text-xs text-muted-foreground">Teacher</p>
+              </div>
+              
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuItem className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-muted text-primary">
                   <User className="h-4 w-4" />
                 </div>
-                <span>Profile</span>
+                <span>My Profile</span>
               </DropdownMenuItem>
               
-              <DropdownMenuItem className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-gray-50">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 group-hover:bg-primary/10">
+              <DropdownMenuItem className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-muted text-primary">
                   <Settings className="h-4 w-4" />
                 </div>
                 <span>Settings</span>
               </DropdownMenuItem>
               
-              <DropdownMenuSeparator className="mx-2 my-1 h-px bg-gray-100" />
+              <DropdownMenuSeparator />
               
               <DropdownMenuItem 
                 onClick={handleLogout}
                 className={cn(
-                  "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                  "text-red-600 hover:bg-red-50 focus:bg-red-50"
+                  "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm",
+                  "text-destructive hover:bg-destructive-muted focus:bg-destructive-muted"
                 )}
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-destructive-muted text-destructive">
                   <LogOut className="h-4 w-4" />
                 </div>
-                <span>Logout</span>
+                <span>Sign Out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
