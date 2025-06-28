@@ -343,7 +343,7 @@ export default function RewardsGeneralView({
                   <TableBody className="bg-white divide-y divide-gray-200">
                     {table.getRowModel().rows?.length ? (
                       table.getRowModel().rows.map(row => (
-                        <TableRow key={row.id} className="hover:bg-[#3e81d4]/5 cursor-pointer">
+                        <TableRow key={row.id} className="hover:bg-[#3e81d4]/5 cursor-pointer" onClick={() => handleViewDetails(row.original)}>
                           {row.getVisibleCells().map(cell => (
                             <TableCell 
                               key={cell.id} 
