@@ -204,7 +204,7 @@ export default function AttendanceFocusedView({
   return (
     <section className="flex flex-col h-full w-full bg-gradient-to-br from-emerald-50/30 to-teal-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-700 px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -213,7 +213,7 @@ export default function AttendanceFocusedView({
           </div>
           <div>
             <PageTitleH1 title="Attendance Management" className="text-white font-bold text-2xl" />
-            <p className="text-emerald-100 text-sm mt-1">Track and manage student attendance</p>
+            <p className="text-blue-100 text-sm mt-1">Track and manage student attendance</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -233,10 +233,10 @@ export default function AttendanceFocusedView({
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-8 space-y-6">
+      <div className="flex-1 mx-6 pb-8 space-y-6">
 
         {/* Enhanced Action Bar */}
-        <div className="flex flex-wrap gap-4 justify-between items-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
+        <div className="flex flex-wrap gap-4 justify-between items-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg mt-2">
           <Button
             variant="outline"
             size="sm"

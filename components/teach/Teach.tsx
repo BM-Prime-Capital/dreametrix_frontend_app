@@ -21,7 +21,7 @@ export default function Teach() {
   return (
     <section className="flex flex-col h-full w-full bg-gradient-to-br from-blue-50/30 to-indigo-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,8 +43,8 @@ export default function Teach() {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-8">
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 h-full">
+      <div className="flex-1 mx-6 pb-8">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 h-full mt-2">
           {/* Calendar */}
           <div className="xl:col-span-3">
             <FullScreenCalendar 

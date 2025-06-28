@@ -173,7 +173,7 @@ export default function ChildStudyFocusedView({
   return (
     <section className="flex flex-col h-full w-full bg-gradient-to-br from-slate-50/30 to-gray-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
@@ -197,9 +197,9 @@ export default function ChildStudyFocusedView({
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-8 space-y-6 overflow-auto">
+      <div className="flex-1 mx-6 pb-8 space-y-6 overflow-auto">
 
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs defaultValue="overview" className="w-full mt-2">
           <TabsList className="grid w-full grid-cols-7 gap-1 bg-white/80 backdrop-blur-sm p-2 rounded-2xl shadow-lg">
             {["overview", "personal", "academic", "medical", "behavior", "contacts", "activities"].map((tab) => (
               <TabsTrigger

@@ -35,14 +35,17 @@ function CharacterGeneralView({ changeView }: { changeView: Function }) {
   return (
     <div className="flex flex-col h-full w-full bg-gradient-to-br from-orange-50/30 to-red-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-orange-600 via-orange-700 to-red-700 px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
-          <PageTitleH1 title="Character Overview" className="text-white font-bold text-2xl" />
+          <div>
+            <PageTitleH1 title="Character Overview" className="text-white font-bold text-2xl" />
+            <p className="text-blue-100 text-sm mt-1">Track student character development</p>
+          </div>
         </div>
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2">
           <DropdownMenu>
@@ -84,9 +87,9 @@ function CharacterGeneralView({ changeView }: { changeView: Function }) {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-8 space-y-8">
+      <div className="flex-1 mx-6 pb-8 space-y-8">
         {/* Enhanced Statistics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-2">
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-blue-100 rounded-xl">

@@ -70,7 +70,7 @@ export default function TeacherDashboard() {
   return (
     <section className="flex flex-col w-full h-full bg-gradient-to-br from-blue-50/30 to-purple-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,9 +97,9 @@ export default function TeacherDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-8 space-y-8 overflow-auto">
+      <div className="flex-1 mx-6 pb-8 space-y-8 overflow-auto">
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-2">
           <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-slate-100 rounded-xl">

@@ -14,7 +14,7 @@ export default function ClassesPage() {
   return (
     <section className="flex flex-col h-full w-full bg-gradient-to-br from-blue-50/30 to-blue-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <BookOpen className="h-6 w-6 text-white" />
@@ -29,9 +29,9 @@ export default function ClassesPage() {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-8 space-y-6">
+      <div className="flex-1 mx-6 pb-8 space-y-6">
         {/* Action Bar */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mt-2">
           <AddClassDialog setRefreshTime={setRefreshTime} />
           <div className="flex items-center gap-4 text-sm text-gray-600">
             <div className="flex items-center gap-2">

@@ -46,14 +46,17 @@ function AttendanceGeneralView({ changeView }: { changeView: Function }) {
   return (
     <div className="flex flex-col h-full w-full bg-gradient-to-br from-emerald-50/30 to-teal-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-700 px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <PageTitleH1 title="Attendance Overview" className="text-white font-bold text-2xl" />
+          <div>
+            <PageTitleH1 title="Attendance Overview" className="text-white font-bold text-2xl" />
+            <p className="text-blue-100 text-sm mt-1">Track student attendance across classes</p>
+          </div>
         </div>
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2">
           <DropdownMenu>
@@ -95,9 +98,9 @@ function AttendanceGeneralView({ changeView }: { changeView: Function }) {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-8 space-y-8">
+      <div className="flex-1 mx-6 pb-8 space-y-8">
         {/* Enhanced Statistics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mt-2">
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-blue-100 rounded-xl">

@@ -1121,7 +1121,7 @@ export default function DigitalLibrary() {
   return (
     <section className="flex flex-col h-full w-full bg-gradient-to-br from-teal-50/30 to-cyan-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-teal-600 via-teal-700 to-cyan-700 px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1130,13 +1130,13 @@ export default function DigitalLibrary() {
           </div>
           <div>
             <PageTitleH1 title="Digital Library" className="text-white font-bold text-2xl" />
-            <p className="text-teal-100 text-sm mt-1">Create custom worksheets and assessments</p>
+            <p className="text-blue-100 text-sm mt-1">Create custom worksheets and assessments</p>
           </div>
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-8 space-y-8 max-w-6xl mx-auto w-full">
+      <div className="flex-1 mx-6 pb-8 space-y-8 max-w-6xl mx-auto w-full">
 
         {/* Assignment Context Banner */}
         {assignmentContext && (
@@ -1170,6 +1170,7 @@ export default function DigitalLibrary() {
         )}
 
         {/* Auto-population Loading Banner */}
+        <div className="mt-2">
         {isAutoPopulating && (
           <Card className="rounded-2xl shadow-lg p-6 bg-gradient-to-r from-green-50/80 to-blue-50/80 border border-green-200/50 backdrop-blur-sm">
             <div className="flex items-center gap-4">
@@ -1204,6 +1205,7 @@ export default function DigitalLibrary() {
         )}
 
         {/* Enhanced Form Card */}
+        </div>
         <Card className="rounded-2xl shadow-xl border-0 bg-white/90 backdrop-blur-sm p-8">
         <form
           className="flex flex-col gap-6"

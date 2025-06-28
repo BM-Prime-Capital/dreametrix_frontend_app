@@ -119,36 +119,33 @@ export default function Gradebook() {
 
   return (
     <section className="flex flex-col h-full w-full bg-gradient-to-br from-purple-50/30 to-pink-50/20">
-      {/* Liquid Glass Header */}
-      <div className="relative flex justify-between items-center bg-gradient-to-r from-purple-600/80 via-purple-700/85 to-pink-700/80 backdrop-blur-xl px-8 py-6 shadow-2xl border-b border-white/20">
-        {/* Glass overlay effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/5 backdrop-blur-sm"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/5 to-transparent"></div>
-        <div className="relative flex items-center gap-4 z-10">
-          <div className="p-3 bg-white/30 rounded-2xl backdrop-blur-md border border-white/20 shadow-lg hover:bg-white/40 transition-all duration-300">
-            <svg className="h-6 w-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {/* Enhanced Header */}
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+            <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
             </svg>
           </div>
           <div>
-            <PageTitleH1 title="Gradebook" className="text-white font-bold text-2xl drop-shadow-sm" />
-            {currentClass && (
-              <p className="text-white/90 text-sm mt-1 drop-shadow-sm">{currentClass.name}</p>
-            )}
+            <PageTitleH1 title="Gradebook" className="text-white font-bold text-2xl" />
+            <p className="text-blue-100 text-sm mt-1">
+              {currentClass ? currentClass.name : "Track student performance"}
+            </p>
           </div>
         </div>
         {currentClass && (
-          <div className="relative bg-white/20 backdrop-blur-md rounded-2xl p-3 border border-white/20 shadow-lg z-10">
+          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3 border border-white/30">
             <ClassSelect />
           </div>
         )}
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-8 space-y-6">
+      <div className="flex-1 mx-6 pb-8 space-y-6">
 
         {/* Enhanced Action Bar */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mt-2">
           <div className="flex gap-4">
             {/* Layout Options for Detail View */}
             {currentClass && (

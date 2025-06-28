@@ -554,7 +554,7 @@ export default function BigBrain({ accessToken, tenantDomain }: BigBrainProps) {
     <div className="flex h-screen bg-gradient-to-br from-slate-50/30 to-gray-50/20 w-full">
       {/* Enhanced Sidebar */}
       <div className="w-80 bg-white/80 backdrop-blur-sm border-r border-gray-200/60 flex flex-col shadow-xl">
-        <div className="p-6 border-b border-gray-200/60 bg-[#79bef2]">
+        <div className="p-6 border-b border-gray-200/60 bg-[#79bef2] rounded-2xl mx-6 mt-8">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-bold flex items-center text-white">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm mr-3">
@@ -763,7 +763,7 @@ export default function BigBrain({ accessToken, tenantDomain }: BigBrainProps) {
 
       {/* Enhanced Main Chat Area */}
       <div className="flex-1 flex flex-col">
-        <div className="border-b border-gray-200/60 p-6 bg-white/80 backdrop-blur-sm flex items-center justify-between shadow-sm">
+        <div className="border-b border-gray-200/60 p-6 bg-white/80 backdrop-blur-sm flex items-center justify-between shadow-sm mx-6 mt-2 rounded-t-2xl">
           <div>
             <h2 className="text-2xl font-bold text-white">
               {conversations.find(c => c.id === activeConversation)?.title || "New Conversation"}
@@ -776,7 +776,7 @@ export default function BigBrain({ accessToken, tenantDomain }: BigBrainProps) {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-gray-50/50 to-white/50">
+        <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-gray-50/50 to-white/50 mx-6">
           {currentMessages.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-gray-400">
               <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mb-4">
@@ -915,7 +915,7 @@ export default function BigBrain({ accessToken, tenantDomain }: BigBrainProps) {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="border-t border-gray-200/60 p-6 bg-white/80 backdrop-blur-sm">
+        <div className="border-t border-gray-200/60 p-6 bg-white/80 backdrop-blur-sm mx-6 pb-8 rounded-b-2xl">
           <form onSubmit={handleSendMessage} className="flex gap-4 items-end">
             <div className="flex-1 relative">
               <Input

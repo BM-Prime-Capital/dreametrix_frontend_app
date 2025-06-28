@@ -130,7 +130,7 @@ export default function ChildStudyView({ changeView }: ChildStudyViewProps) {
   return (
     <section className="flex flex-col h-full w-full bg-gradient-to-br from-slate-50/30 to-gray-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,9 +146,9 @@ export default function ChildStudyView({ changeView }: ChildStudyViewProps) {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-8 space-y-6 overflow-auto">
+      <div className="flex-1 mx-6 pb-8 space-y-6 overflow-auto">
         {/* Stats and Search Bar */}
-        <div className="flex justify-between items-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
+        <div className="flex justify-between items-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg mt-2">
           <div className="flex items-center gap-6">
             <div className="text-lg text-gray-700">
               <span className="font-bold text-slate-700 text-2xl">{filteredStudents.length}</span>
@@ -216,7 +216,7 @@ export default function ChildStudyView({ changeView }: ChildStudyViewProps) {
                 <TableBody>
                   {currentStudents.length > 0 ? (
                     currentStudents.map((student) => (
-                      <TableRow key={student.id} className="hover:bg-teal-50/50 transition-colors">
+                      <TableRow key={student.id} className="hover:bg-slate-50/50 transition-colors cursor-pointer" onClick={() => handleViewDetails(student)}>
                         <TableCell className="font-medium py-4">
                           <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10 border-2 border-teal-100">

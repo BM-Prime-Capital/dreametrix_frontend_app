@@ -118,7 +118,7 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
   return (
     <section className="flex flex-col h-full w-full bg-gradient-to-br from-slate-50/30 to-gray-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,9 +133,9 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-8 space-y-8">
+      <div className="flex-1 mx-6 pb-8 space-y-8">
         {/* Selection Form */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 p-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 p-8 mt-2">
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Configure Your Test</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

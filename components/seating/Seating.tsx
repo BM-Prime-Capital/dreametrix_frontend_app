@@ -642,14 +642,17 @@ export default function Seating({
   return (
     <section className="flex flex-col h-full w-full bg-gradient-to-br from-indigo-50/30 to-cyan-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-indigo-600 via-indigo-700 to-cyan-700 px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
             </svg>
           </div>
-          <PageTitleH1 title="Seating Arrangements" className="text-white font-bold text-2xl" />
+          <div>
+            <PageTitleH1 title="Seating Arrangements" className="text-white font-bold text-2xl" />
+            <p className="text-blue-100 text-sm mt-1">Organize classroom seating layouts</p>
+          </div>
         </div>
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2">
           <ClassSelector
@@ -669,10 +672,10 @@ export default function Seating({
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-8 space-y-6">
+      <div className="flex-1 mx-6 pb-8 space-y-6">
 
         {/* Enhanced Action Bar */}
-        <div className="flex flex-wrap gap-4 items-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
+        <div className="flex flex-wrap gap-4 items-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg mt-2">
           <Button
             onClick={handleSeatingArrangementAuto}
             className={`flex gap-3 items-center text-lg rounded-xl px-6 py-3 shadow-lg transition-all duration-300 ${
