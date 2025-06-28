@@ -35,9 +35,9 @@ export default function Assignments() {
     );
   }
   return (
-    <section className="flex flex-col h-full w-full bg-gradient-to-br from-green-50/30 to-blue-50/20">
+    <section className="flex flex-col h-full w-full bg-gradient-to-br from-blue-50/30 to-blue-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-green-600 via-green-700 to-blue-700 px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <FileText className="h-6 w-6 text-white" />

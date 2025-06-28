@@ -128,9 +128,9 @@ export default function ChildStudyView({ changeView }: ChildStudyViewProps) {
   };
 
   return (
-    <section className="flex flex-col h-full w-full bg-gradient-to-br from-teal-50/30 to-cyan-50/20">
+    <section className="flex flex-col h-full w-full bg-gradient-to-br from-slate-50/30 to-gray-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-700 px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,7 +139,7 @@ export default function ChildStudyView({ changeView }: ChildStudyViewProps) {
           </div>
           <div>
             <PageTitleH1 title="Child Study Team" className="text-white font-bold text-2xl" />
-            <p className="text-teal-100 text-sm mt-1">Student profiles and assessments</p>
+            <p className="text-blue-100 text-sm mt-1">Student profiles and assessments</p>
           </div>
         </div>
         <ClassSelect className="text-white bg-white/20 hover:bg-white/30 border-white/30 rounded-xl backdrop-blur-sm" />
@@ -151,7 +151,7 @@ export default function ChildStudyView({ changeView }: ChildStudyViewProps) {
         <div className="flex justify-between items-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
           <div className="flex items-center gap-6">
             <div className="text-lg text-gray-700">
-              <span className="font-bold text-teal-700 text-2xl">{filteredStudents.length}</span>
+              <span className="font-bold text-slate-700 text-2xl">{filteredStudents.length}</span>
               <span className="text-sm text-gray-600 ml-2">students</span>
             </div>
             <div className="flex items-center gap-3">
@@ -186,7 +186,7 @@ export default function ChildStudyView({ changeView }: ChildStudyViewProps) {
           </div>
           <Button 
             onClick={handleExport}
-            className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white rounded-lg px-4 py-2"
+            className="bg-[#79bef2] hover:bg-[#6bb0e8] text-white rounded-lg px-4 py-2"
             disabled={filteredStudents.length === 0}
           >
             <Download className="h-4 w-4 mr-2" />

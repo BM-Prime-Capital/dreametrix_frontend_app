@@ -551,10 +551,10 @@ export default function BigBrain({ accessToken, tenantDomain }: BigBrainProps) {
   const currentMessages = conversations.find(c => c.id === activeConversation)?.messages || [];
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-indigo-50/30 to-purple-50/20 w-full">
+    <div className="flex h-screen bg-gradient-to-br from-slate-50/30 to-gray-50/20 w-full">
       {/* Enhanced Sidebar */}
       <div className="w-80 bg-white/80 backdrop-blur-sm border-r border-gray-200/60 flex flex-col shadow-xl">
-        <div className="p-6 border-b border-gray-200/60 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700">
+        <div className="p-6 border-b border-gray-200/60 bg-[#79bef2]">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-bold flex items-center text-white">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm mr-3">
@@ -765,7 +765,7 @@ export default function BigBrain({ accessToken, tenantDomain }: BigBrainProps) {
       <div className="flex-1 flex flex-col">
         <div className="border-b border-gray-200/60 p-6 bg-white/80 backdrop-blur-sm flex items-center justify-between shadow-sm">
           <div>
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold text-white">
               {conversations.find(c => c.id === activeConversation)?.title || "New Conversation"}
             </h2>
             <p className="text-sm text-gray-500 mt-1">AI-powered educational assistant</p>

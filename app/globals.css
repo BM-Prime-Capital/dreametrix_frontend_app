@@ -6,6 +6,10 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  --app-primary: #79bef2;
+  --app-primary-hover: #6bb0e8;
+  --app-primary-light: #a8d4f7;
+  --app-primary-dark: #5aa8e6;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -114,8 +118,8 @@
     --foreground: 222 47% 11%;
     
     /* Brand colors */
-    --brand-primary: 195 82% 52%; /* DreaMetrix blue: #25AAE1 */
-    --brand-primary-hover: 195 82% 42%;
+    --brand-primary: 207 82% 72%; /* App primary: #79bef2 */
+    --brand-primary-hover: 207 82% 62%;
     --brand-secondary: 322 65% 59%; /* DreaMetrix pink: #D15A9D */
     --brand-secondary-hover: 322 65% 49%;
     --brand-accent: 262 38% 47%; /* DreaMetrix purple: #7F569F */
@@ -148,11 +152,11 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
     
-    --primary: 195 82% 52%; /* Same as brand-primary */
+    --primary: 207 82% 72%; /* #79bef2 */
     --primary-foreground: 0 0% 100%;
-    --primary-muted: 195 82% 95%;
-    --primary-hover: 195 82% 42%;
-    --primary-gradient: 195 82% 62%;
+    --primary-muted: 207 82% 95%;
+    --primary-hover: 207 82% 62%; /* #6bb0e8 */
+    --primary-gradient: 207 82% 82%;
     
     --secondary: 322 65% 59%; /* Same as brand-secondary */
     --secondary-foreground: 0 0% 100%;
@@ -169,10 +173,10 @@
     
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 195 82% 52%; /* Same as brand-primary */
+    --ring: 207 82% 72%; /* Same as brand-primary */
     
     /* Chart colors */
-    --chart-1: 195 82% 52%; /* Brand blue */
+    --chart-1: 207 82% 72%; /* Brand blue */
     --chart-2: 322 65% 59%; /* Brand pink */
     --chart-3: 262 38% 47%; /* Brand purple */
     --chart-4: 142 76% 36%; /* Success green */
@@ -291,6 +295,27 @@
 .text-xxs {
   font-size: 0.625rem;
   line-height: 0.75rem;
+}
+
+/* App primary color utilities */
+.bg-app-primary {
+  background-color: var(--app-primary);
+}
+
+.bg-app-primary-hover:hover {
+  background-color: var(--app-primary-hover);
+}
+
+.text-app-primary {
+  color: var(--app-primary);
+}
+
+.border-app-primary {
+  border-color: var(--app-primary);
+}
+
+.ring-app-primary {
+  --tw-ring-color: var(--app-primary);
 }
 
 #subjectInput,

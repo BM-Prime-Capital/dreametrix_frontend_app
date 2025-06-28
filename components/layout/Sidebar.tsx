@@ -4,17 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/utils/tailwind";
 import Image from "next/image";
-import { Card } from "../ui/card";
 import { MenuRoute } from "@/types";
 import { isMenuItemActive } from "@/utils/routes";
 import { ScrollArea } from "../ui/scroll-area";
-import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../ui/button";
+import { useSidebar } from "@/lib/SidebarContext";
 
 export function Sidebar({ routes }: { routes: MenuRoute[] }) {
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isCollapsed, setIsCollapsed } = useSidebar();
 
   return (
     <div 

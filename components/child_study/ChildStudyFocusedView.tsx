@@ -171,9 +171,9 @@ export default function ChildStudyFocusedView({
   }
 
   return (
-    <section className="flex flex-col h-full w-full bg-gradient-to-br from-teal-50/30 to-cyan-50/20">
+    <section className="flex flex-col h-full w-full bg-gradient-to-br from-slate-50/30 to-gray-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-700 px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
@@ -190,7 +190,7 @@ export default function ChildStudyFocusedView({
             </div>
             <div>
               <PageTitleH1 title="Student Profile" className="text-white font-bold text-2xl" />
-              <p className="text-teal-100 text-sm mt-1">{studentData.personalInfo.fullName}</p>
+              <p className="text-blue-100 text-sm mt-1">{studentData.personalInfo.fullName}</p>
             </div>
           </div>
         </div>
@@ -205,7 +205,7 @@ export default function ChildStudyFocusedView({
               <TabsTrigger
                 key={tab}
                 value={tab}
-                className="transition-all duration-200 hover:bg-teal-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:font-medium capitalize rounded-xl px-4 py-2"
+                className="transition-all duration-200 hover:bg-blue-50 data-[state=active]:bg-[#79bef2] data-[state=active]:text-white data-[state=active]:font-medium capitalize rounded-xl px-4 py-2"
               >
                 {tab}
               </TabsTrigger>

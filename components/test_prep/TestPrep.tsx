@@ -116,9 +116,9 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
   };
 
   return (
-    <section className="flex flex-col h-full w-full bg-gradient-to-br from-green-50/30 to-emerald-50/20">
+    <section className="flex flex-col h-full w-full bg-gradient-to-br from-slate-50/30 to-gray-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-green-600 via-emerald-600 to-teal-700 px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,7 +127,7 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
           </div>
           <div>
             <PageTitleH1 title="Test Preparation" className="text-white font-bold text-2xl" />
-            <p className="text-green-100 text-sm mt-1">Question Simplar - Practice with real exam questions</p>
+            <p className="text-blue-100 text-sm mt-1">Question Simplar - Practice with real exam questions</p>
           </div>
         </div>
       </div>
@@ -219,7 +219,7 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
             <Button
               type="button"
               onClick={handleLaunchTest}
-              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+              className="bg-[#79bef2] hover:bg-[#6bb0e8] text-white px-8 py-4 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
               disabled={!formData.subject || !formData.grade || !formData.domain || !tenantDomain || !accessToken}
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

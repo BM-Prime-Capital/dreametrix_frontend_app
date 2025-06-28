@@ -70,7 +70,7 @@ export default function TeacherDashboard() {
   return (
     <section className="flex flex-col w-full h-full bg-gradient-to-br from-blue-50/30 to-purple-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,7 +84,7 @@ export default function TeacherDashboard() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2">
+          <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2">
             <span className="text-white text-sm font-medium">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
             </span>
@@ -102,8 +102,8 @@ export default function TeacherDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-100 rounded-xl">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-3 bg-slate-100 rounded-xl">
+                <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                 </svg>
               </div>
@@ -116,8 +116,8 @@ export default function TeacherDashboard() {
           
           <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-100 rounded-xl">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-3 bg-slate-100 rounded-xl">
+                <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -130,8 +130,8 @@ export default function TeacherDashboard() {
           
           <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-100 rounded-xl">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-3 bg-slate-100 rounded-xl">
+                <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
@@ -144,8 +144,8 @@ export default function TeacherDashboard() {
           
           <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-orange-100 rounded-xl">
-                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-3 bg-slate-100 rounded-xl">
+                <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -161,12 +161,12 @@ export default function TeacherDashboard() {
           {/* AI Assistant */}
           <Card className="p-8 bg-gradient-to-br from-blue-50/80 to-purple-50/60 border-blue-200/50 shadow-lg backdrop-blur-sm">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-2 bg-slate-100 rounded-lg">
+                <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
               </div>
-              <PageTitleH2 title="AI Assistant" className="text-blue-800" />
+              <PageTitleH2 title="AI Assistant" className="text-slate-800" />
             </div>
 
             <div className="space-y-4">
@@ -204,8 +204,8 @@ export default function TeacherDashboard() {
           {/* Quick Actions */}
           <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-lg border-0">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-2 bg-slate-100 rounded-lg">
+                <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
@@ -263,7 +263,7 @@ export default function TeacherDashboard() {
                   />
                   <Button
                     onClick={() => addSubject(newSubject)}
-                    className="bg-blue-600 hover:bg-blue-700 rounded-lg px-4"
+                    className="bg-slate-600 hover:bg-slate-700 rounded-lg px-4"
                   >
                     <PlusIcon className="h-4 w-4" />
                   </Button>
