@@ -1,6 +1,6 @@
 "use client"
+
 import { useEffect, useState } from "react"
-import axios from "axios"
 import { Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,17 +10,14 @@ import {
   DropdownMenuItem
 } from "@/components/ui/dropdown-menu"
 
-const getNotifications = async () => {
-  const res = await axios.get("/notifications/")
-  return res.data.results
-}
-
-const markAllAsRead = async () => {
-  await axios.post("/notifications/mark_all_as_read/")
-}
+import {
+  getNotifications,
+  markAllAsRead,
+  type Notification
+} from "@/services/NotificationApiServices"
 
 export default function NotificationBell() {
-  const [notifications, setNotifications] = useState<any[]>([])
+  const [notifications, setNotifications] = useState<Notification[]>([])
 
   useEffect(() => {
     const fetch = async () => {
@@ -31,6 +28,12 @@ export default function NotificationBell() {
   }, [])
 
   const unreadCount = notifications.filter(n => !n.read).length
+
+  const handleMarkAllAsRead = async () => {
+    await markAllAsRead()
+    const updated = await getNotifications()
+    setNotifications(updated)
+  }
 
   return (
     <DropdownMenu>
@@ -47,11 +50,7 @@ export default function NotificationBell() {
           <Button
             variant="ghost"
             className="w-full justify-start text-sm"
-            onClick={async () => {
-              await markAllAsRead()
-              const data = await getNotifications()
-              setNotifications(data)
-            }}
+            onClick={handleMarkAllAsRead}
           >
             Marquer tout comme lu
           </Button>
@@ -62,7 +61,10 @@ export default function NotificationBell() {
           </DropdownMenuItem>
         ) : (
           notifications.map(n => (
-            <DropdownMenuItem key={n.id} className={`text-sm ${n.read ? "opacity-50" : ""}`}>
+            <DropdownMenuItem
+              key={n.id}
+              className={`text-sm ${n.read ? "opacity-50" : ""}`}
+            >
               {n.message}
             </DropdownMenuItem>
           ))
