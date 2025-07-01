@@ -1,36 +1,50 @@
-import { useEffect, useState } from "react"
-import axios from "axios"
-import { Input } from "@/components/ui/input"
-import { Table, TableHeader, TableRow, TableCell } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
+"use client";
+
+import { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Table, TableHeader, TableRow, TableCell } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import {
+  fetchParents,
+  validateParent,
+  deleteParent,
+  Parent
+} from "@/services/ParentAdminApiClient";
+import { useRequestInfo } from "@/hooks/useRequestInfo";
 
 export default function AdminParentTable() {
-  const [parents, setParents] = useState<any[]>([])
-  const [filter, setFilter] = useState("")
-  const [page, setPage] = useState(1)
+  const [parents, setParents] = useState<Parent[]>([]);
+  const [filter, setFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const { tenantDomain, accessToken } = useRequestInfo();
 
-  const fetchData = async () => {
-    const res = await axios.get(`/parents/?page=${page}`)
-    setParents(res.data.results)
-  }
+  const loadParents = async () => {
+    if (!tenantDomain || !accessToken) return;
+    try {
+      const data = await fetchParents(tenantDomain, accessToken, page);
+      setParents(data);
+    } catch (error) {
+      console.error("Erreur chargement parents:", error);
+    }
+  };
 
-  const validate = async (id: number) => {
-    await axios.post(`/parents/validate/${id}/`)
-    fetchData()
-  }
+  const handleValidate = async (id: number) => {
+    await validateParent(tenantDomain, accessToken, id);
+    loadParents();
+  };
 
-  const remove = async (id: number) => {
-    await axios.delete(`/parents/${id}/`)
-    fetchData()
-  }
+  const handleDelete = async (id: number) => {
+    await deleteParent(tenantDomain, accessToken, id);
+    loadParents();
+  };
 
   useEffect(() => {
-    fetchData()
-  }, [page])
+    loadParents();
+  }, [page]);
 
-  const filtered = parents.filter(p =>
+  const filtered = parents.filter((p) =>
     p.user.full_name.toLowerCase().includes(filter.toLowerCase())
-  )
+  );
 
   return (
     <div className="p-4 max-w-6xl mx-auto">
@@ -50,19 +64,27 @@ export default function AdminParentTable() {
             <TableCell>Actions</TableCell>
           </TableRow>
         </TableHeader>
-        {filtered.map(p => (
+        {filtered.map((p) => (
           <TableRow key={p.id}>
             <TableCell>{p.user.full_name}</TableCell>
             <TableCell>{p.user.email}</TableCell>
             <TableCell className="space-x-2">
               {!p.user.is_active && (
-                <Button size="sm" onClick={() => validate(p.id)}>Valider</Button>
+                <Button size="sm" onClick={() => handleValidate(p.id)}>
+                  Valider
+                </Button>
               )}
-              <Button size="sm" variant="destructive" onClick={() => remove(p.id)}>Supprimer</Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => handleDelete(p.id)}
+              >
+                Supprimer
+              </Button>
             </TableCell>
           </TableRow>
         ))}
       </Table>
     </div>
-  )
+  );
 }
