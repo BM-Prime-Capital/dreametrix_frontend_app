@@ -57,6 +57,11 @@ export const StudentRoutes = [
     icon: `/assets/images/teacher/dashboard/profile.svg`,
     label: "STUDENT PROFILE",
   },
+  {
+    path: `${userPath.STUDENT_BASE_PATH}/relationship`,
+    icon: `/assets/images/teacher/dashboard/relationship.svg`,
+    label: "RELATIONSHIP",
+  },
 ];
 
 export const SchoolAdminRoutes = [
