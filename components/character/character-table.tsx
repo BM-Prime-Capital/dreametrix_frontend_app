@@ -26,7 +26,11 @@ import { Character } from "@/types";
 import { CharacterDatePicker } from "./CharacterDatePicker";
 import { format } from "date-fns";
 
-export function CharacterTable() {
+export function CharacterTable({
+  selectedClassId,
+}: {
+  selectedClassId?: string | null;
+}) {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [primaryDomain, setPrimaryDomain] = useState<string>("");
   const [accessToken, setAccessToken] = useState<string>("");
@@ -43,28 +47,50 @@ export function CharacterTable() {
     );
     const tenantData: any = localStorage.getItem(localStorageKey.TENANT_DATA);
 
+    if (!tenantData || !accessToken || !refreshToken) {
+      return;
+    }
+
     const { primary_domain } = JSON.parse(tenantData);
     const domain = `https://${primary_domain}`;
 
-    const { id: currentClassId } = JSON.parse(
-      localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
-    );
+    // Use prop if available, otherwise fall back to localStorage
+    let currentClassId = selectedClassId;
+    if (!currentClassId) {
+      const selectedClassData = localStorage.getItem(
+        localStorageKey.CURRENT_SELECTED_CLASS
+      );
+      if (selectedClassData) {
+        try {
+          const { id } = JSON.parse(selectedClassData);
+          currentClassId = id;
+        } catch (error) {
+          console.error(
+            "Error parsing selected class from localStorage:",
+            error
+          );
+        }
+      }
+    }
 
-    const { owner_id } = JSON.parse(
-      localStorage.getItem(localStorageKey.USER_DATA)!
-    );
+    const userData = localStorage.getItem(localStorageKey.USER_DATA);
+    if (!userData) {
+      return;
+    }
+
+    const { owner_id } = JSON.parse(userData);
 
     setPrimaryDomain(domain);
     setAccessToken(accessToken);
     setRefreshToken(refreshToken);
 
     const loadCharacter = async () => {
-      if (shouldRefreshData) {
+      if (shouldRefreshData && currentClassId) {
         setIsLoading(true);
         try {
           const data = await getCharracters(
             {
-              class_id: currentClassId,
+              class_id: parseInt(currentClassId),
               teacher_id: owner_id,
               date: format(selectedDate, "yyyy-MM-dd"),
             },
@@ -80,11 +106,16 @@ export function CharacterTable() {
           setIsLoading(false);
           setShouldRefreshData(false);
         }
+      } else if (!currentClassId) {
+        // If no class is selected, clear the characters
+        setCharacters([]);
+        setIsLoading(false);
+        setShouldRefreshData(false);
       }
     };
 
     loadCharacter();
-  }, [shouldRefreshData, selectedDate]);
+  }, [shouldRefreshData, selectedDate, selectedClassId]);
 
   useEffect(() => {
     if (charractersList) {
@@ -94,6 +125,12 @@ export function CharacterTable() {
       );
     }
   }, [charractersList]);
+
+  // Trigger refresh when class selection changes
+  useEffect(() => {
+    console.log("CharacterTable: selectedClassId changed to:", selectedClassId);
+    setShouldRefreshData(true);
+  }, [selectedClassId]);
 
   const handleDateChange = (date: Date) => {
     setSelectedDate(date);
