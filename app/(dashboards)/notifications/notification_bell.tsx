@@ -15,24 +15,30 @@ import {
   markAllAsRead,
   type Notification
 } from "@/services/NotificationApiServices"
+import { useRequestInfo } from "@/hooks/useRequestInfo"
 
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
+  const { tenantDomain, accessToken } = useRequestInfo()
 
   useEffect(() => {
     const fetch = async () => {
-      const data = await getNotifications()
-      setNotifications(data)
+      if (tenantDomain && accessToken) {
+        const data = await getNotifications(tenantDomain, accessToken)
+        setNotifications(data)
+      }
     }
     fetch()
-  }, [])
+  }, [tenantDomain, accessToken])
 
   const unreadCount = notifications.filter(n => !n.read).length
 
   const handleMarkAllAsRead = async () => {
-    await markAllAsRead()
-    const updated = await getNotifications()
-    setNotifications(updated)
+    if (tenantDomain && accessToken) {
+      await markAllAsRead(tenantDomain, accessToken)
+      const updated = await getNotifications(tenantDomain, accessToken)
+      setNotifications(updated)
+    }
   }
 
   return (

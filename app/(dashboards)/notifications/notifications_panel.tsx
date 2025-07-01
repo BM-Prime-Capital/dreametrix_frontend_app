@@ -3,30 +3,34 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { getNotifications, markNotificationAsRead, Notification } from "@/services/NotificationApiServices"
-
-
+import { useRequestInfo } from "@/hooks/useRequestInfo"
 
 export default function NotificationsPanel() {
   const [notifications, setNotifications] = useState<Notification[]>([])
+  const { tenantDomain, accessToken } = useRequestInfo()
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchNotifications = async () => {
       try {
-        const data = await getNotifications()
-        setNotifications(data)
+        if (tenantDomain && accessToken) {
+          const data = await getNotifications(tenantDomain, accessToken)
+          setNotifications(data)
+        }
       } catch (error) {
         console.error("Erreur lors du chargement des notifications :", error)
       }
     }
-    fetch()
-  }, [])
+    fetchNotifications()
+  }, [tenantDomain, accessToken])
 
   const markAsRead = async (id: number) => {
     try {
-      await markNotificationAsRead(id)
-      setNotifications(prev =>
-        prev.map(n => n.id === id ? { ...n, read: true } : n)
-      )
+      if (tenantDomain && accessToken) {
+        await markNotificationAsRead(tenantDomain, accessToken, id)
+        setNotifications(prev =>
+          prev.map(n => (n.id === id ? { ...n, read: true } : n))
+        )
+      }
     } catch (error) {
       console.error("Erreur lors du marquage comme lu :", error)
     }
