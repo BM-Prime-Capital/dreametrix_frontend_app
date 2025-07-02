@@ -47,29 +47,26 @@ export function AddPollsDialog() {
   const [newQuestionType, setNewQuestionType] = useState("single");
   const [newOptionText, setNewOptionText] = useState("");
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
+  const [temporaryChoices, setTemporaryChoices] = useState<{ label: string }[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const { tenantDomain, accessToken } = useRequestInfo();
   const [courses, setCourses] = useState<{ id: number; name: string }[]>([]);
   const [courseId, setCourseId] = useState<number | null>(null);
 
-
-useEffect(() => {
-  const savedCourses = localStorage.getItem("classes");
-  if (savedCourses) {
-    try {
-      const parsed = JSON.parse(savedCourses);
-      setCourses(parsed);
-    } catch (error) {
-      console.error("Invalid courses in localStorage");
+  useEffect(() => {
+    const savedCourses = localStorage.getItem("classes");
+    if (savedCourses) {
+      try {
+        const parsed = JSON.parse(savedCourses);
+        setCourses(parsed);
+      } catch (error) {
+        console.error("Invalid courses in localStorage");
+      }
     }
-  }
-}, []);
-
-
+  }, []);
 
   useEffect(() => {
     if (!open) {
-      // Reset form when dialog closes
       setCurrentStep(1);
       setPollTitle("");
       setDescription("");
@@ -79,35 +76,27 @@ useEffect(() => {
       setNewQuestionText("");
       setNewQuestionType("single");
       setEditingQuestionIndex(null);
+      setTemporaryChoices([]);
     }
   }, [open]);
 
-  type Choice = {
-    label: string;
-  };
-
-  type QuestionPayload = {
-    text: string;
-    question_type: "single" | "multiple" | "text";
-    required: boolean;
-    choices?: Choice[];
-  };
-
-  const addOption = (questionIndex: number) => {
+  const addOption = () => {
     if (!newOptionText.trim()) return;
     
-    const updatedQuestions = [...questions];
-    updatedQuestions[questionIndex].choices.push({
-      label: newOptionText.trim()
-    });
-    setQuestions(updatedQuestions);
+    // For single choice, only allow one option
+    if (newQuestionType === "single" && temporaryChoices.length >= 1) {
+      toast.warning("Single choice questions can only have one option");
+      return;
+    }
+    
+    setTemporaryChoices([...temporaryChoices, { label: newOptionText.trim() }]);
     setNewOptionText("");
   };
 
-  const removeOption = (questionIndex: number, optionIndex: number) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[questionIndex].choices.splice(optionIndex, 1);
-    setQuestions(updatedQuestions);
+  const removeOption = (index: number) => {
+    const updated = [...temporaryChoices];
+    updated.splice(index, 1);
+    setTemporaryChoices(updated);
   };
 
   const addQuestion = () => {
@@ -116,26 +105,31 @@ useEffect(() => {
       return;
     }
 
-    const newQuestion = {
+    // For single choice, ensure we have exactly one option
+    if (newQuestionType === "single" && temporaryChoices.length !== 1) {
+      toast.warning("Single choice questions must have exactly one option");
+      return;
+    }
+
+    const questionData = {
       text: newQuestionText.trim(),
       question_type: newQuestionType,
       required: true,
-      choices: newQuestionType !== "text" ? [{ label: "Option 1" }, { label: "Option 2" }] : [],
+      choices: newQuestionType !== "text" ? [...temporaryChoices] : [],
     };
 
     if (editingQuestionIndex !== null) {
-      // Update existing question
       const updatedQuestions = [...questions];
-      updatedQuestions[editingQuestionIndex] = newQuestion;
+      updatedQuestions[editingQuestionIndex] = questionData;
       setQuestions(updatedQuestions);
-      setEditingQuestionIndex(null);
     } else {
-      // Add new question
-      setQuestions([...questions, newQuestion]);
+      setQuestions([...questions, questionData]);
     }
 
     setNewQuestionText("");
     setNewQuestionType("single");
+    setTemporaryChoices([]);
+    setEditingQuestionIndex(null);
   };
 
   const editQuestion = (index: number) => {
@@ -143,6 +137,14 @@ useEffect(() => {
     setNewQuestionText(question.text);
     setNewQuestionType(question.question_type);
     setEditingQuestionIndex(index);
+    setTemporaryChoices(question.choices || []);
+  };
+
+  const cancelEdit = () => {
+    setEditingQuestionIndex(null);
+    setNewQuestionText("");
+    setNewQuestionType("single");
+    setTemporaryChoices([]);
   };
 
   const removeQuestion = (index: number) => {
@@ -150,9 +152,7 @@ useEffect(() => {
     updatedQuestions.splice(index, 1);
     setQuestions(updatedQuestions);
     if (editingQuestionIndex === index) {
-      setEditingQuestionIndex(null);
-      setNewQuestionText("");
-      setNewQuestionType("single");
+      cancelEdit();
     }
   };
 
@@ -184,23 +184,22 @@ useEffect(() => {
 
     setSubmitting(true);
     try {
-    await createPoll(
-      {
-        title: pollTitle.trim(),
-        description: description.trim(),
-        course: Number(courseId),
-        deadline: endDate.toISOString(),
-        is_anonymous: true,
-        questions: questions.map(q => ({
-          ...q,
-          text: q.text.trim(),
-          choices: q.choices?.map((c: Choice) => ({ label: c.label.trim() }))
-        })),
-
-      },
-      tenantDomain,
-      accessToken
-    );
+      await createPoll(
+        {
+          title: pollTitle.trim(),
+          description: description.trim(),
+          course: Number(courseId),
+          deadline: endDate.toISOString(),
+          is_anonymous: true,
+          questions: questions.map(q => ({
+            ...q,
+            text: q.text.trim(),
+            choices: q.choices?.map((c: { label: string }) => ({ label: c.label.trim() }))
+          })),
+        },
+        tenantDomain,
+        accessToken
+      );
       
       toast.success("Poll created successfully!");
       setOpen(false);
@@ -241,30 +240,45 @@ useEffect(() => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-6 py-5 rounded-xl shadow-lg transition-all hover:shadow-xl">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Create New Poll
+        <Button className="bg-gradient-to-r from-[#3E81D4] to-[#5D9DF5] hover:from-[#2D71C4] hover:to-[#4C8DE5] text-white px-6 py-5 rounded-xl shadow-lg transition-all hover:shadow-xl transform hover:scale-105 duration-200 ease-in-out">
+          <PlusCircle className="mr-2 h-5 w-5" strokeWidth={2} />
+          <span className="text-lg font-semibold">Create New Poll</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Create New Poll
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto p-0 border-0 rounded-xl">
+        <div className="bg-gradient-to-r from-[#3E81D4] to-[#5D9DF5] p-6 rounded-t-xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-white">
+              Create New Poll
+            </DialogTitle>
+            <p className="text-blue-100 mt-1">
+              {currentStep === 1 && "Enter basic poll details"}
+              {currentStep === 2 && "Add your questions"}
+              {currentStep === 3 && "Review and submit"}
+            </p>
+          </DialogHeader>
+        </div>
 
-        <div className="flex flex-col gap-6">
-          {/* Stepper */}
-          <div className="flex justify-between items-center relative">
-            <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-gray-200 -z-10"></div>
+        <div className="p-6 flex flex-col gap-6">
+          {/* Enhanced Stepper */}
+          <div className="flex justify-between items-center relative mb-8">
+            <div className="absolute top-1/2 left-0 right-0 h-[3px] bg-gray-100 -z-10"></div>
             {[1, 2, 3].map((step) => (
               <div key={step} className="flex flex-col items-center z-10">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${currentStep >= step ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"}`}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center shadow-md transition-all duration-300 ${
+                    currentStep >= step 
+                      ? "bg-white border-4 border-[#3E81D4] text-[#3E81D4]" 
+                      : "bg-gray-100 text-gray-400"
+                  }`}
                 >
-                  {step}
+                  <span className={`text-lg font-semibold ${currentStep === step ? "scale-110" : ""}`}>
+                    {step}
+                  </span>
                 </div>
-                <span className={`text-xs mt-1 ${currentStep >= step ? "font-bold text-blue-600" : "text-gray-500"}`}>
+                <span className={`text-sm mt-2 font-medium ${
+                  currentStep >= step ? "text-[#3E81D4]" : "text-gray-500"
+                }`}>
                   {step === 1 ? "Details" : step === 2 ? "Questions" : "Review"}
                 </span>
               </div>
@@ -275,40 +289,50 @@ useEffect(() => {
           {currentStep === 1 && (
             <div className="grid gap-6 py-2">
               <div className="grid gap-2">
-                <Label htmlFor="title">Poll Title *</Label>
+                <Label htmlFor="title" className="text-gray-700 font-medium">
+                  Poll Title <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="title"
-                  placeholder="Enter poll title"
+                  placeholder="What's your poll about?"
                   value={pollTitle}
                   onChange={(e) => setPollTitle(e.target.value)}
-                  className="py-3"
+                  className="py-3 px-4 rounded-lg border-gray-300 focus:border-[#3E81D4] focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description" className="text-gray-700 font-medium">
+                  Description
+                </Label>
                 <Textarea
                   id="description"
-                  placeholder="Enter poll description (optional)"
+                  placeholder="Add a brief description (optional)"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
+                  className="rounded-lg border-gray-300 focus:border-[#3E81D4] focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="courseId">Select Course *</Label>
+                <Label htmlFor="courseId" className="text-gray-700 font-medium">
+                  Select Course <span className="text-red-500">*</span>
+                </Label>
                 <Select
                   onValueChange={(value) => setCourseId(Number(value))}
                   value={courseId !== null ? courseId.toString() : undefined}
                 >
-
-                  <SelectTrigger className="w-full py-3">
+                  <SelectTrigger className="w-full py-3 px-4 rounded-lg border-gray-300 focus:border-[#3E81D4] focus:ring-2 focus:ring-blue-100">
                     <SelectValue placeholder="Select a course" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-lg shadow-lg border-gray-200">
                     {courses.map((course) => (
-                      <SelectItem key={course.id} value={course.id.toString()}>
+                      <SelectItem 
+                        key={course.id} 
+                        value={course.id.toString()}
+                        className="hover:bg-blue-50 focus:bg-blue-50"
+                      >
                         {course.name}
                       </SelectItem>
                     ))}
@@ -316,29 +340,35 @@ useEffect(() => {
                 </Select>
               </div>
 
-
               <div className="grid gap-2">
-                <Label>End Date *</Label>
+                <Label className="text-gray-700 font-medium">
+                  End Date <span className="text-red-500">*</span>
+                </Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full justify-start text-left font-normal",
+                        "w-full justify-start text-left font-normal py-3 px-4 rounded-lg border-gray-300 hover:border-gray-400",
                         !endDate && "text-muted-foreground"
                       )}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                      <CalendarIcon className="mr-2 h-4 w-4 text-gray-500" />
+                      {endDate ? (
+                        <span className="text-gray-800">{format(endDate, "PPP")}</span>
+                      ) : (
+                        <span className="text-gray-500">Pick a date</span>
+                      )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0 rounded-lg shadow-xl border-gray-200">
                     <Calendar
                       mode="single"
                       selected={endDate}
                       onSelect={setEndDate}
                       initialFocus
                       fromDate={new Date()}
+                      className="border-0"
                     />
                   </PopoverContent>
                 </Popover>
@@ -349,114 +379,188 @@ useEffect(() => {
           {/* Step 2: Questions */}
           {currentStep === 2 && (
             <div className="flex flex-col gap-6 py-2">
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <h3 className="font-medium mb-3">
-                  {editingQuestionIndex !== null ? "Edit Question" : "Add New Question"}
+              <div className="border rounded-xl p-5 bg-white shadow-sm">
+                <h3 className="font-medium text-lg mb-4 text-gray-800">
+                  {editingQuestionIndex !== null ? "✏️ Edit Question" : "➕ Add New Question"}
                 </h3>
                 
-                <div className="grid gap-3">
+                <div className="grid gap-4">
                   <Input
-                    placeholder="Enter question text"
+                    placeholder="What would you like to ask?"
                     value={newQuestionText}
                     onChange={(e) => setNewQuestionText(e.target.value)}
-                    className="py-3"
+                    className="py-3 px-4 rounded-lg border-gray-300 focus:border-[#3E81D4] focus:ring-2 focus:ring-blue-100"
                   />
 
                   <div className="grid gap-2">
-                    <Label>Question Type</Label>
+                    <Label className="text-gray-700 font-medium">Question Type</Label>
                     <Select
                       value={newQuestionType}
-                      onValueChange={setNewQuestionType}
+                      onValueChange={(value) => {
+                        setNewQuestionType(value);
+                        // Reset choices when changing question type
+                        if (value !== newQuestionType) {
+                          setTemporaryChoices([]);
+                        }
+                      }}
                     >
-                      <SelectTrigger className="w-[180px]">
+                      <SelectTrigger className="w-full py-3 px-4 rounded-lg border-gray-300 focus:border-[#3E81D4] focus:ring-2 focus:ring-blue-100">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="single">Single Choice</SelectItem>
-                        <SelectItem value="multiple">Multiple Choice</SelectItem>
-                        <SelectItem value="text">Text Response</SelectItem>
+                      <SelectContent className="rounded-lg shadow-lg border-gray-200">
+                        <SelectItem value="single" className="hover:bg-blue-50">
+                          Single Choice
+                        </SelectItem>
+                        <SelectItem value="multiple" className="hover:bg-blue-50">
+                          Multiple Choice
+                        </SelectItem>
+                        <SelectItem value="text" className="hover:bg-blue-50">
+                          Text Response
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   {newQuestionType !== "text" && (
                     <div className="grid gap-2">
-                      <Label>Options</Label>
+                      <Label className="text-gray-700 font-medium">Options</Label>
                       <div className="flex gap-2">
                         <Input
-                          placeholder="Add new option"
+                          placeholder={newQuestionType === "single" ? "Enter the single option" : "Add new option"}
                           value={newOptionText}
                           onChange={(e) => setNewOptionText(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === "Enter" && editingQuestionIndex !== null) {
-                              addOption(editingQuestionIndex);
-                            }
+                            if (e.key === "Enter") addOption();
                           }}
-                          className="py-3 flex-1"
+                          className="py-3 px-4 rounded-lg border-gray-300 focus:border-[#3E81D4] flex-1 focus:ring-2 focus:ring-blue-100"
+                          disabled={newQuestionType === "single" && temporaryChoices.length >= 1}
                         />
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            if (editingQuestionIndex !== null) {
-                              addOption(editingQuestionIndex);
-                            }
-                          }}
-                          disabled={!newOptionText.trim()}
+                          onClick={addOption}
+                          disabled={!newOptionText.trim() || (newQuestionType === "single" && temporaryChoices.length >= 1)}
+                          className="h-full border-[#3E81D4] text-[#3E81D4] hover:bg-blue-50 hover:text-[#2D71C4]"
                         >
                           Add
                         </Button>
                       </div>
+
+                      <div className="mt-3 space-y-2">
+                        {temporaryChoices.length === 0 ? (
+                          <p className="text-sm text-gray-400">
+                            {newQuestionType === "single" 
+                              ? "Enter the single option for this question"
+                              : "No options yet"}
+                          </p>
+                        ) : (
+                          temporaryChoices.map((choice, index) => (
+                            <div key={index} className="flex items-center gap-3 group">
+                              <RadioGroup>
+                                {newQuestionType === "single" ? (
+                                  <RadioGroupItem value={choice.label} disabled />
+                                ) : (
+                                  <Checkbox checked={false} disabled />
+                                )}
+                              </RadioGroup>
+                              <Label className="flex-1">{choice.label}</Label>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+                                onClick={() => removeOption(index)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          ))
+                        )}
+                      </div>
                     </div>
                   )}
 
-                  <Button
-                    onClick={addQuestion}
-                    className="w-fit bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    {editingQuestionIndex !== null ? "Update Question" : "Add Question"}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={addQuestion}
+                      className="bg-[#3E81D4] hover:bg-[#2D71C4] text-white py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all"
+                      disabled={newQuestionType === "single" && temporaryChoices.length !== 1}
+                    >
+                      {editingQuestionIndex !== null ? "Update Question" : "Add Question"}
+                    </Button>
+                    {editingQuestionIndex !== null && (
+                      <Button
+                        variant="outline"
+                        onClick={cancelEdit}
+                        className="py-3 px-6 rounded-lg border-gray-300 hover:border-gray-400 text-gray-700"
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <h3 className="font-medium">Questions ({questions.length})</h3>
+                <h3 className="font-medium text-lg text-gray-800">
+                  Your Questions ({questions.length})
+                </h3>
                 
                 {questions.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    No questions added yet
+                  <div className="text-center py-8 text-gray-500 bg-blue-50 rounded-xl">
+                    <div className="flex flex-col items-center justify-center">
+                      <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                      <p className="text-gray-600">No questions added yet</p>
+                      <p className="text-sm text-gray-500 mt-1">Start by adding your first question above</p>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {questions.map((question, qIndex) => (
-                      <div key={qIndex} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="font-medium flex items-center gap-2">
+                      <div key={qIndex} className="border rounded-xl p-5 bg-white shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="flex-1">
+                            <div className="font-medium flex items-center gap-3">
+                              <span className="text-[#3E81D4] font-semibold">{qIndex + 1}.</span>
                               {question.text}
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-xs ml-2 border-[#3E81D4] text-[#3E81D4]">
                                 {question.question_type === "single" && "Single Choice"}
                                 {question.question_type === "multiple" && "Multiple Choice"}
                                 {question.question_type === "text" && "Text Response"}
                               </Badge>
                             </div>
                             {question.question_type !== "text" && (
-                              <div className="mt-2 space-y-1">
+                              <div className="mt-3 space-y-2 pl-7">
                                 {question.choices.map((choice: any, cIndex: number) => (
-                                  <div key={cIndex} className="flex items-center gap-2">
-                                    {question.question_type === "single" ? (
-                                      <RadioGroupItem value={choice.label} disabled />
-                                    ) : (
-                                      <Checkbox checked={false} disabled />
-                                    )}
-                                    <Label>{choice.label}</Label>
+                                  <div key={cIndex} className="flex items-center gap-3 group">
+                                    <RadioGroup>
+                                      {question.question_type === "single" ? (
+                                        <RadioGroupItem 
+                                          value={choice.label} 
+                                          disabled 
+                                          className="text-[#3E81D4] border-gray-400"
+                                        />
+                                      ) : (
+                                        <Checkbox 
+                                          checked={false} 
+                                          disabled 
+                                          className="text-[#3E81D4] border-gray-400"
+                                        />
+                                      )}
+                                    </RadioGroup>
+                                    <Label className="flex-1">{choice.label}</Label>
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      className="h-6 w-6 text-red-500"
-                                      onClick={() => removeOption(qIndex, cIndex)}
+                                      className="h-6 w-6 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+                                      onClick={() => {
+                                        if (editingQuestionIndex === qIndex) {
+                                          removeOption(cIndex);
+                                        }
+                                      }}
                                     >
-                                      <Trash2 className="h-3 w-3" />
+                                      <Trash2 className="h-3.5 w-3.5" />
                                     </Button>
                                   </div>
                                 ))}
@@ -468,13 +572,14 @@ useEffect(() => {
                               variant="ghost"
                               size="sm"
                               onClick={() => editQuestion(qIndex)}
+                              className="text-[#3E81D4] hover:bg-blue-50"
                             >
                               Edit
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-red-500"
+                              className="text-red-500 hover:bg-red-50"
                               onClick={() => removeQuestion(qIndex)}
                             >
                               Remove
@@ -492,43 +597,78 @@ useEffect(() => {
           {/* Step 3: Review */}
           {currentStep === 3 && (
             <div className="flex flex-col gap-6 py-2">
-              <div className="space-y-4">
-                <h3 className="text-lg font-bold">Poll Summary</h3>
+              <div className="space-y-6">
+                <h3 className="text-xl font-bold text-gray-800">Poll Summary</h3>
                 
-                <div className="grid gap-4">
-                  <div className="border-b pb-2">
-                    <h4 className="font-medium text-gray-500">Details</h4>
-                    <div className="mt-2 space-y-1">
-                      <p><span className="font-medium">Title:</span> {pollTitle}</p>
-                      {description && <p><span className="font-medium">Description:</span> {description}</p>}
-                      <p><span className="font-medium">Course ID:</span> {courseId}</p>
-                      <p><span className="font-medium">End Date:</span> {endDate && format(endDate, "PPPp")}</p>
+                <div className="grid gap-6">
+                  <div className="border-b pb-4">
+                    <h4 className="font-medium text-gray-600 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-[#3E81D4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      Details
+                    </h4>
+                    <div className="mt-2 space-y-3 pl-7">
+                      <p className="flex items-start gap-2">
+                        <span className="font-medium text-gray-700 min-w-[100px]">Title:</span>
+                        <span className="text-gray-800">{pollTitle}</span>
+                      </p>
+                      {description && (
+                        <p className="flex items-start gap-2">
+                          <span className="font-medium text-gray-700 min-w-[100px]">Description:</span>
+                          <span className="text-gray-800">{description}</span>
+                        </p>
+                      )}
+                      <p className="flex items-start gap-2">
+                        <span className="font-medium text-gray-700 min-w-[100px]">Course ID:</span>
+                        <span className="text-gray-800">{courseId}</span>
+                      </p>
+                      <p className="flex items-start gap-2">
+                        <span className="font-medium text-gray-700 min-w-[100px]">End Date:</span>
+                        <span className="text-gray-800">{endDate && format(endDate, "PPPp")}</span>
+                      </p>
                     </div>
                   </div>
 
                   <div>
-                    <h4 className="font-medium text-gray-500">Questions ({questions.length})</h4>
+                    <h4 className="font-medium text-gray-600 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-[#3E81D4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                      Questions ({questions.length})
+                    </h4>
                     <div className="mt-2 space-y-4">
                       {questions.map((question, qIndex) => (
-                        <div key={qIndex} className="border rounded-lg p-4">
-                          <div className="font-medium">
-                            {qIndex + 1}. {question.text}
-                            <Badge variant="outline" className="ml-2 text-xs">
+                        <div key={qIndex} className="border rounded-xl p-5 bg-white shadow-sm">
+                          <div className="font-medium text-gray-800 flex items-start gap-2">
+                            <span className="text-[#3E81D4] font-semibold">{qIndex + 1}.</span>
+                            <span>{question.text}</span>
+                            <Badge variant="outline" className="ml-2 text-xs border-[#3E81D4] text-[#3E81D4]">
                               {question.question_type === "single" && "Single Choice"}
                               {question.question_type === "multiple" && "Multiple Choice"}
                               {question.question_type === "text" && "Text Response"}
                             </Badge>
                           </div>
                           {question.question_type !== "text" && (
-                            <div className="mt-2 space-y-1">
+                            <div className="mt-3 space-y-2 pl-7">
                               {question.choices.map((choice: any, cIndex: number) => (
-                                <div key={cIndex} className="flex items-center gap-2">
-                                  {question.question_type === "single" ? (
-                                    <RadioGroupItem value={choice.label} disabled />
-                                  ) : (
-                                    <Checkbox checked={false} disabled />
-                                  )}
-                                  <Label>{choice.label}</Label>
+                                <div key={cIndex} className="flex items-center gap-3">
+                                  <RadioGroup>
+                                    {question.question_type === "single" ? (
+                                      <RadioGroupItem 
+                                        value={choice.label} 
+                                        disabled 
+                                        className="text-[#3E81D4] border-gray-400"
+                                      />
+                                    ) : (
+                                      <Checkbox 
+                                        checked={false} 
+                                        disabled 
+                                        className="text-[#3E81D4] border-gray-400"
+                                      />
+                                    )}
+                                  </RadioGroup>
+                                  <Label className="text-gray-700">{choice.label}</Label>
                                 </div>
                               ))}
                             </div>
@@ -543,38 +683,45 @@ useEffect(() => {
               <Button
                 disabled={submitting}
                 onClick={handleSubmit}
-                className="bg-blue-600 hover:bg-blue-700 text-white py-5"
+                className="bg-gradient-to-r from-[#3E81D4] to-[#5D9DF5] hover:from-[#2D71C4] hover:to-[#4C8DE5] text-white py-4 rounded-lg shadow-md hover:shadow-lg transition-all"
               >
                 {submitting ? (
                   <span className="flex items-center gap-2">
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     Creating Poll...
                   </span>
                 ) : (
-                  "Create Poll"
+                  <span className="text-lg font-medium">Create Poll Now</span>
                 )}
               </Button>
             </div>
           )}
 
           {/* Navigation */}
-          <div className="flex justify-between mt-4 pt-4 border-t">
+          <div className="flex justify-between mt-6 pt-6 border-t">
             {currentStep > 1 ? (
-              <Button variant="outline" onClick={prevStep} className="gap-1">
-                <ChevronLeft className="h-4 w-4" />
-                Previous
+              <Button 
+                variant="outline" 
+                onClick={prevStep} 
+                className="gap-1 py-3 px-6 rounded-lg border-gray-300 hover:border-gray-400 text-gray-700"
+              >
+                <ChevronLeft className="h-5 w-5" />
+                <span className="font-medium">Previous</span>
               </Button>
             ) : (
               <div></div>
             )}
             
             {currentStep < 3 ? (
-              <Button onClick={nextStep} className="bg-blue-600 hover:bg-blue-700 text-white gap-1">
-                Next
-                <ChevronRight className="h-4 w-4" />
+              <Button 
+                onClick={nextStep} 
+                className="bg-[#3E81D4] hover:bg-[#2D71C4] text-white gap-1 py-3 px-6 rounded-lg shadow-md hover:shadow-lg"
+              >
+                <span className="font-medium">Next</span>
+                <ChevronRight className="h-5 w-5" />
               </Button>
             ) : (
               <div></div>

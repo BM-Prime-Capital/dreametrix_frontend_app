@@ -10,6 +10,7 @@ import { PollsTable } from "./polls-table";
 import GlobalPollResults from "./GlobalPollResults";
 import PollRespondents from "./PollRespondents";
 import { PollResults } from "./PollResults";
+import PageTitleH1 from "@/components/ui/page-title-h1";
 
 type PollView = "table" | "global" | "respondents" | "results";
 
@@ -58,7 +59,15 @@ export default function PollsDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <h1 className="text-2xl font-bold text-gray-900">Polls Dashboard</h1>
+          
+          <div className="flex justify-between items-center bg-[#3e81d4] custom-calendar-primary px-6 py-4 rounded-md shadow-md">
+                  
+                  <PageTitleH1 title="Polls Dashboard" className="text-white" />
+                  <div className="flex items-center gap-6">
+                    {/* <TeachFiltersPopUp /> */}
+                  </div>
+                </div>
+        
           <p className="text-gray-500 mt-1">
             {view === "table" && "Manage and analyze all your polls"}
             {view === "global" && "Global results across all polls"}
