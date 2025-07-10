@@ -14,6 +14,7 @@ import { localStorageKey } from "@/constants/global";
 import UserAvatar from "../ui/user-avatar";
 import { useList } from "@/hooks/useList";
 import { getClasses } from "@/services/ClassService";
+import { getAssignments } from "@/services/AssignmentService";
 import { ActivityFeed } from "../layout/ActivityFeed";
 import { MinusIcon, PlusIcon } from "lucide-react";
 
@@ -22,12 +23,18 @@ export default function TeacherDashboard() {
   const [newSubject, setNewSubject] = useState("");
 
   const { list: classes } = useList(getClasses);
-
-  // TODO get subjects from DB
-  const [subjects, setSubjects] = useState<string[]>([
-    "Science",
-    "Mathematics",
-  ]);
+  const { list: assignments } = useList(getAssignments);
+  
+  // Extract unique subjects from classes
+  const [subjects, setSubjects] = useState<string[]>([]);
+  
+  useEffect(() => {
+    if (classes && classes.length > 0) {
+      const uniqueSubjects = [...new Set(classes.map(cls => cls.subject || ""))]
+        .filter(subject => subject !== "");
+      setSubjects(uniqueSubjects);
+    }
+  }, [classes]);
 
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
   const tenantData = JSON.parse(
@@ -136,7 +143,7 @@ export default function TeacherDashboard() {
                 </svg>
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-800">12</p>
+                <p className="text-2xl font-bold text-gray-800">{assignments?.length || 0}</p>
                 <p className="text-sm font-medium text-gray-600">Assignments</p>
               </div>
             </div>
@@ -150,7 +157,9 @@ export default function TeacherDashboard() {
                 </svg>
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-800">3</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  {assignments ? assignments.filter(a => a.status === 'pending' || !a.reviewed).length : 0}
+                </p>
                 <p className="text-sm font-medium text-gray-600">Pending Reviews</p>
               </div>
             </div>
@@ -174,11 +183,16 @@ export default function TeacherDashboard() {
                 <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
                 <div>
                   <p className="font-medium text-gray-800">Parent Contact Needed</p>
-                  <p className="text-sm text-gray-600 mt-1">2 students require parent communication</p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {classes.filter(c => c.needsParentContact).length || 0} students require parent communication
+                  </p>
                   <div className="flex gap-2 mt-2">
-                    {["Marta Sae", "John Smith"].map((name) => (
-                      <ContactParentDialog key={name} childrenName={name} />
-                    ))}
+                    {classes
+                      .filter(c => c.needsParentContact)
+                      .slice(0, 2)
+                      .map((cls) => (
+                        <ContactParentDialog key={cls.id} childrenName={cls.studentName || 'Student'} />
+                      ))}
                   </div>
                 </div>
               </div>

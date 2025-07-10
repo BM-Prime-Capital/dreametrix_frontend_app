@@ -532,11 +532,15 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
                   {/* Assignment Stats */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <p className="text-2xl font-bold text-gray-700">0</p>
+                      <p className="text-2xl font-bold text-gray-700">
+                        {assignment.submissions_count || 0}
+                      </p>
                       <p className="text-xs text-gray-600 font-medium">Submissions</p>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <p className="text-2xl font-bold text-gray-700">-</p>
+                      <p className="text-2xl font-bold text-gray-700">
+                        {assignment.average_grade ? assignment.average_grade.toFixed(1) : '-'}
+                      </p>
                       <p className="text-xs text-gray-600 font-medium">Avg Grade</p>
                     </div>
                   </div>

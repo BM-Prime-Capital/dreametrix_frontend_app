@@ -23,6 +23,8 @@ import {
   Save
 } from "lucide-react";
 import { Assignment } from "@/types";
+import { getSubmissions } from "@/services/AssignmentService";
+import { useRequestInfo } from "@/hooks/useRequestInfo";
 
 interface Student {
   id: number;
@@ -40,12 +42,40 @@ interface Student {
   };
 }
 
+interface ApiSubmissionResponse {
+  student: {
+    id: number;
+    user: {
+      id: number;
+      email: string;
+      username: string;
+      first_name: string;
+      last_name: string;
+      avatar?: string;
+    };
+    uuid: string;
+    grade: number;
+    enrolled_courses: number[];
+  };
+  has_submitted: boolean;
+  submission: {
+    id: number;
+    submitted_at: string;
+    file_url: string;
+    file_name: string;
+    grade?: number;
+    feedback?: string;
+    voice_note_url?: string;
+  } | null;
+}
+
 interface AssignmentDetailViewProps {
   assignment: Assignment;
   onBack: () => void;
 }
 
 export default function AssignmentDetailView({ assignment, onBack }: AssignmentDetailViewProps) {
+  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
   const [students, setStudents] = useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
@@ -55,54 +85,95 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data - replace with actual API call
+  // Load submissions data from API
   useEffect(() => {
-    const mockStudents: Student[] = [
-      {
-        id: 1,
-        full_name: "Alice Johnson",
-        email: "alice@school.edu",
-        submission: {
-          id: 1,
-          submitted_at: "2024-01-15T10:30:00Z",
-          file_url: "/mock-submission.pdf",
-          file_name: "assignment_alice.pdf",
-          grade: 85,
-          feedback: "Good work overall!"
+    async function loadData() {
+      if (!tenantDomain || !accessToken || !refreshToken || !assignment) return;
+      
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        // Get submissions for this assignment (includes student data)
+        const submissionsData = await getSubmissions(
+          assignment.id,
+          tenantDomain,
+          accessToken,
+          refreshToken
+        );
+        
+        // Log the structure to debug
+        console.log('Raw API response structure:', JSON.stringify(submissionsData, null, 2));
+        
+        if (!submissionsData || typeof submissionsData !== 'object') {
+          throw new Error('Invalid response format from API');
         }
-      },
-      {
-        id: 2,
-        full_name: "Bob Smith",
-        email: "bob@school.edu",
-        submission: {
-          id: 2,
-          submitted_at: "2024-01-14T14:20:00Z",
-          file_url: "/mock-submission2.pdf",
-          file_name: "assignment_bob.pdf"
+        
+        // Check if results exist before mapping and handle different possible response structures
+        let results = [];
+        
+        if (Array.isArray(submissionsData)) {
+          // If the API returns an array directly
+          results = submissionsData;
+        } else if (submissionsData.results && Array.isArray(submissionsData.results)) {
+          // If the API returns an object with a results array
+          results = submissionsData.results;
+        } else if (submissionsData.data && Array.isArray(submissionsData.data)) {
+          // Another common API pattern
+          results = submissionsData.data;
         }
-      },
-      {
-        id: 3,
-        full_name: "Carol Davis",
-        email: "carol@school.edu"
-      },
-      {
-        id: 4,
-        full_name: "David Wilson",
-        email: "david@school.edu",
-        submission: {
-          id: 4,
-          submitted_at: "2024-01-16T09:15:00Z",
-          file_url: "/mock-submission3.pdf",
-          file_name: "assignment_david.pdf",
-          grade: 92
+        
+        console.log('Processed results:', results);
+        
+        let studentsWithSubmissions = [];
+        
+        try {
+          studentsWithSubmissions = results.map((item: any) => {
+            // Check if item has the expected structure
+            if (!item || !item.student) {
+              console.warn('Unexpected item structure:', item);
+              return null;
+            }
+            
+            const student = item.student;
+            const user = student.user || {};
+            
+            return {
+              id: student.id,
+              full_name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown Student',
+              email: user.email || '',
+              avatar: user.avatar,
+              submission: item.submission ? {
+                id: item.submission.id,
+                submitted_at: item.submission.submitted_at,
+                file_url: item.submission.file_url,
+                file_name: item.submission.file_name || 'Unknown file',
+                grade: item.submission.grade,
+                feedback: item.submission.feedback,
+                voice_note_url: item.submission.voice_note_url
+              } : undefined
+            };
+          }).filter(Boolean); // Remove any null entries
+        } catch (err) {
+          console.error('Error processing submission data:', err);
+          setError('Error processing submission data. Check console for details.');
+          studentsWithSubmissions = [];
         }
+        
+        setStudents(studentsWithSubmissions);
+      } catch (err: any) {
+        console.error("Error loading data:", err);
+        setError(err.message || "Failed to load assignment data");
+      } finally {
+        setIsLoading(false);
       }
-    ];
-    setStudents(mockStudents);
-  }, []);
+    }
+    
+    loadData();
+  }, [assignment, tenantDomain, accessToken, refreshToken]);
 
   const filteredStudents = students.filter(student =>
     student.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -184,6 +255,23 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
 
       {/* Content */}
       <div className="flex-1 p-8 space-y-6 overflow-auto">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
+            <p className="text-gray-600 font-medium">Loading assignment data...</p>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-64">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <XCircle className="w-8 h-8 text-red-600" />
+            </div>
+            <p className="text-red-600 font-medium text-center">{error}</p>
+            <Button onClick={onBack} className="mt-4">
+              Go Back
+            </Button>
+          </div>
+        ) : (
+        <>
         {/* Assignment Info */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
@@ -274,7 +362,7 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10 border-2 border-green-100">
-                            <AvatarImage src={student.avatar} alt={student.full_name} />
+                            <AvatarImage src={student.avatar || undefined} alt={student.full_name} />
                             <AvatarFallback className="bg-green-100 text-green-700">
                               {initials}
                             </AvatarFallback>
@@ -336,6 +424,8 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
             </table>
           </div>
         </Card>
+        </>
+        )}
       </div>
 
       {/* Grading Dialog */}
