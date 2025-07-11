@@ -9,286 +9,722 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import Image from "next/image";
-import { generalImages } from "@/constants/images";
-import { Pencil } from "lucide-react";
+import { useState, useEffect } from "react";
+import { createPoll } from "./api";
+import { Textarea } from "@/components/ui/textarea";
+import { useRequestInfo } from "@/hooks/useRequestInfo";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { PlusCircle, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 export function AddPollsDialog() {
   const [open, setOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [pollTitle, setPollTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [endDate, setEndDate] = useState<Date | undefined>(new Date());
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [newQuestionText, setNewQuestionText] = useState("");
+  const [newQuestionType, setNewQuestionType] = useState("single");
+  const [newOptionText, setNewOptionText] = useState("");
+  const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
+  const [temporaryChoices, setTemporaryChoices] = useState<{ label: string }[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const { tenantDomain, accessToken } = useRequestInfo();
+  const [courses, setCourses] = useState<{ id: number; name: string }[]>([]);
+  const [courseId, setCourseId] = useState<number | null>(null);
 
-  const handleSubmit = () => {
-    if (currentStep === 3) {
-      // Save the Poll
+  useEffect(() => {
+    const savedCourses = localStorage.getItem("classes");
+    if (savedCourses) {
+      try {
+        const parsed = JSON.parse(savedCourses);
+        setCourses(parsed);
+      } catch (error) {
+        console.error("Invalid courses in localStorage");
+      }
     }
-    setCurrentStep((prev) => (prev === 4 ? 4 : prev + 1));
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      setCurrentStep(1);
+      setPollTitle("");
+      setDescription("");
+      setCourseId(null);
+      setEndDate(new Date());
+      setQuestions([]);
+      setNewQuestionText("");
+      setNewQuestionType("single");
+      setEditingQuestionIndex(null);
+      setTemporaryChoices([]);
+    }
+  }, [open]);
+
+  const addOption = () => {
+    if (!newOptionText.trim()) return;
+    
+    // For single choice, only allow one option
+    if (newQuestionType === "single" && temporaryChoices.length >= 1) {
+      toast.warning("Single choice questions can only have one option");
+      return;
+    }
+    
+    setTemporaryChoices([...temporaryChoices, { label: newOptionText.trim() }]);
+    setNewOptionText("");
+  };
+
+  const removeOption = (index: number) => {
+    const updated = [...temporaryChoices];
+    updated.splice(index, 1);
+    setTemporaryChoices(updated);
+  };
+
+  const addQuestion = () => {
+    if (!newQuestionText.trim()) {
+      toast.warning("Question text cannot be empty");
+      return;
+    }
+
+    // For single choice, ensure we have exactly one option
+    if (newQuestionType === "single" && temporaryChoices.length !== 1) {
+      toast.warning("Single choice questions must have exactly one option");
+      return;
+    }
+
+    const questionData = {
+      text: newQuestionText.trim(),
+      question_type: newQuestionType,
+      required: true,
+      choices: newQuestionType !== "text" ? [...temporaryChoices] : [],
+    };
+
+    if (editingQuestionIndex !== null) {
+      const updatedQuestions = [...questions];
+      updatedQuestions[editingQuestionIndex] = questionData;
+      setQuestions(updatedQuestions);
+    } else {
+      setQuestions([...questions, questionData]);
+    }
+
+    setNewQuestionText("");
+    setNewQuestionType("single");
+    setTemporaryChoices([]);
+    setEditingQuestionIndex(null);
+  };
+
+  const editQuestion = (index: number) => {
+    const question = questions[index];
+    setNewQuestionText(question.text);
+    setNewQuestionType(question.question_type);
+    setEditingQuestionIndex(index);
+    setTemporaryChoices(question.choices || []);
+  };
+
+  const cancelEdit = () => {
+    setEditingQuestionIndex(null);
+    setNewQuestionText("");
+    setNewQuestionType("single");
+    setTemporaryChoices([]);
+  };
+
+  const removeQuestion = (index: number) => {
+    const updatedQuestions = [...questions];
+    updatedQuestions.splice(index, 1);
+    setQuestions(updatedQuestions);
+    if (editingQuestionIndex === index) {
+      cancelEdit();
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!tenantDomain || !accessToken) {
+      toast.error("Authentication error. Please try again.");
+      return;
+    }
+
+    if (!pollTitle.trim()) {
+      toast.warning("Poll title is required");
+      return;
+    }
+
+    if (courseId === null) {
+      toast.warning("Course ID is required");
+      return;
+    }
+
+    if (!endDate) {
+      toast.warning("End date is required");
+      return;
+    }
+
+    if (questions.length === 0) {
+      toast.warning("Please add at least one question");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await createPoll(
+        {
+          title: pollTitle.trim(),
+          description: description.trim(),
+          course: Number(courseId),
+          deadline: endDate.toISOString(),
+          is_anonymous: true,
+          questions: questions.map(q => ({
+            ...q,
+            text: q.text.trim(),
+            choices: q.choices?.map((c: { label: string }) => ({ label: c.label.trim() }))
+          })),
+        },
+        tenantDomain,
+        accessToken
+      );
+      
+      toast.success("Poll created successfully!");
+      setOpen(false);
+    } catch (error) {
+      toast.error("Failed to create poll. Please try again.");
+      console.error(error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const validateStep1 = () => {
+    if (!pollTitle.trim()) {
+      toast.warning("Poll title is required");
+      return false;
+    }
+    if (courseId === null) {
+      toast.warning("Course ID is required");
+      return false;
+    }
+
+    if (!endDate) {
+      toast.warning("End date is required");
+      return false;
+    }
+    return true;
+  };
+
+  const nextStep = () => {
+    if (currentStep === 1 && !validateStep1()) return;
+    setCurrentStep((prev) => prev + 1);
+  };
+
+  const prevStep = () => {
+    setCurrentStep((prev) => prev - 1);
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-          <Button className="flex gap-3 items-center text-lg bg-[#f59e0b] hover:bg-[#f59e0b]/90 text-white rounded-xl px-5 py-4 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] group">
-            <div className="relative flex items-center justify-center">
-              <svg 
-                width="24" 
-                height="24" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                className="w-7 h-7 transform group-hover:rotate-180 transition-transform duration-300"
-              >
-                <path 
-                  d="M12 5V19M5 12H19" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                />
-                <path 
-                  d="M12 5V19M5 12H19" 
-                  stroke="white" 
-                  strokeWidth="1.5" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  className="opacity-30"
-                />
-              </svg>
-            </div>
-            <span className="font-semibold tracking-wide">Add New</span>
-          </Button>
+        <Button className="bg-gradient-to-r from-[#3E81D4] to-[#5D9DF5] hover:from-[#2D71C4] hover:to-[#4C8DE5] text-white px-6 py-5 rounded-xl shadow-lg transition-all hover:shadow-xl transform hover:scale-105 duration-200 ease-in-out">
+          <PlusCircle className="mr-2 h-5 w-5" strokeWidth={2} />
+          <span className="text-lg font-semibold">Create New Poll</span>
+        </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-blue-500">
-            New Poll
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto p-0 border-0 rounded-xl">
+        <div className="bg-gradient-to-r from-[#3E81D4] to-[#5D9DF5] p-6 rounded-t-xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-white">
+              Create New Poll
+            </DialogTitle>
+            <p className="text-blue-100 mt-1">
+              {currentStep === 1 && "Enter basic poll details"}
+              {currentStep === 2 && "Add your questions"}
+              {currentStep === 3 && "Review and submit"}
+            </p>
+          </DialogHeader>
+        </div>
 
-        <div className="flex flex-col">
-          <ul className="list-none flex gap-2 border-b-[1px] border-[#eee]">
-            {currentStep === 4 ? (
-              <li
-                className={`${
-                  currentStep === 4 ? "border-b-[2px] border-blue-500" : ""
-                }`}
-                onClick={() => setCurrentStep(4)}
-              >
-                Share
-              </li>
-            ) : (
-              <>
-                <li
-                  className={`cursor-pointer ${
-                    currentStep === 1 ? "border-b-[2px] border-blue-500" : ""
+        <div className="p-6 flex flex-col gap-6">
+          {/* Enhanced Stepper */}
+          <div className="flex justify-between items-center relative mb-8">
+            <div className="absolute top-1/2 left-0 right-0 h-[3px] bg-gray-100 -z-10"></div>
+            {[1, 2, 3].map((step) => (
+              <div key={step} className="flex flex-col items-center z-10">
+                <div
+                  className={`w-12 h-12 rounded-full flex items-center justify-center shadow-md transition-all duration-300 ${
+                    currentStep >= step 
+                      ? "bg-white border-4 border-[#3E81D4] text-[#3E81D4]" 
+                      : "bg-gray-100 text-gray-400"
                   }`}
-                  onClick={() => setCurrentStep(1)}
                 >
-                  Step 1
-                </li>
-                <li
-                  className={`cursor-pointer ${
-                    currentStep === 2 ? "border-b-[2px] border-blue-500" : ""
-                  }`}
-                  onClick={() => setCurrentStep(2)}
-                >
-                  Step 2
-                </li>
-                <li
-                  className={`cursor-pointer ${
-                    currentStep === 3 ? "border-b-[2px] border-blue-500" : ""
-                  }`}
-                  onClick={() => setCurrentStep(3)}
-                >
-                  Finish
-                </li>
-              </>
-            )}
-          </ul>
-
-          <div className="py-4">
-            {currentStep === 1 ? (
-              <div>
-                <div className="flex flex-wrap gap-4">
-                  <div className="flex-1 min-w-[200px]">
-                    <select className="rounded-full flex h-10 w-full border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                      <option disabled selected>
-                        Select Subject
-                      </option>
-                      <option>Math</option>
-                      <option>Language</option>
-                    </select>
-                  </div>
-                  <div className="flex-1 min-w-[200px]">
-                    <select className="rounded-full flex h-10 w-full border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                      <option disabled selected>
-                        Select Class
-                      </option>
-                      <option></option>
-                      <option>Class 3 Math</option>
-                      <option>Class 4 Math</option>
-                      <option>Grade 3 Language</option>
-                      <option>Grade 4 Language</option>
-                    </select>{" "}
-                  </div>
-                  <div className="flex-1 min-w-[200px]">
-                    <Input
-                      type="text"
-                      className="rounded-full"
-                      placeholder="title"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-[200px]">
-                    <Input
-                      type="datetime-local"
-                      className="rounded-full"
-                      placeholder="title"
-                    />
-                  </div>
+                  <span className={`text-lg font-semibold ${currentStep === step ? "scale-110" : ""}`}>
+                    {step}
+                  </span>
                 </div>
-
-                <div className="flex-1 w-full">
-                  <textarea
-                    rows={3}
-                    className="rounded-md w-full border-[1px] border-[#eee] p-2"
-                    placeholder="description"
-                  />
-                </div>
+                <span className={`text-sm mt-2 font-medium ${
+                  currentStep >= step ? "text-[#3E81D4]" : "text-gray-500"
+                }`}>
+                  {step === 1 ? "Details" : step === 2 ? "Questions" : "Review"}
+                </span>
               </div>
-            ) : currentStep === 2 ? (
-              <div className="flex flex-col gap-4">
-                <label>Question 1</label>
-                <Input
-                  type="text"
-                  className="rounded-full"
-                  placeholder="Question title"
-                />
-                <div className="flex flex-col gap-1">
-                  <label className="flex gap-1">
-                    <input type="radio" name="questionType" />
-                    Make it Multiple Choice
-                  </label>
-                  <label className="flex gap-1">
-                    <input type="radio" name="questionType" />
-                    Make it Single Choice
-                  </label>
-                  <label className="flex gap-1">
-                    <input type="radio" name="questionType" />
-                    Be able to write the answer
-                  </label>
-                </div>
-
-                <textarea
-                  rows={3}
-                  className="rounded-md w-full border-[1px] border-[#eee] p-2"
-                  placeholder="description"
-                />
-
-                <input type="file" />
-
-                <Button className="bg-blue-500 hover:bg-blue-600 text-white">
-                  Save and add another question
-                </Button>
-              </div>
-            ) : currentStep === 3 ? (
-              <div className="flex flex-col">
-                <label className="flex gap-2 items-center">
-                  Question 1{" "}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 hover:bg-blue-50"
-                    onClick={() => setCurrentStep(2)}
-                  >
-                    <Pencil className="h-4 w-4 text-[#25AAE1]" />
-                  </Button>
-                </label>
-                <label className="flex gap-2 items-center">
-                  Question 2{" "}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 hover:bg-blue-50"
-                    onClick={() => setCurrentStep(2)}
-                  >
-                    <Pencil className="h-4 w-4 text-[#25AAE1]" />
-                  </Button>
-                </label>
-                <label className="flex gap-2 items-center">
-                  Question 3{" "}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 hover:bg-blue-50"
-                    onClick={() => setCurrentStep(2)}
-                  >
-                    <Pencil className="h-4 w-4 text-[#25AAE1]" />
-                  </Button>
-                </label>
-              </div>
-            ) : currentStep === 4 ? (
-              <div className="flex flex-col gap-2 items-center">
-                <label className="text-muted-foreground">Calss 5 - Math</label>
-                <label className="text-muted-foreground">What is better</label>
-                <Image
-                  src={"/assets/images/general/qr_code.png"}
-                  alt="qr code"
-                  height={250}
-                  width={250}
-                />
-              </div>
-            ) : (
-              ""
-            )}
+            ))}
           </div>
 
-          <div className="flex justify-between mt-4">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setCurrentStep(1);
-                setOpen(false);
-              }}
-            >
-              Cancel
-            </Button>
-            {currentStep === 4 ? (
-              <div className="flex gap-4">
-                <Button
-                  onClick={() => {
-                    setCurrentStep(1);
-                    setOpen(false);
-                  }}
-                  className="bg-gray-500 hover:bg-gray-600 text-white"
-                >
-                  SAVE QR
-                </Button>
-                <Button
-                  onClick={() => {
-                    setCurrentStep(1);
-                    setOpen(false);
-                  }}
-                  className="bg-blue-500 hover:bg-blue-600 text-white"
-                >
-                  COPY LINK
-                </Button>
+          {/* Step 1: Poll Details */}
+          {currentStep === 1 && (
+            <div className="grid gap-6 py-2">
+              <div className="grid gap-2">
+                <Label htmlFor="title" className="text-gray-700 font-medium">
+                  Poll Title <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="title"
+                  placeholder="What's your poll about?"
+                  value={pollTitle}
+                  onChange={(e) => setPollTitle(e.target.value)}
+                  className="py-3 px-4 rounded-lg border-gray-300 focus:border-[#3E81D4] focus:ring-2 focus:ring-blue-100"
+                />
               </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="description" className="text-gray-700 font-medium">
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  placeholder="Add a brief description (optional)"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  className="rounded-lg border-gray-300 focus:border-[#3E81D4] focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="courseId" className="text-gray-700 font-medium">
+                  Select Course <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  onValueChange={(value) => setCourseId(Number(value))}
+                  value={courseId !== null ? courseId.toString() : undefined}
+                >
+                  <SelectTrigger className="w-full py-3 px-4 rounded-lg border-gray-300 focus:border-[#3E81D4] focus:ring-2 focus:ring-blue-100">
+                    <SelectValue placeholder="Select a course" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-lg shadow-lg border-gray-200">
+                    {courses.map((course) => (
+                      <SelectItem 
+                        key={course.id} 
+                        value={course.id.toString()}
+                        className="hover:bg-blue-50 focus:bg-blue-50"
+                      >
+                        {course.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-2">
+                <Label className="text-gray-700 font-medium">
+                  End Date <span className="text-red-500">*</span>
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal py-3 px-4 rounded-lg border-gray-300 hover:border-gray-400",
+                        !endDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4 text-gray-500" />
+                      {endDate ? (
+                        <span className="text-gray-800">{format(endDate, "PPP")}</span>
+                      ) : (
+                        <span className="text-gray-500">Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 rounded-lg shadow-xl border-gray-200">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={setEndDate}
+                      initialFocus
+                      fromDate={new Date()}
+                      className="border-0"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Questions */}
+          {currentStep === 2 && (
+            <div className="flex flex-col gap-6 py-2">
+              <div className="border rounded-xl p-5 bg-white shadow-sm">
+                <h3 className="font-medium text-lg mb-4 text-gray-800">
+                  {editingQuestionIndex !== null ? "✏️ Edit Question" : "➕ Add New Question"}
+                </h3>
+                
+                <div className="grid gap-4">
+                  <Input
+                    placeholder="What would you like to ask?"
+                    value={newQuestionText}
+                    onChange={(e) => setNewQuestionText(e.target.value)}
+                    className="py-3 px-4 rounded-lg border-gray-300 focus:border-[#3E81D4] focus:ring-2 focus:ring-blue-100"
+                  />
+
+                  <div className="grid gap-2">
+                    <Label className="text-gray-700 font-medium">Question Type</Label>
+                    <Select
+                      value={newQuestionType}
+                      onValueChange={(value) => {
+                        setNewQuestionType(value);
+                        // Reset choices when changing question type
+                        if (value !== newQuestionType) {
+                          setTemporaryChoices([]);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full py-3 px-4 rounded-lg border-gray-300 focus:border-[#3E81D4] focus:ring-2 focus:ring-blue-100">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-lg shadow-lg border-gray-200">
+                        <SelectItem value="single" className="hover:bg-blue-50">
+                          Single Choice
+                        </SelectItem>
+                        <SelectItem value="multiple" className="hover:bg-blue-50">
+                          Multiple Choice
+                        </SelectItem>
+                        <SelectItem value="text" className="hover:bg-blue-50">
+                          Text Response
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {newQuestionType !== "text" && (
+                    <div className="grid gap-2">
+                      <Label className="text-gray-700 font-medium">Options</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder={newQuestionType === "single" ? "Enter the single option" : "Add new option"}
+                          value={newOptionText}
+                          onChange={(e) => setNewOptionText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") addOption();
+                          }}
+                          className="py-3 px-4 rounded-lg border-gray-300 focus:border-[#3E81D4] flex-1 focus:ring-2 focus:ring-blue-100"
+                          disabled={newQuestionType === "single" && temporaryChoices.length >= 1}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={addOption}
+                          disabled={!newOptionText.trim() || (newQuestionType === "single" && temporaryChoices.length >= 1)}
+                          className="h-full border-[#3E81D4] text-[#3E81D4] hover:bg-blue-50 hover:text-[#2D71C4]"
+                        >
+                          Add
+                        </Button>
+                      </div>
+
+                      <div className="mt-3 space-y-2">
+                        {temporaryChoices.length === 0 ? (
+                          <p className="text-sm text-gray-400">
+                            {newQuestionType === "single" 
+                              ? "Enter the single option for this question"
+                              : "No options yet"}
+                          </p>
+                        ) : (
+                          temporaryChoices.map((choice, index) => (
+                            <div key={index} className="flex items-center gap-3 group">
+                              <RadioGroup>
+                                {newQuestionType === "single" ? (
+                                  <RadioGroupItem value={choice.label} disabled />
+                                ) : (
+                                  <Checkbox checked={false} disabled />
+                                )}
+                              </RadioGroup>
+                              <Label className="flex-1">{choice.label}</Label>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+                                onClick={() => removeOption(index)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={addQuestion}
+                      className="bg-[#3E81D4] hover:bg-[#2D71C4] text-white py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all"
+                      disabled={newQuestionType === "single" && temporaryChoices.length !== 1}
+                    >
+                      {editingQuestionIndex !== null ? "Update Question" : "Add Question"}
+                    </Button>
+                    {editingQuestionIndex !== null && (
+                      <Button
+                        variant="outline"
+                        onClick={cancelEdit}
+                        className="py-3 px-6 rounded-lg border-gray-300 hover:border-gray-400 text-gray-700"
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-medium text-lg text-gray-800">
+                  Your Questions ({questions.length})
+                </h3>
+                
+                {questions.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 bg-blue-50 rounded-xl">
+                    <div className="flex flex-col items-center justify-center">
+                      <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                      <p className="text-gray-600">No questions added yet</p>
+                      <p className="text-sm text-gray-500 mt-1">Start by adding your first question above</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {questions.map((question, qIndex) => (
+                      <div key={qIndex} className="border rounded-xl p-5 bg-white shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="flex-1">
+                            <div className="font-medium flex items-center gap-3">
+                              <span className="text-[#3E81D4] font-semibold">{qIndex + 1}.</span>
+                              {question.text}
+                              <Badge variant="outline" className="text-xs ml-2 border-[#3E81D4] text-[#3E81D4]">
+                                {question.question_type === "single" && "Single Choice"}
+                                {question.question_type === "multiple" && "Multiple Choice"}
+                                {question.question_type === "text" && "Text Response"}
+                              </Badge>
+                            </div>
+                            {question.question_type !== "text" && (
+                              <div className="mt-3 space-y-2 pl-7">
+                                {question.choices.map((choice: any, cIndex: number) => (
+                                  <div key={cIndex} className="flex items-center gap-3 group">
+                                    <RadioGroup>
+                                      {question.question_type === "single" ? (
+                                        <RadioGroupItem 
+                                          value={choice.label} 
+                                          disabled 
+                                          className="text-[#3E81D4] border-gray-400"
+                                        />
+                                      ) : (
+                                        <Checkbox 
+                                          checked={false} 
+                                          disabled 
+                                          className="text-[#3E81D4] border-gray-400"
+                                        />
+                                      )}
+                                    </RadioGroup>
+                                    <Label className="flex-1">{choice.label}</Label>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-6 w-6 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+                                      onClick={() => {
+                                        if (editingQuestionIndex === qIndex) {
+                                          removeOption(cIndex);
+                                        }
+                                      }}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => editQuestion(qIndex)}
+                              className="text-[#3E81D4] hover:bg-blue-50"
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-500 hover:bg-red-50"
+                              onClick={() => removeQuestion(qIndex)}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Review */}
+          {currentStep === 3 && (
+            <div className="flex flex-col gap-6 py-2">
+              <div className="space-y-6">
+                <h3 className="text-xl font-bold text-gray-800">Poll Summary</h3>
+                
+                <div className="grid gap-6">
+                  <div className="border-b pb-4">
+                    <h4 className="font-medium text-gray-600 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-[#3E81D4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      Details
+                    </h4>
+                    <div className="mt-2 space-y-3 pl-7">
+                      <p className="flex items-start gap-2">
+                        <span className="font-medium text-gray-700 min-w-[100px]">Title:</span>
+                        <span className="text-gray-800">{pollTitle}</span>
+                      </p>
+                      {description && (
+                        <p className="flex items-start gap-2">
+                          <span className="font-medium text-gray-700 min-w-[100px]">Description:</span>
+                          <span className="text-gray-800">{description}</span>
+                        </p>
+                      )}
+                      <p className="flex items-start gap-2">
+                        <span className="font-medium text-gray-700 min-w-[100px]">Course ID:</span>
+                        <span className="text-gray-800">{courseId}</span>
+                      </p>
+                      <p className="flex items-start gap-2">
+                        <span className="font-medium text-gray-700 min-w-[100px]">End Date:</span>
+                        <span className="text-gray-800">{endDate && format(endDate, "PPPp")}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-600 mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-[#3E81D4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                      Questions ({questions.length})
+                    </h4>
+                    <div className="mt-2 space-y-4">
+                      {questions.map((question, qIndex) => (
+                        <div key={qIndex} className="border rounded-xl p-5 bg-white shadow-sm">
+                          <div className="font-medium text-gray-800 flex items-start gap-2">
+                            <span className="text-[#3E81D4] font-semibold">{qIndex + 1}.</span>
+                            <span>{question.text}</span>
+                            <Badge variant="outline" className="ml-2 text-xs border-[#3E81D4] text-[#3E81D4]">
+                              {question.question_type === "single" && "Single Choice"}
+                              {question.question_type === "multiple" && "Multiple Choice"}
+                              {question.question_type === "text" && "Text Response"}
+                            </Badge>
+                          </div>
+                          {question.question_type !== "text" && (
+                            <div className="mt-3 space-y-2 pl-7">
+                              {question.choices.map((choice: any, cIndex: number) => (
+                                <div key={cIndex} className="flex items-center gap-3">
+                                  <RadioGroup>
+                                    {question.question_type === "single" ? (
+                                      <RadioGroupItem 
+                                        value={choice.label} 
+                                        disabled 
+                                        className="text-[#3E81D4] border-gray-400"
+                                      />
+                                    ) : (
+                                      <Checkbox 
+                                        checked={false} 
+                                        disabled 
+                                        className="text-[#3E81D4] border-gray-400"
+                                      />
+                                    )}
+                                  </RadioGroup>
+                                  <Label className="text-gray-700">{choice.label}</Label>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                disabled={submitting}
+                onClick={handleSubmit}
+                className="bg-gradient-to-r from-[#3E81D4] to-[#5D9DF5] hover:from-[#2D71C4] hover:to-[#4C8DE5] text-white py-4 rounded-lg shadow-md hover:shadow-lg transition-all"
+              >
+                {submitting ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Creating Poll...
+                  </span>
+                ) : (
+                  <span className="text-lg font-medium">Create Poll Now</span>
+                )}
+              </Button>
+            </div>
+          )}
+
+          {/* Navigation */}
+          <div className="flex justify-between mt-6 pt-6 border-t">
+            {currentStep > 1 ? (
+              <Button 
+                variant="outline" 
+                onClick={prevStep} 
+                className="gap-1 py-3 px-6 rounded-lg border-gray-300 hover:border-gray-400 text-gray-700"
+              >
+                <ChevronLeft className="h-5 w-5" />
+                <span className="font-medium">Previous</span>
+              </Button>
             ) : (
-              <div className="flex gap-4">
-                <Button
-                  onClick={() =>
-                    setCurrentStep((prev) => (prev === 1 ? 1 : prev - 1))
-                  }
-                  className="bg-gray-500 hover:bg-gray-600 text-white"
-                >
-                  PREVIOUS
-                </Button>
-                <Button
-                  onClick={() => handleSubmit()}
-                  className="bg-blue-500 hover:bg-blue-600 text-white"
-                >
-                  {currentStep === 3 ? "FINISH THE POLL" : "NEXT"}
-                </Button>
-              </div>
+              <div></div>
+            )}
+            
+            {currentStep < 3 ? (
+              <Button 
+                onClick={nextStep} 
+                className="bg-[#3E81D4] hover:bg-[#2D71C4] text-white gap-1 py-3 px-6 rounded-lg shadow-md hover:shadow-lg"
+              >
+                <span className="font-medium">Next</span>
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            ) : (
+              <div></div>
             )}
           </div>
         </div>
