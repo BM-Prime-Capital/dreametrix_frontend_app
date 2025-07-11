@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/utils/tailwind";
-
+import Image from "next/image";
 import { MenuRoute } from "@/types";
 import { isMenuItemActive } from "@/utils/routes";
 import { ScrollArea } from "../ui/scroll-area";
@@ -86,7 +86,17 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
                   "flex items-center justify-center w-6 h-6 transition-all duration-300 flex-shrink-0",
                   isActive ? "text-blue-600 scale-110" : "text-gray-500 group-hover:text-gray-700 group-hover:scale-105"
                 )}>
-                  {route.icon}
+                  {typeof route.icon === 'string' ? (
+                    <Image
+                      src={route.icon}
+                      alt={route.label}
+                      width={20}
+                      height={20}
+                      className="w-5 h-5 object-contain"
+                    />
+                  ) : (
+                    route.icon
+                  )}
                 </div>
                 {!isCollapsed && (
                   <span className="font-medium transition-all duration-300 truncate">
