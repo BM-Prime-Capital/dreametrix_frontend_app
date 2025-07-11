@@ -22,7 +22,7 @@ export async function getTeachMaterials(
   if (params.subject) url.searchParams.append('subject', params.subject);
   if (params.date) url.searchParams.append('date', params.date);
 
-  let response = await fetch(url.toString(), {
+  const response = await fetch(url.toString(), {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },

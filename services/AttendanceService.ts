@@ -175,7 +175,7 @@ export async function updateMultipleAttendances(
 ) {
   try {
     const url = `${tenantPrimaryDomain}/attendances/update-attendances/`;
-    let response = await fetch(url, {
+    const response = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -216,7 +216,7 @@ export async function updateAttendance(
       ],
     };
     const url = `${tenantPrimaryDomain}/attendances/update-attendances/`;
-    let response = await fetch(url, {
+    const response = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -247,7 +247,7 @@ export async function getAttendanceGeneralView(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
   const url = `${tenantPrimaryDomain}/attendances/general-view`;
-  let response = await fetch(url, {
+  const response = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

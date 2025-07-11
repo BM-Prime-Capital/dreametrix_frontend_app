@@ -440,7 +440,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
                       <Button variant="ghost" size="sm" className="flex-1 text-blue-600 hover:bg-blue-50 rounded-xl" onClick={() => { setSelectedClassForRoster(classData); setRosterOpen(true); }}>
                         View Roster
                       </Button>
-                      <AddClassDialog setRefreshTime={setRefreshTime} existingClass={{ ...classData, teacher: typeof classData.teacher === 'object' ? classData.teacher.id : classData.teacher }} trigger={<Button variant="ghost" size="sm" className="px-3 text-gray-600 hover:bg-gray-50 rounded-xl">Edit</Button>} />
+                      <AddClassDialog setRefreshTime={setRefreshTime} existingClass={{ ...classData, teacher: typeof classData.teacher === 'object' ? classData.teacher.id : classData.teacher }} />
                       <Button variant="ghost" size="sm" className="px-3 text-red-600 hover:bg-red-50 rounded-xl" onClick={() => handleDeleteClass(classData.id)}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </div>
@@ -512,7 +512,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50" onClick={() => { setSelectedClassForRoster(classData); setRosterOpen(true); }}>Roster</Button>
-                        <AddClassDialog setRefreshTime={setRefreshTime} existingClass={{ ...classData, teacher: typeof classData.teacher === 'object' ? classData.teacher.id : classData.teacher }} trigger={<Button variant="ghost" size="sm" className="text-gray-600 hover:bg-gray-50">Edit</Button>} />
+                        <AddClassDialog setRefreshTime={setRefreshTime} existingClass={{ ...classData, teacher: typeof classData.teacher === 'object' ? classData.teacher.id : classData.teacher }} />
                         <Button variant="ghost" size="sm" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteClass(classData.id)}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </div>

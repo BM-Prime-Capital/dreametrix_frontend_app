@@ -46,7 +46,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useList } from "@/hooks/useList";
+
 import { getAssignments, deleteAssignment } from "@/services/AssignmentService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Loader } from "../ui/loader";

@@ -5,17 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import PageTitleH1 from "../ui/page-title-h1";
 import PageTitleH2 from "../ui/page-title-h2";
-import Image from "next/image";
-import { teacherImages } from "@/constants/images";
 import MultiSelectionItem from "../ui/multi-selection-item";
 import { useEffect, useState } from "react";
 import ContactParentDialog from "./ContactParentDialog";
 import { localStorageKey } from "@/constants/global";
-import UserAvatar from "../ui/user-avatar";
 import { useList } from "@/hooks/useList";
 import { getClasses } from "@/services/ClassService";
 import { getAssignments } from "@/services/AssignmentService";
-import { ActivityFeed } from "../layout/ActivityFeed";
 import { MinusIcon, PlusIcon } from "lucide-react";
 
 export default function TeacherDashboard() {
@@ -30,16 +26,13 @@ export default function TeacherDashboard() {
   
   useEffect(() => {
     if (classes && classes.length > 0) {
-      const uniqueSubjects = [...new Set(classes.map(cls => cls.subject || ""))]
-        .filter(subject => subject !== "");
+      const uniqueSubjects = [...new Set(classes.map((cls: any) => cls.subject || ""))]
+        .filter((subject: unknown): subject is string => typeof subject === 'string' && subject !== "");
       setSubjects(uniqueSubjects);
     }
   }, [classes]);
 
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
-  const tenantData = JSON.parse(
-    localStorage.getItem(localStorageKey.TENANT_DATA)!
-  );
 
   const incrementFeedbackDuration = () => {
     if (feedbackDuration <= 9) {
@@ -158,7 +151,7 @@ export default function TeacherDashboard() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-800">
-                  {assignments ? assignments.filter(a => a.status === 'pending' || !a.reviewed).length : 0}
+                  {assignments ? assignments.filter((a: any) => a.status === 'pending' || !a.reviewed).length : 0}
                 </p>
                 <p className="text-sm font-medium text-gray-600">Pending Reviews</p>
               </div>
@@ -184,13 +177,13 @@ export default function TeacherDashboard() {
                 <div>
                   <p className="font-medium text-gray-800">Parent Contact Needed</p>
                   <p className="text-sm text-gray-600 mt-1">
-                    {classes.filter(c => c.needsParentContact).length || 0} students require parent communication
+                    {classes.filter((c: any) => c.needsParentContact).length || 0} students require parent communication
                   </p>
                   <div className="flex gap-2 mt-2">
                     {classes
-                      .filter(c => c.needsParentContact)
+                      .filter((c: any) => c.needsParentContact)
                       .slice(0, 2)
-                      .map((cls) => (
+                      .map((cls: any) => (
                         <ContactParentDialog key={cls.id} childrenName={cls.studentName || 'Student'} />
                       ))}
                   </div>

@@ -275,7 +275,7 @@ export const useCalculatorLogic = (): CalculatorLogic => {
       if (currentInput === "" || (currentInput === "0" && expression === ""))
         return;
 
-      let val = parseFloat(currentInput);
+      const val = parseFloat(currentInput);
       if (isNaN(val)) {
         setErrorState(true);
         return;

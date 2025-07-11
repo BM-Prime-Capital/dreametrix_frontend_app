@@ -1,24 +1,16 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
 import PageTitleH1 from "@/components/ui/page-title-h1";
-import Image from "next/image";
-import { generalImages, teacherImages } from "@/constants/images";
 import { Button } from "../ui/button";
 import { ChevronLeft } from "lucide-react";
-import { useSelector } from "react-redux";
-import LineChartComponent from "../ui/line-chart";
 import { localStorageKey, views } from "@/constants/global";
 import { useEffect, useState } from "react";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Loader } from "../ui/loader";
 import NoDataPersonalized from "../ui/no-data-personalized";
-
 import { getRewardsFocusView } from "@/services/RewardsService";
-import {
-  parseDomainForDisplay,
-  generateDomainKey,
-} from "@/utils/characterUtils";
+import { parseDomainForDisplay } from "@/utils/characterUtils";
+import LineChartComponent from "../ui/line-chart";
 
 export default function RewardsFocusedView({
   student,
@@ -27,26 +19,14 @@ export default function RewardsFocusedView({
   student: any;
   changeView: (viewName: string) => void;
 }) {
-  const { selectedClass } = useSelector((state: any) => state.generalInfo);
   const [studentData, setStudentData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-
-  //space
+  const [isLoading, setIsLoading] = useState(false);
   const {
     tenantDomain: tenantPrimaryDomain,
     accessToken,
     refreshToken,
   } = useRequestInfo();
-  const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
-  const currentClass = JSON.parse(
-    localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
-  );
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [rewards, setRewards] = useState<any[]>([]);
-  const [rewardsCount, setRewardsCount] = useState(0);
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
 
   // In FocusView component
   // Dans FocusView (correct)
@@ -173,7 +153,7 @@ export default function RewardsFocusedView({
                 </svg>
               </div>
               <div>
-                <p className="text-2xl font-bold text-blue-600">{Object.values(studentData.goodCharacter).reduce((a: any, b: any) => a + b, 0)}</p>
+                <p className="text-2xl font-bold text-blue-600">{Object.values(studentData.goodCharacter).reduce((a: number, b: unknown) => a + (typeof b === 'number' ? b : 0), 0)}</p>
                 <p className="text-sm font-medium text-gray-600">Positive Points</p>
               </div>
             </div>
@@ -187,7 +167,7 @@ export default function RewardsFocusedView({
                 </svg>
               </div>
               <div>
-                <p className="text-2xl font-bold text-red-600">{Object.values(studentData.badCharacter).reduce((a: any, b: any) => a + b, 0)}</p>
+                <p className="text-2xl font-bold text-red-600">{Object.values(studentData.badCharacter).reduce((a: number, b: unknown) => a + (typeof b === 'number' ? b : 0), 0)}</p>
                 <p className="text-sm font-medium text-gray-600">Growth Areas</p>
               </div>
             </div>

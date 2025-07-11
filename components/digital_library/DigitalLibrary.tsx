@@ -956,7 +956,7 @@ export default function DigitalLibrary() {
       } else {
         // Use regular PDF generation API for non-ELA subjects
         const url = `${tenantDomain}/digital_library/generate-pdf/`;
-        let response = await fetch(url, {
+        const response = await fetch(url, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

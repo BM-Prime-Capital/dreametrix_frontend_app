@@ -516,7 +516,7 @@ export default function ChildStudyFocusedView({
             <div className="border-t pt-6 mt-6">
               <h3 className="text-lg font-bold mb-3 text-gray-800">Report Card</h3>
               <div>
-                <Button variant="primary" onClick={() => changeView(views.GENERAL_VIEW)} className="p-2">
+                <Button variant="default" onClick={() => changeView(views.GENERAL_VIEW)} className="p-2">
                   View Report Card
                 </Button>
               </div>

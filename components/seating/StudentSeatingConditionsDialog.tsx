@@ -149,7 +149,7 @@ export const StudentSeatingConditionsDialog: React.FC<StudentSeatingConditionsDi
           <Button
             onClick={handleAddCondition}
             className="mt-2"
-            variant='primary'
+            variant='default'
           >
             Add Condition
           </Button>
@@ -186,7 +186,7 @@ export const StudentSeatingConditionsDialog: React.FC<StudentSeatingConditionsDi
         </div>
         
         <DialogFooter>
-          <Button variant='primary' className="" onClick={() => setIsOpen(false)}>Close</Button>
+          <Button variant='default' className="" onClick={() => setIsOpen(false)}>Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
