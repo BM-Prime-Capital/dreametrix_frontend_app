@@ -102,7 +102,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-muted via-background to-secondary-muted flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[url('/assets/images/bg.png')] bg-cover bg-center flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-card rounded-2xl shadow-soft overflow-hidden animate-fade-in">
         <div className="relative bg-gradient-primary p-6 pb-10">
           <div className="absolute inset-0 bg-[url('/assets/images/bg.png')] bg-cover bg-center opacity-10"></div>

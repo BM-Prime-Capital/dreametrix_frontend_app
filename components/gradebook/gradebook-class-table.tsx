@@ -40,6 +40,7 @@ import {
 interface GradebookClassTableProps {
   classData: ClassData;
   onBack: () => void;
+  layoutMode?: 'table' | 'grid' | 'compact';
   columnCounts?: {
     test: number;
     quiz: number;
@@ -92,6 +93,7 @@ interface StudentGrade {
 export function GradebookClassTable({
   classData,
   onBack,
+  layoutMode = 'table',
   columnCounts,
 }: GradebookClassTableProps) {
   const [students, setStudents] = useState<StudentGrade[]>([]);
@@ -367,7 +369,59 @@ export function GradebookClassTable({
     fetchStudents();
   }, [classData.id, tenantPrimaryDomain, accessToken, refreshToken]);
 
-  if (loading)
+  if (loading) {
+    if (layoutMode === 'grid') {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <Skeleton className="w-12 h-12 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-5 w-12" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[...Array(4)].map((_, j) => (
+                    <Skeleton key={j} className="h-12 rounded-lg" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    if (layoutMode === 'compact') {
+      return (
+        <div className="space-y-2">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <Skeleton className="w-8 h-8 rounded-full" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-6">
+                  {[...Array(5)].map((_, j) => (
+                    <Skeleton key={j} className="h-8 w-12" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
     return (
       <div className="space-y-4">
         {[...Array(5)].map((_, i) => (
@@ -375,6 +429,7 @@ export function GradebookClassTable({
         ))}
       </div>
     );
+  }
 
   if (error)
     return (
@@ -443,6 +498,94 @@ export function GradebookClassTable({
     usingProvidedCounts: !!columnCounts,
     providedCounts: columnCounts,
   });
+
+  if (layoutMode === 'grid') {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {students.map((student) => (
+          <div key={student.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold" style={{ background: '#0394fc' }}>
+                {student.name.charAt(0)}
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">{student.name}</h3>
+                <p className="text-sm text-gray-500">ID: {student.id}</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Overall Average</span>
+                <span className="font-bold text-lg" style={{ color: '#0394fc' }}>{student.average.toFixed(1)}%</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="bg-blue-50 p-2 rounded-lg text-center">
+                  <p className="font-semibold text-blue-700">{student.assessments.test.filter(g => g !== undefined).length}</p>
+                  <p className="text-blue-600">Tests</p>
+                </div>
+                <div className="bg-green-50 p-2 rounded-lg text-center">
+                  <p className="font-semibold text-green-700">{student.assessments.homework.filter(g => g !== undefined).length}</p>
+                  <p className="text-green-600">Homework</p>
+                </div>
+                <div className="bg-purple-50 p-2 rounded-lg text-center">
+                  <p className="font-semibold text-purple-700">{student.assessments.quiz.filter(g => g !== undefined).length}</p>
+                  <p className="text-purple-600">Quizzes</p>
+                </div>
+                <div className="bg-orange-50 p-2 rounded-lg text-center">
+                  <p className="font-semibold text-orange-700">{student.assessments.participation.filter(g => g !== undefined).length}</p>
+                  <p className="text-orange-600">Participation</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (layoutMode === 'compact') {
+    return (
+      <div className="space-y-2">
+        {students.map((student) => (
+          <div key={student.id} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-all duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{ background: '#0394fc' }}>
+                  {student.name.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">{student.name}</h3>
+                  <p className="text-xs text-gray-500">ID: {student.id}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-6 text-sm">
+                <div className="text-center">
+                  <p className="font-semibold text-blue-600">{student.assessments.test.filter(g => g !== undefined).length}</p>
+                  <p className="text-xs text-gray-500">Tests</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold text-green-600">{student.assessments.homework.filter(g => g !== undefined).length}</p>
+                  <p className="text-xs text-gray-500">HW</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold text-purple-600">{student.assessments.quiz.filter(g => g !== undefined).length}</p>
+                  <p className="text-xs text-gray-500">Quiz</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold text-orange-600">{student.assessments.participation.filter(g => g !== undefined).length}</p>
+                  <p className="text-xs text-gray-500">Part</p>
+                </div>
+                <div className="text-center bg-gray-50 px-3 py-1 rounded-lg">
+                  <p className="font-bold text-lg text-gray-900">{student.average.toFixed(1)}%</p>
+                  <p className="text-xs text-gray-500">Average</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <TooltipProvider>

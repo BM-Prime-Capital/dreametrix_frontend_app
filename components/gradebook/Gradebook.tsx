@@ -307,107 +307,22 @@ export default function Gradebook() {
                 </div>
 
                 {/* Dynamic Layout Container */}
-                {layoutMode === 'table' && (
-                  <div className="bg-gray-50/50 rounded-xl p-4 overflow-x-auto">
-                    <GradebookClassTable
-                      classData={currentClass}
-                      onBack={handleBackToList}
-                      columnCounts={{
-                        test: gradebookData.find((item) => item.id === currentClass.id)?.noOfExams || 1,
-                        quiz: gradebookData.find((item) => item.id === currentClass.id)?.noOfTests || 1,
-                        homework: gradebookData.find((item) => item.id === currentClass.id)?.noOfHomeworks || 1,
-                        participation: gradebookData.find((item) => item.id === currentClass.id)?.noOfParticipation || 1,
-                        other: gradebookData.find((item) => item.id === currentClass.id)?.noOfOther || 1,
-                      }}
-                    />
-                  </div>
-                )}
+                <div className="bg-gray-50/50 rounded-xl p-4 overflow-x-auto">
+                  <GradebookClassTable
+                    classData={currentClass}
+                    onBack={handleBackToList}
+                    layoutMode={layoutMode}
+                    columnCounts={{
+                      test: gradebookData.find((item) => item.id === currentClass.id)?.noOfExams || 1,
+                      quiz: gradebookData.find((item) => item.id === currentClass.id)?.noOfTests || 1,
+                      homework: gradebookData.find((item) => item.id === currentClass.id)?.noOfHomeworks || 1,
+                      participation: gradebookData.find((item) => item.id === currentClass.id)?.noOfParticipation || 1,
+                      other: gradebookData.find((item) => item.id === currentClass.id)?.noOfOther || 1,
+                    }}
+                  />
+                </div>
 
-                {layoutMode === 'grid' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {/* Mock student cards for grid view */}
-                    {Array.from({ length: 12 }).map((_, index) => (
-                      <div key={index} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
-                        <div className="flex items-center gap-4 mb-4">
-                          <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
-                            {String.fromCharCode(65 + (index % 26))}
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900">Student {index + 1}</h3>
-                            <p className="text-sm text-gray-500">ID: {1000 + index}</p>
-                          </div>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Overall Average</span>
-                            <span className="font-bold text-lg text-purple-600">{85 + Math.floor(Math.random() * 15)}%</span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div className="bg-blue-50 p-2 rounded-lg text-center">
-                              <p className="font-semibold text-blue-700">{Math.floor(Math.random() * 100)}</p>
-                              <p className="text-blue-600">Tests</p>
-                            </div>
-                            <div className="bg-green-50 p-2 rounded-lg text-center">
-                              <p className="font-semibold text-green-700">{Math.floor(Math.random() * 100)}</p>
-                              <p className="text-green-600">Homework</p>
-                            </div>
-                            <div className="bg-purple-50 p-2 rounded-lg text-center">
-                              <p className="font-semibold text-purple-700">{Math.floor(Math.random() * 100)}</p>
-                              <p className="text-purple-600">Quizzes</p>
-                            </div>
-                            <div className="bg-orange-50 p-2 rounded-lg text-center">
-                              <p className="font-semibold text-orange-700">{Math.floor(Math.random() * 100)}</p>
-                              <p className="text-orange-600">Participation</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
 
-                {layoutMode === 'compact' && (
-                  <div className="space-y-2">
-                    {/* Mock compact student list */}
-                    {Array.from({ length: 20 }).map((_, index) => (
-                      <div key={index} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-all duration-200">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                              {String.fromCharCode(65 + (index % 26))}
-                            </div>
-                            <div>
-                              <h3 className="font-medium text-gray-900">Student {index + 1}</h3>
-                              <p className="text-xs text-gray-500">ID: {1000 + index}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-6 text-sm">
-                            <div className="text-center">
-                              <p className="font-semibold text-blue-600">{Math.floor(Math.random() * 100)}</p>
-                              <p className="text-xs text-gray-500">Tests</p>
-                            </div>
-                            <div className="text-center">
-                              <p className="font-semibold text-green-600">{Math.floor(Math.random() * 100)}</p>
-                              <p className="text-xs text-gray-500">HW</p>
-                            </div>
-                            <div className="text-center">
-                              <p className="font-semibold text-purple-600">{Math.floor(Math.random() * 100)}</p>
-                              <p className="text-xs text-gray-500">Quiz</p>
-                            </div>
-                            <div className="text-center">
-                              <p className="font-semibold text-orange-600">{Math.floor(Math.random() * 100)}</p>
-                              <p className="text-xs text-gray-500">Part</p>
-                            </div>
-                            <div className="text-center bg-gray-50 px-3 py-1 rounded-lg">
-                              <p className="font-bold text-lg text-gray-900">{85 + Math.floor(Math.random() * 15)}%</p>
-                              <p className="text-xs text-gray-500">Average</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             ) : (
               // Enhanced Classes Overview
@@ -428,12 +343,7 @@ export default function Gradebook() {
                           className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group"
                           onClick={() => handleClassSelect(classItem)}
                         >
-                          <div className={`p-6 text-white ${
-                            index % 4 === 0 ? 'bg-gradient-to-r from-purple-500 to-purple-600' :
-                            index % 4 === 1 ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
-                            index % 4 === 2 ? 'bg-gradient-to-r from-green-500 to-green-600' :
-                            'bg-gradient-to-r from-orange-500 to-orange-600'
-                          }`}>
+                          <div className="p-6 text-white" style={{ background: '#0394fc' }}>
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex-1">
                                 <h3 className="font-bold text-lg mb-1 line-clamp-2">{classItem.name}</h3>

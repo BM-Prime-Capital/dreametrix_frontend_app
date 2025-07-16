@@ -360,11 +360,23 @@ export function AddClassDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-blue-500">
-            {existingClass ? "Update Class" : "Add New Class"}
-          </DialogTitle>
+      <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto rounded-2xl border-0 shadow-2xl">
+        <DialogHeader className="pb-6 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-xl">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <div>
+              <DialogTitle className="text-2xl font-bold text-gray-800">
+                {existingClass ? "Update Class" : "Create New Class"}
+              </DialogTitle>
+              <p className="text-sm text-gray-500 mt-1">
+                {existingClass ? "Modify class details and settings" : "Set up a new class with students and schedule"}
+              </p>
+            </div>
+          </div>
         </DialogHeader>
         <div className="flex flex-col gap-4">
           {/* {message && <AlertMessage content={message.content} color={message.color} />} */}
@@ -592,7 +604,7 @@ export function AddClassDialog({
               </Button>
             </div>
 
-            <div className="flex justify-end gap-2 mt-4">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
               <Button
                 type="button"
                 variant="outline"
@@ -600,19 +612,28 @@ export function AddClassDialog({
                   setOpen(false);
                   resetForm();
                 }}
+                className="px-6 py-2 rounded-xl border-gray-300 hover:bg-gray-50"
               >
                 Cancel
               </Button>
               <Button
                 disabled={isSubmitting}
                 type="submit"
-                className="bg-blue-500 hover:bg-blue-600"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all"
               >
-                {isSubmitting
-                  ? "Submitting..."
-                  : existingClass
-                  ? "Update Class"
-                  : "Create Class"}
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Processing...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={existingClass ? "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" : "M12 6v6m0 0v6m0-6h6m-6 0H6"} />
+                    </svg>
+                    {existingClass ? "Update Class" : "Create Class"}
+                  </div>
+                )}
               </Button>
             </div>
           </form>

@@ -232,7 +232,7 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
   return (
     <section className="flex flex-col h-full w-full bg-gradient-to-br from-green-50/30 to-blue-50/20">
       {/* Header */}
-      <div className="flex items-center justify-between bg-gradient-to-r from-green-600 via-green-700 to-blue-700 px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -247,7 +247,7 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
             </div>
             <div>
               <h1 className="text-white font-bold text-2xl">{assignment.name}</h1>
-              <p className="text-green-100 text-sm mt-1">{assignment.course.name}</p>
+              <p className="text-blue-100 text-sm mt-1">{assignment.course.name}</p>
             </div>
           </div>
         </div>
