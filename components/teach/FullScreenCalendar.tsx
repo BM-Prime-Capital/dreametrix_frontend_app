@@ -51,17 +51,27 @@ export function FullScreenCalendar({
 
   const renderHeader = () => {
     return (
-      <div className="flex items-center justify-between mb-6">
-        <Button variant="outline" size="icon" onClick={prevMonth}>
-          <ChevronLeft className="h-6 w-6" />
+      <div className="flex items-center justify-between mb-8">
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={prevMonth}
+          className="rounded-xl border-gray-300 hover:bg-blue-50 hover:border-blue-300"
+        >
+          <ChevronLeft className="h-5 w-5" />
         </Button>
         
-        <h2 className="text-2xl font-bold text-gray-800">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
           {format(currentDate, "MMMM yyyy")}
         </h2>
         
-        <Button variant="outline" size="icon" onClick={nextMonth}>
-          <ChevronRight className="h-6 w-6" />
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={nextMonth}
+          className="rounded-xl border-gray-300 hover:bg-blue-50 hover:border-blue-300"
+        >
+          <ChevronRight className="h-5 w-5" />
         </Button>
       </div>
     );
@@ -73,13 +83,13 @@ export function FullScreenCalendar({
     
     for (let i = 0; i < 7; i++) {
       days.push(
-        <div key={i} className="text-center font-semibold text-gray-600 py-3 border-b border-gray-200">
-          {format(addDays(date, i), "EEE")}
+        <div key={i} className="text-center font-bold text-gray-700 py-4 bg-gradient-to-b from-gray-50 to-gray-100 border-b border-gray-200">
+          {format(addDays(date, i), "EEEE")}
         </div>
       );
     }
 
-    return <div className="grid grid-cols-7 gap-0 border-t border-gray-200">{days}</div>;
+    return <div className="grid grid-cols-7 gap-0 rounded-t-xl overflow-hidden border border-gray-200">{days}</div>;
   };
 
   const renderCells = () => {
@@ -102,16 +112,27 @@ export function FullScreenCalendar({
         days.push(
           <div
             key={day.toString()}
-            className={`flex items-center justify-center rounded-lg transition-all
-              border border-gray-200
-              ${!isCurrentMonth ? "bg-gray-50 text-gray-400" : "bg-white text-gray-800"}
-              ${isSelected ? "!bg-blue-600 !text-white !border-blue-700" : ""}
-              ${isTodayDate ? "!bg-blue-100 !text-blue-800 font-bold border-2 border-blue-500" : ""}
-              h-full min-h-[80px] aspect-square cursor-pointer
-              hover:bg-gray-100`}
+            className={`flex flex-col items-center justify-center transition-all duration-200
+              border border-gray-200 relative group
+              ${!isCurrentMonth ? "bg-gray-50/50 text-gray-400" : "bg-white text-gray-800"}
+              ${isSelected ? "!bg-gradient-to-br !from-blue-500 !to-indigo-600 !text-white !border-blue-600 shadow-lg scale-105" : ""}
+              ${isTodayDate && !isSelected ? "!bg-gradient-to-br !from-blue-100 !to-indigo-100 !text-blue-800 font-bold border-2 border-blue-400" : ""}
+              h-full min-h-[100px] cursor-pointer
+              hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-300 hover:shadow-md hover:scale-102`}
             onClick={() => handleDateClick(cloneDay)}
           >
-            {format(day, "d")}
+            <span className={`text-lg font-semibold mb-1 ${isSelected ? 'text-white' : ''}`}>
+              {format(day, "d")}
+            </span>
+            {isCurrentMonth && (
+              <div className="flex flex-col items-center space-y-1">
+                <div className={`w-2 h-2 rounded-full ${Math.random() > 0.7 ? 'bg-green-400' : 'bg-transparent'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${Math.random() > 0.8 ? 'bg-orange-400' : 'bg-transparent'}`}></div>
+              </div>
+            )}
+            {isSelected && (
+              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-lg"></div>
+            )}
           </div>
         );
         day = addDays(day, 1);
@@ -125,15 +146,15 @@ export function FullScreenCalendar({
       days = [];
     }
 
-    return <div className="space-y-0 border-l border-gray-200">{rows}</div>;
+    return <div className="space-y-0 border-l border-r border-b border-gray-200 rounded-b-xl overflow-hidden">{rows}</div>;
   };
 
   return (
-    <Card className="w-full h-full p-8 bg-white shadow-lg rounded-xl">
+    <Card className="w-full h-full p-8 bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl border border-gray-100">
       <div className="h-full flex flex-col">
         {renderHeader()}
         {renderDays()}
-        <div className="flex-1 overflow-auto py-4 border-t border-gray-200">
+        <div className="flex-1 overflow-auto py-4">
           {renderCells()}
         </div>
       </div>

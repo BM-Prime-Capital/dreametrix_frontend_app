@@ -25,6 +25,8 @@ export interface Assignment {
   course: MiniCourse;
   created_at: string;
   updated_at: string;
+  submissions_count?: number;
+  average_grade?: number;
 }
 
 export interface ClassDay {

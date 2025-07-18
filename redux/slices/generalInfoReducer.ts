@@ -34,13 +34,13 @@ const generalInfoSlice = createSlice({
   },
   reducers: {
     updateSelectedClass: (state, action) => {
-      let selectedClass = action.payload?.payload
+      const selectedClass = action.payload?.payload
         ? action.payload.payload
         : action.payload;
       state.selectedClass = selectedClass;
     },
     updateClassesList: (state, action) => {
-      let newClassesList = action.payload?.payload
+      const newClassesList = action.payload?.payload
         ? action.payload.payload
         : action.payload;
       state.allClasses = newClassesList;

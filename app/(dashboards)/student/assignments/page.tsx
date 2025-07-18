@@ -4,13 +4,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AssignmentsTable } from "../../../../components/student/assignments/assignments-table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Calendar, ArrowLeft } from "lucide-react";
 import { DatePickerDialog } from "../../../../components/student/assignments/date-picker-dialog";
 

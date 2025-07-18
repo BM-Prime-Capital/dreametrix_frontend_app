@@ -46,7 +46,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useList } from "@/hooks/useList";
+
 import { getAssignments, deleteAssignment } from "@/services/AssignmentService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Loader } from "../ui/loader";
@@ -78,7 +78,11 @@ const globalFilterFn: FilterFn<Assignment> = (row, columnId, filterValue) => {
   return false;
 };
 
-export function AssignmentsTable() {
+interface AssignmentsTableProps {
+  onViewAssignment: (assignment: Assignment) => void;
+}
+
+export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -94,6 +98,7 @@ export function AssignmentsTable() {
     null
   );
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
 
   // Load assignments function
   const loadAssignments = async () => {
@@ -153,8 +158,7 @@ export function AssignmentsTable() {
   }, [assignments, courseFilter]);
 
   const handleAssignmentClick = (assignment: Assignment) => {
-    setSelectedAssignment(assignment);
-    setIsSubmissionsPopupOpen(true);
+    onViewAssignment(assignment);
   };
 
   const handleEditAssignment = (assignment: Assignment) => {
@@ -204,7 +208,7 @@ export function AssignmentsTable() {
       cell: ({ row }) => (
         <button
           onClick={() => handleAssignmentClick(row.original)}
-          className="font-medium text-[#3e81d4] hover:text-[#1D8CB3] hover:underline cursor-pointer text-left"
+          className="font-medium text-green-600 hover:text-green-800 hover:underline cursor-pointer text-left"
         >
           {row.getValue("name")}
         </button>
@@ -279,20 +283,20 @@ export function AssignmentsTable() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 hover:bg-[#3e81d4]/10"
+              className="h-8 w-8 hover:bg-green-50"
               onClick={() => handleAssignmentClick(row.original)}
               title="View Submissions"
             >
-              <Eye className="h-4 w-4 text-[#3e81d4]" />
+              <Eye className="h-4 w-4 text-green-600" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 hover:bg-[#3e81d4]/10"
+              className="h-8 w-8 hover:bg-green-50"
               onClick={() => handleEditAssignment(row.original)}
               title="Edit Assignment"
             >
-              <Pencil className="h-4 w-4 text-[#3e81d4]" />
+              <Pencil className="h-4 w-4 text-green-600" />
             </Button>
             <Button
               variant="ghost"
@@ -323,6 +327,11 @@ export function AssignmentsTable() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
+    initialState: {
+      pagination: {
+        pageSize: 9,
+      },
+    },
     state: {
       sorting,
       globalFilter,
@@ -364,17 +373,17 @@ export function AssignmentsTable() {
     );
 
   return (
-    <div className="w-full space-y-6 p-4 bg-white rounded-lg shadow-sm">
-      {/* Header avec filtres */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+    <div className="w-full space-y-6 p-6">
+      {/* Enhanced Header */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto md:flex-1">
           <div className="relative w-full md:w-auto md:flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
-              placeholder="Filter assignments..."
+              placeholder="Search assignments by name, course, or type..."
               value={globalFilter ?? ""}
               onChange={(event) => setGlobalFilter(event.target.value)}
-              className="pl-8 w-full md:w-[400px]"
+              className="pl-12 w-full md:w-[400px] h-12 rounded-xl border-gray-300 bg-white shadow-sm"
             />
           </div>
 
@@ -384,7 +393,7 @@ export function AssignmentsTable() {
               onValueChange={setCourseFilter}
               disabled={isLoading || assignments.length === 0}
             >
-              <SelectTrigger className="w-full md:w-[200px]">
+              <SelectTrigger className="w-full md:w-[200px] h-12 rounded-xl border-gray-300 bg-white shadow-sm">
                 <SelectValue placeholder="Filter by course" />
               </SelectTrigger>
               <SelectContent>
@@ -399,11 +408,10 @@ export function AssignmentsTable() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Button
             onClick={handleExport}
-            variant="outline"
-            className="bg-[#3e81d4]/10 text-[#3e81d4] hover:bg-[#3e81d4]/20 border-[#3e81d4]/20"
+            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl px-6 py-3 shadow-lg font-medium"
           >
             <Download className="h-4 w-4 mr-2" />
             Export
@@ -413,128 +421,238 @@ export function AssignmentsTable() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="bg-[#3e81d4]/10 text-[#3e81d4] hover:bg-[#3e81d4]/20 border-[#3e81d4]/20"
+                className="bg-white border-gray-300 rounded-xl px-6 py-3 shadow-lg font-medium"
               >
-                Columns <ChevronDown className="ml-2 h-4 w-4" />
+                {viewMode === 'card' ? 'Card' : 'Table'} View <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
+              <DropdownMenuCheckboxItem 
+                checked={viewMode === 'card'} 
+                onCheckedChange={() => setViewMode('card')}
+              >
+                Card View
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem 
+                checked={viewMode === 'table'} 
+                onCheckedChange={() => setViewMode('table')}
+              >
+                Table View
+              </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
-      {/* Tableau */}
-      <div className="rounded-lg border border-gray-200 overflow-hidden">
-        <Table className="min-w-full">
-          <TableHeader className="bg-[#3e81d4]/10">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead
-                      key={header.id}
-                      className="px-4 py-3 text-left text-xs font-medium text-[#3e81d4] uppercase tracking-wider"
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody className="bg-white divide-y divide-gray-200">
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="hover:bg-[#3e81d4]/5"
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className="px-4 py-3 whitespace-nowrap text-sm text-gray-800"
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="px-4 py-3 text-center text-sm text-gray-500"
-                >
-                  No assignments found.
-                </TableCell>
-              </TableRow>
+      {/* Enhanced Assignments Display */}
+      {table.getRowModel().rows?.length ? (
+        viewMode === 'card' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {table.getRowModel().rows.map((row) => {
+            const assignment = row.original;
+            const dueDate = new Date(assignment.due_date);
+            const isOverdue = dueDate < new Date() && !assignment.published;
+            const daysUntilDue = Math.ceil((dueDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+            
+            return (
+              <div key={row.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                {/* Assignment Header */}
+                <div className={`p-6 text-white ${
+                  assignment.kind === 'homework' ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
+                  assignment.kind === 'test' ? 'bg-gradient-to-r from-red-500 to-red-600' :
+                  assignment.kind === 'quiz' ? 'bg-gradient-to-r from-purple-500 to-purple-600' :
+                  assignment.kind === 'project' ? 'bg-gradient-to-r from-green-500 to-green-600' :
+                  'bg-gradient-to-r from-gray-500 to-gray-600'
+                }`}>
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg mb-1 line-clamp-2">{assignment.name}</h3>
+                      <p className="text-white/80 text-sm">{assignment.course.name}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        assignment.published 
+                          ? 'bg-green-500/20 text-green-100 border border-green-400/30' 
+                          : 'bg-yellow-500/20 text-yellow-100 border border-yellow-400/30'
+                      }`}>
+                        {assignment.published ? 'Published' : 'Draft'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium capitalize">
+                      {assignment.kind}
+                    </span>
+                    <span className="text-white/90 text-sm font-medium">
+                      Weight: {Number(assignment.weight).toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+
+                {/* Assignment Content */}
+                <div className="p-6 space-y-4">
+                  {/* Due Date Info */}
+                  <div className={`p-4 rounded-xl border-l-4 ${
+                    isOverdue ? 'bg-red-50 border-red-400' :
+                    daysUntilDue <= 3 ? 'bg-yellow-50 border-yellow-400' :
+                    'bg-blue-50 border-blue-400'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Due Date</p>
+                        <p className={`text-sm ${
+                          isOverdue ? 'text-red-700' :
+                          daysUntilDue <= 3 ? 'text-yellow-700' :
+                          'text-blue-700'
+                        }`}>
+                          {dueDate.toLocaleDateString('en-US', { 
+                            weekday: 'short', 
+                            month: 'short', 
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-xs font-medium ${
+                          isOverdue ? 'text-red-600' :
+                          daysUntilDue <= 3 ? 'text-yellow-600' :
+                          'text-blue-600'
+                        }`}>
+                          {isOverdue ? 'Overdue' :
+                           daysUntilDue === 0 ? 'Due Today' :
+                           daysUntilDue === 1 ? 'Due Tomorrow' :
+                           `${daysUntilDue} days left`}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Assignment Stats */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-gray-700">
+                        {assignment.submissions_count || 0}
+                      </p>
+                      <p className="text-xs text-gray-600 font-medium">Submissions</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-gray-700">
+                        {assignment.average_grade ? assignment.average_grade.toFixed(1) : '-'}
+                      </p>
+                      <p className="text-xs text-gray-600 font-medium">Avg Grade</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="border-t border-gray-100 p-4 flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex-1 text-green-600 hover:bg-green-50 rounded-xl font-medium"
+                    onClick={() => handleAssignmentClick(assignment)}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    View
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="px-3 text-gray-600 hover:bg-gray-50 rounded-xl"
+                    onClick={() => handleEditAssignment(assignment)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="px-3 text-red-600 hover:bg-red-50 rounded-xl"
+                    onClick={() => handleDeleteAssignment(assignment)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-gray-200 overflow-hidden bg-white shadow-lg">
+            <Table>
+              <TableHeader className="bg-gradient-to-r from-green-50 to-blue-50">
+                {table.getHeaderGroups().map(headerGroup => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map(header => (
+                      <TableHead key={header.id} className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows.map(row => (
+                  <TableRow key={row.id} className="hover:bg-green-50/30 transition-colors">
+                    {row.getVisibleCells().map(cell => (
+                      <TableCell key={cell.id} className="px-6 py-4 text-sm text-gray-900">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )
+      ) : (
+        <div className="text-center py-12">
+          <div className="mx-auto h-24 w-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <Search className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No assignments found</h3>
+          <p className="text-gray-500 mb-6">Create your first assignment to get started</p>
+        </div>
+      )}
+
+      {/* Enhanced Pagination */}
+      {table.getRowModel().rows?.length > 0 && (
+        <div className="flex flex-col md:flex-row items-center justify-between px-6 py-4 bg-gray-50 rounded-2xl">
+          <div className="text-sm text-gray-600 mb-4 md:mb-0">
+            Showing{" "}
+            <span className="font-semibold text-gray-900">{table.getRowModel().rows.length}</span>{" "}
+            of <span className="font-semibold text-gray-900">{filteredAssignments.length}</span>{" "}
+            assignments
+            {courseFilter !== "all" && (
+              <span className="text-gray-500"> (filtered by course)</span>
             )}
-          </TableBody>
-        </Table>
-      </div>
+          </div>
 
-      {/* Pagination */}
-      <div className="flex flex-col md:flex-row items-center justify-between px-4 py-3 bg-[#3e81d4]/5 rounded-b-lg">
-        <div className="text-sm text-[#3e81d4] mb-4 md:mb-0">
-          Showing{" "}
-          <span className="font-medium">{table.getRowModel().rows.length}</span>{" "}
-          of <span className="font-medium">{filteredAssignments.length}</span>{" "}
-          assignments
-          {courseFilter !== "all" && (
-            <span className="text-gray-600"> (filtered by course)</span>
-          )}
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
         </div>
-
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className="px-3 py-1 border border-[#3e81d4]/20 rounded-md text-sm font-medium text-[#3e81d4] bg-[#3e81d4]/10 hover:bg-[#3e81d4]/20"
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="px-3 py-1 border border-[#3e81d4]/20 rounded-md text-sm font-medium text-[#3e81d4] bg-[#3e81d4]/10 hover:bg-[#3e81d4]/20"
-          >
-            Next
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
-      </div>
+      )}
 
       {/* Submissions Popup */}
       {selectedAssignment && (
