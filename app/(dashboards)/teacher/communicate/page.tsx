@@ -1,6 +1,6 @@
-import Communicate from "@/components/communicate/Communicate";
+import TeacherCommunication from "@/components/communicate/TeacherCommunication";
 import React from "react";
 
 export default function CommunicatePage() {
-  return <Communicate />;
+  return <TeacherCommunication />;
 }
