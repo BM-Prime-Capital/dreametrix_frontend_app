@@ -23,7 +23,7 @@ export async function getCharracters(
 
   console.log("initCharaterData => ", requestData);
   const url = `${tenantPrimaryDomain}${characterPath}`;
-  let response = await fetch(url, {
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -68,7 +68,7 @@ export async function updateCharacter(
       updates: [characterData],
     };
 
-    let response = await fetch(url, {
+    const response = await fetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -100,7 +100,7 @@ export async function getCharractersList(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
   const url = `${tenantPrimaryDomain}/characters/public-characters/`;
-  let response = await fetch(url, {
+  const response = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -132,7 +132,7 @@ export async function getCharacterGeneralView(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
   const url = `${tenantPrimaryDomain}/characters/character-general-view`;
-  let response = await fetch(url, {
+  const response = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

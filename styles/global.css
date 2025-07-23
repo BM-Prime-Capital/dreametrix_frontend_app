@@ -191,3 +191,15 @@
   background: #d1d5db;
   border-radius: 5px;
 }
+
+@layer components {
+  .progress-indicator-green {
+    --progress-indicator: #10B981; /* emerald-500 */
+  }
+  .progress-indicator-amber {
+    --progress-indicator: #F59E0B; /* amber-500 */
+  }
+  .progress-indicator-red {
+    --progress-indicator: #EF4444; /* red-500 */
+  }
+}

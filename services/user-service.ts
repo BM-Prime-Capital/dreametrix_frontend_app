@@ -87,6 +87,12 @@ export interface SchoolDisplay {
   district?: string;
 }
 
+// Helper function to properly capitalize strings
+const capitalizeString = (str: string): string => {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
 // Convert API School to display format
 export const convertSchoolToDisplay = (school: School): SchoolDisplay => {
   // Build complete address from multiple street fields
@@ -102,8 +108,8 @@ export const convertSchoolToDisplay = (school: School): SchoolDisplay => {
     id: school.id?.toString() || school.SCHID?.toString() || "0",
     name: school.SCH_NAME,
     address: fullAddress,
-    city: school.MCITY || "",
-    state: school.STATENAME || school.MSTATE || "",
+    city: capitalizeString(school.MCITY || ""),
+    state: capitalizeString(school.STATENAME || school.MSTATE || ""),
     zip_code:
       school.MZIP?.toString() ||
       (school.MZIP4 ? `${school.MZIP}-${school.MZIP4}` : undefined),

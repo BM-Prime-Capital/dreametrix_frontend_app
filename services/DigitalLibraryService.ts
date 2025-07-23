@@ -11,7 +11,7 @@ export async function getSubjects(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
   const url = `${tenantPrimaryDomain}/digital_library/subjects/`;
-  let response = await fetch(url, {
+  const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
@@ -126,7 +126,7 @@ export async function getDomains(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
   const url = `${tenantPrimaryDomain}/digital_library/domains/${subject}/${grade}`;
-  let response = await fetch(url, {
+  const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
@@ -159,7 +159,7 @@ export async function getStandards(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
   const url = `${tenantPrimaryDomain}/digital_library/standards/${subject}/${grade}/${domain}`;
-  let response = await fetch(url, {
+  const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
@@ -204,7 +204,7 @@ export async function getQuestionsLinks(
   )}/${questionsType}/`;
 
   console.log("URL DATA => ", url);
-  let response = await fetch(url, {
+  const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
