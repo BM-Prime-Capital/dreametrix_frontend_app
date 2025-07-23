@@ -16,6 +16,9 @@ export const API_CONFIG = {
     SCHOOLS_LIST: "/resources/school-search",
     SCHOOLS_DETAIL: "/resources/school-search",
     SCHOOLS_CREATE: "/resources/school-search",
+    // Chat endpoints
+    CHAT_MESSAGES: "/chats/messages/",
+    CHAT_ROOMS: "/chats/rooms/",
   },
 };
 
