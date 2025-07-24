@@ -31,6 +31,9 @@ export function StudentsTable() {
     );
   }
 
+  console.log("Students data:", students);
+  
+
   if (error) {
     return (
       <Alert variant="destructive" className="my-4">
