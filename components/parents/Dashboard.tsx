@@ -72,11 +72,11 @@ export default function ParentDashboard() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <Avatar className="h-16 w-16 shrink-0">
                 <AvatarImage src="/placeholder.svg"/>
-                <AvatarFallback>PS</AvatarFallback>
+                <AvatarFallback>{userData?.first_name?.charAt(0)}{userData?.last_name?.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                  <h2 className="text-xl font-medium truncate">Parent Smith</h2>
+                  <h2 className="text-xl font-medium truncate">{userData.first_name} {userData.last_name}</h2>
                   <div className="flex gap-2">
                     <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
                       <MessageCircle className="h-5 w-5 text-[#25AAE1]" />
@@ -89,7 +89,7 @@ export default function ParentDashboard() {
                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                   <div className="flex items-center gap-1">
                     <Mail className="h-4 w-4 shrink-0 mt-0.5" />
-                    <span className="truncate">parent.smith@example.com</span>
+                    <span className="truncate">{userData.email}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Phone className="h-4 w-4 shrink-0 mt-0.5" />
@@ -222,7 +222,7 @@ export default function ParentDashboard() {
               <div className="flex flex-col items-center gap-2 mb-6">
                 <Avatar className="h-20 w-20">
                   <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback>PS</AvatarFallback>
+                  <AvatarFallback>{userData?.first_name?.charAt(0)}{userData?.last_name?.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <span className="text-sm text-[#25AAE1] cursor-pointer hover:text-[#1E86B3]">Change Photo</span>
               </div>
