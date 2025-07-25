@@ -1,4 +1,4 @@
-import { BASE_URL } from '@/app/utils/constantes';
+import { BASE_URL } from '@/app/utils/constants';
 
 
 export async function getAllClasses(token?: string) {
