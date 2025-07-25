@@ -1,17 +1,32 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { ParentAssignmentsTable } from "@/components/parents/assignments/parent-assignments-table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar } from 'lucide-react'
 import { DatePickerDialog } from "@/components/student/assignments/date-picker-dialog"
+import { localStorageKey } from "@/constants/global"
 
 export default function ParentAssignmentsPage() {
   const [selectedClass, setSelectedClass] = useState<string>("all-classes")
   const [selectedStudent, setSelectedStudent] = useState<string>("all-students")
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
   const [, setSelectedDates] = useState<number[]>([])
+  const [accessToken, setAccessToken] = useState<string>("")
+  const [refreshToken, setRefreshToken] = useState<string>("")
+
+  useEffect(() => {
+    // Get tokens from localStorage
+    const access_token = localStorage.getItem(localStorageKey.ACCESS_TOKEN)
+    const refresh_token = localStorage.getItem(localStorageKey.REFRESH_TOKEN)
+
+    if (access_token && refresh_token)  {
+      console.log("USER Tokens ===>", {access_token, refresh_token})
+      setAccessToken(access_token || "")
+      setRefreshToken(refresh_token || "")
+    }
+  }, [])
 
   const handleDateSelection = (dates: number[]) => {
     setSelectedDates(dates)
@@ -26,7 +41,7 @@ export default function ParentAssignmentsPage() {
   return (
     <section className="flex flex-col gap-4 w-full mx-auto p-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-[#4CAF50] text-xl font-bold">ASSIGNMENTS</h1>
+        <h1 className="text-[#25AAE1] text-xl font-bold">ASSIGNMENTS</h1>
         <div className="flex gap-4">
           <button
             className="bg-white border rounded-md px-4 py-2 flex items-center justify-center"
@@ -69,7 +84,12 @@ export default function ParentAssignmentsPage() {
       </div>
 
       <Card className="rounded-lg shadow-sm p-0 overflow-hidden border-0">
-        <ParentAssignmentsTable selectedStudent={selectedStudent} selectedClass={selectedClass} />
+        <ParentAssignmentsTable
+          selectedStudent={selectedStudent}
+          selectedClass={selectedClass}
+          accessToken={accessToken}
+          refreshToken={refreshToken}
+        />
       </Card>
 
       <DatePickerDialog
