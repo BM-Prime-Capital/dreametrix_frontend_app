@@ -43,47 +43,71 @@ export default function CharacterFocusedView({
   };
 
   return (
-    <section className="flex flex-col gap-2 w-full">
-      <div className="flex justify-between items-center">
-        <PageTitleH1 title="CHARACTER FOCUSED VIEW" />
-        <div className="flex items-center flex-wrap gap-2">
-          <ClassSelect onClassChange={handleClassChange} />
-
-          <CharacterFiltersPopUp />
+    <section className="flex flex-col h-full w-full bg-gradient-to-br from-orange-50/30 to-red-50/20">
+      {/* Enhanced Header */}
+      <div className="flex justify-between items-center bg-gradient-to-r from-orange-600 via-orange-700 to-red-700 px-8 py-6 shadow-xl">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+            <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <div>
+            <PageTitleH1 title="Character Management" className="text-white font-bold text-2xl" />
+            <p className="text-orange-100 text-sm mt-1">Track and manage student character development</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2">
+            <ClassSelect onClassChange={handleClassChange} />
+          </div>
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2">
+            <CharacterFiltersPopUp />
+          </div>
         </div>
       </div>
-      <div className="flex gap-4 justify-between">
-        <div className="flex gap-2">
-          <ReportAttendanceDialog />
-          <Link
-            target="_blank"
-            href={"/assets/google_search.pdf"}
-            className="flex gap-2 items-center text-lg bg-blue-500 hover:bg-blue-600 rounded-md px-4"
+
+      {/* Content Area */}
+      <div className="flex-1 p-8 space-y-6">
+        {/* Enhanced Action Bar */}
+        <div className="flex flex-wrap gap-4 justify-between items-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
+          <Button
+            className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border-gray-300 shadow-sm rounded-xl font-medium"
+            onClick={() => changeView(views.GENERAL_VIEW)}
           >
-            <Image
-              src={teacherImages.print}
-              alt="print"
-              width={100}
-              height={100}
-              className="w-8 h-8"
-            />
-          </Link>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Back to Overview</span>
+          </Button>
+          
+          <div className="flex gap-3">
+            <ReportAttendanceDialog />
+            <Link
+              target="_blank"
+              href={"/assets/google_search.pdf"}
+              className="flex gap-2 items-center bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl px-4 py-2 shadow-lg font-medium transition-all duration-300"
+            >
+              <Image
+                src={teacherImages.print}
+                alt="print"
+                width={20}
+                height={20}
+                className="w-5 h-5"
+              />
+              <span>Print Report</span>
+            </Link>
+          </div>
         </div>
 
-        <Link
-          href={"#"}
-          className="whitespace-nowrap text-bgPurple underline"
-          onClick={() => changeView(views.GENERAL_VIEW)}
-        >
-          go to the general view
-        </Link>
+        {/* Enhanced Character Table Card */}
+        <Card className="rounded-2xl shadow-xl border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
+          <CharacterTable
+            key={selectedClassId}
+            selectedClassId={selectedClassId}
+          />
+        </Card>
       </div>
-      <Card className="rounded-md">
-        <CharacterTable
-          key={selectedClassId}
-          selectedClassId={selectedClassId}
-        />
-      </Card>
     </section>
   );
 }

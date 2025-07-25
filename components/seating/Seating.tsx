@@ -640,93 +640,110 @@ export default function Seating({
 
 
   return (
-    <section className="flex flex-col gap-2 w-full">
-      <div className="flex justify-between items-center">
-        <PageTitleH1 title="SEATING" />
-        
-        <ClassSelector
-          classes={Array.from(new Set(arrangements.map(arr => arr.courseName))).map(courseName => ({
-            id: courseName,
-            name: courseName
-          }))}
-          selectedClasses={selectedClasses}
-          onSelect={(classIds) => {
-            setSelectedClasses(classIds);
-          }}
-          placeholder="Select classes..."
-          multiple={true}
-          className="w-[250px]"
-        />
+    <section className="flex flex-col h-full w-full bg-gradient-to-br from-indigo-50/30 to-cyan-50/20">
+      {/* Enhanced Header */}
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+            <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+          </div>
+          <div>
+            <PageTitleH1 title="Seating Arrangements" className="text-white font-bold text-2xl" />
+            <p className="text-blue-100 text-sm mt-1">Organize classroom seating layouts</p>
+          </div>
+        </div>
+        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2">
+          <ClassSelector
+            classes={Array.from(new Set(arrangements.map(arr => arr.courseName))).map(courseName => ({
+              id: courseName,
+              name: courseName
+            }))}
+            selectedClasses={selectedClasses}
+            onSelect={(classIds) => {
+              setSelectedClasses(classIds);
+            }}
+            placeholder="Select classes..."
+            multiple={true}
+            className="w-[250px]"
+          />
+        </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 items-center bg-white p-4 rounded-lg shadow-sm">
-        <Button
-          onClick={handleSeatingArrangementAuto}
-          className={`flex gap-2 items-center text-lg rounded-md px-4 py-3 shadow-md transition-all ${
-            isSeatingArrangementAuto 
-              ? "bg-blue-600 text-white hover:bg-blue-700"
-              : "bg-blue-100 text-blue-600 hover:bg-blue-200"
-          }`}
-        >
-          <Image
-            src={teacherImages.autogenerate}
-            alt="autogenerate"
-            width={24}
-            height={24}
-            className="w-5 h-5"
+      {/* Content Area */}
+      <div className="flex-1 mx-6 pb-8 space-y-6">
+
+        {/* Enhanced Action Bar */}
+        <div className="flex flex-wrap gap-4 items-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg mt-2">
+          <Button
+            onClick={handleSeatingArrangementAuto}
+            className={`flex gap-3 items-center text-lg rounded-xl px-6 py-3 shadow-lg transition-all duration-300 ${
+              isSeatingArrangementAuto 
+                ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-blue-200"
+                : "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 hover:from-blue-100 hover:to-blue-200 border border-blue-200"
+            }`}
+          >
+            <Image
+              src={teacherImages.autogenerate}
+              alt="autogenerate"
+              width={20}
+              height={20}
+              className="w-5 h-5"
+            />
+            <span className="font-medium">Auto Generate</span>
+          </Button>
+
+          <Button
+            onClick={() => setIsSeatingArrangementAuto(false)}
+            className={`flex gap-3 items-center text-lg rounded-xl px-6 py-3 shadow-lg transition-all duration-300 ${
+              !isSeatingArrangementAuto 
+                ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 shadow-purple-200"
+                : "bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 hover:from-purple-100 hover:to-purple-200 border border-purple-200"
+            }`}
+          >
+            <Image
+              src={teacherImages.manual}
+              alt="manual"
+              width={20}
+              height={20}
+              className="w-5 h-5"
+            />
+            <span className="font-medium">Manual</span>
+          </Button>
+
+          <StudentSeatingConditionsDialog 
+            studentClassName="flex gap-3 items-center text-lg text-white rounded-xl px-6 py-3 shadow-lg transition-all duration-300 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 font-medium"
+            conditions={seatingConditions}
+            setConditions={setSeatingConditions}
+            students={currentArrangement?.arrangements?.map((a: any) => ({
+              studentId: a.studentId,
+              studentName: a.studentName,
+            })) || []}
           />
-          <span>Auto Generate</span>
-        </Button>
 
-        <Button
-          onClick={() => setIsSeatingArrangementAuto(false)}
-          className={`flex gap-2 items-center text-lg rounded-md px-4 py-3 shadow-md transition-all ${
-            !isSeatingArrangementAuto 
-              ? "bg-purple-600 text-white hover:bg-purple-700"
-              : "bg-purple-100 text-purple-600 hover:bg-purple-200"
-          }`}
-        >
-          <Image
-            src={teacherImages.manual}
-            alt="manual"
-            width={24}
-            height={24}
-            className="w-5 h-5"
+          <CreateArrangementDialog
+            courses={courses}
+            tenantPrimaryDomain={tenantPrimaryDomain}
+            accessToken={accessToken}
+            refreshToken={refreshToken}
+            onSuccess={() => loadArrangements(selectedCourse || undefined)}
           />
-          <span>Manual</span>
-        </Button>
 
-        <StudentSeatingConditionsDialog 
-          studentClassName="flex gap-2 items-center text-lg text-white rounded-md px-4 py-3 shadow-md transition-all bg-[#F5C358] hover:bg-[#eeb53b]"
-          conditions={seatingConditions}
-          setConditions={setSeatingConditions}
-          students={currentArrangement?.arrangements?.map((a: any) => ({
-            studentId: a.studentId,
-            studentName: a.studentName,
-          })) || []}
-        />
-
-        <CreateArrangementDialog
-          courses={courses}
-          tenantPrimaryDomain={tenantPrimaryDomain}
-          accessToken={accessToken}
-          refreshToken={refreshToken}
-          onSuccess={() => loadArrangements(selectedCourse || undefined)}
-        />
-
-        <Button className="flex gap-2 items-center text-lg bg-blue-400 hover:bg-blue-500 text-white rounded-md px-4 py-3 shadow-md transition-all">
-          <Image
-            src={generalImages.print}
-            alt="print"
-            width={24}
-            height={24}
-            className="w-5 h-5"
-          />
-          <span>Print</span>
-        </Button>
+          <Button className="flex gap-3 items-center text-lg bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white rounded-xl px-6 py-3 shadow-lg transition-all duration-300 font-medium">
+            <Image
+              src={generalImages.print}
+              alt="print"
+              width={20}
+              height={20}
+              className="w-5 h-5"
+            />
+            <span>Print Layout</span>
+          </Button>
       </div>
 
-      <Card className="rounded-md">
+        {/* Enhanced Seating Card */}
+        <Card className="rounded-2xl shadow-xl border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center">
             <div className="flex flex-col items-center p-4 gap-1">
@@ -741,48 +758,57 @@ export default function Seating({
             </div>
           </div>
         ) : (
-          <div className="flex flex-wrap-reverse">
-            <div className="flex flex-col gap-6 flex-1 py-4 px-4">
-              <div className="flex justify-between items-center pb-4 border-b-[1px] border-[#eee]">
-                <div>
-                  <PageTitleH2 title="ARRANGEMENT" />
-                  <label className="text-muted-foreground">BLACKBOARD</label>
+          <div className="flex flex-wrap-reverse p-6">
+            <div className="flex flex-col gap-6 flex-1">
+              <div className="flex justify-between items-center pb-6 border-b border-gray-200">
+                <div className="space-y-2">
+                  <PageTitleH2 title="Classroom Layout" className="text-gray-800 font-bold" />
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-gradient-to-r from-green-400 to-blue-500 rounded-full"></div>
+                    <label className="text-gray-600 font-medium">Interactive Whiteboard</label>
+                  </div>
                 </div>
 
-                <div className="flex flex-col items-end">
-                  <div>
-                    <Button
-                      onClick={handleSave}
-                      disabled={!isModified || isSaving}
-                      className={`flex gap-2 items-center text-lg h-[35px] rounded-md px-4 py-2 transition-all ${
-                        isModified 
-                          ? "bg-green-500 hover:bg-green-700 text-white shadow-md"
-                          : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                      }`}
-                      isLoading={isSaving}
-                    >
-                      <Image
-                        src={teacherImages.save}
-                        alt="save"
-                        width={24}
-                        height={24}
-                        className="w-5 h-5"
-                      />
-                      <span>Save</span>
-                    </Button>
-                  </div>
+                <div className="flex items-center gap-3">
+                  <Button
+                    onClick={handleSave}
+                    disabled={!isModified || isSaving}
+                    className={`flex gap-3 items-center text-lg rounded-xl px-6 py-3 transition-all duration-300 font-medium ${
+                      isModified 
+                        ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-200"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    }`}
+                    isLoading={isSaving}
+                  >
+                    <Image
+                      src={teacherImages.save}
+                      alt="save"
+                      width={20}
+                      height={20}
+                      className="w-5 h-5"
+                    />
+                    <span>Save Layout</span>
+                  </Button>
                 </div>
               </div>
               
-              <div className="flex">
-                <div className="w-[20%] flex flex-col gap-2 pr-4">
-                  <span
-                    title="Students List"
-                    className="flex justify-center items-center h-[25px] w-[25px] bg-blue-500 p- text-white border-2 border-gray-200 rounded-md cursor-pointer"
+              <div className="flex gap-6">
+                <div className="w-[20%] flex flex-col gap-4 pr-6">
+                  <button
+                    title="Toggle Students List"
+                    className="flex justify-center items-center h-10 w-10 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 cursor-pointer"
                     onClick={() => setDisplayStudentsList(!displayStudentsList)}
                   >
-                    {displayStudentsList ? <>&#128473;</> : <>☰</>}
-                  </span>
+                    {displayStudentsList ? (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </button>
 
                   {displayStudentsList && currentArrangement && (
                     <div className="flex-1 overflow-auto">
@@ -803,20 +829,20 @@ export default function Seating({
                     <>
                       <Button
                         onClick={handleCleanAllSeats}
-                        className="flex mt-8 gap-2 items-center text-lg bg-red-100 text-red-600 hover:bg-red-200 rounded-md px-4 py-3 shadow-md transition-all"
+                        className="flex mt-6 gap-3 items-center text-lg bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 rounded-xl px-6 py-3 shadow-lg transition-all duration-300 border border-red-200 font-medium"
                       >
                         <Image
                           src={teacherImages.delete}
                           alt="clean"
-                          width={24}
-                          height={24}
+                          width={20}
+                          height={20}
                           className="w-5 h-5"
                         />
-                        <span>Clean</span>
+                        <span>Clear All</span>
                       </Button>
 
                       <Button
-                        className="flex gap-2 items-center h-[25px] text-lg bg-red-500 hover:bg-red-700 text-white rounded-md px-4 py-5 shadow-md transition-all mt-4"
+                        className="flex gap-3 items-center text-lg bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl px-6 py-3 shadow-lg transition-all duration-300 mt-4 font-medium"
                         onClick={() => handleDeactivateEvent(parseInt(currentArrangement.id))}
                         isLoading={isDeactivating}
                       >
@@ -824,7 +850,7 @@ export default function Seating({
                           src={teacherImages.delete}
                           alt="delete"
                           width={20}
-                          height={24}
+                          height={20}
                           className="w-5 h-5"
                         />
                         <span>Deactivate</span>
@@ -833,13 +859,21 @@ export default function Seating({
                   )}
                 </div>
 
-                <div className="w-[80%]">
+                <div className="w-[80%] bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border-2 border-dashed border-gray-300">
+                  <div className="mb-4 text-center">
+                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.84L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.84l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+                      </svg>
+                      Front of Classroom
+                    </div>
+                  </div>
                   {GridComponent}
                 </div>
               </div>
             </div>
 
-            <div className="">
+            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
               <SeatingHistory
                 arrangements={arrangements.filter(arr => 
                   selectedClasses.length === 0 || selectedClasses.includes(arr.courseName)
@@ -855,7 +889,8 @@ export default function Seating({
             </div>
           </div>
         )}
-      </Card>
+        </Card>
+      </div>
 
       <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
         <DialogContent>

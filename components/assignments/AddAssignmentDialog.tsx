@@ -10,8 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import Image from "next/image";
-import { generalImages } from "@/constants/images";
+
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { createAssignment } from "@/services/AssignmentService";
 import { useList } from "@/hooks/useList";

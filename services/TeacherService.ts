@@ -11,7 +11,7 @@ export async function getTeachers(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
   const url = `${tenantPrimaryDomain}/teachers/`;
-  let response = await fetch(url, {
+  const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
@@ -46,7 +46,7 @@ export async function updateTeacher(
       refreshToken,
     });
     const url = `${tenantPrimaryDomain}/teachers/${teacher.id}/`;
-    let response = await fetch(url, {
+    const response = await fetch(url, {
       method: "PUT", // replace by PUT
       headers: {
         "Content-Type": "application/json",

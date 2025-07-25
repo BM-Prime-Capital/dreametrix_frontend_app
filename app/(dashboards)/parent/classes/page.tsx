@@ -5,7 +5,7 @@ import { ParentClassesTable } from "@/components/parents/ParentClassesTable"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState } from "react"
 import PageTitleH1 from "@/components/ui/page-title-h1";
-import AllClassFiltersPopUp from "@/components/classes/AllClassFiltersPopUp";
+
 
 export default function ParentClassesPage() {
   const [selectedChild, setSelectedChild] = useState("all")

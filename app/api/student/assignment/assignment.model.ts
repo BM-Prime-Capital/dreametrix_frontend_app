@@ -25,7 +25,7 @@ export interface Assignment {
   updated_at: string;
   published_at: string | null;
   course: Course;
-  submission: Submission;
+  submission?: Submission; // Make submission optional
 }
 
 export interface AssignmentsResponse {
