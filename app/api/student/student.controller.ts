@@ -1,4 +1,4 @@
-import { BASE_URL } from '@/app/utils/constantes';
+import { BASE_URL } from '@/app/utils/constants';
 import { Student, StudentApiResponse } from './student.model';
 
 export async function getAuthenticatedStudent(token?: string): Promise<Student | null> {
@@ -24,4 +24,4 @@ export async function getAuthenticatedStudent(token?: string): Promise<Student |
     console.warn("Aucun étudiant trouvé dans la réponse pour l'utilisateur authentifié.");
     return null;
   }
-} 
+}
