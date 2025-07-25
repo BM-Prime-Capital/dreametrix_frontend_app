@@ -17,8 +17,9 @@ import { AlertCircle } from "lucide-react";
 
 export function TeachersTable() {
   const { teachers, isLoading, error } = useTeachers();
+  console.log("teachers", teachers)
 
-  if (isLoading) {
+  if (isLoading || !teachers) {
     return (
       <div className="flex justify-center items-center p-8">
         <div className="flex flex-col items-center">
