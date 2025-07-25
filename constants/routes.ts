@@ -171,16 +171,9 @@ export const SchoolAdminRoutes = [
 
   // Transport (Optional)
   {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/transport`,
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/transports`,
     icon: menuImages.transport,
     label: "Transport",
-  },
-
-  // Health (Optional)
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/health`,
-    icon: menuImages.health,
-    label: "Health Records",
   },
 ];
 
