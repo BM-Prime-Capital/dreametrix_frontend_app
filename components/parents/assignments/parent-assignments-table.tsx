@@ -13,119 +13,23 @@ import { FileIcon, FileTextIcon } from "lucide-react";
 import { ViewAssignmentDialog } from "@/components/student/assignments/view-assignment-dialog";
 import { ViewSubmissionDialog } from "@/components/student/assignments/view-submission-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Assignment } from "@/app/api/student/assignment/assignment.model";
+import { useParentAssignments } from "@/hooks/useParentAssignments";
+import { ParentAssignment } from "@/services/ParentAssignmentService";
 
-// Extended Assignment interface for parent assignments with additional properties
-interface ParentAssignment extends Omit<Assignment, "course"> {
-  teacher: string;
-  class: string;
-  day?: string;
-  course: {
-    id: number;
-    name: string;
-  };
-}
-
-// Sample assignments data
-const assignments: ParentAssignment[] = [
-  {
-    id: 1,
-    name: "Mia",
-    teacher: "Richard",
-    file: "string",
-    due_date: "19-05-2025",
-    weight: "3", // Changed to string
-    kind: "Homework",
-    class: "Class 5 - Sci",
-    published: true,
-    created_at: "03-03-2025",
-    updated_at: "03-015-2025",
-    published_at: "03-06-2025",
-    course: { id: 5, name: "Science" }, // Changed to Course object
-  },
-  {
-    id: 2,
-    name: "John",
-    teacher: "Anna Blake",
-    file: "string",
-    due_date: "19-05-2025",
-    weight: "3", // Changed to string
-    kind: "Test",
-    class: "Class 5 - Bio",
-    day: "TODAY",
-    published: false,
-    created_at: "03-03-2025",
-    updated_at: "03-015-2025",
-    published_at: "03-06-2025",
-    course: { id: 5, name: "Biology" }, // Changed to Course object
-  },
-  // {
-  //   id: 3,
-  //   student: "John",
-  //   class: "Class 5 - Bio",
-  //   day: "11:25",
-  //   type: "Homework",
-  //   hasSubmitted: true,
-  //   teacher: "Sam Burke",
-  // },
-  {
-    id: 4,
-    name: "Erick",
-    teacher: "Richard",
-    file: "string",
-    due_date: "19-05-2025",
-    weight: "3", // Changed to string
-    kind: "Homework",
-    class: "Class 5 - Bio",
-    day: "11:25",
-    published: true,
-    created_at: "03-03-2025",
-    updated_at: "03-015-2025",
-    published_at: "03-06-2025",
-    course: { id: 5, name: "Biology" }, // Changed to Course object
-  },
-  {
-    id: 5,
-    name: "Peter",
-    teacher: "Eva Parker",
-    file: "string",
-    due_date: "19-05-2025",
-    weight: "3", // Changed to string
-    kind: "Test",
-    class: "Class 5 - Bio",
-    day: "12:05",
-    published: false,
-    created_at: "03-03-2025",
-    updated_at: "03-015-2025",
-    published_at: "03-06-2025",
-    course: { id: 5, name: "Biology" }, // Changed to Course object
-  },
-  {
-    id: 6,
-    name: "Jeremiah",
-    teacher: "Richard",
-    file: "string",
-    due_date: "19-05-2025",
-    weight: "3", // Changed to string
-    kind: "string",
-    class: "Class 5 - Spa",
-    day: "YESTERDAY",
-    published: true,
-    created_at: "03-03-2025",
-    updated_at: "03-015-2025",
-    published_at: "03-06-2025",
-    course: { id: 6, name: "Spanish" }, // Changed to Course object
-  },
-];
+// This will be replaced with API data
 
 interface ParentAssignmentsTableProps {
   selectedStudent: string;
   selectedClass: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export function ParentAssignmentsTable({
   selectedStudent,
   selectedClass,
+  accessToken,
+  refreshToken,
 }: ParentAssignmentsTableProps) {
   const [isViewAssignmentModalOpen, setIsViewAssignmentModalOpen] =
     useState(false);
@@ -134,31 +38,58 @@ export function ParentAssignmentsTable({
   const [selectedAssignment, setSelectedAssignment] =
     useState<ParentAssignment | null>(null);
 
-  const handleAssignmentClick = (assignment: (typeof assignments)[0]) => {
+  // Get child ID from selected student
+  const getChildId = () => {
+    if (selectedStudent === "john") return 1; // Replace with actual child ID
+    if (selectedStudent === "mia") return 2; // Replace with actual child ID
+    return undefined; // For "all-students"
+  };
+
+  // Use the API hook to fetch assignments
+  const { assignments, loading, error } = useParentAssignments({
+    accessToken,
+    refreshToken,
+    childId: getChildId(),
+  });
+
+  const handleAssignmentClick = (assignment: ParentAssignment) => {
     setSelectedAssignment(assignment);
     setIsViewAssignmentModalOpen(true);
   };
 
-  const handleSubmissionClick = (assignment: (typeof assignments)[0]) => {
+  const handleSubmissionClick = (assignment: ParentAssignment) => {
     setSelectedAssignment(assignment);
     if (assignment.published) {
       setIsViewSubmissionModalOpen(true);
     }
   };
 
-  // Filter assignments based on selected student and class
+  // Filter assignments based on selected class
   const filteredAssignments = assignments.filter((assignment) => {
-    const studentMatch =
-      selectedStudent === "all-students" ||
-      (selectedStudent === "john" && assignment.name === "John") ||
-      (selectedStudent === "mia" && assignment.name === "Mia");
-
     const classMatch =
       selectedClass === "all-classes" ||
       assignment.class.toLowerCase() === selectedClass.replace(/-/g, " ");
 
-    return studentMatch && classMatch;
+    return classMatch;
   });
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="w-full flex items-center justify-center py-8">
+        <div className="text-gray-500">Loading assignments...</div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="w-full flex items-center justify-center py-8">
+        <div className="text-red-500">Error: {error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full relative">
@@ -199,7 +130,7 @@ export function ParentAssignmentsTable({
                 </Badge>
               </TableCell>
               <TableCell className="font-medium text-gray-500">
-                {assignment.class}
+                {assignment.course.name}
               </TableCell>
               <TableCell className="text-gray-500">
                 <span
