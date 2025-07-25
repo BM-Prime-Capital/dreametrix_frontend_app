@@ -107,6 +107,12 @@ export const SchoolAdminRoutes = [
     label: "Subjects",
   },
 
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/notifications`,
+    icon: menuImages.libraryBooks,
+    label: "Notifications",
+  },
+
   // Timetable
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/timetable`,
