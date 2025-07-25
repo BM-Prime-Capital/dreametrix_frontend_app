@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import { 
   FiArrowLeft, FiUser, FiBook, FiAward, FiDollarSign, 
   FiClipboard, FiHome, FiMail, FiPhone,
-  FiUsers, FiEdit2, FiMessageSquare, FiBarChart2
+  FiUsers, FiEdit2, FiMessageSquare, FiBarChart2,
+  FiHeart, FiDroplet, FiThermometer, FiAlertCircle
 } from 'react-icons/fi';
 
 interface StudentDetail {
@@ -35,6 +36,18 @@ interface StudentDetail {
     attendance: number;
     average: string;
     last_eval: string;
+  };
+  health: {
+    blood_type: string;
+    allergies: string[];
+    medications: string[];
+    conditions: string[];
+    last_checkup: string;
+    emergency_contact: {
+      name: string;
+      phone: string;
+      relation: string;
+    };
   };
   courses: {
     name: string;
@@ -82,6 +95,18 @@ const StudentDetailsPage = ({ params }: { params: { id: string } }) => {
       attendance: 92,
       average: "B+",
       last_eval: "Good progress, needs improvement in math"
+    },
+    health: {
+      blood_type: "A+",
+      allergies: ["Peanuts", "Pollen"],
+      medications: ["Inhaler"],
+      conditions: ["Asthma"],
+      last_checkup: "2023-08-15",
+      emergency_contact: {
+        name: "Jane Smith",
+        phone: "+1555123456",
+        relation: "Mother"
+      }
     },
     courses: [
       {
@@ -216,6 +241,13 @@ const StudentDetailsPage = ({ params }: { params: { id: string } }) => {
             >
               <FiBarChart2 className="mr-2" />
               Performance
+            </button>
+            <button
+              onClick={() => setActiveTab('health')}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center ${activeTab === 'health' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            >
+              <FiHeart className="mr-2" />
+              Health
             </button>
             <button
               onClick={() => setActiveTab('financial')}
@@ -557,6 +589,122 @@ const StudentDetailsPage = ({ params }: { params: { id: string } }) => {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Health Tab */}
+          {activeTab === 'health' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <FiHeart className="text-gray-400 mr-2" />
+                  Health Information
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Medical Information */}
+                  <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
+                    <h3 className="text-md font-semibold text-gray-900 mb-4 flex items-center">
+                      <FiThermometer className="text-gray-400 mr-2" />
+                      Medical Details
+                    </h3>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm text-gray-500">Blood Type</p>
+                        <p className="text-sm font-medium">{student.health.blood_type}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Last Checkup</p>
+                        <p className="text-sm font-medium">{formatDate(student.health.last_checkup)}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Emergency Contact */}
+                  <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
+                    <h3 className="text-md font-semibold text-gray-900 mb-4 flex items-center">
+                      <FiAlertCircle className="text-gray-400 mr-2" />
+                      Emergency Contact
+                    </h3>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm text-gray-500">Name</p>
+                        <p className="text-sm font-medium">{student.health.emergency_contact.name}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Phone</p>
+                        <p className="text-sm font-medium flex items-center gap-1">
+                          <FiPhone className="text-gray-400" />
+                          {student.health.emergency_contact.phone}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Relation</p>
+                        <p className="text-sm font-medium">{student.health.emergency_contact.relation}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Allergies */}
+                  <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
+                    <h3 className="text-md font-semibold text-gray-900 mb-4 flex items-center">
+                      <FiAlertCircle className="text-gray-400 mr-2" />
+                      Allergies
+                    </h3>
+                    {student.health.allergies.length > 0 ? (
+                      <ul className="space-y-2">
+                        {student.health.allergies.map((allergy, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-red-500 mt-0.5">•</span>
+                            <span className="text-sm">{allergy}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-gray-500">No known allergies</p>
+                    )}
+                  </div>
+
+                  {/* Medications */}
+                  <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
+                    <h3 className="text-md font-semibold text-gray-900 mb-4 flex items-center">
+                      <FiDroplet className="text-gray-400 mr-2" />
+                      Medications
+                    </h3>
+                    {student.health.medications.length > 0 ? (
+                      <ul className="space-y-2">
+                        {student.health.medications.map((med, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-blue-500 mt-0.5">•</span>
+                            <span className="text-sm">{med}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-gray-500">No current medications</p>
+                    )}
+                  </div>
+
+                  {/* Medical Conditions */}
+                  <div className="bg-white p-6 rounded-lg shadow border border-gray-200 md:col-span-2">
+                    <h3 className="text-md font-semibold text-gray-900 mb-4 flex items-center">
+                      <FiThermometer className="text-gray-400 mr-2" />
+                      Medical Conditions
+                    </h3>
+                    {student.health.conditions.length > 0 ? (
+                      <ul className="space-y-2">
+                        {student.health.conditions.map((condition, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-purple-500 mt-0.5">•</span>
+                            <span className="text-sm">{condition}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-gray-500">No medical conditions</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
