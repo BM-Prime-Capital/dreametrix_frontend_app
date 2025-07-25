@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import PageTitleH1 from "../ui/page-title-h1";
 import { FileText, Clock, Target, Filter } from "lucide-react";
 import { Assignment } from "@/types";
+import {NotebookText} from "lucide-react";
 
 export default function Assignments() {
   const [currentView, setCurrentView] = useState<'list' | 'detail'>('list');
@@ -28,8 +29,8 @@ export default function Assignments() {
 
   if (currentView === 'detail' && selectedAssignment) {
     return (
-      <AssignmentDetailView 
-        assignment={selectedAssignment} 
+      <AssignmentDetailView
+        assignment={selectedAssignment}
         onBack={handleBackToList}
       />
     );
