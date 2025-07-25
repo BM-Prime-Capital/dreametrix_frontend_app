@@ -142,7 +142,7 @@ export function ParentAssignmentsTable({
                       : ""
                   }
                 >
-                  {assignment.day}
+                  {assignment.created_at}
                 </span>
               </TableCell>
               <TableCell className="text-gray-500">{assignment.kind}</TableCell>
