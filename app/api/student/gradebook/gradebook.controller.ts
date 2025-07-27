@@ -1,4 +1,4 @@
-import { BASE_URL } from '@/app/utils/constantes';
+import { BASE_URL } from '@/app/utils/constants';
 import { StudentGrade } from './gradebook.model';
 
 export async function getGradebookByClassId(classId: number, token?: string): Promise<StudentGrade[]> {
@@ -18,4 +18,4 @@ export async function getGradebookByClassId(classId: number, token?: string): Pr
   console.log("Données reçues (parsed JSON) pour gradebook:", data);
 
   return data as StudentGrade[];
-} 
+}

@@ -67,7 +67,7 @@ export const StudentRoutes = [
 export const SchoolAdminRoutes = [
   // Dashboard
   {
-    path: userPath.SCHOOL_ADMIN_DASHBOARD_PATH,
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/dashboard`,
     icon: generalImages.home,
     label: "Dashboard",
   },
@@ -107,12 +107,6 @@ export const SchoolAdminRoutes = [
     label: "Subjects",
   },
 
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/notifications`,
-    icon: menuImages.libraryBooks,
-    label: "Notifications",
-  },
-
   // Timetable
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/timetable`,
@@ -141,12 +135,7 @@ export const SchoolAdminRoutes = [
     label: "Communication",
   },
 
-  // Settings
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/settings`,
-    icon: menuImages.settings,
-    label: "Settings",
-  },
+ 
 
   // Finance (Optional)
   {
@@ -174,6 +163,13 @@ export const SchoolAdminRoutes = [
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/transports`,
     icon: menuImages.transport,
     label: "Transport",
+  },
+
+   // Settings
+   {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/settings`,
+    icon: menuImages.settings,
+    label: "Settings",
   },
 ];
 
