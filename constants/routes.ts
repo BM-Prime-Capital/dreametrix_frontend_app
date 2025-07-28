@@ -65,35 +65,111 @@ export const StudentRoutes = [
 ];
 
 export const SchoolAdminRoutes = [
+  // Dashboard
   {
-    path: userPath.SCHOOL_ADMIN_DASHBOARD_PATH,
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/dashboard`,
     icon: generalImages.home,
-    label: "HOME",
+    label: "Dashboard",
   },
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/classes`,
-    icon: menuImages.assignments,
-    label: "CLASSES",
-  },
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/teachers`,
-    icon: menuImages.teach,
-    label: "TEACHERS",
-  },
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/parents`,
-    icon: menuImages.assignments,
-    label: "PARENTS",
-  },
+
+  // Students
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/students`,
     icon: menuImages.seating,
-    label: "STUDENTS",
+    label: "Students",
   },
+
+  // Teachers
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/teachers`,
+    icon: menuImages.teach,
+    label: "Teachers",
+  },
+
+  // Parents
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/parents`,
+    icon: menuImages.family,
+    label: "Parents",
+  },
+
+  // Classes
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/classes`,
+    icon: menuImages.assignments,
+    label: "Classes",
+  },
+
+  // Subjects
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/subjects`,
+    icon: menuImages.libraryBooks,
+    label: "Subjects",
+  },
+
+  // Timetable
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/timetable`,
+    icon: menuImages.calendar,
+    label: "Timetable",
+  },
+
+  // Grades
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/grades`,
+    icon: menuImages.grading,
+    label: "Grades",
+  },
+
+  // Attendance
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/attendance`,
+    icon: menuImages.attendance,
+    label: "Attendance",
+  },
+
+  // Communication
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/communicate`,
     icon: menuImages.communicate,
-    label: "COMMUNICATE",
+    label: "Communication",
+  },
+
+ 
+
+  // Finance (Optional)
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/finance`,
+    icon: menuImages.payments,
+    label: "Finance",
+  },
+
+  // Library (Optional)
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/library`,
+    icon: menuImages.libraryBooks,
+    label: "Library",
+  },
+
+  // Reports (Optional)
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/reports`,
+    icon: menuImages.analytics,
+    label: "Reports",
+  },
+
+  // Transport (Optional)
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/transports`,
+    icon: menuImages.transport,
+    label: "Transport",
+  },
+
+   // Settings
+   {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/settings`,
+    icon: menuImages.settings,
+    label: "Settings",
   },
 ];
 

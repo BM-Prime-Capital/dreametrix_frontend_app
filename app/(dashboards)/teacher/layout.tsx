@@ -10,7 +10,10 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   
   return (
     <>
+      
+      <SidebarProvider>
       <Sidebar routes={TeacherRoutes} />
+    </SidebarProvider>
       <div className={`transition-all duration-500 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
         {children}
       </div>

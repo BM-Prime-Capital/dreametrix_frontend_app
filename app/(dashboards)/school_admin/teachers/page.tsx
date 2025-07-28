@@ -1,5 +1,5 @@
-import Teachers from "@/components/school_admin/teachers/Teacher";
+import TeachersList from "@/components/school_admin/teachers/Teacher-list";
 
 export default function TeachersPage() {
-  return <Teachers />;
+  return <TeachersList />;
 }
