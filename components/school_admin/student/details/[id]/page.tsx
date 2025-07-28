@@ -1,10 +1,11 @@
 "use client";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { 
-  FiArrowLeft, FiMail, FiPhone, FiCalendar, FiBook, 
-  FiUsers, FiPercent, FiEdit2, FiMessageSquare,
-  FiHome, FiDollarSign, FiClipboard, FiAward
+import {
+  FiArrowLeft,  FiBook,
+  FiUsers,  FiEdit2, FiMessageSquare,
+  FiDollarSign, FiClipboard, FiAward, FiAlertCircle,
+  FiUser
 } from 'react-icons/fi';
 import { Loader } from "@/components/ui/loader";
 
@@ -75,9 +76,9 @@ const StudentDetailsPage = ({ params }: { params: { id: string } }) => {
         // Remplacez par votre appel API réel
         const response = await fetch(`/api/school-admin/students/${params.id}`);
         const data = await response.json();
-        
+
         if (!response.ok) throw new Error(data.message || 'Failed to fetch student data');
-        
+
         setStudent(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -255,7 +256,7 @@ const StudentDetailsPage = ({ params }: { params: { id: string } }) => {
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Attendance Rate</p>
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div 
+                    <div
                       className={`h-2.5 rounded-full ${
                         student.performance.attendance_rate > 90 ? 'bg-green-500' : 
                         student.performance.attendance_rate > 75 ? 'bg-yellow-500' : 'bg-red-500'
@@ -328,8 +329,8 @@ const StudentDetailsPage = ({ params }: { params: { id: string } }) => {
                 <div>
                   <p className="text-sm text-gray-500">Last Payment Date</p>
                   <p className="text-sm font-medium">
-                    {student.financial_info.last_payment_date ? 
-                      new Date(student.financial_info.last_payment_date).toLocaleDateString() : 
+                    {student.financial_info.last_payment_date ?
+                      new Date(student.financial_info.last_payment_date).toLocaleDateString() :
                       'No payments recorded'}
                   </p>
                 </div>

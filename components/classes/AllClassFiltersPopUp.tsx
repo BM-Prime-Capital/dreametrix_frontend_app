@@ -17,7 +17,7 @@ export default function AllClassFiltersPopUp() {
   return (
     <div className="relative">
       <div className="flex items-center gap-4">
-        <span className="text-gray-600">Filter by</span>
+        <span className="text-white">Filter by</span>
         <Button
           variant="outline"
           size="icon"
@@ -31,11 +31,11 @@ export default function AllClassFiltersPopUp() {
       {open && (
         <>
           {/* Overlay pour couvrir le reste de la page */}
-          <div 
-            className="fixed inset-0 bg-black/10 z-[999]" 
+          <div
+            className="fixed inset-0 bg-black/10 z-[999]"
             onClick={() => setOpen(false)}
           />
-          
+
           {/* Popup de filtres */}
           <div className="fixed top-[calc(12px+var(--header-height))] right-4 z-[1000] w-64 bg-white rounded-lg shadow-lg border p-4">
             <h2 className="font-semibold text-gray-900 pb-3 border-b">
