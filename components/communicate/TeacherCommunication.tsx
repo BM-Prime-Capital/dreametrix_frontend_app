@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Search,
   Plus,
@@ -25,6 +25,7 @@ import {
 import { useChatRooms, useChatMessages } from "@/hooks/useChat";
 import { useTypingIndicator } from "@/hooks/useChatWebSocket";
 import { useChatNotifications } from "@/hooks/useChatNotifications";
+import { useCommunicationData } from "@/hooks/useCommunicationData";
 import { EnhancedChatRoom, EnhancedChatMessage } from "@/types/chat";
 import TypingIndicatorComponent from "@/components/chat/TypingIndicator";
 import ConnectionStatus from "@/components/chat/ConnectionStatus";
@@ -32,7 +33,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -95,187 +96,6 @@ interface Conversation {
   unreadCount: number;
 }
 
-// Mock data
-const mockConversations: Conversation[] = [
-  {
-    id: "1",
-    type: "individual",
-    participants: [
-      {
-        id: "s1",
-        name: "Emma Thompson",
-        avatar: "/assets/images/general/student.png",
-        role: "student",
-      },
-    ],
-    lastMessage: {
-      id: "m1",
-      sender: {
-        id: "s1",
-        name: "Emma Thompson",
-        avatar: "/assets/images/general/student.png",
-        role: "student",
-      },
-      content:
-        "Hello Ms. Johnson, I had a question about the homework assignment.",
-      timestamp: "10:30 AM",
-      read: false,
-    },
-    unreadCount: 1,
-  },
-  {
-    id: "2",
-    type: "class",
-    participants: [
-      {
-        id: "c1",
-        name: "Math 101",
-        avatar: "/assets/images/general/class.png",
-        role: "student",
-      },
-    ],
-    lastMessage: {
-      id: "m2",
-      sender: {
-        id: "t1",
-        name: "Ms. Johnson",
-        avatar: "/assets/images/general/teacher.png",
-        role: "teacher",
-      },
-      content: "Don't forget to submit your projects by Friday!",
-      timestamp: "Yesterday",
-      read: true,
-    },
-    unreadCount: 0,
-  },
-  {
-    id: "3",
-    type: "parent",
-    participants: [
-      {
-        id: "p1",
-        name: "Robert Wilson",
-        avatar: "/assets/images/general/parent.png",
-        role: "parent",
-      },
-    ],
-    lastMessage: {
-      id: "m3",
-      sender: {
-        id: "p1",
-        name: "Robert Wilson",
-        avatar: "/assets/images/general/parent.png",
-        role: "parent",
-      },
-      content: "Thank you for the update on Sarah's progress.",
-      timestamp: "Yesterday",
-      read: false,
-    },
-    unreadCount: 2,
-  },
-  {
-    id: "4",
-    type: "announcement",
-    participants: [
-      {
-        id: "a1",
-        name: "School Announcements",
-        avatar: "/assets/images/general/announcement.png",
-        role: "teacher",
-      },
-    ],
-    lastMessage: {
-      id: "m4",
-      sender: {
-        id: "t1",
-        name: "Ms. Johnson",
-        avatar: "/assets/images/general/teacher.png",
-        role: "teacher",
-      },
-      content: "Field trip permission slips due next Monday.",
-      timestamp: "2 days ago",
-      read: true,
-    },
-    unreadCount: 0,
-  },
-];
-
-// Mock messages for a conversation
-const mockMessages: Message[] = [
-  {
-    id: "m1",
-    sender: {
-      id: "s1",
-      name: "Emma Thompson",
-      avatar: "/assets/images/general/student.png",
-      role: "student",
-    },
-    content:
-      "Hello Ms. Johnson, I had a question about the homework assignment.",
-    timestamp: "10:30 AM",
-    read: true,
-  },
-  {
-    id: "m2",
-    sender: {
-      id: "t1",
-      name: "Ms. Johnson",
-      avatar: "/assets/images/general/teacher.png",
-      role: "teacher",
-    },
-    content: "Hi Emma, what can I help you with?",
-    timestamp: "10:32 AM",
-    read: true,
-  },
-  {
-    id: "m3",
-    sender: {
-      id: "s1",
-      name: "Emma Thompson",
-      avatar: "/assets/images/general/student.png",
-      role: "student",
-    },
-    content: "I'm not sure how to approach problem #5 on the math worksheet.",
-    timestamp: "10:35 AM",
-    read: true,
-  },
-  {
-    id: "m4",
-    sender: {
-      id: "t1",
-      name: "Ms. Johnson",
-      avatar: "/assets/images/general/teacher.png",
-      role: "teacher",
-    },
-    content:
-      "That's a tricky one! Let me explain the approach. First, you need to identify the variables in the word problem. Then set up an equation based on the relationships described.",
-    timestamp: "10:40 AM",
-    read: true,
-  },
-];
-
-// Mock classes
-const mockClasses = [
-  { id: "c1", name: "Math 101" },
-  { id: "c2", name: "Science 202" },
-  { id: "c3", name: "English Literature" },
-];
-
-// Mock students
-const mockStudents = [
-  { id: "s1", name: "Emma Thompson", class: "Math 101" },
-  { id: "s2", name: "Michael Brown", class: "Math 101" },
-  { id: "s3", name: "Sophia Davis", class: "Science 202" },
-  { id: "s4", name: "James Wilson", class: "English Literature" },
-];
-
-// Mock parents
-const mockParents = [
-  { id: "p1", name: "Robert Wilson", student: "Emma Thompson" },
-  { id: "p2", name: "Jennifer Brown", student: "Michael Brown" },
-  { id: "p3", name: "David Davis", student: "Sophia Davis" },
-];
-
 export default function TeacherCommunication() {
   const [activeTab, setActiveTab] = useState("messages");
   const [searchQuery, setSearchQuery] = useState("");
@@ -292,6 +112,31 @@ export default function TeacherCommunication() {
   // ID utilisateur actuel (à récupérer depuis le contexte d'auth)
   const currentUserId = 1; // À remplacer par l'ID réel de l'utilisateur connecté
 
+  // Fetch real data instead of using mock data
+  const {
+    classes,
+    students,
+    parents,
+    teachers,
+    loading: dataLoading,
+    error: dataError,
+    refetch: refetchData,
+  } = useCommunicationData();
+
+  // Debug: Log the data to see what we're getting
+  useEffect(() => {
+    console.log("🔍 DEBUG TeacherCommunication Data:", {
+      dataLoading,
+      dataError,
+      studentsCount: students?.length || 0,
+      classesCount: classes?.length || 0,
+      parentsCount: parents?.length || 0,
+      teachersCount: teachers?.length || 0,
+      sampleStudent: students?.[0],
+      sampleClass: classes?.[0],
+    });
+  }, [dataLoading, dataError, students, classes, parents, teachers]);
+
   // Hook pour les notifications
   const {
     notifyConversationCreated,
@@ -301,7 +146,7 @@ export default function TeacherCommunication() {
     notifyMessageError,
   } = useChatNotifications();
 
-  // Utilisation des hooks de chat avec WebSocket
+  // Utilisation des hooks de chat avec API REST uniquement (WebSocket désactivé temporairement)
   const {
     rooms,
     selectedRoom,
@@ -309,8 +154,8 @@ export default function TeacherCommunication() {
     loading: roomsLoading,
     error: roomsError,
     createRoom,
-    isConnected,
-    reconnect,
+    // isConnected,
+    // reconnect,
   } = useChatRooms(currentUserId);
 
   const {
@@ -318,104 +163,117 @@ export default function TeacherCommunication() {
     loading: messagesLoading,
     error: messagesError,
     sendMessage,
-    typing,
-    userStatuses,
+    // typing,
+    // userStatuses,
   } = useChatMessages(selectedRoom?.id || null);
 
-  // Gestion de l'indicateur de frappe
-  const { isTyping, setIsTyping } = useTypingIndicator(
-    selectedRoom?.id || null
-  );
+  // Gestion de l'indicateur de frappe (désactivé temporairement)
+  // const { isTyping, setIsTyping } = useTypingIndicator(
+  //   selectedRoom?.id || null
+  // );
+
+  // Variables temporaires pour remplacer les fonctionnalités WebSocket
+  const typing: any[] = [];
+  const userStatuses = {};
+  const isTyping = false;
+  const setIsTyping = (_value?: boolean) => {};
 
   // Conversion des rooms en format de conversations pour l'interface existante
-  const conversations: Conversation[] = rooms.map((room) => ({
-    id: room.id.toString(),
-    type: room.is_group ? "class" : "individual",
-    participants: room.participants.map((p) => ({
-      id: p.id.toString(),
-      name: p.name,
-      avatar: p.avatar || "/assets/images/general/student.png",
-      role:
-        p.role === "admin"
-          ? "teacher"
-          : (p.role as "teacher" | "student" | "parent"),
-    })),
-    lastMessage: room.last_message
-      ? {
-          id: room.last_message.id.toString(),
-          sender: {
-            id: room.last_message.sender_info.id.toString(),
-            name: room.last_message.sender_info.name,
-            avatar:
-              room.last_message.sender_info.avatar ||
-              "/assets/images/general/student.png",
-            role:
-              room.last_message.sender_info.role === "admin"
-                ? "teacher"
-                : (room.last_message.sender_info.role as
-                    | "teacher"
-                    | "student"
-                    | "parent"),
-          },
-          content: room.last_message.content,
-          timestamp: new Date(room.last_message.created_at).toLocaleTimeString(
-            "fr-FR",
-            {
+  const conversations: Conversation[] = useMemo(() => {
+    return rooms.map((room) => ({
+      id: room.id.toString(),
+      type: room.is_group ? "class" : "individual",
+      participants: room.participants.map((p) => ({
+        id: p.id.toString(),
+        name: p.name,
+        avatar: p.avatar || "/assets/images/general/student.png",
+        role:
+          p.role === "admin"
+            ? "teacher"
+            : (p.role as "teacher" | "student" | "parent"),
+      })),
+      lastMessage: room.last_message
+        ? {
+            id: room.last_message.id.toString(),
+            sender: {
+              id: room.last_message.sender_info.id.toString(),
+              name: room.last_message.sender_info.name,
+              avatar:
+                room.last_message.sender_info.avatar ||
+                "/assets/images/general/student.png",
+              role:
+                room.last_message.sender_info.role === "admin"
+                  ? "teacher"
+                  : (room.last_message.sender_info.role as
+                      | "teacher"
+                      | "student"
+                      | "parent"),
+            },
+            content: room.last_message.content,
+            timestamp: new Date(
+              room.last_message.created_at
+            ).toLocaleTimeString("fr-FR", {
               hour: "2-digit",
               minute: "2-digit",
-            }
-          ),
-          read: room.last_message.status !== "sent",
-        }
-      : {
-          id: "",
-          sender: {
+            }),
+            read: room.last_message.status !== "sent",
+          }
+        : {
             id: "",
-            name: "",
-            avatar: "",
-            role: "student" as const,
+            sender: {
+              id: "",
+              name: "",
+              avatar: "",
+              role: "student" as const,
+            },
+            content: "Aucun message",
+            timestamp: "",
+            read: true,
           },
-          content: "Aucun message",
-          timestamp: "",
-          read: true,
-        },
-    unreadCount: room.unread_count,
-  }));
+      unreadCount: room.unread_count,
+    }));
+  }, [rooms]);
 
   // Conversion des messages pour l'interface existante
-  const chatMessages: Message[] = messages.map((msg) => ({
-    id: msg.id.toString(),
-    sender: {
-      id: msg.sender_info.id.toString(),
-      name: msg.sender_info.name,
-      avatar: msg.sender_info.avatar || "/assets/images/general/student.png",
-      role:
-        msg.sender_info.role === "admin"
-          ? "teacher"
-          : (msg.sender_info.role as "teacher" | "student" | "parent"),
-    },
-    content: msg.content,
-    timestamp: new Date(msg.created_at).toLocaleTimeString("fr-FR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-    read: msg.status !== "sent",
-  }));
+  const chatMessages: Message[] = useMemo(() => {
+    return messages.map((msg) => ({
+      id: msg.id.toString(),
+      sender: {
+        id: msg.sender_info.id.toString(),
+        name: msg.sender_info.name,
+        avatar: msg.sender_info.avatar || "/assets/images/general/student.png",
+        role:
+          msg.sender_info.role === "admin"
+            ? "teacher"
+            : (msg.sender_info.role as "teacher" | "student" | "parent"),
+      },
+      content: msg.content,
+      timestamp: new Date(msg.created_at).toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      read: msg.status !== "sent",
+    }));
+  }, [messages]);
 
   // Conversation sélectionnée basée sur la room sélectionnée
-  const selectedConversation = selectedRoom
-    ? conversations.find((c) => c.id === selectedRoom.id.toString()) || null
-    : null;
+  const selectedConversation = useMemo(() => {
+    return selectedRoom
+      ? conversations.find((c) => c.id === selectedRoom.id.toString()) || null
+      : null;
+  }, [selectedRoom, conversations]);
 
   // Filter conversations based on search query
-  const filteredConversations = conversations.filter((conversation) => {
-    const participantNames = conversation.participants.map((p) =>
-      p.name.toLowerCase()
-    );
-    return participantNames.some((name) =>
-      name.includes(searchQuery.toLowerCase())
-    );
-  });
+  const filteredConversations = useMemo(() => {
+    return conversations.filter((conversation) => {
+      const participantNames = conversation.participants.map((p) =>
+        p.name.toLowerCase()
+      );
+      return participantNames.some((name) =>
+        name.includes(searchQuery.toLowerCase())
+      );
+    });
+  }, [conversations, searchQuery]);
 
   // Handle sending a new message
   const handleSendMessage = async () => {
@@ -463,7 +321,7 @@ export default function TeacherCommunication() {
       let conversationName = "";
 
       if (recipientType === "student") {
-        const selectedStudentNames = mockStudents
+        const selectedStudentNames = students
           .filter((student) => selectedRecipients.includes(student.id))
           .map((student) => student.name);
         conversationName =
@@ -471,7 +329,7 @@ export default function TeacherCommunication() {
             ? `Conversation avec ${selectedStudentNames[0]}`
             : `Conversation avec ${selectedStudentNames.length} étudiants`;
       } else if (recipientType === "class") {
-        const selectedClassNames = mockClasses
+        const selectedClassNames = classes
           .filter((cls) => selectedRecipients.includes(cls.id))
           .map((cls) => cls.name);
         conversationName =
@@ -479,7 +337,7 @@ export default function TeacherCommunication() {
             ? `Classe ${selectedClassNames[0]}`
             : `${selectedClassNames.length} classes`;
       } else if (recipientType === "parent") {
-        const selectedParentNames = mockParents
+        const selectedParentNames = parents
           .filter((parent) => selectedRecipients.includes(parent.id))
           .map((parent) => parent.name);
         conversationName =
@@ -489,9 +347,7 @@ export default function TeacherCommunication() {
       }
 
       // Créer la nouvelle conversation via l'API
-      await createRoom({
-        name: conversationName,
-      });
+      await createRoom(conversationName);
 
       // Close the dialog and reset state
       setComposeDialogOpen(false);
@@ -520,7 +376,7 @@ export default function TeacherCommunication() {
 
     try {
       // Déterminer le nom de l'annonce basé sur les destinataires
-      const selectedClassNames = mockClasses
+      const selectedClassNames = classes
         .filter((cls) => selectedRecipients.includes(cls.id))
         .map((cls) => cls.name);
 
@@ -530,9 +386,7 @@ export default function TeacherCommunication() {
           : `Annonce - ${selectedClassNames.length} classes`;
 
       // Créer une conversation de groupe pour l'annonce
-      const newRoom = await createRoom({
-        name: announcementName,
-      });
+      const newRoom = await createRoom(announcementName);
 
       // Si la room est créée avec succès, envoyer le message d'annonce
       if (newRoom && selectedRoom) {
@@ -563,6 +417,30 @@ export default function TeacherCommunication() {
       setIsCreatingAnnouncement(false);
     }
   };
+
+  // Show error state if data loading failed
+  if (dataError) {
+    return (
+      <div className="flex flex-col gap-4 w-full">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-red-800 mb-2">
+                Error Loading Data
+              </h3>
+              <p className="text-red-600 mb-4">{dataError}</p>
+              <Button
+                onClick={refetchData}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -650,42 +528,57 @@ export default function TeacherCommunication() {
                           Select Students:
                         </label>
                         <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                          {mockStudents.map((student) => (
-                            <div
-                              key={student.id}
-                              className="flex items-center space-x-2 py-1"
-                            >
-                              <Checkbox
-                                id={student.id}
-                                checked={selectedRecipients.includes(
-                                  student.id
-                                )}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setSelectedRecipients([
-                                      ...selectedRecipients,
-                                      student.id,
-                                    ]);
-                                  } else {
-                                    setSelectedRecipients(
-                                      selectedRecipients.filter(
-                                        (id) => id !== student.id
-                                      )
-                                    );
-                                  }
-                                }}
-                              />
-                              <label
-                                htmlFor={student.id}
-                                className="text-sm cursor-pointer flex-1"
-                              >
-                                {student.name}{" "}
-                                <span className="text-muted-foreground">
-                                  ({student.class})
-                                </span>
-                              </label>
+                          {dataLoading ? (
+                            <div className="text-center py-4">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
+                              <p className="text-sm text-muted-foreground mt-2">
+                                Loading students...
+                              </p>
                             </div>
-                          ))}
+                          ) : students.length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-4">
+                              No students available
+                            </p>
+                          ) : (
+                            students.map((student) => (
+                              <div
+                                key={student?.id || Math.random()}
+                                className="flex items-center space-x-2 py-1"
+                              >
+                                <Checkbox
+                                  id={student?.id || `student-${Math.random()}`}
+                                  checked={selectedRecipients.includes(
+                                    student?.id || ""
+                                  )}
+                                  onCheckedChange={(checked) => {
+                                    if (checked && student?.id) {
+                                      setSelectedRecipients([
+                                        ...selectedRecipients,
+                                        student.id,
+                                      ]);
+                                    } else if (student?.id) {
+                                      setSelectedRecipients(
+                                        selectedRecipients.filter(
+                                          (id) => id !== student.id
+                                        )
+                                      );
+                                    }
+                                  }}
+                                />
+                                <label
+                                  htmlFor={
+                                    student?.id || `student-${Math.random()}`
+                                  }
+                                  className="text-sm cursor-pointer flex-1"
+                                >
+                                  {student?.name || "Unknown Student"}{" "}
+                                  <span className="text-muted-foreground">
+                                    ({student?.class || "No Class"})
+                                  </span>
+                                </label>
+                              </div>
+                            ))
+                          )}
                         </div>
                       </div>
                     )}
@@ -696,37 +589,52 @@ export default function TeacherCommunication() {
                           Select Classes:
                         </label>
                         <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                          {mockClasses.map((cls) => (
-                            <div
-                              key={cls.id}
-                              className="flex items-center space-x-2 py-1"
-                            >
-                              <Checkbox
-                                id={cls.id}
-                                checked={selectedRecipients.includes(cls.id)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setSelectedRecipients([
-                                      ...selectedRecipients,
-                                      cls.id,
-                                    ]);
-                                  } else {
-                                    setSelectedRecipients(
-                                      selectedRecipients.filter(
-                                        (id) => id !== cls.id
-                                      )
-                                    );
-                                  }
-                                }}
-                              />
-                              <label
-                                htmlFor={cls.id}
-                                className="text-sm cursor-pointer flex-1"
-                              >
-                                {cls.name}
-                              </label>
+                          {dataLoading ? (
+                            <div className="text-center py-4">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
+                              <p className="text-sm text-muted-foreground mt-2">
+                                Loading classes...
+                              </p>
                             </div>
-                          ))}
+                          ) : classes.length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-4">
+                              No classes available
+                            </p>
+                          ) : (
+                            classes.map((cls) => (
+                              <div
+                                key={cls?.id || Math.random()}
+                                className="flex items-center space-x-2 py-1"
+                              >
+                                <Checkbox
+                                  id={cls?.id || `class-${Math.random()}`}
+                                  checked={selectedRecipients.includes(
+                                    cls?.id || ""
+                                  )}
+                                  onCheckedChange={(checked) => {
+                                    if (checked && cls?.id) {
+                                      setSelectedRecipients([
+                                        ...selectedRecipients,
+                                        cls.id,
+                                      ]);
+                                    } else if (cls?.id) {
+                                      setSelectedRecipients(
+                                        selectedRecipients.filter(
+                                          (id) => id !== cls.id
+                                        )
+                                      );
+                                    }
+                                  }}
+                                />
+                                <label
+                                  htmlFor={cls?.id || `class-${Math.random()}`}
+                                  className="text-sm cursor-pointer flex-1"
+                                >
+                                  {cls?.name || "Unknown Class"}
+                                </label>
+                              </div>
+                            ))
+                          )}
                         </div>
                       </div>
                     )}
@@ -737,40 +645,58 @@ export default function TeacherCommunication() {
                           Select Parents:
                         </label>
                         <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                          {mockParents.map((parent) => (
-                            <div
-                              key={parent.id}
-                              className="flex items-center space-x-2 py-1"
-                            >
-                              <Checkbox
-                                id={parent.id}
-                                checked={selectedRecipients.includes(parent.id)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setSelectedRecipients([
-                                      ...selectedRecipients,
-                                      parent.id,
-                                    ]);
-                                  } else {
-                                    setSelectedRecipients(
-                                      selectedRecipients.filter(
-                                        (id) => id !== parent.id
-                                      )
-                                    );
-                                  }
-                                }}
-                              />
-                              <label
-                                htmlFor={parent.id}
-                                className="text-sm cursor-pointer flex-1"
-                              >
-                                {parent.name}{" "}
-                                <span className="text-muted-foreground">
-                                  (Parent of {parent.student})
-                                </span>
-                              </label>
+                          {dataLoading ? (
+                            <div className="text-center py-4">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
+                              <p className="text-sm text-muted-foreground mt-2">
+                                Loading parents...
+                              </p>
                             </div>
-                          ))}
+                          ) : parents.length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-4">
+                              No parents available
+                            </p>
+                          ) : (
+                            parents.map((parent) => (
+                              <div
+                                key={parent?.id || Math.random()}
+                                className="flex items-center space-x-2 py-1"
+                              >
+                                <Checkbox
+                                  id={parent?.id || `parent-${Math.random()}`}
+                                  checked={selectedRecipients.includes(
+                                    parent?.id || ""
+                                  )}
+                                  onCheckedChange={(checked) => {
+                                    if (checked && parent?.id) {
+                                      setSelectedRecipients([
+                                        ...selectedRecipients,
+                                        parent.id,
+                                      ]);
+                                    } else if (parent?.id) {
+                                      setSelectedRecipients(
+                                        selectedRecipients.filter(
+                                          (id) => id !== parent.id
+                                        )
+                                      );
+                                    }
+                                  }}
+                                />
+                                <label
+                                  htmlFor={
+                                    parent?.id || `parent-${Math.random()}`
+                                  }
+                                  className="text-sm cursor-pointer flex-1"
+                                >
+                                  {parent?.name || "Unknown Parent"}{" "}
+                                  <span className="text-muted-foreground">
+                                    (Parent of{" "}
+                                    {parent?.student || "Unknown Student"})
+                                  </span>
+                                </label>
+                              </div>
+                            ))
+                          )}
                         </div>
                       </div>
                     )}
@@ -870,37 +796,52 @@ export default function TeacherCommunication() {
                       Select Classes:
                     </label>
                     <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                      {mockClasses.map((cls) => (
-                        <div
-                          key={cls.id}
-                          className="flex items-center space-x-2 py-1"
-                        >
-                          <Checkbox
-                            id={`announce-${cls.id}`}
-                            checked={selectedRecipients.includes(cls.id)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedRecipients([
-                                  ...selectedRecipients,
-                                  cls.id,
-                                ]);
-                              } else {
-                                setSelectedRecipients(
-                                  selectedRecipients.filter(
-                                    (id) => id !== cls.id
-                                  )
-                                );
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor={`announce-${cls.id}`}
-                            className="text-sm cursor-pointer flex-1"
-                          >
-                            {cls.name}
-                          </label>
+                      {dataLoading ? (
+                        <div className="text-center py-4">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
+                          <p className="text-sm text-muted-foreground mt-2">
+                            Loading classes...
+                          </p>
                         </div>
-                      ))}
+                      ) : classes.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          No classes available
+                        </p>
+                      ) : (
+                        classes.map((cls) => (
+                          <div
+                            key={cls?.id || Math.random()}
+                            className="flex items-center space-x-2 py-1"
+                          >
+                            <Checkbox
+                              id={`announce-${cls?.id || Math.random()}`}
+                              checked={selectedRecipients.includes(
+                                cls?.id || ""
+                              )}
+                              onCheckedChange={(checked) => {
+                                if (checked && cls?.id) {
+                                  setSelectedRecipients([
+                                    ...selectedRecipients,
+                                    cls.id,
+                                  ]);
+                                } else if (cls?.id) {
+                                  setSelectedRecipients(
+                                    selectedRecipients.filter(
+                                      (id) => id !== cls.id
+                                    )
+                                  );
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={`announce-${cls?.id || Math.random()}`}
+                              className="text-sm cursor-pointer flex-1"
+                            >
+                              {cls?.name || "Unknown Class"}
+                            </label>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
 
@@ -982,20 +923,14 @@ export default function TeacherCommunication() {
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="rounded-full border-blue-100 bg-blue-50/50 hover:bg-blue-100/50"
-                        >
-                          <Filter className="h-4 w-4 text-blue-500" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Filter messages</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full border-blue-100 bg-blue-50/50 hover:bg-blue-100/50"
+                    title="Filter messages"
+                  >
+                    <Filter className="h-4 w-4 text-blue-500" />
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
@@ -1105,11 +1040,14 @@ export default function TeacherCommunication() {
                             : "border-blue-200 bg-blue-50"
                         )}
                       >
-                        <img
+                        <AvatarImage
                           src={conversation.participants[0].avatar}
                           alt={conversation.participants[0].name}
                           className="object-cover rounded-lg"
                         />
+                        <AvatarFallback className="rounded-lg">
+                          {conversation.participants[0].name.charAt(0)}
+                        </AvatarFallback>
                       </Avatar>
 
                       <div className="flex-1 min-w-0">
@@ -1197,11 +1135,14 @@ export default function TeacherCommunication() {
                           : "border-blue-200 bg-blue-50"
                       )}
                     >
-                      <img
+                      <AvatarImage
                         src={selectedConversation.participants[0].avatar}
                         alt={selectedConversation.participants[0].name}
                         className="object-cover rounded-lg"
                       />
+                      <AvatarFallback className="rounded-lg">
+                        {selectedConversation.participants[0].name.charAt(0)}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
                       <h3 className="font-semibold text-lg">
@@ -1250,9 +1191,7 @@ export default function TeacherCommunication() {
                         </TooltipTrigger>
                         <TooltipContent>Mark as important</TooltipContent>
                       </Tooltip>
-                    </TooltipProvider>
 
-                    <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
@@ -1265,9 +1204,7 @@ export default function TeacherCommunication() {
                         </TooltipTrigger>
                         <TooltipContent>Notification settings</TooltipContent>
                       </Tooltip>
-                    </TooltipProvider>
 
-                    <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
@@ -1280,9 +1217,7 @@ export default function TeacherCommunication() {
                         </TooltipTrigger>
                         <TooltipContent>More options</TooltipContent>
                       </Tooltip>
-                    </TooltipProvider>
 
-                    <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
@@ -1329,11 +1264,14 @@ export default function TeacherCommunication() {
                                 : "border-blue-100"
                             )}
                           >
-                            <img
+                            <AvatarImage
                               src={message.sender.avatar}
                               alt={message.sender.name}
                               className="object-cover rounded-lg"
                             />
+                            <AvatarFallback className="rounded-lg">
+                              {message.sender.name.charAt(0)}
+                            </AvatarFallback>
                           </Avatar>
 
                           <div
@@ -1422,11 +1360,11 @@ export default function TeacherCommunication() {
                         </div>
                       ))}
 
-                      {/* Indicateur de frappe */}
-                      <TypingIndicatorComponent
+                      {/* Indicateur de frappe (désactivé temporairement) */}
+                      {/* <TypingIndicatorComponent
                         typing={typing}
                         className="px-3 pb-2"
-                      />
+                      /> */}
                     </>
                   )}
                 </div>
@@ -1461,9 +1399,7 @@ export default function TeacherCommunication() {
                             </TooltipTrigger>
                             <TooltipContent>Attach file</TooltipContent>
                           </Tooltip>
-                        </TooltipProvider>
 
-                        <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button

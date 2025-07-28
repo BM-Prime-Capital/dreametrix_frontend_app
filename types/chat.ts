@@ -30,7 +30,7 @@ export interface ChatRoomDetail extends ChatRoom {
 }
 
 export interface CreateChatMessage {
-  chat_room_id: string;
+  chat_room_id: number;
   content: string;
 }
 

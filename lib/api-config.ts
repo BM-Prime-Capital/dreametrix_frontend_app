@@ -1,3 +1,6 @@
+import { useRequestInfo } from "@/hooks/useRequestInfo";
+import { useMemo } from "react";
+
 // API Configuration
 export const API_CONFIG = {
   BASE_URL:
@@ -53,11 +56,25 @@ export const buildLocalApiUrl = (
 };
 
 // Common headers for API requests
-export const getApiHeaders = () => ({
+// Note: This function should be called inside React components or hooks
+export const getApiHeaders = (accessToken?: string) => ({
   "Content-Type": "application/json",
   // Add authentication headers here if needed
-  // 'Authorization': `Bearer ${token}`,
+  ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
 });
+
+// Hook to get API headers with authentication
+export const useApiHeaders = () => {
+  const { accessToken } = useRequestInfo();
+
+  return useMemo(
+    () => ({
+      "Content-Type": "application/json",
+      ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+    }),
+    [accessToken]
+  );
+};
 
 // API Response types
 export interface ApiResponse<T> {

@@ -1,4 +1,4 @@
-import { API_CONFIG, buildApiUrl, getApiHeaders } from "@/lib/api-config";
+import { API_CONFIG, buildApiUrl } from "@/lib/api-config";
 import {
   ChatMessage,
   ChatRoom,
@@ -12,10 +12,10 @@ import {
 // Configuration des endpoints Chat
 const CHAT_ENDPOINTS = {
   MESSAGES: "/chats/messages/",
-  MESSAGES_CREATE: "/chats/messages/create/",
+  MESSAGES_CREATE: "/chats/messages/create/", // Endpoint spécialisé pour créer
   MESSAGES_DETAIL: (id: number) => `/chats/messages/${id}/`,
   ROOMS: "/chats/rooms/",
-  ROOMS_CREATE: "/chats/rooms/create/",
+  ROOMS_CREATE: "/chats/rooms/create/", // Endpoint spécialisé pour créer
   ROOMS_DETAIL: (id: number) => `/chats/rooms/${id}/`,
 };
 
@@ -23,6 +23,7 @@ const CHAT_ENDPOINTS = {
 export class ChatMessageService {
   // Lister tous les messages avec pagination optionnelle
   static async listMessages(
+    headers: HeadersInit,
     limit?: number,
     offset?: number
   ): Promise<ChatMessagesResponse> {
@@ -34,7 +35,7 @@ export class ChatMessageService {
       const url = buildApiUrl(CHAT_ENDPOINTS.MESSAGES, params);
       const response = await fetch(url, {
         method: "GET",
-        headers: getApiHeaders(),
+        headers,
       });
 
       if (!response.ok) {
@@ -50,13 +51,14 @@ export class ChatMessageService {
 
   // Créer un nouveau message
   static async createMessage(
+    headers: HeadersInit,
     messageData: Omit<ChatMessage, "id" | "uuid" | "created_at" | "last_update">
   ): Promise<ChatMessage> {
     try {
       const url = buildApiUrl(CHAT_ENDPOINTS.MESSAGES);
       const response = await fetch(url, {
         method: "POST",
-        headers: getApiHeaders(),
+        headers,
         body: JSON.stringify({ data: messageData }),
       });
 
@@ -73,18 +75,32 @@ export class ChatMessageService {
 
   // Créer un message via l'endpoint spécialisé
   static async createChatMessage(
+    headers: HeadersInit,
     messageData: CreateChatMessage
   ): Promise<CreateChatMessage> {
     try {
       const url = buildApiUrl(CHAT_ENDPOINTS.MESSAGES_CREATE);
-      const response = await fetch(url, {
-        method: "POST",
-        headers: getApiHeaders(),
-        body: JSON.stringify({ data: messageData }),
+
+      console.log("🔍 DEBUG ChatMessageService.createChatMessage:", {
+        url,
+        messageData,
+        headers,
       });
 
+      const response = await fetch(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(messageData), // Envoi direct sans encapsulation "data"
+      });
+
+      console.log("🔍 DEBUG Response status:", response.status);
+
       if (!response.ok) {
-        throw new Error(`Failed to create chat message: ${response.status}`);
+        const errorText = await response.text();
+        console.error("🚨 API Error Response:", errorText);
+        throw new Error(
+          `Failed to create chat message: ${response.status} - ${errorText}`
+        );
       }
 
       return await response.json();
@@ -95,12 +111,15 @@ export class ChatMessageService {
   }
 
   // Obtenir un message spécifique
-  static async getMessage(id: number): Promise<ChatMessage> {
+  static async getMessage(
+    headers: HeadersInit,
+    id: number
+  ): Promise<ChatMessage> {
     try {
       const url = buildApiUrl(CHAT_ENDPOINTS.MESSAGES_DETAIL(id));
       const response = await fetch(url, {
         method: "GET",
-        headers: getApiHeaders(),
+        headers,
       });
 
       if (!response.ok) {
@@ -116,6 +135,7 @@ export class ChatMessageService {
 
   // Mettre à jour un message (PUT)
   static async updateMessage(
+    headers: HeadersInit,
     id: number,
     messageData: Omit<ChatMessage, "id" | "uuid" | "created_at" | "last_update">
   ): Promise<ChatMessage> {
@@ -123,7 +143,7 @@ export class ChatMessageService {
       const url = buildApiUrl(CHAT_ENDPOINTS.MESSAGES_DETAIL(id));
       const response = await fetch(url, {
         method: "PUT",
-        headers: getApiHeaders(),
+        headers,
         body: JSON.stringify({ data: messageData }),
       });
 
@@ -140,6 +160,7 @@ export class ChatMessageService {
 
   // Mettre à jour partiellement un message (PATCH)
   static async partialUpdateMessage(
+    headers: HeadersInit,
     id: number,
     messageData: Partial<ChatMessage>
   ): Promise<ChatMessage> {
@@ -147,7 +168,7 @@ export class ChatMessageService {
       const url = buildApiUrl(CHAT_ENDPOINTS.MESSAGES_DETAIL(id));
       const response = await fetch(url, {
         method: "PATCH",
-        headers: getApiHeaders(),
+        headers,
         body: JSON.stringify({ data: messageData }),
       });
 
@@ -163,12 +184,12 @@ export class ChatMessageService {
   }
 
   // Supprimer un message
-  static async deleteMessage(id: number): Promise<void> {
+  static async deleteMessage(headers: HeadersInit, id: number): Promise<void> {
     try {
       const url = buildApiUrl(CHAT_ENDPOINTS.MESSAGES_DETAIL(id));
       const response = await fetch(url, {
         method: "DELETE",
-        headers: getApiHeaders(),
+        headers,
       });
 
       if (!response.ok) {
@@ -185,6 +206,7 @@ export class ChatMessageService {
 export class ChatRoomService {
   // Lister tous les salons avec filtres optionnels
   static async listRooms(
+    headers: HeadersInit,
     name?: string,
     school?: string,
     details?: string,
@@ -202,7 +224,7 @@ export class ChatRoomService {
       const url = buildApiUrl(CHAT_ENDPOINTS.ROOMS, params);
       const response = await fetch(url, {
         method: "GET",
-        headers: getApiHeaders(),
+        headers,
       });
 
       if (!response.ok) {
@@ -217,13 +239,16 @@ export class ChatRoomService {
   }
 
   // Créer un nouveau salon
-  static async createRoom(roomData: {
-    name?: string;
-    details?: string;
-    is_group?: boolean;
-    is_deleted?: boolean;
-    extra_data?: string;
-  }): Promise<ChatRoom> {
+  static async createRoom(
+    headers: HeadersInit,
+    roomData: {
+      name?: string;
+      details?: string;
+      is_group?: boolean;
+      is_deleted?: boolean;
+      extra_data?: string;
+    }
+  ): Promise<ChatRoom> {
     try {
       const url = buildApiUrl(CHAT_ENDPOINTS.ROOMS);
       const formData = new FormData();
@@ -237,9 +262,13 @@ export class ChatRoomService {
       if (roomData.extra_data)
         formData.append("extra_data", roomData.extra_data);
 
+      // Créer des headers sans Content-Type pour FormData
+      const formDataHeaders = { ...headers };
+      delete (formDataHeaders as any)["Content-Type"];
+
       const response = await fetch(url, {
         method: "POST",
-        // Don't set Content-Type for FormData, let browser handle it
+        headers: formDataHeaders,
         body: formData,
       });
 
@@ -256,6 +285,7 @@ export class ChatRoomService {
 
   // Créer un salon via l'endpoint spécialisé
   static async createChatRoom(
+    headers: HeadersInit,
     roomData: CreateChatRoom
   ): Promise<CreateChatRoom> {
     try {
@@ -263,8 +293,13 @@ export class ChatRoomService {
       const formData = new FormData();
       formData.append("name", roomData.name);
 
+      // Créer des headers sans Content-Type pour FormData
+      const formDataHeaders = { ...headers };
+      delete (formDataHeaders as any)["Content-Type"];
+
       const response = await fetch(url, {
         method: "POST",
+        headers: formDataHeaders,
         body: formData,
       });
 
@@ -280,12 +315,15 @@ export class ChatRoomService {
   }
 
   // Obtenir un salon spécifique avec ses détails
-  static async getRoom(id: number): Promise<ChatRoomDetail> {
+  static async getRoom(
+    headers: HeadersInit,
+    id: number
+  ): Promise<ChatRoomDetail> {
     try {
       const url = buildApiUrl(CHAT_ENDPOINTS.ROOMS_DETAIL(id));
       const response = await fetch(url, {
         method: "GET",
-        headers: getApiHeaders(),
+        headers,
       });
 
       if (!response.ok) {
@@ -301,6 +339,7 @@ export class ChatRoomService {
 
   // Mettre à jour un salon (PUT)
   static async updateRoom(
+    headers: HeadersInit,
     id: number,
     roomData: {
       name?: string;
@@ -341,6 +380,7 @@ export class ChatRoomService {
 
   // Mettre à jour partiellement un salon (PATCH)
   static async partialUpdateRoom(
+    headers: HeadersInit,
     id: number,
     roomData: {
       name?: string;
@@ -380,12 +420,12 @@ export class ChatRoomService {
   }
 
   // Supprimer un salon
-  static async deleteRoom(id: number): Promise<void> {
+  static async deleteRoom(headers: HeadersInit, id: number): Promise<void> {
     try {
       const url = buildApiUrl(CHAT_ENDPOINTS.ROOMS_DETAIL(id));
       const response = await fetch(url, {
         method: "DELETE",
-        headers: getApiHeaders(),
+        headers,
       });
 
       if (!response.ok) {

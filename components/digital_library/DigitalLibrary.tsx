@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card";
 import PageTitleH1 from "@/components/ui/page-title-h1";
 import { ChangeEvent, useEffect, useState } from "react";
-import { GenerateAssessmentDialog } from "./GenerateAssessmentDialog";
+import GenerateAssessmentDialog from "./GenerateAssessmentDialog";
 import MultiSelectList from "../MultiSelectionList";
 import { useList } from "@/hooks/useList";
 import {
@@ -111,6 +111,7 @@ export default function DigitalLibrary() {
   const [error, setError] = useState("");
   const [isSubjectLoadAutomaticaly, setIsSubjectLoadAutomaticaly] =
     useState<boolean>(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Assignment context state
   const [assignmentContext, setAssignmentContext] = useState<{
@@ -977,7 +978,7 @@ export default function DigitalLibrary() {
       const url = URL.createObjectURL(blob);
       setFileStream(url);
 
-      document.getElementById("openFileModalButton")?.click(); // We open the Modal to display the Generated File
+      setIsDialogOpen(true); // Open the dialog to display the generated file
     } catch (error) {
       setError(
         "There is a server or internet issue, please try again, if this persits, contact you admin."
@@ -1124,27 +1125,51 @@ export default function DigitalLibrary() {
       <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-            <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            <svg
+              className="h-6 w-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
             </svg>
           </div>
           <div>
-            <PageTitleH1 title="Digital Library" className="text-white font-bold text-2xl" />
-            <p className="text-blue-100 text-sm mt-1">Create custom worksheets and assessments</p>
+            <PageTitleH1
+              title="Digital Library"
+              className="text-white font-bold text-2xl"
+            />
+            <p className="text-blue-100 text-sm mt-1">
+              Create custom worksheets and assessments
+            </p>
           </div>
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 mx-6 pb-8 space-y-8 max-w-6xl mx-auto w-full">
-
+      <div className="flex-1 pb-8 space-y-8 max-w-6xl mx-auto w-full">
         {/* Assignment Context Banner */}
         {assignmentContext && (
           <Card className="rounded-2xl shadow-lg p-6 bg-gradient-to-r from-blue-50/80 to-purple-50/80 border border-blue-200/50 backdrop-blur-sm">
             <div className="flex items-center gap-4">
               <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
               </div>
               <div className="flex-1">
@@ -1153,15 +1178,20 @@ export default function DigitalLibrary() {
                 </h3>
                 <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                   {assignmentContext.courseName && (
-                    <span className="bg-white/60 px-3 py-1 rounded-full font-medium">Course: {assignmentContext.courseName}</span>
+                    <span className="bg-white/60 px-3 py-1 rounded-full font-medium">
+                      Course: {assignmentContext.courseName}
+                    </span>
                   )}
                   {assignmentContext.dueDate && (
                     <span className="bg-white/60 px-3 py-1 rounded-full font-medium">
-                      Due: {new Date(assignmentContext.dueDate).toLocaleDateString()}
+                      Due:{" "}
+                      {new Date(assignmentContext.dueDate).toLocaleDateString()}
                     </span>
                   )}
                   {assignmentContext.assignmentType && (
-                    <span className="bg-white/60 px-3 py-1 rounded-full font-medium">Type: {assignmentContext.assignmentType}</span>
+                    <span className="bg-white/60 px-3 py-1 rounded-full font-medium">
+                      Type: {assignmentContext.assignmentType}
+                    </span>
                   )}
                 </div>
               </div>
@@ -1171,559 +1201,678 @@ export default function DigitalLibrary() {
 
         {/* Auto-population Loading Banner */}
         <div className="mt-2">
-        {isAutoPopulating && (
-          <Card className="rounded-2xl shadow-lg p-6 bg-gradient-to-r from-green-50/80 to-blue-50/80 border border-green-200/50 backdrop-blur-sm">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-xl shadow-lg">
-                <svg className="w-6 h-6 text-white animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Auto-populating form fields...</h3>
-                <div className="text-sm text-gray-600">
-                  {autoPopulationProgress ? (
-                    <div className="space-y-3">
-                      <div className="font-medium">{autoPopulationProgress.currentStep}</div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 bg-gray-200 rounded-full h-2">
-                          <div className="bg-gradient-to-r from-green-500 to-blue-600 h-2 rounded-full transition-all duration-500" style={{ width: `${(autoPopulationProgress.currentStepIndex / autoPopulationProgress.totalSteps) * 100}%` }}></div>
+          {isAutoPopulating && (
+            <Card className="rounded-2xl shadow-lg p-6 bg-gradient-to-r from-green-50/80 to-blue-50/80 border border-green-200/50 backdrop-blur-sm">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-xl shadow-lg">
+                  <svg
+                    className="w-6 h-6 text-white animate-spin"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">
+                    Auto-populating form fields...
+                  </h3>
+                  <div className="text-sm text-gray-600">
+                    {autoPopulationProgress ? (
+                      <div className="space-y-3">
+                        <div className="font-medium">
+                          {autoPopulationProgress.currentStep}
                         </div>
-                        <span className="text-xs font-semibold bg-white/60 px-2 py-1 rounded-full">
-                          {autoPopulationProgress.currentStepIndex}/{autoPopulationProgress.totalSteps}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-gradient-to-r from-green-500 to-blue-600 h-2 rounded-full transition-all duration-500"
+                              style={{
+                                width: `${
+                                  (autoPopulationProgress.currentStepIndex /
+                                    autoPopulationProgress.totalSteps) *
+                                  100
+                                }%`,
+                              }}
+                            ></div>
+                          </div>
+                          <span className="text-xs font-semibold bg-white/60 px-2 py-1 rounded-full">
+                            {autoPopulationProgress.currentStepIndex}/
+                            {autoPopulationProgress.totalSteps}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    "We're automatically filling out the form based on your assignment details. Please wait..."
-                  )}
+                    ) : (
+                      "We're automatically filling out the form based on your assignment details. Please wait..."
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Enhanced Form Card */}
-        </div>
-        <Card className="rounded-2xl shadow-xl border-0 bg-white/90 backdrop-blur-sm p-8">
-        <form
-          className="flex flex-col gap-6"
-          onSubmit={(e) => createDigitalLibrary(e)}
-        >
-          {error && (
-            <Alert variant="destructive" className="border-red-500 bg-red-50">
-              <AlertDescription className="text-red-700 font-medium">
-                {error}
-              </AlertDescription>
-            </Alert>
+            </Card>
           )}
 
-          <div className="space-y-6 bg-gradient-to-r from-blue-50/80 to-purple-50/80 p-6 rounded-2xl border border-blue-200/50 backdrop-blur-sm">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-gray-800">Question Source</h3>
-            </div>
-            <RadioGroup defaultValue="actual" className="grid grid-cols-1 md:grid-cols-2 gap-4" onValueChange={(value) => setIsDreaMetrixBankOfQuestion(value === "dreaMetrix")}>
-              <div className="flex items-center space-x-3 bg-white/60 p-4 rounded-xl border border-blue-200/50">
-                <RadioGroupItem value="dreaMetrix" id="dreaMetrix" className="text-blue-600 border-blue-400" />
-                <Label htmlFor="dreaMetrix" className="font-semibold text-gray-800 cursor-pointer">
-                  DreaMetrix Bank of Questions
-                </Label>
-              </div>
-              <div className="flex items-center space-x-3 bg-white/60 p-4 rounded-xl border border-purple-200/50">
-                <RadioGroupItem value="actual" id="actual" className="text-purple-600 border-purple-400" />
-                <Label htmlFor="actual" className="font-semibold text-gray-800 cursor-pointer">
-                  Actual Released Questions
-                </Label>
-              </div>
-            </RadioGroup>
-            {isDreaMetrixBankOfQuestion && (
-              <Alert variant="default" className="bg-blue-100/80 border-blue-300/50 text-blue-800 rounded-xl">
-                <AlertDescription className="font-medium">
-                  DreaMetrix Bank of Questions functionality is coming soon.
+          {/* Enhanced Form Card */}
+        </div>
+        <Card className="rounded-2xl shadow-xl border-0 bg-white/90 backdrop-blur-sm p-8">
+          <form
+            className="flex flex-col gap-6"
+            onSubmit={(e) => createDigitalLibrary(e)}
+          >
+            {error && (
+              <Alert variant="destructive" className="border-red-500 bg-red-50">
+                <AlertDescription className="text-red-700 font-medium">
+                  {error}
                 </AlertDescription>
               </Alert>
             )}
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label className="text-gray-700 font-medium">Subject</Label>
-              <Select
-                disabled={isDreaMetrixBankOfQuestion}
-                value={digitalLibrarySheet.subject}
-                onValueChange={handleSubjectSelection}
-              >
-                <SelectTrigger className="w-full bg-gray-50 border-gray-300 hover:border-blue-400">
-                  <SelectValue placeholder="Select Subject" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-200 shadow-lg">
-                  {subjects.map((subject: string, index: number) => (
-                    <SelectItem
-                      key={index}
-                      value={subject}
-                      className="hover:bg-blue-50 focus:bg-blue-50"
-                    >
-                      {subject}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-gray-700 font-medium">Grade</Label>
-              <Select
-                disabled={
-                  isDreaMetrixBankOfQuestion || !digitalLibrarySheet.subject
-                }
-                value={digitalLibrarySheet.grade}
-                onValueChange={async (value) => {
-                  // Mettre à jour l'état immédiatement
-                  setDigitalLibrarySheet((prev) => ({ ...prev, grade: value }));
-                  // Puis appeler la fonction asynchrone
-                  await handleGradeSelection(value);
-                }}
-              >
-                <SelectTrigger className="w-full bg-gray-50 border-gray-300 hover:border-blue-400">
-                  <SelectValue placeholder="Select Grade">
-                    {isLoadingSubjects
-                      ? "Loading grades..."
-                      : digitalLibrarySheet.grade || "Select Grade"}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-200 shadow-lg">
-                  {grades.map((grade, index) => (
-                    <SelectItem
-                      key={index}
-                      value={grade}
-                      className="hover:bg-blue-50 focus:bg-blue-50"
-                    >
-                      {grade}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {/* Assignment Type Section */}
-            <div className="space-y-2 bg-orange-50 p-4 rounded-lg border border-orange-100 col-span-2">
-              <Label className="text-orange-800 font-medium">
-                Assignment Type
-              </Label>
-              <Select
-                disabled={isDreaMetrixBankOfQuestion}
-                value={digitalLibrarySheet.assignmentType}
+            <div className="space-y-6 bg-gradient-to-r from-blue-50/80 to-purple-50/80 p-6 rounded-2xl border border-blue-200/50 backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800">
+                  Question Source
+                </h3>
+              </div>
+              <RadioGroup
+                defaultValue="actual"
+                className="grid grid-cols-1 md:grid-cols-2 gap-4"
                 onValueChange={(value) =>
-                  setDigitalLibrarySheet({
-                    ...digitalLibrarySheet,
-                    assignmentType: value,
-                  })
+                  setIsDreaMetrixBankOfQuestion(value === "dreaMetrix")
                 }
               >
-                <SelectTrigger className="w-full bg-white border-orange-300 hover:border-orange-400">
-                  <SelectValue placeholder="Select Assignment Type" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-200 shadow-lg">
-                  <SelectItem
-                    value="homework"
-                    className="hover:bg-orange-50 focus:bg-orange-50"
+                <div className="flex items-center space-x-3 bg-white/60 p-4 rounded-xl border border-blue-200/50">
+                  <RadioGroupItem
+                    value="dreaMetrix"
+                    id="dreaMetrix"
+                    className="text-blue-600 border-blue-400"
+                  />
+                  <Label
+                    htmlFor="dreaMetrix"
+                    className="font-semibold text-gray-800 cursor-pointer"
                   >
-                    Homework
-                  </SelectItem>
-                  <SelectItem
-                    value="test"
-                    className="hover:bg-orange-50 focus:bg-orange-50"
-                  >
-                    Test
-                  </SelectItem>
-                  <SelectItem
-                    value="quiz"
-                    className="hover:bg-orange-50 focus:bg-orange-50"
-                  >
-                    Quiz
-                  </SelectItem>
-                  <SelectItem
-                    value="participation"
-                    className="hover:bg-orange-50 focus:bg-orange-50"
-                  >
-                    Participation
-                  </SelectItem>
-                  <SelectItem
-                    value="other"
-                    className="hover:bg-orange-50 focus:bg-orange-50"
-                  >
-                    Other
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {/* ELA-specific selection section */}
-            {elaStepActive && (
-              <>
-                <div className="space-y-2 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                  <Label className="text-yellow-800 font-medium">
-                    Standard
+                    DreaMetrix Bank of Questions
                   </Label>
-                  <Select
-                    disabled={isLoadingElaData}
-                    value={selectedElaStandard}
-                    onValueChange={handleElaStandardSelect}
-                  >
-                    <SelectTrigger className="w-full bg-white border-yellow-300 hover:border-yellow-400">
-                      <SelectValue
-                        placeholder={
-                          isLoadingElaData
-                            ? "Loading standards..."
-                            : "Select Standard"
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border border-gray-200 shadow-lg">
-                      {elaStandards.map((standard, index) => (
-                        <SelectItem
-                          key={index}
-                          value={standard}
-                          className="hover:bg-yellow-50 focus:bg-yellow-50"
-                        >
-                          {standard}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
-
-                <div className="space-y-2 bg-orange-50 p-4 rounded-lg border border-orange-200">
-                  <Label className="text-orange-800 font-medium">Strand</Label>
-                  <Select
-                    disabled={isLoadingElaData || !selectedElaStandard}
-                    value={selectedElaStrand}
-                    onValueChange={handleElaStrandSelect}
+                <div className="flex items-center space-x-3 bg-white/60 p-4 rounded-xl border border-purple-200/50">
+                  <RadioGroupItem
+                    value="actual"
+                    id="actual"
+                    className="text-purple-600 border-purple-400"
+                  />
+                  <Label
+                    htmlFor="actual"
+                    className="font-semibold text-gray-800 cursor-pointer"
                   >
-                    <SelectTrigger className="w-full bg-white border-orange-300 hover:border-orange-400">
-                      <SelectValue
-                        placeholder={
-                          isLoadingElaData
-                            ? "Loading..."
-                            : !selectedElaStandard
-                            ? "Select Standard first"
-                            : "Select ELA Strand"
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border border-gray-200 shadow-lg">
-                      {elaStrands.map((strand, index) => (
-                        <SelectItem
-                          key={index}
-                          value={strand}
-                          className="hover:bg-orange-50 focus:bg-orange-50"
-                        >
-                          {strand}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    Actual Released Questions
+                  </Label>
                 </div>
+              </RadioGroup>
+              {isDreaMetrixBankOfQuestion && (
+                <Alert
+                  variant="default"
+                  className="bg-blue-100/80 border-blue-300/50 text-blue-800 rounded-xl"
+                >
+                  <AlertDescription className="font-medium">
+                    DreaMetrix Bank of Questions functionality is coming soon.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
 
-                {isLoadingElaData && (
-                  <div className="md:col-span-2 text-sm text-yellow-700 bg-yellow-100 p-2 rounded">
-                    Loading ELA options...
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* Domain section - hide completely for ELA subjects, show for non-ELA subjects only */}
-            {!isElaSubjectSelected && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label className="text-gray-700 font-medium">Domain</Label>
+                <Label className="text-gray-700 font-medium">Subject</Label>
                 <Select
-                  disabled={
-                    isDreaMetrixBankOfQuestion || !digitalLibrarySheet.grade
-                  }
-                  value={digitalLibrarySheet.domain}
-                  onValueChange={handleDomainSelection}
+                  disabled={isDreaMetrixBankOfQuestion}
+                  value={digitalLibrarySheet.subject}
+                  onValueChange={handleSubjectSelection}
                 >
                   <SelectTrigger className="w-full bg-gray-50 border-gray-300 hover:border-blue-400">
-                    <SelectValue placeholder="Select Domain" />
+                    <SelectValue placeholder="Select Subject" />
                   </SelectTrigger>
                   <SelectContent className="bg-white border border-gray-200 shadow-lg">
-                    {sheetDomains.map((domain, index) => (
+                    {subjects.map((subject: string, index: number) => (
                       <SelectItem
                         key={index}
-                        value={domain}
+                        value={subject}
                         className="hover:bg-blue-50 focus:bg-blue-50"
                       >
-                        {domain}
+                        {subject}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            )}
 
-            {/* Question Type section - show for non-ELA subjects (when domain is selected) or for ELA subjects (when both standard and strand are selected) */}
-            {(!isElaSubjectSelected && digitalLibrarySheet.domain) ||
-            (isElaSubjectSelected &&
-              selectedElaStandard &&
-              selectedElaStrand) ? (
               <div className="space-y-2">
-                <Label className="text-gray-700 font-medium">
-                  Question Type
-                </Label>
+                <Label className="text-gray-700 font-medium">Grade</Label>
                 <Select
                   disabled={
-                    isDreaMetrixBankOfQuestion ||
-                    (!isElaSubjectSelected && !digitalLibrarySheet.domain) ||
-                    (isElaSubjectSelected &&
-                      !(selectedElaStandard && selectedElaStrand))
+                    isDreaMetrixBankOfQuestion || !digitalLibrarySheet.subject
                   }
-                  value={digitalLibrarySheet.questionType}
+                  value={digitalLibrarySheet.grade}
                   onValueChange={async (value) => {
-                    setDigitalLibrarySheet({
-                      ...digitalLibrarySheet,
-                      questionType: value,
-                    });
-
-                    // Update question links when question type changes
-                    if (checkedStandards.length > 0) {
-                      setIsLoadingQuestionLinks(true);
-                      try {
-                        if (isElaSubjectSelected) {
-                          // Use ELA-specific API for question links
-                          const specificStandards =
-                            checkedStandards.length > 1
-                              ? checkedStandards.join(",")
-                              : checkedStandards[0];
-                          const questionsLinksData =
-                            await fetchElaQuestionLinks(
-                              digitalLibrarySheet.subject,
-                              digitalLibrarySheet.grade,
-                              selectedElaStandard,
-                              selectedElaStrand,
-                              specificStandards,
-                              value,
-                              tenantDomain,
-                              accessToken,
-                              refreshToken
-                            );
-                          setQuestionsLinks(questionsLinksData);
-                        } else {
-                          // Use regular API for Math subjects
-                          const data = {
-                            subject: digitalLibrarySheet.subject,
-                            grade: digitalLibrarySheet.grade,
-                            domain: digitalLibrarySheet.domain,
-                            questionsType: value,
-                            standards: checkedStandards,
-                          };
-                          const questionsLinksData = await getQuestionsLinks(
-                            data,
-                            tenantDomain,
-                            accessToken,
-                            refreshToken
-                          );
-                          setQuestionsLinks(questionsLinksData);
-                        }
-                      } catch (error) {
-                        console.error("Error fetching question links:", error);
-                        setQuestionsLinks(null);
-                      } finally {
-                        setIsLoadingQuestionLinks(false);
-                      }
-                    }
+                    // Mettre à jour l'état immédiatement
+                    setDigitalLibrarySheet((prev) => ({
+                      ...prev,
+                      grade: value,
+                    }));
+                    // Puis appeler la fonction asynchrone
+                    await handleGradeSelection(value);
                   }}
                 >
                   <SelectTrigger className="w-full bg-gray-50 border-gray-300 hover:border-blue-400">
-                    <SelectValue placeholder="Select Question Type" />
+                    <SelectValue placeholder="Select Grade">
+                      {isLoadingSubjects
+                        ? "Loading grades..."
+                        : digitalLibrarySheet.grade || "Select Grade"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                    {grades.map((grade, index) => (
+                      <SelectItem
+                        key={index}
+                        value={grade}
+                        className="hover:bg-blue-50 focus:bg-blue-50"
+                      >
+                        {grade}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Assignment Type Section */}
+              <div className="space-y-2 bg-orange-50 p-4 rounded-lg border border-orange-100 col-span-2">
+                <Label className="text-orange-800 font-medium">
+                  Assignment Type
+                </Label>
+                <Select
+                  disabled={isDreaMetrixBankOfQuestion}
+                  value={digitalLibrarySheet.assignmentType}
+                  onValueChange={(value) =>
+                    setDigitalLibrarySheet({
+                      ...digitalLibrarySheet,
+                      assignmentType: value,
+                    })
+                  }
+                >
+                  <SelectTrigger className="w-full bg-white border-orange-300 hover:border-orange-400">
+                    <SelectValue placeholder="Select Assignment Type" />
                   </SelectTrigger>
                   <SelectContent className="bg-white border border-gray-200 shadow-lg">
                     <SelectItem
-                      value="MC"
-                      className="hover:bg-blue-50 focus:bg-blue-50"
+                      value="homework"
+                      className="hover:bg-orange-50 focus:bg-orange-50"
                     >
-                      Multiple Choice (MC)
+                      Homework
                     </SelectItem>
                     <SelectItem
-                      value="OR"
-                      className="hover:bg-blue-50 focus:bg-blue-50"
+                      value="test"
+                      className="hover:bg-orange-50 focus:bg-orange-50"
                     >
-                      Open Response (OR)
+                      Test
+                    </SelectItem>
+                    <SelectItem
+                      value="quiz"
+                      className="hover:bg-orange-50 focus:bg-orange-50"
+                    >
+                      Quiz
+                    </SelectItem>
+                    <SelectItem
+                      value="participation"
+                      className="hover:bg-orange-50 focus:bg-orange-50"
+                    >
+                      Participation
+                    </SelectItem>
+                    <SelectItem
+                      value="other"
+                      className="hover:bg-orange-50 focus:bg-orange-50"
+                    >
+                      Other
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            ) : null}
-          </div>
+              {/* ELA-specific selection section */}
+              {elaStepActive && (
+                <>
+                  <div className="space-y-2 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                    <Label className="text-yellow-800 font-medium">
+                      Standard
+                    </Label>
+                    <Select
+                      disabled={isLoadingElaData}
+                      value={selectedElaStandard}
+                      onValueChange={handleElaStandardSelect}
+                    >
+                      <SelectTrigger className="w-full bg-white border-yellow-300 hover:border-yellow-400">
+                        <SelectValue
+                          placeholder={
+                            isLoadingElaData
+                              ? "Loading standards..."
+                              : "Select Standard"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                        {elaStandards.map((standard, index) => (
+                          <SelectItem
+                            key={index}
+                            value={standard}
+                            className="hover:bg-yellow-50 focus:bg-yellow-50"
+                          >
+                            {standard}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-          {/* Specific Standards section - show for non-ELA subjects (when domain is selected) or for ELA subjects (when both standard and strand are selected) */}
-          {(!isElaSubjectSelected && digitalLibrarySheet.domain) ||
-          (isElaSubjectSelected && selectedElaStandard && selectedElaStrand) ? (
-            <div className="space-y-2 bg-purple-50 p-4 rounded-lg border border-purple-100">
-              <Label className="text-purple-800 font-medium">
-                Specific Standards
-              </Label>
-              <MultiSelectList
-                selectedItems={[]}
-                allItems={standards}
-                itemsLabel="Standards"
-                allShouldBeSelected={true}
-                itemsAreLoading={standardsAreLoading}
-                withSheckbox={true}
-                updateSelectedItems={(items: string[]) =>
-                  handleStandardsChange(items)
-                }
-              />
-            </div>
-          ) : null}
+                  <div className="space-y-2 bg-orange-50 p-4 rounded-lg border border-orange-200">
+                    <Label className="text-orange-800 font-medium">
+                      Strand
+                    </Label>
+                    <Select
+                      disabled={isLoadingElaData || !selectedElaStandard}
+                      value={selectedElaStrand}
+                      onValueChange={handleElaStrandSelect}
+                    >
+                      <SelectTrigger className="w-full bg-white border-orange-300 hover:border-orange-400">
+                        <SelectValue
+                          placeholder={
+                            isLoadingElaData
+                              ? "Loading..."
+                              : !selectedElaStandard
+                              ? "Select Standard first"
+                              : "Select ELA Strand"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                        {elaStrands.map((strand, index) => (
+                          <SelectItem
+                            key={index}
+                            value={strand}
+                            className="hover:bg-orange-50 focus:bg-orange-50"
+                          >
+                            {strand}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-          <div className="space-y-2 bg-indigo-50 p-4 rounded-lg border border-indigo-100">
-            <Label className="text-indigo-800 font-medium">Class(es)</Label>
-            <MultiSelectList
-              selectedItems={allClasses}
-              allItems={allClasses?.flatMap((cl: any) => cl.name)}
-              itemsLabel="Classes"
-              className="border border-indigo-200 bg-white p-3 rounded-md shadow-sm"
-              allShouldBeSelected={false}
-              itemsAreLoading={classesIsLoading}
-              withSheckbox={false}
-              updateSelectedItems={(items: string[]) =>
-                setCheckedClasses(items)
-              }
-            />
-          </div>
-
-          {isLoadingQuestionLinks ? (
-            <div className="text-sm text-blue-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
-              <span className="flex items-center gap-2">
-                <svg
-                  className="animate-spin h-4 w-4 text-blue-600"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Loading available questions...
-              </span>
-            </div>
-          ) : questionsLinks ? (
-            <div className="text-sm text-blue-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
-              Available questions:{" "}
-              <span className="font-bold">{questionsLinks.question_count}</span>{" "}
-              (Max: {questionsLinks.question_count})
-            </div>
-          ) : null}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-            <div className="space-y-2">
-              <Label className="text-gray-700 font-medium">
-                Number of Questions
-              </Label>
-              <Input
-                disabled={isDreaMetrixBankOfQuestion || !questionsLinks}
-                type="number"
-                min={1}
-                max={questionsLinks ? questionsLinks.question_count : 1}
-                value={digitalLibrarySheet.noOfQuestions}
-                onChange={(e) =>
-                  setDigitalLibrarySheet({
-                    ...digitalLibrarySheet,
-                    noOfQuestions: e.target.value,
-                  })
-                }
-                className="bg-gray-50 border-gray-300 focus:border-blue-400"
-                placeholder={
-                  questionsLinks
-                    ? `Enter number (1-${questionsLinks.question_count})`
-                    : "Select standards first"
-                }
-              />
-            </div>
-
-            <div className="flex items-center space-x-2 h-10 bg-green-50 p-3 rounded-lg border border-green-200">
-              <Checkbox
-                id="answerSheet"
-                checked={digitalLibrarySheet.generateAnswerSheet}
-                onCheckedChange={(checked) =>
-                  setDigitalLibrarySheet({
-                    ...digitalLibrarySheet,
-                    generateAnswerSheet: Boolean(checked),
-                  })
-                }
-                className="border-gray-400 data-[state=checked]:bg-green-600"
-              />
-              <Label
-                htmlFor="answerSheet"
-                className="font-medium text-green-800"
-              >
-                Generate Answer Sheets
-              </Label>
-            </div>
-
-            <div className="flex items-center space-x-2 h-10 bg-blue-50 p-3 rounded-lg border border-blue-200">
-              <Checkbox
-                id="includeAnswerKey"
-                checked={digitalLibrarySheet.includeAnswerKey}
-                onCheckedChange={(checked) =>
-                  setDigitalLibrarySheet({
-                    ...digitalLibrarySheet,
-                    includeAnswerKey: Boolean(checked),
-                  })
-                }
-                className="border-gray-400 data-[state=checked]:bg-blue-600"
-              />
-              <Label
-                htmlFor="includeAnswerKey"
-                className="font-medium text-blue-800"
-              >
-                Include Answer Key
-              </Label>
-            </div>
-          </div>
-
-          <div className="flex justify-center pt-6">
-            <Button
-              type="submit"
-              className="px-12 py-4 text-lg font-semibold bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600 hover:from-teal-700 hover:via-cyan-700 hover:to-blue-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <span className="flex items-center gap-3">
-                  <svg className="animate-spin h-6 w-6 text-white" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Generating Worksheet...
-                </span>
-              ) : (
-                <span className="flex items-center gap-3">
-                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  Create Worksheet
-                </span>
+                  {isLoadingElaData && (
+                    <div className="md:col-span-2 text-sm text-yellow-700 bg-yellow-100 p-2 rounded">
+                      Loading ELA options...
+                    </div>
+                  )}
+                </>
               )}
-            </Button>
-          </div>
 
-          <GenerateAssessmentDialog fileStream={fileStream} />
-        </form>
-        <LoaderDialog shouldOpen={isLoading} />
+              {/* Domain section - hide completely for ELA subjects, show for non-ELA subjects only */}
+              {!isElaSubjectSelected && (
+                <div className="space-y-2">
+                  <Label className="text-gray-700 font-medium">Domain</Label>
+                  <Select
+                    disabled={
+                      isDreaMetrixBankOfQuestion || !digitalLibrarySheet.grade
+                    }
+                    value={digitalLibrarySheet.domain}
+                    onValueChange={handleDomainSelection}
+                  >
+                    <SelectTrigger className="w-full bg-gray-50 border-gray-300 hover:border-blue-400">
+                      <SelectValue placeholder="Select Domain" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                      {sheetDomains.map((domain, index) => (
+                        <SelectItem
+                          key={index}
+                          value={domain}
+                          className="hover:bg-blue-50 focus:bg-blue-50"
+                        >
+                          {domain}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Question Type section - show for non-ELA subjects (when domain is selected) or for ELA subjects (when both standard and strand are selected) */}
+              {(!isElaSubjectSelected && digitalLibrarySheet.domain) ||
+              (isElaSubjectSelected &&
+                selectedElaStandard &&
+                selectedElaStrand) ? (
+                <div className="space-y-2">
+                  <Label className="text-gray-700 font-medium">
+                    Question Type
+                  </Label>
+                  <Select
+                    disabled={
+                      isDreaMetrixBankOfQuestion ||
+                      (!isElaSubjectSelected && !digitalLibrarySheet.domain) ||
+                      (isElaSubjectSelected &&
+                        !(selectedElaStandard && selectedElaStrand))
+                    }
+                    value={digitalLibrarySheet.questionType}
+                    onValueChange={async (value) => {
+                      setDigitalLibrarySheet({
+                        ...digitalLibrarySheet,
+                        questionType: value,
+                      });
+
+                      // Update question links when question type changes
+                      if (checkedStandards.length > 0) {
+                        setIsLoadingQuestionLinks(true);
+                        try {
+                          if (isElaSubjectSelected) {
+                            // Use ELA-specific API for question links
+                            const specificStandards =
+                              checkedStandards.length > 1
+                                ? checkedStandards.join(",")
+                                : checkedStandards[0];
+                            const questionsLinksData =
+                              await fetchElaQuestionLinks(
+                                digitalLibrarySheet.subject,
+                                digitalLibrarySheet.grade,
+                                selectedElaStandard,
+                                selectedElaStrand,
+                                specificStandards,
+                                value,
+                                tenantDomain,
+                                accessToken,
+                                refreshToken
+                              );
+                            setQuestionsLinks(questionsLinksData);
+                          } else {
+                            // Use regular API for Math subjects
+                            const data = {
+                              subject: digitalLibrarySheet.subject,
+                              grade: digitalLibrarySheet.grade,
+                              domain: digitalLibrarySheet.domain,
+                              questionsType: value,
+                              standards: checkedStandards,
+                            };
+                            const questionsLinksData = await getQuestionsLinks(
+                              data,
+                              tenantDomain,
+                              accessToken,
+                              refreshToken
+                            );
+                            setQuestionsLinks(questionsLinksData);
+                          }
+                        } catch (error) {
+                          console.error(
+                            "Error fetching question links:",
+                            error
+                          );
+                          setQuestionsLinks(null);
+                        } finally {
+                          setIsLoadingQuestionLinks(false);
+                        }
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full bg-gray-50 border-gray-300 hover:border-blue-400">
+                      <SelectValue placeholder="Select Question Type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                      <SelectItem
+                        value="MC"
+                        className="hover:bg-blue-50 focus:bg-blue-50"
+                      >
+                        Multiple Choice (MC)
+                      </SelectItem>
+                      <SelectItem
+                        value="OR"
+                        className="hover:bg-blue-50 focus:bg-blue-50"
+                      >
+                        Open Response (OR)
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
+            </div>
+
+            {/* Specific Standards section - show for non-ELA subjects (when domain is selected) or for ELA subjects (when both standard and strand are selected) */}
+            {(!isElaSubjectSelected && digitalLibrarySheet.domain) ||
+            (isElaSubjectSelected &&
+              selectedElaStandard &&
+              selectedElaStrand) ? (
+              <div className="space-y-2 bg-purple-50 p-4 rounded-lg border border-purple-100">
+                <Label className="text-purple-800 font-medium">
+                  Specific Standards
+                </Label>
+                <MultiSelectList
+                  selectedItems={[]}
+                  allItems={standards}
+                  itemsLabel="Standards"
+                  allShouldBeSelected={true}
+                  itemsAreLoading={standardsAreLoading}
+                  withSheckbox={true}
+                  updateSelectedItems={(items: string[]) =>
+                    handleStandardsChange(items)
+                  }
+                />
+              </div>
+            ) : null}
+
+            <div className="space-y-2 bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+              <Label className="text-indigo-800 font-medium">Class(es)</Label>
+              <MultiSelectList
+                selectedItems={allClasses}
+                allItems={allClasses?.flatMap((cl: any) => cl.name)}
+                itemsLabel="Classes"
+                className="border border-indigo-200 bg-white p-3 rounded-md shadow-sm"
+                allShouldBeSelected={false}
+                itemsAreLoading={classesIsLoading}
+                withSheckbox={false}
+                updateSelectedItems={(items: string[]) =>
+                  setCheckedClasses(items)
+                }
+              />
+            </div>
+
+            {isLoadingQuestionLinks ? (
+              <div className="text-sm text-blue-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <span className="flex items-center gap-2">
+                  <svg
+                    className="animate-spin h-4 w-4 text-blue-600"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Loading available questions...
+                </span>
+              </div>
+            ) : questionsLinks ? (
+              <div className="text-sm text-blue-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                Available questions:{" "}
+                <span className="font-bold">
+                  {questionsLinks.question_count}
+                </span>{" "}
+                (Max: {questionsLinks.question_count})
+              </div>
+            ) : null}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+              <div className="space-y-2">
+                <Label className="text-gray-700 font-medium">
+                  Number of Questions
+                </Label>
+                <Input
+                  disabled={isDreaMetrixBankOfQuestion || !questionsLinks}
+                  type="number"
+                  min={1}
+                  max={questionsLinks ? questionsLinks.question_count : 1}
+                  value={digitalLibrarySheet.noOfQuestions}
+                  onChange={(e) =>
+                    setDigitalLibrarySheet({
+                      ...digitalLibrarySheet,
+                      noOfQuestions: e.target.value,
+                    })
+                  }
+                  className="bg-gray-50 border-gray-300 focus:border-blue-400"
+                  placeholder={
+                    questionsLinks
+                      ? `Enter number (1-${questionsLinks.question_count})`
+                      : "Select standards first"
+                  }
+                />
+              </div>
+
+              <div className="flex items-center space-x-2 h-10 bg-green-50 p-3 rounded-lg border border-green-200">
+                <Checkbox
+                  id="answerSheet"
+                  checked={digitalLibrarySheet.generateAnswerSheet}
+                  onCheckedChange={(checked) =>
+                    setDigitalLibrarySheet({
+                      ...digitalLibrarySheet,
+                      generateAnswerSheet: Boolean(checked),
+                    })
+                  }
+                  className="border-gray-400 data-[state=checked]:bg-green-600"
+                />
+                <Label
+                  htmlFor="answerSheet"
+                  className="font-medium text-green-800"
+                >
+                  Generate Answer Sheets
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2 h-10 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <Checkbox
+                  id="includeAnswerKey"
+                  checked={digitalLibrarySheet.includeAnswerKey}
+                  onCheckedChange={(checked) =>
+                    setDigitalLibrarySheet({
+                      ...digitalLibrarySheet,
+                      includeAnswerKey: Boolean(checked),
+                    })
+                  }
+                  className="border-gray-400 data-[state=checked]:bg-blue-600"
+                />
+                <Label
+                  htmlFor="includeAnswerKey"
+                  className="font-medium text-blue-800"
+                >
+                  Include Answer Key
+                </Label>
+              </div>
+            </div>
+
+            <div className="flex justify-center pt-6">
+              <Button
+                type="submit"
+                className="px-12 py-4 text-lg font-semibold bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600 hover:from-teal-700 hover:via-cyan-700 hover:to-blue-700 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-3">
+                    <svg
+                      className="animate-spin h-6 w-6 text-white"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Generating Worksheet...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-3">
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                    Create Worksheet
+                  </span>
+                )}
+              </Button>
+            </div>
+
+            <GenerateAssessmentDialog
+              isOpen={isDialogOpen}
+              onClose={() => setIsDialogOpen(false)}
+              fileStream={fileStream}
+              worksheetTitle={
+                digitalLibrarySheet.subject
+                  ? `${digitalLibrarySheet.subject} - Grade ${digitalLibrarySheet.grade} Worksheet`
+                  : "Digital Library Worksheet"
+              }
+              preselectedData={{
+                assignmentType:
+                  digitalLibrarySheet.assignmentType || "Homework",
+                subject: digitalLibrarySheet.subject,
+                grade: digitalLibrarySheet.grade,
+                questionType: digitalLibrarySheet.questionType,
+                numberOfQuestions: digitalLibrarySheet.noOfQuestions,
+                teacherName: userData?.username,
+              }}
+            />
+          </form>
+          <LoaderDialog shouldOpen={isLoading} />
         </Card>
       </div>
     </section>
