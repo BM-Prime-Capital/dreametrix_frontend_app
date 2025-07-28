@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FiSearch, FiPlus, FiChevronRight, FiUser, FiMail, FiBook, FiPercent, FiAlertCircle } from 'react-icons/fi';
 import { useStudents } from "@/hooks/SchoolAdmin/use-students";
-import { Loader } from "@/components/ui/loader";
+//import { Loader } from "@/components/ui/loader";
 import AddStudentModal from './add-student-modal';
 import { SkeletonCard } from '@/components/ui/SkeletonCard';
 const avatarColors = [

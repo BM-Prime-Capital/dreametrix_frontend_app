@@ -19,7 +19,7 @@ export interface Grade {
       email: string;
     };
   }
-  
+
 const AddGradeModal = ({ isOpen, onClose, onGradeAdded }: { 
   isOpen: boolean, 
   onClose: () => void, 
@@ -106,7 +106,7 @@ const AddGradeModal = ({ isOpen, onClose, onGradeAdded }: {
     // Simulate API call
     setTimeout(() => {
       setIsSubmitting(false);
-      onGradeAdded();
+      //onGradeAdded();
       setFormData({
         name: '',
         code: '',
