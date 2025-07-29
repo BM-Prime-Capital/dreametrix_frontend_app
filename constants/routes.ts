@@ -137,28 +137,28 @@ export const SchoolAdminRoutes = [
 
  
 
-  // Finance (Optional)
+  // Finance 
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/finance`,
     icon: menuImages.payments,
     label: "Finance",
   },
 
-  // Library (Optional)
+  // Library 
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/library`,
     icon: menuImages.libraryBooks,
     label: "Library",
   },
 
-  // Reports (Optional)
+  // Reports 
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/reports`,
     icon: menuImages.analytics,
     label: "Reports",
   },
 
-  // Transport (Optional)
+  // Transport
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/transports`,
     icon: menuImages.transport,
