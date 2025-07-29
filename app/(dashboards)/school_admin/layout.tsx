@@ -2,6 +2,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { SchoolAdminRoutes } from "@/constants/routes";
+import { SidebarProvider } from "@/lib/SidebarContext";
 
 export default function SchoolAminDashboardLayout({
   children,
@@ -10,10 +11,14 @@ export default function SchoolAminDashboardLayout({
 }) {
   return (
     <div className="flex flex-col lg:flex-row gap-6">
+      
       <Card className="w-full lg:w-[200px] h-fit">
-        <Sidebar routes={SchoolAdminRoutes} />
-      </Card>
-      {children}
-    </div>
+        <SidebarProvider>
+          <Sidebar routes={SchoolAdminRoutes} />
+        </SidebarProvider>
+        </Card>
+      
+        {children}
+      </div>
   );
 }

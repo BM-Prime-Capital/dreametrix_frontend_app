@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <path fill="#4F46E5" d="M12 12a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/> <!-- Parent 1 (violet) -->
+  <path fill="#EC4899" d="M17 18a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/> <!-- Parent 2 (rose) -->
+  <path fill="#10B981" d="M7 18a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/> <!-- Enfant (vert) -->
+</svg>

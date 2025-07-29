@@ -1,7 +1,7 @@
 "use client";
 
 import { localStorageKey } from "@/constants/global";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 export function useRequestInfo() {
   const [accessToken, setAccessToken] = useState<string>("");
@@ -11,14 +11,18 @@ export function useRequestInfo() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
-        const accessToken = localStorage.getItem(localStorageKey.ACCESS_TOKEN) || "";
-        const refreshToken = localStorage.getItem(localStorageKey.REFRESH_TOKEN) || "";
+        const accessToken =
+          localStorage.getItem(localStorageKey.ACCESS_TOKEN) || "";
+        const refreshToken =
+          localStorage.getItem(localStorageKey.REFRESH_TOKEN) || "";
         const tenantData = localStorage.getItem(localStorageKey.TENANT_DATA);
 
         let domain = "";
         if (tenantData) {
           const parsedData = JSON.parse(tenantData);
-          domain = parsedData.primary_domain ? `https://${parsedData.primary_domain}` : "";
+          domain = parsedData.primary_domain
+            ? `https://${parsedData.primary_domain}`
+            : "";
         }
 
         setAccessToken(accessToken);
@@ -30,9 +34,12 @@ export function useRequestInfo() {
     }
   }, []);
 
-  return {
-    accessToken,
-    refreshToken,
-    tenantDomain,
-  };
+  return useMemo(
+    () => ({
+      accessToken,
+      refreshToken,
+      tenantDomain,
+    }),
+    [accessToken, refreshToken, tenantDomain]
+  );
 }

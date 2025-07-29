@@ -6,7 +6,8 @@ import AllClassFiltersPopUp from "./AllClassFiltersPopUp";
 import { AddClassDialog } from "./AddClassDialog";
 import { useState } from "react";
 import PageTitleH1 from "../ui/page-title-h1";
-import { BookOpen, Users, Calendar, Filter } from "lucide-react";
+import { BookOpen, Users,  } from "lucide-react";
+
 
 export default function ClassesPage() {
   const [refreshTime, setRefreshTime] = useState<string>("");

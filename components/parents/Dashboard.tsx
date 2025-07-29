@@ -8,13 +8,71 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Bell, MessageCircle, Users, Calendar, BookOpen, GraduationCap, Clock, Mail, Phone, Edit2 } from "lucide-react"
 import PageTitleH1 from "../ui/page-title-h1"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import StudentClassesDialog from "./StudentClassesDialog"
 import {localStorageKey} from "@/constants/global";
 
 export default function ParentDashboard() {
   const [selectedChild, setSelectedChild] = useState("john")
-  const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
+  const [profileData, setProfileData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    address: ""
+  })
+  
+  // Get user data once on component mount
+  const [userData] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(localStorageKey.USER_DATA) || "{}")
+    } catch (error) {
+      console.error("Error parsing user data:", error)
+      return {}
+    }
+  })
+
+  // Initialize profile data with user data
+  useEffect(() => {
+    if (userData && (userData.first_name || userData.last_name || userData.email)) {
+      setProfileData({
+        fullName: `${userData.first_name || ""} ${userData.last_name || ""}`.trim(),
+        email: userData.email || "",
+        phone: userData.phone || "",
+        address: userData.address || ""
+      })
+    }
+  }, []) // Empty dependency array - only run once on mount
+
+  const handleEditProfile = () => {
+    setIsEditingProfile(true)
+  }
+
+  const handleSaveProfile = () => {
+    // Here you would typically save the profile data to the backend
+    console.log("Saving profile data:", profileData)
+    setIsEditingProfile(false)
+  }
+
+  const handleCancelEdit = () => {
+    // Reset to original user data
+    if (userData && (userData.first_name || userData.last_name || userData.email)) {
+      setProfileData({
+        fullName: `${userData.first_name || ""} ${userData.last_name || ""}`.trim(),
+        email: userData.email || "",
+        phone: userData.phone || "",
+        address: userData.address || ""
+      })
+    }
+    setIsEditingProfile(false)
+  }
+
+  const handleInputChange = (field: string, value: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
 
   // Sample children data
   const children = [
@@ -72,11 +130,11 @@ export default function ParentDashboard() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <Avatar className="h-16 w-16 shrink-0">
                 <AvatarImage src="/placeholder.svg"/>
-                <AvatarFallback>PS</AvatarFallback>
+                <AvatarFallback>{userData?.first_name?.charAt(0)}{userData?.last_name?.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                  <h2 className="text-xl font-medium truncate">Parent Smith</h2>
+                  <h2 className="text-xl font-medium truncate">{userData.first_name} {userData.last_name}</h2>
                   <div className="flex gap-2">
                     <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
                       <MessageCircle className="h-5 w-5 text-[#25AAE1]" />
@@ -89,7 +147,7 @@ export default function ParentDashboard() {
                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                   <div className="flex items-center gap-1">
                     <Mail className="h-4 w-4 shrink-0 mt-0.5" />
-                    <span className="truncate">parent.smith@example.com</span>
+                    <span className="truncate">{userData.email}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Phone className="h-4 w-4 shrink-0 mt-0.5" />
@@ -213,33 +271,56 @@ export default function ParentDashboard() {
             <div className="flex flex-col items-center w-full">
               <div className="flex items-center justify-between w-full mb-6">
                 <h2 className="text-xl font-semibold">Parent Profile</h2>
-                <Button variant="ghost" size="sm" className="text-[#25AAE1]">
-                  <Edit2 className="h-4 w-4 mr-2" />
-                  Edit Profile
-                </Button>
+                {!isEditingProfile && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-[#25AAE1]"
+                    onClick={handleEditProfile}
+                  >
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    Edit Profile
+                  </Button>
+                )}
               </div>
 
               <div className="flex flex-col items-center gap-2 mb-6">
                 <Avatar className="h-20 w-20">
                   <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback>PS</AvatarFallback>
+                  <AvatarFallback>{userData?.first_name?.charAt(0)}{userData?.last_name?.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <span className="text-sm text-[#25AAE1] cursor-pointer hover:text-[#1E86B3]">Change Photo</span>
+                {isEditingProfile && (
+                  <span className="text-sm text-[#25AAE1] cursor-pointer hover:text-[#1E86B3]">Change Photo</span>
+                )}
               </div>
 
               <div className="w-full space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium" htmlFor="username">
+                    <label className="text-sm font-medium" htmlFor="fullName">
                       Full Name
                     </label>
-                    <Input id="username" placeholder="Parent Smith" className="bg-gray-50 h-11" />
+                    <Input 
+                      id="fullName" 
+                      value={profileData.fullName}
+                      onChange={(e) => handleInputChange('fullName', e.target.value)}
+                      placeholder="Parent Smith" 
+                      className="bg-gray-50 h-11"
+                      disabled={!isEditingProfile}
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium" htmlFor="email">
                       Email
                     </label>
-                    <Input id="email" placeholder="parent.smith@example.com" className="bg-gray-50 h-11" />
+                    <Input 
+                      id="email" 
+                      value={profileData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      placeholder="parent.smith@example.com" 
+                      className="bg-gray-50 h-11"
+                      disabled={!isEditingProfile}
+                    />
                   </div>
                 </div>
 
@@ -248,22 +329,47 @@ export default function ParentDashboard() {
                     <label className="text-sm font-medium" htmlFor="phone">
                       Phone
                     </label>
-                    <Input id="phone" placeholder="(555) 123-4567" className="bg-gray-50 h-11" />
+                    <Input 
+                      id="phone" 
+                      value={profileData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      placeholder="(555) 123-4567" 
+                      className="bg-gray-50 h-11"
+                      disabled={!isEditingProfile}
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium" htmlFor="address">
                       Address
                     </label>
-                    <Input id="address" placeholder="123 Main St, City" className="bg-gray-50 h-11" />
+                    <Input 
+                      id="address" 
+                      value={profileData.address}
+                      onChange={(e) => handleInputChange('address', e.target.value)}
+                      placeholder="123 Main St, City" 
+                      className="bg-gray-50 h-11"
+                      disabled={!isEditingProfile}
+                    />
                   </div>
                 </div>
 
-                <div className="pt-4 space-y-3">
-                  <Button className="w-full bg-[#25AAE1] hover:bg-[#1E86B3] h-11 text-base">SAVE CHANGES</Button>
-                  <Button variant="ghost" className="w-full text-muted-foreground hover:text-foreground">
-                    Cancel
-                  </Button>
-                </div>
+                {isEditingProfile && (
+                  <div className="pt-4 space-y-3">
+                    <Button 
+                      className="w-full bg-[#25AAE1] hover:bg-[#1E86B3] h-11 text-base"
+                      onClick={handleSaveProfile}
+                    >
+                      SAVE CHANGES
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-muted-foreground hover:text-foreground"
+                      onClick={handleCancelEdit}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </Card>

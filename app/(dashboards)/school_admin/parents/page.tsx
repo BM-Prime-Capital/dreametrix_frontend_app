@@ -1,5 +1,5 @@
-import { Parent } from "@/components/school_admin/parent/ParentPage";
+import ParentsList from "@/components/school_admin/parent/parents-list";
 
-export default function ParentPage() {
-  return <Parent />;
+export default function ParentsPage() {
+  return <ParentsList />;
 }
