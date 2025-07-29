@@ -11,11 +11,13 @@ export default function SchoolAminDashboardLayout({
 }) {
   return (
     <div className="flex flex-col lg:flex-row gap-6">
-      <SidebarProvider>
+      
       <Card className="w-full lg:w-[200px] h-fit">
+        <SidebarProvider>
           <Sidebar routes={SchoolAdminRoutes} />
+        </SidebarProvider>
         </Card>
-      </SidebarProvider>
+      
         {children}
       </div>
   );
