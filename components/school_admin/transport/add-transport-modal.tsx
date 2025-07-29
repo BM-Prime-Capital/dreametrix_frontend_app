@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { FiX, FiBus, FiUser, FiClock, FiMapPin, FiAlertTriangle, FiPlus } from 'react-icons/fi';
+import { FiX, FiTruck, FiUser, FiClock, FiMapPin, FiAlertTriangle, FiPlus } from 'react-icons/fi';
 
 const AddTransportModal = ({ isOpen, onClose, onTransportAdded }: { 
   isOpen: boolean, 
@@ -131,7 +131,7 @@ const AddTransportModal = ({ isOpen, onClose, onTransportAdded }: {
               {/* Route Information */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                  <FiBus className="text-indigo-500" />
+                  <FiTruck className="text-indigo-500" />
                   Route Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
