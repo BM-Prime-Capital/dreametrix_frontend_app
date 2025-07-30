@@ -67,6 +67,7 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip";
 import PageTitleH1 from "@/components/ui/page-title-h1";
 import { cn } from "@/utils/tailwind";
+import DebugCommunicationData from "./DebugCommunicationData";
 
 // Types
 interface Message {
@@ -535,49 +536,65 @@ export default function TeacherCommunication() {
                                 Loading students...
                               </p>
                             </div>
+                          ) : dataError ? (
+                            <div className="text-center py-4">
+                              <p className="text-sm text-red-500 mb-2">
+                                Error loading students: {dataError}
+                              </p>
+                              <Button
+                                onClick={refetchData}
+                                size="sm"
+                                variant="outline"
+                              >
+                                Retry
+                              </Button>
+                            </div>
                           ) : students.length === 0 ? (
                             <p className="text-sm text-muted-foreground text-center py-4">
                               No students available
                             </p>
                           ) : (
-                            students.map((student) => (
-                              <div
-                                key={student?.id || Math.random()}
-                                className="flex items-center space-x-2 py-1"
-                              >
-                                <Checkbox
-                                  id={student?.id || `student-${Math.random()}`}
-                                  checked={selectedRecipients.includes(
-                                    student?.id || ""
-                                  )}
-                                  onCheckedChange={(checked) => {
-                                    if (checked && student?.id) {
-                                      setSelectedRecipients([
-                                        ...selectedRecipients,
-                                        student.id,
-                                      ]);
-                                    } else if (student?.id) {
-                                      setSelectedRecipients(
-                                        selectedRecipients.filter(
-                                          (id) => id !== student.id
-                                        )
-                                      );
-                                    }
-                                  }}
-                                />
-                                <label
-                                  htmlFor={
-                                    student?.id || `student-${Math.random()}`
-                                  }
-                                  className="text-sm cursor-pointer flex-1"
+                            students
+                              .filter(
+                                (student) =>
+                                  student && student.id && student.name
+                              ) // Filter out invalid students
+                              .map((student) => (
+                                <div
+                                  key={student.id}
+                                  className="flex items-center space-x-2 py-1"
                                 >
-                                  {student?.name || "Unknown Student"}{" "}
-                                  <span className="text-muted-foreground">
-                                    ({student?.class || "No Class"})
-                                  </span>
-                                </label>
-                              </div>
-                            ))
+                                  <Checkbox
+                                    id={student.id}
+                                    checked={selectedRecipients.includes(
+                                      student.id
+                                    )}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        setSelectedRecipients([
+                                          ...selectedRecipients,
+                                          student.id,
+                                        ]);
+                                      } else {
+                                        setSelectedRecipients(
+                                          selectedRecipients.filter(
+                                            (id) => id !== student.id
+                                          )
+                                        );
+                                      }
+                                    }}
+                                  />
+                                  <label
+                                    htmlFor={student.id}
+                                    className="text-sm cursor-pointer flex-1"
+                                  >
+                                    {student.name}{" "}
+                                    <span className="text-muted-foreground">
+                                      ({student.class})
+                                    </span>
+                                  </label>
+                                </div>
+                              ))
                           )}
                         </div>
                       </div>
@@ -596,44 +613,59 @@ export default function TeacherCommunication() {
                                 Loading classes...
                               </p>
                             </div>
+                          ) : dataError ? (
+                            <div className="text-center py-4">
+                              <p className="text-sm text-red-500 mb-2">
+                                Error loading classes: {dataError}
+                              </p>
+                              <Button
+                                onClick={refetchData}
+                                size="sm"
+                                variant="outline"
+                              >
+                                Retry
+                              </Button>
+                            </div>
                           ) : classes.length === 0 ? (
                             <p className="text-sm text-muted-foreground text-center py-4">
                               No classes available
                             </p>
                           ) : (
-                            classes.map((cls) => (
-                              <div
-                                key={cls?.id || Math.random()}
-                                className="flex items-center space-x-2 py-1"
-                              >
-                                <Checkbox
-                                  id={cls?.id || `class-${Math.random()}`}
-                                  checked={selectedRecipients.includes(
-                                    cls?.id || ""
-                                  )}
-                                  onCheckedChange={(checked) => {
-                                    if (checked && cls?.id) {
-                                      setSelectedRecipients([
-                                        ...selectedRecipients,
-                                        cls.id,
-                                      ]);
-                                    } else if (cls?.id) {
-                                      setSelectedRecipients(
-                                        selectedRecipients.filter(
-                                          (id) => id !== cls.id
-                                        )
-                                      );
-                                    }
-                                  }}
-                                />
-                                <label
-                                  htmlFor={cls?.id || `class-${Math.random()}`}
-                                  className="text-sm cursor-pointer flex-1"
+                            classes
+                              .filter((cls) => cls && cls.id && cls.name) // Filter out invalid classes
+                              .map((cls) => (
+                                <div
+                                  key={cls.id}
+                                  className="flex items-center space-x-2 py-1"
                                 >
-                                  {cls?.name || "Unknown Class"}
-                                </label>
-                              </div>
-                            ))
+                                  <Checkbox
+                                    id={cls.id}
+                                    checked={selectedRecipients.includes(
+                                      cls.id
+                                    )}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        setSelectedRecipients([
+                                          ...selectedRecipients,
+                                          cls.id,
+                                        ]);
+                                      } else {
+                                        setSelectedRecipients(
+                                          selectedRecipients.filter(
+                                            (id) => id !== cls.id
+                                          )
+                                        );
+                                      }
+                                    }}
+                                  />
+                                  <label
+                                    htmlFor={cls.id}
+                                    className="text-sm cursor-pointer flex-1"
+                                  >
+                                    {cls.name}
+                                  </label>
+                                </div>
+                              ))
                           )}
                         </div>
                       </div>
@@ -1460,6 +1492,9 @@ export default function TeacherCommunication() {
           </Card>
         </div>
       </section>
+
+      {/* Debug Component - only shows in development */}
+      <DebugCommunicationData />
     </div>
   );
 }
