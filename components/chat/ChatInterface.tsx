@@ -55,7 +55,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className = "" }) => {
     if (!newRoomName.trim()) return;
 
     try {
-      await createRoom({ name: newRoomName.trim() });
+      await createRoom(newRoomName.trim());
       setNewRoomName("");
       setShowCreateRoom(false);
     } catch (error) {
