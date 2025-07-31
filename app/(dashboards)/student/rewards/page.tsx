@@ -106,12 +106,12 @@ export default function RewardsPage() {
   const maxValue = Math.max(...monthlyData.map((item) => item.value))
 
   return (
-    <section className="flex flex-col gap-4 w-full  mx-auto p-4 ">
-      <h1 className="text-[#FF6B6B] text-xl font-bold">REWARDS</h1>
+    <section className="flex flex-col gap-4 w-full mx-auto p-4">
+      <h1 className="text-destructive text-xl font-bold">REWARDS</h1>
 
       <div className="flex gap-4">
         <button
-          className="bg-[#9C27B0] text-white px-6 py-3 rounded-md flex items-center gap-2 w-[200px]"
+          className="bg-secondary text-white px-6 py-3 rounded-md flex items-center gap-2 w-[200px] hover:bg-secondary-hover transition-colors"
           onClick={() => setIsExchangeOpen(true)}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -135,7 +135,7 @@ export default function RewardsPage() {
         </button>
 
         <button
-          className="bg-[#E91E63] text-white px-6 py-3 rounded-md flex items-center gap-2 w-[200px]"
+          className="bg-accent text-white px-6 py-3 rounded-md flex items-center gap-2 w-[200px] hover:bg-accent/80 transition-colors"
           onClick={() => setIsTransactionsOpen(true)}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -163,53 +163,53 @@ export default function RewardsPage() {
       </div>
 
       <Card className="p-6 flex justify-between items-center">
-        <h2 className="text-2xl text-gray-700 font-medium">Balance</h2>
-        <div className="text-4xl font-bold text-[#29B6F6]">2,300 D</div>
+        <h2 className="text-2xl text-foreground font-medium">Balance</h2>
+        <div className="text-4xl font-bold text-primary">2,300 D</div>
       </Card>
 
       <div
-        className="bg-[#E3F2FD] p-6 rounded-lg flex justify-between items-center cursor-pointer"
+        className="bg-accent/10 p-6 rounded-lg flex justify-between items-center cursor-pointer hover:bg-accent/20 transition-colors"
         onClick={() => setIsBestMonthOpen(true)}
       >
-        <h2 className="text-xl text-gray-700">Your Best Month</h2>
+        <h2 className="text-xl text-foreground">Your Best Month</h2>
         <div className="text-xl font-medium">{bestMonth.month}</div>
-        <div className="text-2xl font-bold text-[#4CAF50] flex items-center">
+        <div className="text-2xl font-bold text-success flex items-center">
           1,100 D
-          <Eye className="ml-4 text-[#29B6F6]" />
+          <Eye className="ml-4 text-primary" />
         </div>
       </div>
 
       <div
-        className="bg-[#E3F2FD] p-6 rounded-lg flex justify-between items-center cursor-pointer"
+        className="bg-accent/10 p-6 rounded-lg flex justify-between items-center cursor-pointer hover:bg-accent/20 transition-colors"
         onClick={() => setIsWorstMonthOpen(true)}
       >
-        <h2 className="text-xl text-gray-700">Your Worst Month</h2>
+        <h2 className="text-xl text-foreground">Your Worst Month</h2>
         <div className="text-xl font-medium">{worstMonth.month}</div>
-        <div className="text-2xl font-bold text-[#F44336] flex items-center">
+        <div className="text-2xl font-bold text-destructive flex items-center">
           300 D
-          <Eye className="ml-4 text-[#29B6F6]" />
+          <Eye className="ml-4 text-primary" />
         </div>
       </div>
 
-      <div className="bg-[#E3F2FD] p-6 rounded-lg flex justify-between items-center">
-        <h2 className="text-xl text-gray-700">Average</h2>
+      <div className="bg-accent/10 p-6 rounded-lg flex justify-between items-center">
+        <h2 className="text-xl text-foreground">Average</h2>
         <div className="text-xl font-medium">Every Month</div>
-        <div className="text-2xl font-bold text-gray-700">900 D</div>
+        <div className="text-2xl font-bold text-foreground">900 D</div>
       </div>
 
       {/* Exchange Dialog */}
       <Dialog open={isExchangeOpen} onOpenChange={setIsExchangeOpen}>
         <DialogContent className="sm:max-w-[500px] p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-medium text-gray-700">Exchange</h2>
+            <h2 className="text-xl font-medium text-foreground">Exchange</h2>
             <Button variant="ghost" size="icon" onClick={() => setIsExchangeOpen(false)} className="h-6 w-6">
               <X className="h-4 w-4" />
             </Button>
           </div>
 
-          <div className="flex justify-between items-center bg-[#E3F2FD] p-2 px-4 rounded-md mb-6">
-            <span className="text-gray-500">Credit</span>
-            <span className="text-2xl font-medium text-[#29B6F6]">2300 D</span>
+          <div className="flex justify-between items-center bg-accent/10 p-2 px-4 rounded-md mb-6">
+            <span className="text-muted-foreground">Credit</span>
+            <span className="text-2xl font-medium text-primary">2300 D</span>
           </div>
 
           <div className="space-y-6">
@@ -224,16 +224,16 @@ export default function RewardsPage() {
                 </SelectContent>
               </Select>
 
-              <div className="bg-[#E3F2FD] p-2 px-4 rounded-md min-w-[80px] text-center">
-                <span className="text-xl font-medium text-[#29B6F6]">{exchangeCost} D</span>
+              <div className="bg-accent/10 p-2 px-4 rounded-md min-w-[80px] text-center">
+                <span className="text-xl font-medium text-primary">{exchangeCost} D</span>
               </div>
             </div>
 
             <div className="flex justify-between items-center pt-4">
-              <Button variant="ghost" onClick={() => setIsExchangeOpen(false)} className="text-gray-500">
+              <Button variant="ghost" onClick={() => setIsExchangeOpen(false)} className="text-muted-foreground">
                 Cancel
               </Button>
-              <Button className="bg-[#29B6F6] hover:bg-[#0288D1] text-white rounded-md px-8 py-6">EXCHANGE</Button>
+              <Button className="bg-primary hover:bg-primary-hover text-white rounded-md px-8 py-6">EXCHANGE</Button>
             </div>
           </div>
         </DialogContent>
@@ -243,7 +243,7 @@ export default function RewardsPage() {
       <Dialog open={isTransactionsOpen} onOpenChange={setIsTransactionsOpen}>
         <DialogContent className="sm:max-w-[800px] p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-medium text-gray-700">Transactions</h2>
+            <h2 className="text-xl font-medium text-foreground">Transactions</h2>
             <Button variant="ghost" size="icon" onClick={() => setIsTransactionsOpen(false)} className="h-6 w-6">
               <X className="h-4 w-4" />
             </Button>
@@ -254,26 +254,26 @@ export default function RewardsPage() {
           <table className="w-full">
             <thead>
               <tr className="text-left border-b">
-                <th className="pb-2 font-bold text-gray-700">CLASS</th>
-                <th className="pb-2 font-bold text-gray-700">REASON</th>
-                <th className="pb-2 font-bold text-gray-700 text-right">CREDIT</th>
-                <th className="pb-2 font-bold text-gray-700 text-right">DATE</th>
+                <th className="pb-2 font-bold text-foreground">CLASS</th>
+                <th className="pb-2 font-bold text-foreground">REASON</th>
+                <th className="pb-2 font-bold text-foreground text-right">CREDIT</th>
+                <th className="pb-2 font-bold text-foreground text-right">DATE</th>
               </tr>
             </thead>
             <tbody>
               {transactions.map((transaction, index) => (
-                <tr key={transaction.id} className={index % 2 === 0 ? "bg-[#E3F2FD]" : ""}>
-                  <td className="py-4 text-gray-600">{transaction.class}</td>
-                  <td className="py-4 text-gray-600">{transaction.reason}</td>
+                <tr key={transaction.id} className={index % 2 === 0 ? "bg-accent/10" : ""}>
+                  <td className="py-4 text-muted-foreground">{transaction.class}</td>
+                  <td className="py-4 text-muted-foreground">{transaction.reason}</td>
                   <td
-                    className={`py-4 text-right font-medium ${transaction.credit > 0 ? "text-[#4CAF50]" : "text-[#F44336]"}`}
+                    className={`py-4 text-right font-medium ${transaction.credit > 0 ? "text-success" : "text-destructive"}`}
                   >
-                    <span className="bg-[#E3F2FD] px-2 py-1 rounded">
+                    <span className="bg-accent/10 px-2 py-1 rounded">
                       {transaction.credit > 0 ? "+" : ""}
                       {transaction.credit} D
                     </span>
                   </td>
-                  <td className="py-4 text-gray-600 text-right">{transaction.date}</td>
+                  <td className="py-4 text-muted-foreground text-right">{transaction.date}</td>
                 </tr>
               ))}
             </tbody>
@@ -285,7 +285,7 @@ export default function RewardsPage() {
       <Dialog open={isBestMonthOpen} onOpenChange={setIsBestMonthOpen}>
         <DialogContent className="sm:max-w-[500px] p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-medium text-gray-700">Your Best Month</h2>
+            <h2 className="text-xl font-medium text-foreground">Your Best Month</h2>
             <Button variant="ghost" size="icon" onClick={() => setIsBestMonthOpen(false)} className="h-6 w-6">
               <X className="h-4 w-4" />
             </Button>
@@ -301,16 +301,16 @@ export default function RewardsPage() {
                   style={{
                     width: `${(item.value / maxValue) * 100}%`,
                     backgroundColor:
-                      item.month === "December" ? "#4CAF50" : item.month === "June" ? "#F44336" : item.color,
+                      item.month === "December" ? "hsl(var(--success))" : item.month === "June" ? "hsl(var(--destructive))" : item.color,
                     maxWidth: "70%",
                   }}
                 ></div>
-                <span className="ml-2 text-gray-600">{item.month}</span>
+                <span className="ml-2 text-muted-foreground">{item.month}</span>
               </div>
             ))}
           </div>
 
-          <div className="mt-4 flex justify-between text-gray-500 text-sm">
+          <div className="mt-4 flex justify-between text-muted-foreground text-sm">
             <span>0</span>
             <span>200</span>
             <span>400</span>
@@ -325,7 +325,7 @@ export default function RewardsPage() {
       <Dialog open={isWorstMonthOpen} onOpenChange={setIsWorstMonthOpen}>
         <DialogContent className="sm:max-w-[500px] p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-medium text-gray-700">Your Worst Month</h2>
+            <h2 className="text-xl font-medium text-foreground">Your Worst Month</h2>
             <Button variant="ghost" size="icon" onClick={() => setIsWorstMonthOpen(false)} className="h-6 w-6">
               <X className="h-4 w-4" />
             </Button>
@@ -341,16 +341,16 @@ export default function RewardsPage() {
                   style={{
                     width: `${(item.value / maxValue) * 100}%`,
                     backgroundColor:
-                      item.month === "December" ? "#4CAF50" : item.month === "June" ? "#F44336" : item.color,
+                      item.month === "December" ? "hsl(var(--success))" : item.month === "June" ? "hsl(var(--destructive))" : item.color,
                     maxWidth: "70%",
                   }}
                 ></div>
-                <span className="ml-2 text-gray-600">{item.month}</span>
+                <span className="ml-2 text-muted-foreground">{item.month}</span>
               </div>
             ))}
           </div>
 
-          <div className="mt-4 flex justify-between text-gray-500 text-sm">
+          <div className="mt-4 flex justify-between text-muted-foreground text-sm">
             <span>0</span>
             <span>200</span>
             <span>400</span>
@@ -365,7 +365,7 @@ export default function RewardsPage() {
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
         <DialogContent className="sm:max-w-[500px] p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-medium text-gray-700">History</h2>
+            <h2 className="text-xl font-medium text-foreground">History</h2>
             <Button variant="ghost" size="icon" onClick={() => setIsHistoryOpen(false)} className="h-6 w-6">
               <X className="h-4 w-4" />
             </Button>
@@ -373,18 +373,18 @@ export default function RewardsPage() {
 
           <div className="border-t mb-6"></div>
 
-          <p className="text-gray-600 mb-4">The history is automatically deleted in 10 days.</p>
+          <p className="text-muted-foreground mb-4">The history is automatically deleted in 10 days.</p>
 
           <div className="space-y-4">
             {historyItems.map((item) => (
               <div key={item.id} className="flex items-center justify-between">
-                <div className="text-gray-500 w-16">{item.date}</div>
-                <div className="flex-1 text-gray-700">{item.message}</div>
+                <div className="text-muted-foreground w-16">{item.date}</div>
+                <div className="flex-1 text-foreground">{item.message}</div>
                 <div className="flex gap-2">
-                  <button className="text-[#29B6F6]">
+                  <button className="text-primary" title="View">
                     <Eye className="h-5 w-5" />
                   </button>
-                  <button className="text-[#F44336]">
+                  <button className="text-destructive" title="Delete">
                     <Trash2 className="h-5 w-5" />
                   </button>
                 </div>

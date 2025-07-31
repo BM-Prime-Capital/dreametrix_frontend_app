@@ -17,12 +17,12 @@ export default function CommunicatePage() {
     return (
       <section className="flex flex-col gap-4 w-full mx-auto p-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-[#4CAF50] text-xl font-bold">COMMUNICATE</h1>
+          <h1 className="text-success text-xl font-bold">COMMUNICATE</h1>
         </div>
   
         <div className="flex gap-4">
           <button
-            className="bg-[#25AAE1] text-white px-6 py-3 rounded-md flex items-center gap-2"
+            className="bg-primary text-white px-6 py-3 rounded-md flex items-center gap-2 hover:bg-primary-hover transition-colors"
             onClick={() => setIsComposeOpen(true)}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -43,7 +43,7 @@ export default function CommunicatePage() {
   
         <div className="flex">
           <button
-            className={`flex-1 py-4 flex flex-col items-center ${activeTab === "teachers" ? "bg-[#E3F2F9]" : "bg-[#F0F7FA]"}`}
+            className={`flex-1 py-4 flex flex-col items-center ${activeTab === "teachers" ? "bg-accent/10" : "bg-muted/30"}`}
             onClick={() => setActiveTab("teachers")}
           >
             <svg
@@ -52,7 +52,7 @@ export default function CommunicatePage() {
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="text-[#25AAE1] mb-1"
+              className="text-primary mb-1"
             >
               <path
                 d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21"
@@ -69,10 +69,10 @@ export default function CommunicatePage() {
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="text-gray-700 font-medium">TEACHERS</span>
+            <span className="text-foreground font-medium">TEACHERS</span>
           </button>
           <button
-            className={`flex-1 py-4 flex flex-col items-center ${activeTab === "whole-class" ? "bg-[#E3F2F9]" : "bg-white"}`}
+            className={`flex-1 py-4 flex flex-col items-center ${activeTab === "whole-class" ? "bg-accent/10" : "bg-card"}`}
             onClick={() => setActiveTab("whole-class")}
           >
             <svg
@@ -81,7 +81,7 @@ export default function CommunicatePage() {
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="text-[#25AAE1] mb-1"
+              className="text-primary mb-1"
             >
               <path
                 d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
@@ -112,10 +112,10 @@ export default function CommunicatePage() {
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="text-gray-700 font-medium">WHOLE CLASS</span>
+            <span className="text-foreground font-medium">WHOLE CLASS</span>
           </button>
           <button
-            className={`flex-1 py-4 flex flex-col items-center ${activeTab === "other-groups" ? "bg-[#E3F2F9]" : "bg-[#F0F7FA]"}`}
+            className={`flex-1 py-4 flex flex-col items-center ${activeTab === "other-groups" ? "bg-accent/10" : "bg-muted/30"}`}
             onClick={() => setActiveTab("other-groups")}
           >
             <svg
@@ -124,7 +124,7 @@ export default function CommunicatePage() {
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="text-[#4CAF50] mb-1"
+              className="text-success mb-1"
             >
               <path
                 d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
@@ -148,11 +148,11 @@ export default function CommunicatePage() {
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="text-gray-700 font-medium">OTHER GROUPS</span>
+            <span className="text-foreground font-medium">OTHER GROUPS</span>
           </button>
         </div>
   
-        <Card className="rounded-lg shadow-sm p-0 overflow-hidden border-0">
+        <Card className="rounded-lg shadow-sm p-0 overflow-hidden border">
           <MessageList activeTab={activeTab} selectedMessageId={selectedMessageId} onMessageClick={handleMessageClick} />
         </Card>
   

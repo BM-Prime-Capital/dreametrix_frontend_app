@@ -21,7 +21,7 @@ export default function AssignmentsPage() {
 
   return (
     <div className="flex flex-col gap-6 w-full min-h-screen">
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-6 rounded-lg shadow-lg">
+      <div className="bg-gradient-to-r from-primary via-secondary to-accent p-6 rounded-lg shadow-lg">
         <div className="flex items-center gap-4 text-white">
           <Button
             variant="ghost"
@@ -36,12 +36,12 @@ export default function AssignmentsPage() {
           </h1>
         </div>
       </div>
-      <section className="flex flex-col gap-6 w-full mx-auto p-6 bg-gray-50 min-h-screen">
+      <section className="flex flex-col gap-6 w-full mx-auto p-6 bg-muted/30 min-h-screen">
         {/* Header Section */}
 
-        <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between bg-card p-4 rounded-lg shadow-sm border">
           <div className="flex items-center gap-4">
-            <div className="text-gray-600 font-medium">Filter Assignments</div>
+            <div className="text-muted-foreground font-medium">Filter Assignments</div>
             {(selectedClass !== "all-classes" || dateFilter !== "all-days") && (
               <button
                 onClick={() => {
@@ -49,7 +49,7 @@ export default function AssignmentsPage() {
                   setSelectedDates([]);
                   setDateFilter("all-days");
                 }}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                className="text-sm text-primary hover:text-primary-hover font-medium"
               >
                 Clear Filters
               </button>
@@ -57,17 +57,17 @@ export default function AssignmentsPage() {
           </div>
           <div className="flex gap-3">
             <button
-              className="bg-white border border-gray-300 rounded-lg px-4 py-2 flex items-center gap-2 hover:bg-gray-50 transition-colors shadow-sm"
+              className="bg-card border border-border rounded-lg px-4 py-2 flex items-center gap-2 hover:bg-accent/5 transition-colors shadow-sm"
               onClick={() => setIsDatePickerOpen(true)}
             >
-              <span className="text-gray-700 font-medium">
+              <span className="text-foreground font-medium">
                 {dateFilter === "custom" && selectedDates.length > 0
                   ? `${selectedDates.length} day${
                       selectedDates.length > 1 ? "s" : ""
                     } selected`
                   : "All Days"}
               </span>
-              <Calendar className="h-4 w-4 text-gray-500" />
+              <Calendar className="h-4 w-4 text-muted-foreground" />
             </button>
 
             {/* <Select value={selectedClass} onValueChange={setSelectedClass}>
@@ -83,7 +83,7 @@ export default function AssignmentsPage() {
           </div>
         </div>
 
-        <Card className="rounded-2xl shadow-sm p-0 overflow-hidden border border-gray-200 bg-white">
+        <Card className="rounded-2xl shadow-sm p-0 overflow-hidden border bg-card">
           <AssignmentsTable
             selectedClass={selectedClass}
             selectedDates={selectedDates}

@@ -144,10 +144,10 @@ export default function CharacterPage() {
   return (
     <div className="flex flex-col gap-4 w-full mx-auto p-4">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-[#E061FF] text-xl font-bold">CHARACTER</h1>
+        <h1 className="text-secondary text-xl font-bold">CHARACTER</h1>
         <div className="flex gap-3">
           <Button
-            className="bg-[#E061FF] hover:bg-[#C44FD9] text-white flex items-center gap-2 px-6"
+            className="bg-secondary hover:bg-secondary-hover text-white flex items-center gap-2 px-6"
             onClick={handleOpenReport}
           >
             <FileText size={18} />
@@ -155,14 +155,14 @@ export default function CharacterPage() {
           </Button>
           <Button
             variant="outline"
-            className="bg-[#4FC3F7] hover:bg-[#3DAAD8] text-white border-none"
+            className="bg-primary hover:bg-primary-hover text-white border-none"
             onClick={handleOpenPrint}
           >
             <Printer size={18} />
           </Button>
           <div className="relative">
             <Select value={selectedClass} onValueChange={setSelectedClass}>
-              <SelectTrigger className="w-[180px] bg-white">
+              <SelectTrigger className="w-[180px] bg-card border-border">
                 <SelectValue placeholder="All Classes" />
               </SelectTrigger>
               <SelectContent>
@@ -180,27 +180,27 @@ export default function CharacterPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-card rounded-lg shadow-sm overflow-hidden border">
         <div className="grid grid-cols-5 border-b">
-          <div className="p-4 font-bold text-gray-700">CLASS</div>
-          <div className="p-4 font-bold text-gray-700">CHARACTER</div>
-          <div className="p-4 font-bold text-gray-700">STATISTICS</div>
-          <div className="p-4 font-bold text-gray-700">COMMENTS</div>
-          <div className="p-4 font-bold text-gray-700">HISTORY</div>
+          <div className="p-4 font-bold text-foreground">CLASS</div>
+          <div className="p-4 font-bold text-foreground">CHARACTER</div>
+          <div className="p-4 font-bold text-foreground">STATISTICS</div>
+          <div className="p-4 font-bold text-foreground">COMMENTS</div>
+          <div className="p-4 font-bold text-foreground">HISTORY</div>
         </div>
 
         {characterData.map((item, index) => (
-          <div key={item.id} className={`grid grid-cols-5 ${index % 2 === 0 ? "bg-[#E3F2F9]" : "bg-white"}`}>
-            <div className="p-4 text-gray-600">{item.className}</div>
+          <div key={item.id} className={`grid grid-cols-5 ${index % 2 === 0 ? "bg-accent/5" : "bg-card"}`}>
+            <div className="p-4 text-muted-foreground">{item.className}</div>
             <div className="p-4 flex items-center gap-3">
-              <span className="text-[#25AAE1] font-medium">{item.positiveScore}</span>
-              <span className="text-gray-400">/</span>
-              <span className="text-[#FF5252] font-medium">{item.negativeScore}</span>
+              <span className="text-primary font-medium">{item.positiveScore}</span>
+              <span className="text-muted-foreground">/</span>
+              <span className="text-destructive font-medium">{item.negativeScore}</span>
             </div>
             <div className="p-4 flex items-center">
-              <div className="w-full h-2 rounded-full overflow-hidden bg-gray-200">
+              <div className="w-full h-2 rounded-full overflow-hidden bg-muted">
                 <div
-                  className="h-full bg-gradient-to-r from-[#4CAF50] to-[#FF5252]"
+                  className="h-full bg-gradient-to-r from-success to-destructive"
                   style={{
                     width: `${(item.positiveScore / (item.positiveScore + item.negativeScore)) * 100}%`,
                   }}
@@ -208,15 +208,15 @@ export default function CharacterPage() {
               </div>
             </div>
             <div className="p-4">
-              <button className="text-[#25AAE1] hover:text-[#1D8CB3]" onClick={() => handleOpenComments(item)}>
+              <button className="text-primary hover:text-primary-hover" onClick={() => handleOpenComments(item)} title="View Comments">
                 <MessageCircle className="h-5 w-5" />
               </button>
             </div>
             <div className="p-4 flex items-center justify-between">
-              <button className="text-[#25AAE1] hover:text-[#1D8CB3]" onClick={() => handleOpenHistory(item)}>
+              <button className="text-primary hover:text-primary-hover" onClick={() => handleOpenHistory(item)} title="View History">
                 <HistoryIcon className="h-5 w-5" />
               </button>
-              <div className="flex items-center text-gray-500">
+              <div className="flex items-center text-muted-foreground">
                 {item.teacher}
                 <MessageIcon />
               </div>
@@ -230,29 +230,29 @@ export default function CharacterPage() {
         <DialogContent className="sm:max-w-[500px] p-0">
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-medium text-gray-700">Comments</h2>
-              <button onClick={() => setIsCommentsOpen(false)} className="text-gray-500 hover:text-gray-700">
+              <h2 className="text-xl font-medium text-foreground">Comments</h2>
+              <button onClick={() => setIsCommentsOpen(false)} className="text-muted-foreground hover:text-foreground" title="Close">
                 <X size={18} />
               </button>
             </div>
 
             <div className="border-t mb-4"></div>
 
-            <div className="text-gray-500 mb-4">{selectedItem?.className || "Class 5 - Sci"}</div>
+            <div className="text-muted-foreground mb-4">{selectedItem?.className || "Class 5 - Sci"}</div>
 
             <div className="space-y-4 max-h-[400px] overflow-y-auto">
               {commentsData.map((comment) => (
                 <div key={comment.id} className="flex gap-3">
                   <div
                     className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white ${
-                      comment.type === "positive" ? "bg-[#4CAF50]" : "bg-[#FF5252]"
+                      comment.type === "positive" ? "bg-success" : "bg-destructive"
                     }`}
                   >
                     {comment.type === "positive" ? "+" : "-"}
                   </div>
                   <div className="flex-1">
-                    <div className="text-gray-500 text-sm">{comment.date}</div>
-                    <div className="text-gray-700">{comment.text}</div>
+                    <div className="text-muted-foreground text-sm">{comment.date}</div>
+                    <div className="text-foreground">{comment.text}</div>
                   </div>
                 </div>
               ))}
@@ -266,28 +266,28 @@ export default function CharacterPage() {
         <DialogContent className="sm:max-w-[400px] p-0">
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-medium text-gray-700">History</h2>
-              <button onClick={() => setIsHistoryOpen(false)} className="text-gray-500 hover:text-gray-700">
+              <h2 className="text-xl font-medium text-foreground">History</h2>
+              <button onClick={() => setIsHistoryOpen(false)} className="text-muted-foreground hover:text-foreground">
                 <X size={18} />
               </button>
             </div>
 
             <div className="border-t mb-4"></div>
 
-            <div className="text-gray-500 mb-4">{selectedItem?.className || "Class 5 - Sci"}</div>
+            <div className="text-muted-foreground mb-4">{selectedItem?.className || "Class 5 - Sci"}</div>
 
             <div className="space-y-4 max-h-[400px] overflow-y-auto">
               {commentsData.map((comment) => (
                 <div key={comment.id} className="flex gap-3">
                   <div
                     className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white ${
-                      comment.type === "positive" ? "bg-[#4CAF50]" : "bg-[#FF5252]"
+                      comment.type === "positive" ? "bg-success" : "bg-destructive"
                     }`}
                   >
                     {comment.type === "positive" ? "+" : "-"}
                   </div>
                   <div className="flex-1">
-                    <div className="text-gray-500 text-sm">{comment.date}</div>
+                    <div className="text-muted-foreground text-sm">{comment.date}</div>
                   </div>
                 </div>
               ))}
@@ -301,8 +301,8 @@ export default function CharacterPage() {
         <DialogContent className="sm:max-w-[400px] p-0">
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-medium text-gray-700">Report</h2>
-              <button onClick={() => setIsReportOpen(false)} className="text-gray-500 hover:text-gray-700">
+              <h2 className="text-xl font-medium text-foreground">Report</h2>
+              <button onClick={() => setIsReportOpen(false)} className="text-muted-foreground hover:text-foreground">
                 <X size={18} />
               </button>
             </div>
@@ -322,13 +322,13 @@ export default function CharacterPage() {
                 </SelectContent>
               </Select>
 
-              <Button className="w-full bg-[#25AAE1] hover:bg-[#1D8CB3] text-white rounded-md flex items-center justify-center gap-2">
+              <Button className="w-full bg-primary hover:bg-primary-hover text-white rounded-md flex items-center justify-center gap-2">
                 <Download size={18} />
                 <span>SAVE REPORT</span>
               </Button>
 
               <div className="text-center mt-2">
-                <button onClick={() => setIsReportOpen(false)} className="text-gray-500 hover:text-gray-700">
+                <button onClick={() => setIsReportOpen(false)} className="text-muted-foreground hover:text-foreground">
                   Cancel
                 </button>
               </div>
@@ -342,8 +342,8 @@ export default function CharacterPage() {
         <DialogContent className="sm:max-w-[400px] p-0">
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-medium text-gray-700">Print</h2>
-              <button onClick={() => setIsPrintOpen(false)} className="text-gray-500 hover:text-gray-700">
+              <h2 className="text-xl font-medium text-foreground">Print</h2>
+              <button onClick={() => setIsPrintOpen(false)} className="text-muted-foreground hover:text-foreground">
                 <X size={18} />
               </button>
             </div>
@@ -363,10 +363,10 @@ export default function CharacterPage() {
                 </SelectContent>
               </Select>
 
-              <Button className="w-full bg-[#25AAE1] hover:bg-[#1D8CB3] text-white rounded-md">PRINT</Button>
+              <Button className="w-full bg-primary hover:bg-primary-hover text-white rounded-md">PRINT</Button>
 
               <div className="text-center mt-2">
-                <button onClick={() => setIsPrintOpen(false)} className="text-gray-500 hover:text-gray-700">
+                <button onClick={() => setIsPrintOpen(false)} className="text-muted-foreground hover:text-foreground">
                   Cancel
                 </button>
               </div>
@@ -386,7 +386,7 @@ function MessageIcon() {
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="text-[#25AAE1] ml-2"
+      className="text-primary ml-2"
     >
       <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       <path

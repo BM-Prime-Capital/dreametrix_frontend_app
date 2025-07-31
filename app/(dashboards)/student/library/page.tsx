@@ -78,11 +78,11 @@ export default function LibraryPage() {
   }
 
   return (
-    <section className="flex flex-col gap-4 w-full  mx-auto p-4 ">
+    <section className="flex flex-col gap-4 w-full mx-auto p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-[#F0AD4E] text-xl font-bold">LIBRARY</h1>
-          <div className="bg-[#3498db] text-white p-3 rounded-md w-16 h-16 flex items-center justify-center">
+          <h1 className="text-warning text-xl font-bold">LIBRARY</h1>
+          <div className="bg-primary text-white p-3 rounded-md w-16 h-16 flex items-center justify-center">
             <svg
               width="32"
               height="32"
@@ -107,14 +107,15 @@ export default function LibraryPage() {
         </div>
         <div className="flex gap-4">
           <button
-            className="bg-white border border-gray-200 rounded-md p-2 w-10 h-10 flex items-center justify-center"
+            className="bg-card border border-border rounded-md p-2 w-10 h-10 flex items-center justify-center hover:bg-accent/5 transition-colors"
             onClick={handlePrint}
+            title="Calendar"
           >
-            <Calendar className="h-5 w-5 text-gray-500" />
+            <Calendar className="h-5 w-5 text-muted-foreground" />
           </button>
 
           <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-            <SelectTrigger className="w-[180px] bg-white">
+            <SelectTrigger className="w-[180px] bg-card border-border">
               <SelectValue placeholder="All Subjects" />
             </SelectTrigger>
             <SelectContent>
@@ -130,34 +131,34 @@ export default function LibraryPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-card rounded-lg shadow-sm overflow-hidden border">
         <table className="w-full">
           <thead>
             <tr className="border-b">
-              <th className="text-left p-4 font-bold text-gray-700">SUBJECT</th>
-              <th className="text-left p-4 font-bold text-gray-700">CLASS</th>
-              <th className="text-left p-4 font-bold text-gray-700">CONTENT</th>
-              <th className="text-left p-4 font-bold text-gray-700">TEACHER</th>
+              <th className="text-left p-4 font-bold text-foreground">SUBJECT</th>
+              <th className="text-left p-4 font-bold text-foreground">CLASS</th>
+              <th className="text-left p-4 font-bold text-foreground">CONTENT</th>
+              <th className="text-left p-4 font-bold text-foreground">TEACHER</th>
             </tr>
           </thead>
           <tbody>
             {libraryItems.map((item, index) => (
-              <tr key={item.id} className={index % 2 === 0 ? "bg-[#E3F2F9]" : "bg-white"}>
-                <td className="p-4 text-gray-600">{item.subject}</td>
-                <td className="p-4 text-gray-600">{item.class}</td>
-                <td className="p-4 text-gray-600">
+              <tr key={item.id} className={index % 2 === 0 ? "bg-accent/5" : "bg-card"}>
+                <td className="p-4 text-muted-foreground">{item.subject}</td>
+                <td className="p-4 text-muted-foreground">{item.class}</td>
+                <td className="p-4 text-muted-foreground">
                   <div className="flex items-center">
                     {item.content}
-                    <button className="ml-2 text-[#25AAE1]" onClick={() => handleViewContent(item)}>
+                    <button className="ml-2 text-primary" onClick={() => handleViewContent(item)} title="View Content">
                       <Eye className="h-5 w-5" />
                     </button>
                   </div>
                 </td>
-                <td className="p-4 text-gray-600">
+                <td className="p-4 text-muted-foreground">
                   <div className="flex items-center">
                     {item.teacher}
                     <MessageIcon />
-                    {item.time && <span className="ml-2 text-sm text-[#25AAE1]">{item.time}</span>}
+                    {item.time && <span className="ml-2 text-sm text-primary">{item.time}</span>}
                   </div>
                 </td>
               </tr>
@@ -171,37 +172,37 @@ export default function LibraryPage() {
         <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden">
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-medium text-gray-700">{selectedItem?.content || "What is Better?"}</h2>
+              <h2 className="text-xl font-medium text-foreground">{selectedItem?.content || "What is Better?"}</h2>
               <Button variant="ghost" size="icon" onClick={() => setIsContentDialogOpen(false)} className="h-6 w-6">
                 <X className="h-4 w-4" />
               </Button>
             </div>
 
-            <div className="text-gray-500 mb-4">{selectedItem?.class || "Class 5 - Math"}</div>
+            <div className="text-muted-foreground mb-4">{selectedItem?.class || "Class 5 - Math"}</div>
 
-            <div className="bg-white border rounded-md p-6 min-h-[300px] flex flex-col justify-center">
+            <div className="bg-card border rounded-md p-6 min-h-[300px] flex flex-col justify-center">
               <div className="space-y-3">
-                <div className="h-4 bg-gray-400 rounded w-1/3"></div>
-                <div className="h-4 bg-gray-400 rounded w-1/2"></div>
-                <div className="h-4 bg-gray-400 rounded w-full"></div>
-                <div className="h-4 bg-gray-400 rounded w-full"></div>
-                <div className="h-4 bg-gray-400 rounded w-full"></div>
-                <div className="h-4 bg-gray-400 rounded w-full"></div>
-                <div className="h-4 bg-gray-400 rounded w-full"></div>
-                <div className="h-4 bg-gray-400 rounded w-3/4"></div>
+                <div className="h-4 bg-muted rounded w-1/3"></div>
+                <div className="h-4 bg-muted rounded w-1/2"></div>
+                <div className="h-4 bg-muted rounded w-full"></div>
+                <div className="h-4 bg-muted rounded w-full"></div>
+                <div className="h-4 bg-muted rounded w-full"></div>
+                <div className="h-4 bg-muted rounded w-full"></div>
+                <div className="h-4 bg-muted rounded w-full"></div>
+                <div className="h-4 bg-muted rounded w-3/4"></div>
               </div>
             </div>
 
             <div className="flex justify-center mt-6 gap-8">
-              <button className="text-purple-500">
+              <button className="text-secondary">
                 <Download className="h-6 w-6" />
               </button>
-              <button className="text-[#25AAE1]">
+              <button className="text-primary">
                 <Printer className="h-6 w-6" />
               </button>
             </div>
 
-            <div className="flex justify-center items-center gap-2 mt-4 text-sm text-gray-500">
+            <div className="flex justify-center items-center gap-2 mt-4 text-sm text-muted-foreground">
               <button onClick={handlePrevPage}>
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -221,7 +222,7 @@ export default function LibraryPage() {
         <DialogContent className="sm:max-w-[400px] p-0 overflow-hidden">
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-medium text-gray-700">Print</h2>
+              <h2 className="text-xl font-medium text-foreground">Print</h2>
               <Button variant="ghost" size="icon" onClick={() => setIsPrintDialogOpen(false)} className="h-6 w-6">
                 <X className="h-4 w-4" />
               </Button>
@@ -254,10 +255,10 @@ export default function LibraryPage() {
                 </SelectContent>
               </Select>
 
-              <Button className="w-full bg-[#25AAE1] hover:bg-[#1D8CB3] text-white rounded-md">PRINT</Button>
+              <Button className="w-full bg-primary hover:bg-primary-hover text-white rounded-md">PRINT</Button>
 
               <div className="text-center mt-2">
-                <Button variant="ghost" onClick={() => setIsPrintDialogOpen(false)} className="text-gray-500">
+                <Button variant="ghost" onClick={() => setIsPrintDialogOpen(false)} className="text-muted-foreground">
                   Cancel
                 </Button>
               </div>
@@ -277,7 +278,7 @@ function MessageIcon() {
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="text-[#25AAE1] ml-2"
+      className="text-primary ml-2"
     >
       <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       <path
