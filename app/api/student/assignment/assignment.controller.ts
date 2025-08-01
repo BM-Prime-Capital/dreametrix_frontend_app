@@ -1,7 +1,7 @@
-import { BASE_URL } from "@/app/utils/constants";
+import { BACKEND_BASE_URL } from "@/app/utils/constants";
 
 export async function getAssignments(token?: string) {
-  const response = await fetch(`${BASE_URL}/assessments`, {
+  const response = await fetch(`${BACKEND_BASE_URL}/assessments`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 

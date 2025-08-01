@@ -35,8 +35,9 @@ export function StudentClassesTable() {
           setStudentClasses([]);
           setError("Format de données inattendu reçu de l'API.");
         }
-      } catch (err: any) {
-        setError(`Échec du chargement des classes: ${err.message || 'Erreur inconnue'}`);
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue';
+        setError(`Échec du chargement des classes: ${errorMessage}`);
         setStudentClasses([]);
       } finally {
         setLoading(false);
@@ -49,7 +50,7 @@ export function StudentClassesTable() {
   
   }, [accessToken]);
 
-  const handleTeacherClick = (teacherData: any) => {
+  const handleTeacherClick = (teacherData: string | { full_name: string } | null | undefined) => {
     const teacherName = typeof teacherData === 'object' && teacherData !== null && 'full_name' in teacherData
         ? teacherData.full_name
         : (typeof teacherData === 'string' ? teacherData : "");
@@ -109,7 +110,7 @@ export function StudentClassesTable() {
                          ))
                        ) : (
                          // Gérer le cas où le tableau d'horaires pour un jour est vide ou non un tableau
-                         <span key={`${dayIndex}-empty`}>{day}: Pas d'horaire</span>
+                         <span key={`${dayIndex}-empty`}>{day}: Pas d&apos;horaire</span>
                        )
                      ))
                    ) : (

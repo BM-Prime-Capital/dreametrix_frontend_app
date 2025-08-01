@@ -85,6 +85,39 @@ export async function getSubmissions(
   }
 }
 
+// export async function submitAssignment(
+//   assessmentId: number,
+//   tenantPrimaryDomain: string,
+//   accessToken: string,
+// ) {
+//   const url = `${tenantPrimaryDomain}/assessments/${assessmentId}/`;
+
+//   try {
+//     const response = await fetch(url, {
+//       method: "POST",
+//       headers: {
+//         Authorization: `Bearer ${accessToken}`,
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({
+//         message: message,
+//         file: file,
+//       }),
+//     });
+
+//     if (!response.ok) {
+//       const errorData = await response.json();
+//       console.error("Backend error:", errorData);
+//       throw new Error(errorData.detail || "Error submitting assignment");
+//     }
+
+//     return await response.json();
+//   } catch (error) {
+//     console.error("Network error:", error);
+//     throw new Error("Failed to connect to server");
+//   }
+// }
+
 export async function getAssessmentWeights(
   courseId: number,
   tenantPrimaryDomain: string,
