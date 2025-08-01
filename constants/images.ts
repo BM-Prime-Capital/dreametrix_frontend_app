@@ -129,4 +129,23 @@ export const menuImages = {
   calendar: `${MENU_IMAGES_BASE_PATH}/Timetable.svg`,
   libraryBooks: `${MENU_IMAGES_BASE_PATH}/LibraryBooks.svg`,
   settings: `${TEACHER_DASHBOARD_IMAGES_BASE_PATH}/settings.svg`,
+  
+
+  school: `${MENU_IMAGES_BASE_PATH}/School.svg`,
+  district: `${MENU_IMAGES_BASE_PATH}/District.svg`,
+  users: `${MENU_IMAGES_BASE_PATH}/Users.svg`,
+  system_settings: `${MENU_IMAGES_BASE_PATH}/SystemSettings.svg`,
+  templates: `${MENU_IMAGES_BASE_PATH}/Templates.svg`,
+  logs: `${MENU_IMAGES_BASE_PATH}/Logs.svg`,
+  subscriptions: `${MENU_IMAGES_BASE_PATH}/Subscriptions.svg`,
+  support: `${MENU_IMAGES_BASE_PATH}/Support.svg`,
+  api: `${MENU_IMAGES_BASE_PATH}/Api.svg`,
+  
+  backup: `${MENU_IMAGES_BASE_PATH}/Backup.svg`,
+  
+  global_settings: `${MENU_IMAGES_BASE_PATH}/GlobalSettings.svg`,
+  license: `${MENU_IMAGES_BASE_PATH}/License.svg`,
+  database: `${MENU_IMAGES_BASE_PATH}/Database.svg`,
+  notifications: `${MENU_IMAGES_BASE_PATH}/Notifications.svg`,
+  
 };

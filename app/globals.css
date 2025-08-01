@@ -10,6 +10,79 @@
   --app-primary-hover: #6bb0e8;
   --app-primary-light: #a8d4f7;
   --app-primary-dark: #5aa8e6;
+  
+  /* Design System Colors - DreaMetrix */
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
+  
+  /* Brand colors */
+  --brand-primary: 195 82% 52%; /* #25AAE1 */
+  --brand-primary-hover: 195 82% 42%;
+  --brand-secondary: 322 65% 59%; /* #D15A9D */
+  --brand-secondary-hover: 322 65% 49%;
+  --brand-accent: 262 38% 47%; /* #7F569F */
+  --brand-muted: 262 38% 95%;
+  --brand-light: 322 65% 95%;
+  
+  /* Semantic colors */
+  --success: 142 76% 36%; /* #4CAF50 */
+  --success-foreground: 0 0% 100%;
+  --success-muted: 142 76% 95%;
+  --success-light: 142 76% 85%;
+  
+  --warning: 38 92% 50%; /* #FF9800 */
+  --warning-foreground: 0 0% 100%;
+  --warning-muted: 38 92% 95%;
+  
+  --info: 195 82% 52%; /* Same as brand-primary */
+  --info-foreground: 0 0% 100%;
+  --info-muted: 195 82% 95%;
+  
+  --destructive: 0 84% 60%; /* #FF5252 */
+  --destructive-foreground: 0 0% 100%;
+  --destructive-muted: 0 84% 95%;
+  
+  /* UI colors */
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --card-hover: 210 40% 98%;
+  
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  
+  --primary: 195 82% 52%; /* #25AAE1 */
+  --primary-foreground: 0 0% 100%;
+  --primary-muted: 195 82% 95%;
+  --primary-hover: 195 82% 42%;
+  --primary-gradient: 195 82% 42%;
+  
+  --secondary: 322 65% 59%; /* #D15A9D */
+  --secondary-foreground: 0 0% 100%;
+  --secondary-muted: 322 65% 95%;
+  --secondary-hover: 322 65% 49%;
+  --secondary-gradient: 322 65% 49%;
+  
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  
+  --accent: 262 38% 47%; /* Same as brand-accent */
+  --accent-foreground: 0 0% 100%;
+  --accent-muted: 262 38% 95%;
+  
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 207 82% 72%; /* Same as brand-primary */
+  
+  /* Chart colors */
+  --chart-1: 207 82% 72%; /* Brand blue */
+  --chart-2: 322 65% 59%; /* Brand pink */
+  --chart-3: 262 38% 47%; /* Brand purple */
+  --chart-4: 142 76% 36%; /* Success green */
+  --chart-5: 38 92% 50%;  /* Warning yellow */
+  --chart-6: 0 84% 60%;   /* Destructive red */
+  
+  /* Radius */
+  --radius: 0.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
