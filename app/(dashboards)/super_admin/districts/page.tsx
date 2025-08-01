@@ -271,7 +271,7 @@ export default function DistrictsPage() {
         district={selectedDistrict!}
         onSubmit={selectedDistrict ? handleUpdateDistrict : handleCreateDistrict}
         isLoading={isLoading}
-      />
+      /> 
 
       <DistrictImportModal
         isOpen={isImportModalOpen}

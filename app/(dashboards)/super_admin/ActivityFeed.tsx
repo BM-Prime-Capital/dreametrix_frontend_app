@@ -94,7 +94,7 @@ export function ActivityFeed() {
   ];
 
   // Get appropriate icon based on activity type
-  const getActivityIcon = (type) => {
+  const getActivityIcon = (type: string) => {
     switch (type) {
       case "school_added":
         return <School className="h-4 w-4 text-blue-500" />;
