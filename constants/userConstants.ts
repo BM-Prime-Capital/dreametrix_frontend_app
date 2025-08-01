@@ -3,6 +3,7 @@ export enum userTypeEnum {
   PARENT = "parent",
   SCHOOL_ADMIN = "school_admin",
   TEACHER = "teacher",
+  SUPER_ADMIN = "super_admin"
 }
 
 const HOME_PAGE_PATH = "/dashboard";
@@ -28,6 +29,9 @@ export enum userPath {
   SCHOOL_ADMIN_LOGIN_PATH = `${LOGIN_PAGE_PATH}?userType=${userTypeEnum.SCHOOL_ADMIN}`,
   SCHOOL_ADMIN_DASHBOARD_PATH = `${SCHOOL_ADMIN_BASE_PATH}${HOME_PAGE_PATH}`,
   SCHOOL_ADMIN_REGISTER_PATH = `${REGISTER_PATH}?userType=${userTypeEnum.SCHOOL_ADMIN}`,
+  SUPER_ADMIN_BASE_PATH = "/super_admin",
+  SUPER_ADMIN_LOGIN_PATH = `${LOGIN_PAGE_PATH}?userType=${userTypeEnum.SUPER_ADMIN}`,
+  SUPER_ADMIN_DASHBOARD_PATH = `${SUPER_ADMIN_BASE_PATH}${HOME_PAGE_PATH}`
 }
 
 export enum userTitle {
@@ -35,6 +39,7 @@ export enum userTitle {
   PARENT = "Parent",
   SCHOOL_ADMIN = "School Admin",
   TEACHER = "Teacher",
+  SUPER_ADMIN = "Super Admin"
 }
 
 export enum activityType {

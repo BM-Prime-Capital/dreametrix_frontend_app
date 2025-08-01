@@ -12,6 +12,8 @@ import { Button } from "../ui/button";
 import { useSidebar } from "@/lib/SidebarContext";
 
 export function Sidebar({ routes }: { routes: MenuRoute[] }) {
+
+  console.log("routes", routes)
   const pathname = usePathname();
   const { isCollapsed, setIsCollapsed } = useSidebar();
 
