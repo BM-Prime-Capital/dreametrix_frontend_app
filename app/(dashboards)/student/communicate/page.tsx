@@ -2,163 +2,102 @@
 
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
-import { MessageList } from "../../../../components/student/communicate/message-list"
-import { ComposeDialog } from "../../../../components/student/communicate/compose-dialog"
+import { MessageCircle, Send, ArrowLeft } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export default function CommunicatePage() {
-    const [activeTab, setActiveTab] = useState<"teachers" | "whole-class" | "other-groups">("teachers")
-    const [isComposeOpen, setIsComposeOpen] = useState(false)
-    const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null)
-  
-    const handleMessageClick = (messageId: number) => {
-      setSelectedMessageId(messageId === selectedMessageId ? null : messageId)
-    }
-  
-    return (
-      <section className="flex flex-col gap-4 w-full mx-auto p-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-success text-xl font-bold">COMMUNICATE</h1>
+  const [activeTab, setActiveTab] = useState<"teachers" | "whole-class" | "other-groups">("teachers")
+
+  return (
+    <div className="flex flex-col gap-6 w-full min-h-screen">
+      {/* Header avec gradient moderne */}
+      <div className="bg-gradient-to-r from-[#25AAE1] via-[#25AAE1] to-[#1D8CB3] p-8 rounded-2xl shadow-xl">
+        <div className="flex items-center gap-4 text-white">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-white hover:bg-white/20 p-3 rounded-full transition-all duration-200"
+            onClick={() => window.history.back()}
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-white tracking-wide mb-1">
+              COMMUNICATE
+            </h1>
+            <p className="text-white/80 text-sm">Connect with teachers and classmates</p>
+          </div>
         </div>
-  
-        <div className="flex gap-4">
-          <button
-            className="bg-primary text-white px-6 py-3 rounded-md flex items-center gap-2 hover:bg-primary-hover transition-colors"
-            onClick={() => setIsComposeOpen(true)}
+      </div>
+
+      <section className="flex flex-col gap-6 w-full mx-auto p-6 bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen rounded-2xl">
+        {/* Header Section avec design moderne */}
+        <div className="flex items-center justify-between bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] rounded-xl flex items-center justify-center">
+              <MessageCircle className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-[#25AAE1]">Communication Center</h2>
+              <p className="text-gray-600 text-sm">Send messages and stay connected</p>
+            </div>
+          </div>
+          
+          <Button
+            className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white px-8 py-4 rounded-xl flex items-center gap-3 hover:shadow-lg hover:scale-105 transition-all duration-300 shadow-md"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M19 4H5C3.89543 4 3 4.89543 3 6V18C3 19.1046 3.89543 20 5 20H19C20.1046 20 21 19.1046 21 18V6C21 4.89543 20.1046 4 19 4Z"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path d="M12 12H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M8 12H8.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M16 12H16.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span>Compose</span>
-          </button>
+            <Send className="h-5 w-5" />
+            <span className="font-semibold">Compose Message</span>
+          </Button>
         </div>
-  
-        <div className="flex">
-          <button
-            className={`flex-1 py-4 flex flex-col items-center ${activeTab === "teachers" ? "bg-accent/10" : "bg-muted/30"}`}
-            onClick={() => setActiveTab("teachers")}
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-primary mb-1"
+
+        {/* Tabs avec design moderne */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="flex">
+            <button
+              className={`flex-1 py-6 flex flex-col items-center transition-all duration-300 ${activeTab === "teachers" ? "bg-gradient-to-r from-[#25AAE1]/20 to-[#1D8CB3]/20 text-[#25AAE1]" : "bg-gray-50 text-gray-600 hover:bg-gray-100"}`}
+              onClick={() => setActiveTab("teachers")}
             >
-              <path
-                d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span className="text-foreground font-medium">TEACHERS</span>
-          </button>
-          <button
-            className={`flex-1 py-4 flex flex-col items-center ${activeTab === "whole-class" ? "bg-accent/10" : "bg-card"}`}
-            onClick={() => setActiveTab("whole-class")}
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-primary mb-1"
+              <MessageCircle className={`h-6 w-6 mb-2 transition-all duration-300 ${activeTab === "teachers" ? "text-[#25AAE1]" : "text-gray-500"}`} />
+              <span className="font-semibold text-sm">TEACHERS</span>
+            </button>
+            <button
+              className={`flex-1 py-6 flex flex-col items-center transition-all duration-300 ${activeTab === "whole-class" ? "bg-gradient-to-r from-[#25AAE1]/20 to-[#1D8CB3]/20 text-[#25AAE1]" : "bg-white text-gray-600 hover:bg-gray-50"}`}
+              onClick={() => setActiveTab("whole-class")}
             >
-              <path
-                d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span className="text-foreground font-medium">WHOLE CLASS</span>
-          </button>
-          <button
-            className={`flex-1 py-4 flex flex-col items-center ${activeTab === "other-groups" ? "bg-accent/10" : "bg-muted/30"}`}
-            onClick={() => setActiveTab("other-groups")}
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-success mb-1"
+              <MessageCircle className={`h-6 w-6 mb-2 transition-all duration-300 ${activeTab === "whole-class" ? "text-[#25AAE1]" : "text-gray-500"}`} />
+              <span className="font-semibold text-sm">WHOLE CLASS</span>
+            </button>
+            <button
+              className={`flex-1 py-6 flex flex-col items-center transition-all duration-300 ${activeTab === "other-groups" ? "bg-gradient-to-r from-[#25AAE1]/20 to-[#1D8CB3]/20 text-[#25AAE1]" : "bg-gray-50 text-gray-600 hover:bg-gray-100"}`}
+              onClick={() => setActiveTab("other-groups")}
             >
-              <path
-                d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M8.5 11C10.7091 11 12.5 9.20914 12.5 7C12.5 4.79086 10.7091 3 8.5 3C6.29086 3 4.5 4.79086 4.5 7C4.5 9.20914 6.29086 11 8.5 11Z"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M17 11L19 13L23 9"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span className="text-foreground font-medium">OTHER GROUPS</span>
-          </button>
+              <MessageCircle className={`h-6 w-6 mb-2 transition-all duration-300 ${activeTab === "other-groups" ? "text-[#25AAE1]" : "text-gray-500"}`} />
+              <span className="font-semibold text-sm">OTHER GROUPS</span>
+            </button>
+          </div>
         </div>
-  
-        <Card className="rounded-lg shadow-sm p-0 overflow-hidden border">
-          <MessageList activeTab={activeTab} selectedMessageId={selectedMessageId} onMessageClick={handleMessageClick} />
+
+        {/* Messages avec design moderne */}
+        <Card className="rounded-2xl shadow-xl p-0 overflow-hidden border-0 bg-white">
+          <div className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] p-4">
+            <h2 className="text-white font-bold text-lg">
+              {activeTab === "teachers" && "Teacher Messages"}
+              {activeTab === "whole-class" && "Class Messages"}
+              {activeTab === "other-groups" && "Group Messages"}
+            </h2>
+          </div>
+          <div className="p-6">
+            <div className="text-center text-gray-500 py-12">
+              <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p className="text-lg font-medium">No messages yet</p>
+              <p className="text-sm">Start a conversation to see messages here</p>
+            </div>
+          </div>
         </Card>
-  
-        <ComposeDialog isOpen={isComposeOpen} onClose={() => setIsComposeOpen(false)} />
       </section>
-    )
-  }
+    </div>
+  )
+}
   
 
