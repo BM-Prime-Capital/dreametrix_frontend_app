@@ -2,23 +2,16 @@
 
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { X, Eye, Trash2 } from "lucide-react"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { X, Eye, ArrowLeft } from "lucide-react"
 
 interface Transaction {
   id: number
   class: string
-  reason: string
   credit: number
   date: string
-}
-
-interface MonthlyData {
-  month: string
-  value: number
-  color: string
+  type: string
 }
 
 interface HistoryItem {
@@ -28,372 +21,233 @@ interface HistoryItem {
 }
 
 const transactions: Transaction[] = [
-  {
-    id: 1,
-    class: "Class 5 - Sci",
-    reason: "Points in Character - Emotional Intelligence",
-    credit: 1000,
-    date: "11/21",
-  },
-  {
-    id: 2,
-    class: "Class 5 - Math",
-    reason: "You bought a pass to choose your group",
-    credit: -200,
-    date: "11/26",
-  },
-  {
-    id: 3,
-    class: "Class 6 - Math",
-    reason: "You bought a pass to choose your group",
-    credit: -500,
-    date: "11/28",
-  },
-  {
-    id: 4,
-    class: "Class 7 - Sci",
-    reason: "Points in Character - Emotional Intelligence",
-    credit: 1000,
-    date: "11/29",
-  },
-]
-
-const monthlyData: MonthlyData[] = [
-  { month: "January", value: 600, color: "#4FC3F7" },
-  { month: "February", value: 800, color: "#29B6F6" },
-  { month: "March", value: 400, color: "#0288D1" },
-  { month: "April", value: 900, color: "#01579B" },
-  { month: "May", value: 600, color: "#4FC3F7" },
-  { month: "June", value: 200, color: "#EF5350" },
-  { month: "July", value: 400, color: "#0288D1" },
-  { month: "August", value: 900, color: "#01579B" },
-  { month: "September", value: 600, color: "#4FC3F7" },
-  { month: "October", value: 800, color: "#29B6F6" },
-  { month: "November", value: 400, color: "#0288D1" },
-  { month: "December", value: 1100, color: "#01579B" },
+  { id: 1, class: "Class 5 - Math", credit: 100, date: "2024-01-15", type: "assignment" },
+  { id: 2, class: "Class 5 - Science", credit: -50, date: "2024-01-14", type: "exchange" },
+  { id: 3, class: "Class 5 - English", credit: 75, date: "2024-01-13", type: "participation" },
+  { id: 4, class: "Class 5 - History", credit: 25, date: "2024-01-12", type: "homework" },
 ]
 
 const historyItems: HistoryItem[] = [
-  { id: 1, date: "11/05", message: "I need help with this exercise: -23 - 45 ..." },
-  { id: 2, date: "11/02", message: "I need information about the structure ..." },
-  { id: 3, date: "11/02", message: "I need information about the structure ..." },
-  { id: 4, date: "11/02", message: "I need information about the structure ..." },
-  { id: 5, date: "10/30", message: "I need information about the structure ..." },
-  { id: 6, date: "10/30", message: "I need information about the structure ..." },
+  { id: 1, date: "01/15", message: "Completed Math Assignment" },
+  { id: 2, date: "01/14", message: "Exchanged 50 points for reward" },
+  { id: 3, date: "01/13", message: "Active participation in class" },
+  { id: 4, date: "01/12", message: "Submitted homework on time" },
 ]
 
 export default function RewardsPage() {
+  const [exchangeCost] = useState(100)
   const [isExchangeOpen, setIsExchangeOpen] = useState(false)
   const [isTransactionsOpen, setIsTransactionsOpen] = useState(false)
-  const [isBestMonthOpen, setIsBestMonthOpen] = useState(false)
-  const [isWorstMonthOpen, setIsWorstMonthOpen] = useState(false)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
-  const [selectedExchange, setSelectedExchange] = useState<string>("")
-  const [exchangeCost, setExchangeCost] = useState(0)
-  const bestMonth = { month: "December", value: 1100 }
-  const worstMonth = { month: "June", value: 300 }
-  const handleExchangeSelect = (value: string) => {
-    setSelectedExchange(value)
-    if (value === "group-pass") {
-      setExchangeCost(200)
-    } else if (value === "seat-pass") {
-      setExchangeCost(100)
-    } else {
-      setExchangeCost(0)
-    }
-  }
-
-  const maxValue = Math.max(...monthlyData.map((item) => item.value))
 
   return (
-    <section className="flex flex-col gap-4 w-full  mx-auto p-4 ">
-      <h1 className="text-[#FF6B6B] text-xl font-bold">REWARDS</h1>
-
-      <div className="flex gap-4">
-        <button
-          className="bg-[#9C27B0] text-white px-6 py-3 rounded-md flex items-center gap-2 w-[200px]"
-          onClick={() => setIsExchangeOpen(true)}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M7 10L3 14L7 18"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M17 18L21 14L17 10"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path d="M3 14H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <span>Exchange</span>
-        </button>
-
-        <button
-          className="bg-[#E91E63] text-white px-6 py-3 rounded-md flex items-center gap-2 w-[200px]"
-          onClick={() => setIsTransactionsOpen(true)}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M16 4H18C18.5304 4 19.0391 4.21071 19.4142 4.58579C19.7893 4.96086 20 5.46957 20 6V20C20 20.5304 19.7893 21.0391 19.4142 21.4142C19.0391 21.7893 18.5304 22 18 22H6C5.46957 22 4.96086 21.7893 4.58579 21.4142C4.21071 21.0391 4 20.5304 4 20V6C4 5.46957 4.21071 4.96086 4.58579 4.58579C4.96086 4.21071 5.46957 4 6 4H8"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M15 2H9C8.44772 2 8 2.44772 8 3V5C8 5.55228 8.44772 6 9 6H15C15.5523 6 16 5.55228 16 5V3C16 2.44772 15.5523 2 15 2Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path d="M12 11H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M12 16H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M8 11H8.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M8 16H8.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <span>View Transactions</span>
-        </button>
-      </div>
-
-      <Card className="p-6 flex justify-between items-center">
-        <h2 className="text-2xl text-gray-700 font-medium">Balance</h2>
-        <div className="text-4xl font-bold text-[#29B6F6]">2,300 D</div>
-      </Card>
-
-      <div
-        className="bg-[#E3F2FD] p-6 rounded-lg flex justify-between items-center cursor-pointer"
-        onClick={() => setIsBestMonthOpen(true)}
-      >
-        <h2 className="text-xl text-gray-700">Your Best Month</h2>
-        <div className="text-xl font-medium">{bestMonth.month}</div>
-        <div className="text-2xl font-bold text-[#4CAF50] flex items-center">
-          1,100 D
-          <Eye className="ml-4 text-[#29B6F6]" />
+    <div className="flex flex-col gap-6 w-full min-h-screen">
+      {/* Header avec gradient moderne */}
+      <div className="bg-gradient-to-r from-[#25AAE1] via-[#25AAE1] to-[#1D8CB3] p-8 rounded-2xl shadow-xl">
+        <div className="flex items-center gap-4 text-white">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-white hover:bg-white/20 p-3 rounded-full transition-all duration-200"
+            onClick={() => window.history.back()}
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-white tracking-wide mb-1">
+              REWARDS
+            </h1>
+            <p className="text-white/80 text-sm">Manage your points and rewards</p>
+          </div>
         </div>
       </div>
 
-      <div
-        className="bg-[#E3F2FD] p-6 rounded-lg flex justify-between items-center cursor-pointer"
-        onClick={() => setIsWorstMonthOpen(true)}
-      >
-        <h2 className="text-xl text-gray-700">Your Worst Month</h2>
-        <div className="text-xl font-medium">{worstMonth.month}</div>
-        <div className="text-2xl font-bold text-[#F44336] flex items-center">
-          300 D
-          <Eye className="ml-4 text-[#29B6F6]" />
+      <section className="flex flex-col gap-6 w-full mx-auto p-6 bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen rounded-2xl">
+        {/* Header Section avec design moderne */}
+        <div className="flex items-center justify-between bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] rounded-xl flex items-center justify-center">
+              <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-[#25AAE1]">Rewards Center</h2>
+              <p className="text-gray-600 text-sm">Earn and exchange points for rewards</p>
+            </div>
+          </div>
+          
+          <div className="flex gap-4">
+            <Button
+              className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white px-8 py-4 rounded-xl flex items-center gap-3 hover:shadow-lg hover:scale-105 transition-all duration-300 shadow-md"
+              onClick={() => setIsExchangeOpen(true)}
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+              </svg>
+              <span className="font-semibold">Exchange</span>
+            </Button>
+            
+            <Button
+              className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white px-8 py-4 rounded-xl flex items-center gap-3 hover:shadow-lg hover:scale-105 transition-all duration-300 shadow-md"
+              onClick={() => setIsTransactionsOpen(true)}
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              <span className="font-semibold">Transactions</span>
+            </Button>
+          </div>
         </div>
-      </div>
 
-      <div className="bg-[#E3F2FD] p-6 rounded-lg flex justify-between items-center">
-        <h2 className="text-xl text-gray-700">Average</h2>
-        <div className="text-xl font-medium">Every Month</div>
-        <div className="text-2xl font-bold text-gray-700">900 D</div>
-      </div>
-
-      {/* Exchange Dialog */}
-      <Dialog open={isExchangeOpen} onOpenChange={setIsExchangeOpen}>
-        <DialogContent className="sm:max-w-[500px] p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-medium text-gray-700">Exchange</h2>
-            <Button variant="ghost" size="icon" onClick={() => setIsExchangeOpen(false)} className="h-6 w-6">
-              <X className="h-4 w-4" />
-            </Button>
+        {/* Balance Card avec design moderne */}
+        <Card className="p-8 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white rounded-2xl shadow-xl border-0">
+          <div className="flex justify-between items-center">
+            <h2 className="text-3xl font-bold">Balance</h2>
+            <div className="text-5xl font-bold">2,300 D</div>
           </div>
+        </Card>
 
-          <div className="flex justify-between items-center bg-[#E3F2FD] p-2 px-4 rounded-md mb-6">
-            <span className="text-gray-500">Credit</span>
-            <span className="text-2xl font-medium text-[#29B6F6]">2300 D</span>
-          </div>
-
-          <div className="space-y-6">
-            <div className="flex gap-4 items-center">
-              <Select value={selectedExchange} onValueChange={handleExchangeSelect}>
-                <SelectTrigger className="w-full rounded-full">
-                  <SelectValue placeholder="Select what you want to exchange" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="group-pass">Pass to choose your group</SelectItem>
-                  <SelectItem value="seat-pass">Pass to choose your seat</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <div className="bg-[#E3F2FD] p-2 px-4 rounded-md min-w-[80px] text-center">
-                <span className="text-xl font-medium text-[#29B6F6]">{exchangeCost} D</span>
+        {/* Performance Cards avec design moderne */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="p-6 bg-gradient-to-r from-[#25AAE1]/10 to-[#D15A9D]/10 rounded-2xl flex justify-between items-center cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-0">
+            <div>
+              <h2 className="text-xl text-gray-800 font-semibold">Your Best Month</h2>
+              <div className="text-2xl font-bold text-[#4CAF50] flex items-center mt-2">
+                December
+                <Eye className="ml-4 text-[#25AAE1]" />
               </div>
             </div>
+          </Card>
 
-            <div className="flex justify-between items-center pt-4">
-              <Button variant="ghost" onClick={() => setIsExchangeOpen(false)} className="text-gray-500">
-                Cancel
-              </Button>
-              <Button className="bg-[#29B6F6] hover:bg-[#0288D1] text-white rounded-md px-8 py-6">EXCHANGE</Button>
+          <Card className="p-6 bg-gradient-to-r from-[#25AAE1]/10 to-[#D15A9D]/10 rounded-2xl flex justify-between items-center cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-0">
+            <div>
+              <h2 className="text-xl text-gray-800 font-semibold">Your Worst Month</h2>
+              <div className="text-2xl font-bold text-[#FF5252] flex items-center mt-2">
+                June
+                <Eye className="ml-4 text-[#25AAE1]" />
+              </div>
             </div>
+          </Card>
+        </div>
+
+        {/* Average Card avec design moderne */}
+        <Card className="p-6 bg-gradient-to-r from-[#25AAE1]/10 to-[#D15A9D]/10 rounded-2xl flex justify-between items-center border-0">
+          <div>
+            <h2 className="text-xl text-gray-800 font-semibold">Average</h2>
+            <div className="text-2xl font-bold text-gray-800 mt-2">900 D</div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </Card>
 
-      {/* Transactions Dialog */}
-      <Dialog open={isTransactionsOpen} onOpenChange={setIsTransactionsOpen}>
-        <DialogContent className="sm:max-w-[800px] p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-medium text-gray-700">Transactions</h2>
-            <Button variant="ghost" size="icon" onClick={() => setIsTransactionsOpen(false)} className="h-6 w-6">
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="border-t mb-6"></div>
-
-          <table className="w-full">
-            <thead>
-              <tr className="text-left border-b">
-                <th className="pb-2 font-bold text-gray-700">CLASS</th>
-                <th className="pb-2 font-bold text-gray-700">REASON</th>
-                <th className="pb-2 font-bold text-gray-700 text-right">CREDIT</th>
-                <th className="pb-2 font-bold text-gray-700 text-right">DATE</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((transaction, index) => (
-                <tr key={transaction.id} className={index % 2 === 0 ? "bg-[#E3F2FD]" : ""}>
-                  <td className="py-4 text-gray-600">{transaction.class}</td>
-                  <td className="py-4 text-gray-600">{transaction.reason}</td>
-                  <td
-                    className={`py-4 text-right font-medium ${transaction.credit > 0 ? "text-[#4CAF50]" : "text-[#F44336]"}`}
-                  >
-                    <span className="bg-[#E3F2FD] px-2 py-1 rounded">
-                      {transaction.credit > 0 ? "+" : ""}
-                      {transaction.credit} D
-                    </span>
-                  </td>
-                  <td className="py-4 text-gray-600 text-right">{transaction.date}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </DialogContent>
-      </Dialog>
-
-      {/* Best Month Dialog */}
-      <Dialog open={isBestMonthOpen} onOpenChange={setIsBestMonthOpen}>
-        <DialogContent className="sm:max-w-[500px] p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-medium text-gray-700">Your Best Month</h2>
-            <Button variant="ghost" size="icon" onClick={() => setIsBestMonthOpen(false)} className="h-6 w-6">
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="border-t mb-6"></div>
-
-          <div className="space-y-3">
-            {monthlyData.map((item) => (
-              <div key={item.month} className="flex items-center">
-                <div
-                  className="h-6 rounded-sm"
-                  style={{
-                    width: `${(item.value / maxValue) * 100}%`,
-                    backgroundColor:
-                      item.month === "December" ? "#4CAF50" : item.month === "June" ? "#F44336" : item.color,
-                    maxWidth: "70%",
-                  }}
-                ></div>
-                <span className="ml-2 text-gray-600">{item.month}</span>
+        {/* Exchange Dialog */}
+        <Dialog open={isExchangeOpen} onOpenChange={setIsExchangeOpen}>
+          <DialogContent className="sm:max-w-[400px] p-0">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-medium text-gray-700">Exchange Points</h2>
+                <button onClick={() => setIsExchangeOpen(false)} className="text-gray-500 hover:text-gray-700" title="Close">
+                  <X size={18} />
+                </button>
               </div>
-            ))}
-          </div>
 
-          <div className="mt-4 flex justify-between text-gray-500 text-sm">
-            <span>0</span>
-            <span>200</span>
-            <span>400</span>
-            <span>800</span>
-            <span>1000</span>
-            <span>1200</span>
-          </div>
-        </DialogContent>
-      </Dialog>
+              <div className="border-t mb-6"></div>
 
-      {/* Worst Month Dialog - Same as Best Month but with different title */}
-      <Dialog open={isWorstMonthOpen} onOpenChange={setIsWorstMonthOpen}>
-        <DialogContent className="sm:max-w-[500px] p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-medium text-gray-700">Your Worst Month</h2>
-            <Button variant="ghost" size="icon" onClick={() => setIsWorstMonthOpen(false)} className="h-6 w-6">
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="border-t mb-6"></div>
-
-          <div className="space-y-3">
-            {monthlyData.map((item) => (
-              <div key={item.month} className="flex items-center">
-                <div
-                  className="h-6 rounded-sm"
-                  style={{
-                    width: `${(item.value / maxValue) * 100}%`,
-                    backgroundColor:
-                      item.month === "December" ? "#4CAF50" : item.month === "June" ? "#F44336" : item.color,
-                    maxWidth: "70%",
-                  }}
-                ></div>
-                <span className="ml-2 text-gray-600">{item.month}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-4 flex justify-between text-gray-500 text-sm">
-            <span>0</span>
-            <span>200</span>
-            <span>400</span>
-            <span>800</span>
-            <span>1000</span>
-            <span>1200</span>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* History Dialog */}
-      <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
-        <DialogContent className="sm:max-w-[500px] p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-medium text-gray-700">History</h2>
-            <Button variant="ghost" size="icon" onClick={() => setIsHistoryOpen(false)} className="h-6 w-6">
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="border-t mb-6"></div>
-
-          <p className="text-gray-600 mb-4">The history is automatically deleted in 10 days.</p>
-
-          <div className="space-y-4">
-            {historyItems.map((item) => (
-              <div key={item.id} className="flex items-center justify-between">
-                <div className="text-gray-500 w-16">{item.date}</div>
-                <div className="flex-1 text-gray-700">{item.message}</div>
-                <div className="flex gap-2">
-                  <button className="text-[#29B6F6]">
-                    <Eye className="h-5 w-5" />
-                  </button>
-                  <button className="text-[#F44336]">
-                    <Trash2 className="h-5 w-5" />
-                  </button>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center bg-gradient-to-r from-[#25AAE1]/10 to-[#D15A9D]/10 p-4 rounded-xl">
+                  <span className="text-gray-600">Credit</span>
+                  <span className="text-2xl font-medium text-[#25AAE1]">2300 D</span>
                 </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Exchange Cost</span>
+                  <div className="bg-gradient-to-r from-[#25AAE1]/10 to-[#D15A9D]/10 p-3 rounded-xl min-w-[100px] text-center">
+                    <span className="text-xl font-medium text-[#25AAE1]">{exchangeCost} D</span>
+                  </div>
+                </div>
+
+                <Button className="w-full bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] hover:shadow-lg text-white rounded-xl px-8 py-6">EXCHANGE</Button>
               </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
-    </section>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Transactions Dialog */}
+        <Dialog open={isTransactionsOpen} onOpenChange={setIsTransactionsOpen}>
+          <DialogContent className="sm:max-w-[600px] p-0">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-medium text-gray-700">Transaction History</h2>
+                <button onClick={() => setIsTransactionsOpen(false)} className="text-gray-500 hover:text-gray-700" title="Close">
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="border-t mb-6"></div>
+
+              <div className="space-y-4">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="pb-2 font-bold text-gray-700 text-left">CLASS</th>
+                      <th className="pb-2 font-bold text-gray-700 text-right">CREDIT</th>
+                      <th className="pb-2 font-bold text-gray-700 text-right">DATE</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.map((transaction, index) => (
+                      <tr key={transaction.id} className={index % 2 === 0 ? "bg-gradient-to-r from-[#25AAE1]/5 to-[#D15A9D]/5" : ""}>
+                        <td className="py-4 text-gray-600">{transaction.class}</td>
+                        <td className={`py-4 text-right font-medium ${transaction.credit > 0 ? "text-[#4CAF50]" : "text-[#FF5252]"}`}>
+                          {transaction.credit > 0 ? "+" : ""}{transaction.credit} D
+                          <span className="bg-gradient-to-r from-[#25AAE1]/10 to-[#D15A9D]/10 px-2 py-1 rounded ml-2 text-xs">
+                            {transaction.type}
+                          </span>
+                        </td>
+                        <td className="py-4 text-gray-600 text-right">{transaction.date}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* History Dialog */}
+        <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+          <DialogContent className="sm:max-w-[500px] p-0">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-medium text-gray-700">History</h2>
+                <button onClick={() => setIsHistoryOpen(false)} className="text-gray-500 hover:text-gray-700" title="Close">
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="border-t mb-6"></div>
+
+              <p className="text-gray-600 mb-4">The history is automatically deleted in 10 days.</p>
+
+              <div className="space-y-4">
+                {historyItems.map((item) => (
+                  <div key={item.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="text-gray-500 w-16 text-sm">{item.date}</div>
+                    <div className="flex-1 text-gray-700">{item.message}</div>
+                    <div className="flex gap-2">
+                      <button className="text-[#25AAE1]" title="View">
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      <button className="text-[#FF5252]" title="Delete">
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </section>
+    </div>
   )
 }
 
