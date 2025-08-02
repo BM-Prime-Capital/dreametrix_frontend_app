@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Modal } from "@/components/ui/modal";
+import { Modal } from "@/components/ui/Modal";
 import {
   School,
   Plus,

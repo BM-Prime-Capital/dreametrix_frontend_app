@@ -271,6 +271,11 @@ export const TeacherRoutes = [
     icon: menuImages.report_card,
     label: "REPORT CARD",
   },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/support`,
+    icon: menuImages.support, // ajouté
+    label: "SUPPORT",
+  },
 ];
 
 export const ParentRoutes = [

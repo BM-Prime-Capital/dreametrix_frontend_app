@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { District, DistrictFormData } from "@/types";
-import { Modal } from "@/components/ui/modal";
+import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

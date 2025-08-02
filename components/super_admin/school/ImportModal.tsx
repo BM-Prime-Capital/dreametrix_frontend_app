@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { FileUp, X } from "lucide-react";
-import { Modal } from "../ui/Modal";
+import { Modal } from "@/components/ui//Modal";
 
 type ImportModalProps = {
   isOpen: boolean;
