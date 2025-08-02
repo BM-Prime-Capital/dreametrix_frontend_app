@@ -1,5 +1,5 @@
 import { User } from "@/types";
-import { Modal } from "@/components/ui/modal";
+import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "./UserAvatar";
 import { Badge } from "@/components/ui/badge";

@@ -28,7 +28,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { School } from "@/types";
-import { Modal } from "../ui/Modal";
+import { Modal } from "@/components/ui/Modal";
 import { useState } from "react";
 
 // Schéma de validation complet
