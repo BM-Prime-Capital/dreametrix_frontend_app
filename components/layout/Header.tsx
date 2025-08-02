@@ -16,6 +16,7 @@ import DreaMetrixLogo from "../ui/dreametrix-logo"
 import UserAvatar from "../ui/user-avatar"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
+import Link from "next/link"
 
 export function Header() {
   const router = useRouter()
@@ -59,6 +60,9 @@ export function Header() {
             <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Classes</Button>
             <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Students</Button>
             <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Resources</Button>
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground" asChild>
+              <Link href="/teacher/support">Support Center</Link>
+            </Button>
           </div>
         </div>
 

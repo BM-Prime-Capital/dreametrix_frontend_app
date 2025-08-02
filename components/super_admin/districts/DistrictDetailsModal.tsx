@@ -1,5 +1,5 @@
 import { District } from "@/types";
-import { Modal } from "@/components/ui/modal";
+import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { School, Users, Edit } from "lucide-react";

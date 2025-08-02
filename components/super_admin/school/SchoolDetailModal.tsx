@@ -10,7 +10,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { School } from "@/types";
-import { Modal } from "../ui/Modal";
+import { Modal } from "@/components/ui/Modal";
 
 export function SchoolDetailModal({
   isOpen,

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Search, Filter, Plus, Download, Frown } from "lucide-react";
 
-import { District } from "@/types";
+import { District, DistrictFormData } from "@/types";
 import { DistrictCard } from "@/components/super_admin/districts/DistrictCard";
 import { DistrictFormModal } from "@/components/super_admin/districts/DistrictFormModal";
 import { DistrictImportModal } from "@/components/super_admin/districts/DistrictImportModal";
@@ -137,7 +137,8 @@ export default function DistrictsPage() {
     district.region.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleCreateDistrict = async (data: Omit<District, "id">) => {
+  const handleCreateDistrict = async (data: DistrictFormData) => {
+
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -153,7 +154,7 @@ export default function DistrictsPage() {
     }
   };
 
-  const handleUpdateDistrict = async (data: Omit<District, "id">) => {
+  const handleUpdateDistrict = async (data: DistrictFormData) => {
     if (!selectedDistrict) return;
     
     setIsLoading(true);
