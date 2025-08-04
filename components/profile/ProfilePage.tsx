@@ -9,13 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Phone, MapPin, Calendar, Shield, AlertTriangle, Save, Edit3, Camera, Upload } from "lucide-react";
+import { User, Phone, MapPin, Calendar, Shield, AlertTriangle, Save, Edit3, Camera, Mail } from "lucide-react";
 import { localStorageKey } from "@/constants/global";
 import PageTitleH1 from "@/components/ui/page-title-h1";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { TeacherRoutes, StudentRoutes, ParentRoutes, SchoolAdminRoutes } from "@/constants/routes";
-import { SidebarProvider, useSidebar } from "@/lib/SidebarContext";
-import { cn } from "@/utils/tailwind";
 
 interface UserProfile {
   full_name: string;
@@ -38,23 +34,12 @@ interface UserProfile {
   profile_image?: string;
 }
 
-function ProfileContent() {
+export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<UserProfile | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { isCollapsed } = useSidebar();
-
-  const getRoutesForRole = (role: string) => {
-    switch (role?.toLowerCase()) {
-      case 'teacher': return TeacherRoutes;
-      case 'student': return StudentRoutes;
-      case 'parent': return ParentRoutes;
-      case 'admin': case 'school_admin': return SchoolAdminRoutes;
-      default: return TeacherRoutes;
-    }
-  };
 
   useEffect(() => {
     const userData = localStorage.getItem(localStorageKey.USER_DATA);
@@ -138,7 +123,7 @@ function ProfileContent() {
     }
   };
 
-  if (!profile) return <div>Loading...</div>;
+  if (!profile) return <div className="flex items-center justify-center h-64">Loading...</div>;
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
@@ -164,70 +149,75 @@ function ProfileContent() {
   };
 
   return (
-    <div className={cn(
-      "min-h-screen bg-gradient-to-br from-blue-50/30 to-purple-50/20 transition-all duration-500",
-      isCollapsed ? "ml-16" : "ml-64"
-    )}>
-      <div className="p-6">
-        <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-blue-800/10 rounded-2xl p-6 mb-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <PageTitleH1 title="My Profile" className="text-gray-800 mb-2" />
-              <p className="text-gray-600">Manage your personal information and preferences</p>
-            </div>
-            <Button
-              onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-              className="flex items-center gap-2 shadow-lg"
-              size="lg"
-            >
-              {isEditing ? <Save className="h-4 w-4" /> : <Edit3 className="h-4 w-4" />}
-              {isEditing ? 'Save Changes' : 'Edit Profile'}
-            </Button>
+    <section className="flex flex-col w-full h-full bg-gradient-to-br from-blue-50/30 to-purple-50/20">
+      {/* Enhanced Header */}
+      <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+            <User className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <PageTitleH1 title="My Profile" className="text-white font-bold text-2xl" />
+            <p className="text-blue-100 text-sm mt-1">Manage your personal information</p>
           </div>
         </div>
+        <Button
+          onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+          className="flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/30 text-white"
+          size="lg"
+        >
+          {isEditing ? <Save className="h-4 w-4" /> : <Edit3 className="h-4 w-4" />}
+          {isEditing ? 'Save Changes' : 'Edit Profile'}
+        </Button>
+      </div>
 
+      {/* Content Area */}
+      <div className="flex-1 mx-6 pb-8 space-y-6">
         {/* Profile Header Card */}
-        <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <Avatar className="h-24 w-24">
-                <AvatarImage src={imagePreview || profile.profile_image || ""} />
-                <AvatarFallback className="text-xl font-bold bg-primary text-white">
-                  {getInitials(profile.full_name)}
-                </AvatarFallback>
-              </Avatar>
-              {isEditing && (
-                <>
-                  <Button
-                    size="icon"
-                    variant="outline"
-                    className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-white shadow-md"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </>
-              )}
-            </div>
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-800">{profile.full_name}</h2>
-              <p className="text-gray-600 mb-2">{profile.email}</p>
-              <div className="flex gap-2">
-                <Badge className={getRoleColor(profile.role)}>
-                  {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
-                </Badge>
-                <Badge className={getStatusColor(profile.status)}>
-                  {profile.status.charAt(0).toUpperCase() + profile.status.slice(1)}
-                </Badge>
+        <Card className="rounded-2xl shadow-xl border-0 bg-white/80 backdrop-blur-sm overflow-hidden mt-2">
+          <div className="p-8">
+            <div className="flex items-center gap-8">
+              <div className="relative">
+                <Avatar className="h-32 w-32 border-4 border-white shadow-lg">
+                  <AvatarImage src={imagePreview || profile.profile_image || ""} />
+                  <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                    {getInitials(profile.full_name)}
+                  </AvatarFallback>
+                </Avatar>
+                {isEditing && (
+                  <>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-white shadow-lg border-2 border-white hover:bg-gray-50"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Camera className="h-5 w-5" />
+                    </Button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </>
+                )}
+              </div>
+              <div className="flex-1">
+                <h2 className="text-3xl font-bold text-gray-800 mb-2">{profile.full_name}</h2>
+                <div className="flex items-center gap-2 mb-4">
+                  <Mail className="h-4 w-4 text-gray-500" />
+                  <p className="text-gray-600">{profile.email}</p>
+                </div>
+                <div className="flex gap-3">
+                  <Badge className={`${getRoleColor(profile.role)} px-3 py-1 text-sm font-medium`}>
+                    {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}
+                  </Badge>
+                  <Badge className={`${getStatusColor(profile.status)} px-3 py-1 text-sm font-medium`}>
+                    {profile.status.charAt(0).toUpperCase() + profile.status.slice(1)}
+                  </Badge>
+                </div>
               </div>
             </div>
           </div>
@@ -235,29 +225,32 @@ function ProfileContent() {
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {/* Personal Information */}
-          <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
-            <div className="flex items-center gap-2 mb-4">
-              <User className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold">Personal Information</h3>
+          <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0 rounded-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <User className="h-5 w-5 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800">Personal Information</h3>
             </div>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="full_name">Full Name</Label>
+                <Label htmlFor="full_name" className="text-sm font-medium text-gray-700">Full Name</Label>
                 <Input
                   id="full_name"
                   value={isEditing ? editedProfile?.full_name : profile.full_name}
                   onChange={(e) => handleInputChange('full_name', e.target.value)}
                   disabled={!isEditing}
+                  className="mt-1"
                 />
               </div>
               <div>
-                <Label htmlFor="gender">Gender</Label>
+                <Label htmlFor="gender" className="text-sm font-medium text-gray-700">Gender</Label>
                 <Select
                   value={isEditing ? editedProfile?.gender : profile.gender}
                   onValueChange={(value) => handleInputChange('gender', value)}
                   disabled={!isEditing}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
@@ -269,61 +262,68 @@ function ProfileContent() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="date_of_birth">Date of Birth</Label>
+                <Label htmlFor="date_of_birth" className="text-sm font-medium text-gray-700">Date of Birth</Label>
                 <Input
                   id="date_of_birth"
                   type="date"
                   value={isEditing ? editedProfile?.date_of_birth : profile.date_of_birth}
                   onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
                   disabled={!isEditing}
+                  className="mt-1"
                 />
               </div>
               <div>
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone" className="text-sm font-medium text-gray-700">Phone Number</Label>
                 <Input
                   id="phone"
                   value={isEditing ? editedProfile?.phone : profile.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   disabled={!isEditing}
+                  className="mt-1"
                 />
               </div>
             </div>
           </Card>
 
           {/* Contact Information */}
-          <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
-            <div className="flex items-center gap-2 mb-4">
-              <MapPin className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold">Contact Information</h3>
+          <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0 rounded-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <MapPin className="h-5 w-5 text-green-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800">Contact Information</h3>
             </div>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="address">Address</Label>
+                <Label htmlFor="address" className="text-sm font-medium text-gray-700">Address</Label>
                 <Textarea
                   id="address"
                   value={isEditing ? editedProfile?.address : profile.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
                   disabled={!isEditing}
                   rows={3}
+                  className="mt-1"
                 />
               </div>
               <div>
-                <Label htmlFor="emergency_contact">Emergency Contact</Label>
+                <Label htmlFor="emergency_contact" className="text-sm font-medium text-gray-700">Emergency Contact</Label>
                 <Input
                   id="emergency_contact"
                   value={isEditing ? editedProfile?.emergency_contact : profile.emergency_contact}
                   onChange={(e) => handleInputChange('emergency_contact', e.target.value)}
                   disabled={!isEditing}
+                  className="mt-1"
                 />
               </div>
               {profile.role === 'student' && (
                 <div>
-                  <Label htmlFor="parent_guardian">Parent/Guardian</Label>
+                  <Label htmlFor="parent_guardian" className="text-sm font-medium text-gray-700">Parent/Guardian</Label>
                   <Input
                     id="parent_guardian"
                     value={isEditing ? editedProfile?.parent_guardian : profile.parent_guardian}
                     onChange={(e) => handleInputChange('parent_guardian', e.target.value)}
                     disabled={!isEditing}
+                    className="mt-1"
                   />
                 </div>
               )}
@@ -331,22 +331,24 @@ function ProfileContent() {
           </Card>
 
           {/* Health Information */}
-          <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
-            <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold">Health Information</h3>
+          <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0 rounded-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800">Health Information</h3>
             </div>
             <div className="space-y-4">
               <div>
-                <Label>Allergies</Label>
-                <div className="flex flex-wrap gap-2 mb-2">
+                <Label className="text-sm font-medium text-gray-700">Allergies</Label>
+                <div className="flex flex-wrap gap-2 mt-2 mb-2">
                   {(isEditing ? editedProfile?.allergies : profile.allergies)?.map((allergy, index) => (
-                    <Badge key={index} variant="outline" className="bg-red-50">
+                    <Badge key={index} variant="outline" className="bg-red-50 border-red-200">
                       {allergy}
                       {isEditing && (
                         <button
                           onClick={() => removeArrayItem('allergies', allergy)}
-                          className="ml-1 text-red-500 hover:text-red-700"
+                          className="ml-2 text-red-500 hover:text-red-700"
                         >
                           ×
                         </button>
@@ -363,19 +365,20 @@ function ProfileContent() {
                         e.currentTarget.value = '';
                       }
                     }}
+                    className="mt-2"
                   />
                 )}
               </div>
               <div>
-                <Label>Medical Conditions</Label>
-                <div className="flex flex-wrap gap-2 mb-2">
+                <Label className="text-sm font-medium text-gray-700">Medical Conditions</Label>
+                <div className="flex flex-wrap gap-2 mt-2 mb-2">
                   {(isEditing ? editedProfile?.medical_conditions : profile.medical_conditions)?.map((condition, index) => (
-                    <Badge key={index} variant="outline" className="bg-orange-50">
+                    <Badge key={index} variant="outline" className="bg-orange-50 border-orange-200">
                       {condition}
                       {isEditing && (
                         <button
                           onClick={() => removeArrayItem('medical_conditions', condition)}
-                          className="ml-1 text-orange-500 hover:text-orange-700"
+                          className="ml-2 text-orange-500 hover:text-orange-700"
                         >
                           ×
                         </button>
@@ -392,35 +395,7 @@ function ProfileContent() {
                         e.currentTarget.value = '';
                       }
                     }}
-                  />
-                )}
-              </div>
-              <div>
-                <Label>Dietary Restrictions</Label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {(isEditing ? editedProfile?.dietary_restrictions : profile.dietary_restrictions)?.map((restriction, index) => (
-                    <Badge key={index} variant="outline" className="bg-green-50">
-                      {restriction}
-                      {isEditing && (
-                        <button
-                          onClick={() => removeArrayItem('dietary_restrictions', restriction)}
-                          className="ml-1 text-green-500 hover:text-green-700"
-                        >
-                          ×
-                        </button>
-                      )}
-                    </Badge>
-                  ))}
-                </div>
-                {isEditing && (
-                  <Input
-                    placeholder="Add dietary restriction and press Enter"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        handleArrayChange('dietary_restrictions', e.currentTarget.value);
-                        e.currentTarget.value = '';
-                      }
-                    }}
+                    className="mt-2"
                   />
                 )}
               </div>
@@ -429,42 +404,46 @@ function ProfileContent() {
 
           {/* Professional Information */}
           {(profile.role === 'teacher' || profile.role === 'admin') && (
-            <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
-              <div className="flex items-center gap-2 mb-4">
-                <Shield className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-semibold">Professional Information</h3>
+            <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0 rounded-2xl">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Shield className="h-5 w-5 text-purple-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800">Professional Information</h3>
               </div>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="employee_id">Employee ID</Label>
+                  <Label htmlFor="employee_id" className="text-sm font-medium text-gray-700">Employee ID</Label>
                   <Input
                     id="employee_id"
                     value={isEditing ? editedProfile?.employee_id : profile.employee_id}
                     onChange={(e) => handleInputChange('employee_id', e.target.value)}
                     disabled={!isEditing}
+                    className="mt-1"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="hire_date">Hire Date</Label>
+                  <Label htmlFor="hire_date" className="text-sm font-medium text-gray-700">Hire Date</Label>
                   <Input
                     id="hire_date"
                     type="date"
                     value={isEditing ? editedProfile?.hire_date : profile.hire_date}
                     onChange={(e) => handleInputChange('hire_date', e.target.value)}
                     disabled={!isEditing}
+                    className="mt-1"
                   />
                 </div>
                 {profile.role === 'teacher' && (
                   <div>
-                    <Label>Subjects</Label>
-                    <div className="flex flex-wrap gap-2 mb-2">
+                    <Label className="text-sm font-medium text-gray-700">Subjects</Label>
+                    <div className="flex flex-wrap gap-2 mt-2 mb-2">
                       {(isEditing ? editedProfile?.subjects : profile.subjects)?.map((subject, index) => (
-                        <Badge key={index} variant="outline" className="bg-blue-50">
+                        <Badge key={index} variant="outline" className="bg-blue-50 border-blue-200">
                           {subject}
                           {isEditing && (
                             <button
                               onClick={() => removeArrayItem('subjects', subject)}
-                              className="ml-1 text-blue-500 hover:text-blue-700"
+                              className="ml-2 text-blue-500 hover:text-blue-700"
                             >
                               ×
                             </button>
@@ -481,6 +460,7 @@ function ProfileContent() {
                             e.currentTarget.value = '';
                           }
                         }}
+                        className="mt-2"
                       />
                     )}
                   </div>
@@ -491,20 +471,22 @@ function ProfileContent() {
 
           {/* Academic Information for Students */}
           {profile.role === 'student' && (
-            <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
-              <div className="flex items-center gap-2 mb-4">
-                <Calendar className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-semibold">Academic Information</h3>
+            <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0 rounded-2xl">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-yellow-100 rounded-lg">
+                  <Calendar className="h-5 w-5 text-yellow-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800">Academic Information</h3>
               </div>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="grade_level">Grade Level</Label>
+                  <Label htmlFor="grade_level" className="text-sm font-medium text-gray-700">Grade Level</Label>
                   <Select
                     value={isEditing ? editedProfile?.grade_level : profile.grade_level}
                     onValueChange={(value) => handleInputChange('grade_level', value)}
                     disabled={!isEditing}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Select grade level" />
                     </SelectTrigger>
                     <SelectContent>
@@ -520,37 +502,7 @@ function ProfileContent() {
             </Card>
           )}
         </div>
-        </div>
       </div>
-    </div>
-  );
-}
-
-export default function ProfilePage() {
-  const [userRole, setUserRole] = useState('teacher');
-
-  useEffect(() => {
-    const userData = localStorage.getItem(localStorageKey.USER_DATA);
-    if (userData) {
-      const parsedData = JSON.parse(userData);
-      setUserRole(parsedData.role || 'teacher');
-    }
-  }, []);
-
-  const getRoutesForRole = (role: string) => {
-    switch (role?.toLowerCase()) {
-      case 'teacher': return TeacherRoutes;
-      case 'student': return StudentRoutes;
-      case 'parent': return ParentRoutes;
-      case 'admin': case 'school_admin': return SchoolAdminRoutes;
-      default: return TeacherRoutes;
-    }
-  };
-
-  return (
-    <SidebarProvider>
-      <Sidebar routes={getRoutesForRole(userRole)} />
-      <ProfileContent />
-    </SidebarProvider>
+    </section>
   );
 }

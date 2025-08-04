@@ -57,7 +57,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
   const [rosterOpen, setRosterOpen] = useState(false);
   const [selectedClassForRoster, setSelectedClassForRoster] = useState<Class | null>(null);
   const [allStudents, setAllStudents] = useState<Student[]>([]);
-  const [viewMode, setViewMode] = useState<'card' | 'table' | 'list'>('card');
+  const [viewMode, setViewMode] = useState<'card' | 'table' | 'list'>('table');
 
   const transformClassData = useCallback((classData: Class): { id: number; name: string; students: Student[] } => {
     return {

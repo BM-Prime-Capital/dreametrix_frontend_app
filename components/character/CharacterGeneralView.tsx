@@ -19,7 +19,7 @@ import { ChevronDown } from "lucide-react";
 
 function CharacterGeneralView({ changeView }: { changeView: Function }) {
   const { list: data, isLoading, error } = useList(getCharacterGeneralView);
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
   const allClasses = JSON.parse(
     localStorage.getItem(localStorageKey.ALL_CLASSES)!
   );

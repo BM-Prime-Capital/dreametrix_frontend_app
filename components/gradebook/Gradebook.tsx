@@ -35,7 +35,7 @@ export default function Gradebook() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [layoutMode, setLayoutMode] = useState<'table' | 'grid' | 'compact'>('table');
-  const [overviewMode, setOverviewMode] = useState<'cards' | 'table'>('cards');
+  const [overviewMode, setOverviewMode] = useState<'cards' | 'table'>('table');
 
   const accessToken: any = localStorage.getItem(localStorageKey.ACCESS_TOKEN);
   const refreshToken: any = localStorage.getItem(localStorageKey.REFRESH_TOKEN);

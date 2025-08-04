@@ -98,7 +98,7 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
     null
   );
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('table');
 
   // Load assignments function
   const loadAssignments = async () => {
