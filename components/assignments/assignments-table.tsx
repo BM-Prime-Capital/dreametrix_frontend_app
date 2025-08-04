@@ -98,7 +98,7 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
     null
   );
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('table');
 
   // Load assignments function
   const loadAssignments = async () => {
@@ -283,20 +283,20 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 hover:bg-[#3e81d4]/10"
+              className="h-8 w-8 hover:bg-green-50"
               onClick={() => handleAssignmentClick(row.original)}
               title="View Submissions"
             >
-              <Eye className="h-4 w-4 text-[#3e81d4]" />
+              <Eye className="h-4 w-4 text-green-600" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 hover:bg-[#3e81d4]/10"
+              className="h-8 w-8 hover:bg-green-50"
               onClick={() => handleEditAssignment(row.original)}
               title="Edit Assignment"
             >
-              <Pencil className="h-4 w-4 text-[#3e81d4]" />
+              <Pencil className="h-4 w-4 text-green-600" />
             </Button>
             <Button
               variant="ghost"
@@ -427,14 +427,14 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuCheckboxItem
-                checked={viewMode === 'card'}
+              <DropdownMenuCheckboxItem 
+                checked={viewMode === 'card'} 
                 onCheckedChange={() => setViewMode('card')}
               >
                 Card View
               </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={viewMode === 'table'}
+              <DropdownMenuCheckboxItem 
+                checked={viewMode === 'table'} 
                 onCheckedChange={() => setViewMode('table')}
               >
                 Table View
@@ -453,7 +453,7 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
             const dueDate = new Date(assignment.due_date);
             const isOverdue = dueDate < new Date() && !assignment.published;
             const daysUntilDue = Math.ceil((dueDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-
+            
             return (
               <div key={row.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden group">
                 {/* Assignment Header */}
@@ -479,7 +479,7 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
                       </span>
                     </div>
                   </div>
-
+                  
                   <div className="flex items-center justify-between">
                     <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium capitalize">
                       {assignment.kind}
@@ -506,9 +506,9 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
                           daysUntilDue <= 3 ? 'text-yellow-700' :
                           'text-blue-700'
                         }`}>
-                          {dueDate.toLocaleDateString('en-US', {
-                            weekday: 'short',
-                            month: 'short',
+                          {dueDate.toLocaleDateString('en-US', { 
+                            weekday: 'short', 
+                            month: 'short', 
                             day: 'numeric',
                             year: 'numeric'
                           })}

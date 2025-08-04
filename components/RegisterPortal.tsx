@@ -15,16 +15,13 @@ export default function RegisterPortal() {
 
   if (userNagivationInfo.basePath === userPath.PARENT_BASE_PATH) {
     return (
-      <ParentRegister
-       // userBasePath={userNagivationInfo.basePath}
-       // userType={userNagivationInfo.label}
-      />
+      <ParentRegister />
     );
   } else {
     return (
       <SchoolAdminRegister
-        //userBasePath={userNagivationInfo.basePath}
-        //userType={userNagivationInfo.label}
+        userBasePath={userNagivationInfo.basePath}
+        userType={userNagivationInfo.label}
       />
     );
   }
