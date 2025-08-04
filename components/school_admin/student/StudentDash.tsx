@@ -41,22 +41,21 @@ const StudentsListPage = () => {
   const { students, isLoading, error } = useStudents();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const enhancedStudents =
-    students?.map((student) => ({
-      ...student,
-      attendance: Math.floor(Math.random() * 30) + 70,
-      status: Math.random() > 0.2 ? "active" : "inactive",
-      photo: "",
-      class: ["A", "B", "C"][Math.floor(Math.random() * 3)],
-    })) || [];
-  //  const enhancedStudents =
-  //    students?.map((student) => ({
-  //      ...student,
-  //      attendance: student.attendance || Math.floor(Math.random() * 30) + 70,
-  //      status: student.status || (Math.random() > 0.2 ? "active" : "inactive"),
-  //      photo: student.photo || "",
-  //      class: student.class || ["A", "B", "C"][Math.floor(Math.random() * 3)],
-  //    })) || [];
+  const enhancedStudents = students?.map(student => ({
+    ...student,
+    attendance:  Math.floor(Math.random() * 30) + 70,
+    status:  (Math.random() > 0.2 ? 'active' : 'inactive'),
+    photo: '',
+    class: ['A', 'B', 'C'][Math.floor(Math.random() * 3)]
+  })) || [];
+  // const enhancedStudents = students?.map(student => ({
+  //   ...student,
+  //   attendance: student.attendance || Math.floor(Math.random() * 30) + 70,
+  //   status: student.status || (Math.random() > 0.2 ? 'active' : 'inactive'),
+  //   photo: student.photo || '',
+  //   class: student.class || ['A', 'B', 'C'][Math.floor(Math.random() * 3)]
+  // })) || [];
+
   const filteredStudents = enhancedStudents
     .filter((student) =>
       `${student.user.first_name} ${student.user.last_name}`
@@ -113,7 +112,7 @@ const StudentsListPage = () => {
           <FiAlertCircle className="text-3xl mb-2" />
           <p className="text-lg font-medium">Loading error</p>
           <p className="text-sm text-gray-500 mt-2">
-            {/* {error.message || "Failed to load student data"} */}
+            { "Failed to load student data"}
           </p>
           <button
             onClick={() => window.location.reload()}
@@ -225,9 +224,9 @@ const StudentsListPage = () => {
                   <div className="flex items-start gap-4">
                     <div className="relative">
                       {student.photo ? (
-                        <img
-                          src={student.photo}
-                          // alt={student.user.full_name}
+                        <img 
+                          src={student.photo} 
+                          alt={student.user.first_name + " " + student.user.last_name}
                           className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm"
                           onError={(e) => {
                             (e.target as HTMLImageElement).style.display =
