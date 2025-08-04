@@ -4,9 +4,9 @@ import {
   getChildAssignments, 
   getAssignmentDetails,
   getAssignmentSubmission,
-  ParentAssignment 
+  ParentAssignment,
+  Submission
 } from "@/services/ParentAssignmentService";
-import { Submission } from "@/app/api/student/assignment/assignment.model";
 
 interface UseParentAssignmentsProps {
   accessToken: string;
