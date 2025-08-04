@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileIcon, FileTextIcon } from "lucide-react";
+import { FileIcon, FileTextIcon, Calendar } from "lucide-react";
 import { ViewAssignmentDialog } from "@/components/student/assignments/view-assignment-dialog";
 import { ViewSubmissionDialog } from "@/components/student/assignments/view-submission-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,9 @@ import { ParentAssignment } from "@/services/ParentAssignmentService";
 interface ParentAssignmentsTableProps {
   selectedStudent: string;
   selectedClass: string;
+  selectedType: string;
+  selectedDates: number[];
+  refreshKey: number;
   accessToken: string;
   refreshToken: string;
 }
@@ -28,6 +31,9 @@ interface ParentAssignmentsTableProps {
 export function ParentAssignmentsTable({
   selectedStudent,
   selectedClass,
+  selectedType,
+  selectedDates,
+  refreshKey,
   accessToken,
   refreshToken,
 }: ParentAssignmentsTableProps) {
@@ -40,9 +46,8 @@ export function ParentAssignmentsTable({
 
   // Get child ID from selected student
   const getChildId = () => {
-    if (selectedStudent === "john") return 1; // Replace with actual child ID
-    if (selectedStudent === "mia") return 2; // Replace with actual child ID
-    return undefined; // For "all-students"
+    if (selectedStudent === "all-students") return undefined;
+    return parseInt(selectedStudent);
   };
 
   // Use the API hook to fetch assignments
@@ -64,13 +69,26 @@ export function ParentAssignmentsTable({
     }
   };
 
-  // Filter assignments based on selected class
+  // Filter assignments based on selected filters
   const filteredAssignments = assignments.filter((assignment) => {
+    // Filter by class
     const classMatch =
       selectedClass === "all-classes" ||
-      assignment.class.toLowerCase() === selectedClass.replace(/-/g, " ");
+      assignment.course.name.toLowerCase().includes(selectedClass.toLowerCase());
 
-    return classMatch;
+    // Filter by type
+    const typeMatch =
+      selectedType === "all-types" ||
+      assignment.kind.toLowerCase() === selectedType.toLowerCase();
+
+    // Filter by dates (if selected)
+    const dateMatch = selectedDates.length === 0 || selectedDates.some(date => {
+      const assignmentDate = new Date(assignment.created_at);
+      const filterDate = new Date(date);
+      return assignmentDate.toDateString() === filterDate.toDateString();
+    });
+
+    return classMatch && typeMatch && dateMatch;
   });
 
   // Show loading state
@@ -95,23 +113,23 @@ export function ParentAssignmentsTable({
     <div className="w-full relative">
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent border-b">
-            <TableHead className="font-bold text-gray-700 py-4">
-              STUDENT
-            </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">
-              CLASS
-            </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">DAY</TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">TYPE</TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">
+          <TableRow className="hover:bg-transparent border-b bg-gray-50">
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
               ASSIGNMENT
             </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">
-              FILES
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
+              CLASS
             </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">
-              TEACHER
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">DUE DATE</TableHead>
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">TYPE</TableHead>
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
+              WEIGHT
+            </TableHead>
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
+              STATUS
+            </TableHead>
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
+              ACTIONS
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -119,58 +137,79 @@ export function ParentAssignmentsTable({
           {filteredAssignments.map((assignment, index) => (
             <TableRow
               key={assignment.id}
-              className={index % 2 === 0 ? "bg-[#EDF6FA]" : ""}
+              className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
             >
-              <TableCell className="font-medium text-gray-500">
+              <TableCell className="py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <FileTextIcon className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">{assignment.name}</div>
+                    <div className="text-sm text-gray-500">ID: {assignment.id}</div>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="py-4">
                 <Badge
                   variant="outline"
-                  className="bg-blue-50 text-blue-700 hover:bg-blue-100"
+                  className="bg-purple-50 text-purple-700 border-purple-200"
                 >
-                  {assignment.name}
+                  {assignment.course.name}
                 </Badge>
               </TableCell>
-              <TableCell className="font-medium text-gray-500">
-                {assignment.course.name}
+              <TableCell className="py-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <Calendar className="w-4 h-4 text-orange-600" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">
+                      {new Date(assignment.due_date).toLocaleDateString()}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {new Date(assignment.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
               </TableCell>
-              <TableCell className="text-gray-500">
-                <span
-                  className={
-                    assignment.day === "TODAY"
-                      ? "text-[#25AAE1] underline"
-                      : assignment.day === "YESTERDAY"
-                      ? "text-orange-400 underline"
-                      : ""
-                  }
-                >
-                  {assignment.created_at}
+              <TableCell className="py-4">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 capitalize">
+                  {assignment.kind}
                 </span>
               </TableCell>
-              <TableCell className="text-gray-500">{assignment.kind}</TableCell>
-              <TableCell>
-                <div className="flex items-center justify-center">
+              <TableCell className="py-4">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {assignment.weight}%
+                </span>
+              </TableCell>
+              <TableCell className="py-4">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  assignment.published 
+                    ? "bg-green-100 text-green-800" 
+                    : "bg-yellow-100 text-yellow-800"
+                }`}>
+                  {assignment.published ? "Published" : "Draft"}
+                </span>
+              </TableCell>
+              <TableCell className="py-4">
+                <div className="flex items-center gap-2">
                   <button
-                    className="text-[#25AAE1] hover:text-[#1D8CB3]"
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                     onClick={() => handleAssignmentClick(assignment)}
+                    title="View Assignment"
                   >
-                    <FileTextIcon className="h-5 w-5" />
+                    <FileTextIcon className="h-4 w-4" />
                   </button>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center justify-center">
-                  <button
-                    className={`${
-                      assignment.published ? "text-[#4CAF50]" : "text-gray-400"
-                    } hover:opacity-80`}
-                    onClick={() => handleSubmissionClick(assignment)}
-                  >
-                    <FileIcon className="h-5 w-5" />
-                  </button>
-                </div>
-              </TableCell>
-              <TableCell className="text-gray-500">
-                <div className="flex items-center">
-                  {assignment.teacher} <MessageIcon />
+                  {assignment.published && (
+                    <button
+                      className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                      onClick={() => handleSubmissionClick(assignment)}
+                      title="View Submissions"
+                    >
+                      <FileIcon className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>
@@ -198,33 +237,5 @@ export function ParentAssignmentsTable({
         <div className="absolute inset-0 bg-white/50 backdrop-blur-sm" />
       )}
     </div>
-  );
-}
-
-function MessageIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-[#25AAE1] ml-2"
-    >
-      <path
-        d="M22 2L11 13"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M22 2L15 22L11 13L2 9L22 2Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }

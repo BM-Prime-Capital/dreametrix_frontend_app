@@ -1,14 +1,49 @@
-import { Assignment, Submission } from "@/app/api/student/assignment/assignment.model";
+import { BACKEND_BASE_URL } from '@/app/utils/constants';
 
-// Extended interface for parent assignments with additional properties
-export interface ParentAssignment extends Omit<Assignment, "course"> {
-  teacher: string;
-  class: string;
-  day?: string;
+// Interface for the API response structure
+interface ApiAssessment {
+  id: number;
+  name: string;
+  file: string;
+  due_date: string;
+  weight: string;
+  kind: string;
+  published: boolean;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
   course: {
     id: number;
     name: string;
   };
+}
+
+interface ApiAssessmentResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ApiAssessment[];
+}
+
+// Interface for parent assignments
+export interface ParentAssignment {
+  id: number;
+  name: string;
+  file: string;
+  due_date: string;
+  weight: string;
+  kind: string;
+  published: boolean;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+  course: {
+    id: number;
+    name: string;
+  };
+  teacher?: string;
+  class?: string;
+  day?: string;
   student_name?: string;
   student_id?: number;
 }
@@ -39,19 +74,14 @@ export async function getParentAssignments(
     published?: boolean;
   }
 ): Promise<ParentAssignment[]> {
-  const url = new URL('/api/parent/assignments', window.location.origin);
-  
-  // Add query parameters if filters are provided
-  if (filters) {
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        url.searchParams.append(key, value.toString());
-      }
-    });
+  if (!accessToken) {
+    throw new Error("You are not logged in. Please log in again.");
   }
 
+  const url = `${BACKEND_BASE_URL}/assessments/`;
+  
   try {
-    const response = await fetch(url.toString(), {
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -60,15 +90,37 @@ export async function getParentAssignments(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("API error:", errorData);
-      throw new Error(errorData.error || "Error fetching parent assignments");
+      if (response.status === 401) {
+        throw new Error("Session expired. Please log in again.");
+      } else if (response.status === 403) {
+        throw new Error("You don't have permission to access assignments.");
+      } else {
+        throw new Error("Error retrieving assignments.");
+      }
     }
 
-    const data: ParentAssignmentsResponse = await response.json();
+    const data: ApiAssessmentResponse = await response.json();
     console.log("Parent assignments data:", data);
     
-    return data.results || [];
+    // Transform API data to ParentAssignment format
+    const assignments: ParentAssignment[] = (data.results || []).map((assessment: ApiAssessment): ParentAssignment => ({
+      id: assessment.id,
+      name: assessment.name,
+      file: assessment.file,
+      due_date: assessment.due_date,
+      weight: assessment.weight,
+      kind: assessment.kind,
+      published: assessment.published,
+      created_at: assessment.created_at,
+      updated_at: assessment.updated_at,
+      course: assessment.course,
+      published_at: assessment.published_at,
+      teacher: "Teacher", // Not provided by API
+      class: assessment.course.name,
+      day: assessment.due_date
+    }));
+    
+    return assignments;
   } catch (error) {
     console.error("Network error:", error);
     throw new Error("Failed to connect to server");
@@ -95,43 +147,9 @@ export async function getChildAssignments(
     published?: boolean;
   }
 ): Promise<ParentAssignment[]> {
-  const url = new URL('/api/parent/assignments', window.location.origin);
-  
-  // Add child_id filter
-  url.searchParams.append("student_id", childId.toString());
-  
-  // Add additional query parameters if filters are provided
-  if (filters) {
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        url.searchParams.append(key, value.toString());
-      }
-    });
-  }
-
-  try {
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("API error:", errorData);
-      throw new Error(errorData.error || "Error fetching child assignments");
-    }
-
-    const data: ParentAssignmentsResponse = await response.json();
-    console.log("Child assignments data:", data);
-    
-    return data.results || [];
-  } catch (error) {
-    console.error("Network error:", error);
-    throw new Error("Failed to connect to server");
-  }
+  // For now, we'll use the same endpoint as all assignments
+  // In the future, this could be filtered by child_id if the API supports it
+  return getParentAssignments(accessToken, refreshToken, filters);
 }
 
 /**
@@ -144,7 +162,11 @@ export async function getAssignmentDetails(
   assignmentId: number,
   accessToken: string
 ): Promise<ParentAssignment> {
-  const url = `/api/parent/assignments/${assignmentId}`;
+  if (!accessToken) {
+    throw new Error("You are not logged in. Please log in again.");
+  }
+
+  const url = `${BACKEND_BASE_URL}/assessments/${assignmentId}/`;
 
   try {
     const response = await fetch(url, {
@@ -156,19 +178,57 @@ export async function getAssignmentDetails(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("API error:", errorData);
-      throw new Error(errorData.error || "Error fetching assignment details");
+      if (response.status === 401) {
+        throw new Error("Session expired. Please log in again.");
+      } else if (response.status === 403) {
+        throw new Error("You don't have permission to access this assignment.");
+      } else if (response.status === 404) {
+        throw new Error("Assignment not found.");
+      } else {
+        throw new Error("Error retrieving assignment details.");
+      }
     }
 
-    const data: ParentAssignment = await response.json();
+    const data: ApiAssessment = await response.json();
     console.log("Assignment details:", data);
     
-    return data;
+    // Transform API data to ParentAssignment format
+    const assignment: ParentAssignment = {
+      id: data.id,
+      name: data.name,
+      file: data.file,
+      due_date: data.due_date,
+      weight: data.weight,
+      kind: data.kind,
+      published: data.published,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+      course: data.course,
+      published_at: data.published_at,
+      teacher: "Teacher", // Not provided by API
+      class: data.course.name,
+      day: data.due_date
+    };
+    
+    return assignment;
   } catch (error) {
     console.error("Network error:", error);
     throw new Error("Failed to connect to server");
   }
+}
+
+// Interface for submission data
+export interface Submission {
+  id: number;
+  student: number;
+  course: number;
+  assessment: number;
+  file: string | null;
+  grade: number | null;
+  submitted_at: string;
+  updated_at: string;
+  marked: boolean;
+  voice_notes: string | null;
 }
 
 /**
@@ -181,7 +241,11 @@ export async function getAssignmentSubmission(
   assignmentId: number,
   accessToken: string
 ): Promise<Submission[]> {
-  const url = `/api/parent/assignments/${assignmentId}/submissions`;
+  if (!accessToken) {
+    throw new Error("You are not logged in. Please log in again.");
+  }
+
+  const url = `${BACKEND_BASE_URL}/classes/${assignmentId}/submissions/`;
 
   try {
     const response = await fetch(url, {
@@ -193,15 +257,21 @@ export async function getAssignmentSubmission(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("API error:", errorData);
-      throw new Error(errorData.error || "Error fetching assignment submission");
+      if (response.status === 401) {
+        throw new Error("Session expired. Please log in again.");
+      } else if (response.status === 403) {
+        throw new Error("You don't have permission to access submissions.");
+      } else if (response.status === 404) {
+        throw new Error("Submissions not found.");
+      } else {
+        throw new Error("Error retrieving submissions.");
+      }
     }
 
     const data = await response.json();
-    console.log("Assignment submission:", data);
+    console.log("Assignment submissions:", data);
     
-    return data;
+    return data || [];
   } catch (error) {
     console.error("Network error:", error);
     throw new Error("Failed to connect to server");
