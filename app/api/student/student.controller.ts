@@ -1,9 +1,9 @@
-import { BASE_URL } from '@/app/utils/constantes';
+import { BACKEND_BASE_URL } from '@/app/utils/constants';
 import { Student, StudentApiResponse } from './student.model';
 
 export async function getAuthenticatedStudent(token?: string): Promise<Student | null> {
   console.log("Appel de getAuthenticatedStudent...");
-  const response = await fetch(`${BASE_URL}/students/`, {
+  const response = await fetch(`${BACKEND_BASE_URL}/students/`, {
     headers: { Authorization: `Bearer ${token}`}
   });
 
@@ -24,4 +24,4 @@ export async function getAuthenticatedStudent(token?: string): Promise<Student |
     console.warn("Aucun étudiant trouvé dans la réponse pour l'utilisateur authentifié.");
     return null;
   }
-} 
+}

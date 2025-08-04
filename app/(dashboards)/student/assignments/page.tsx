@@ -21,27 +21,31 @@ export default function AssignmentsPage() {
 
   return (
     <div className="flex flex-col gap-6 w-full min-h-screen">
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-6 rounded-lg shadow-lg">
+      {/* Header avec gradient moderne */}
+      <div className="bg-gradient-to-r from-[#25AAE1] via-[#25AAE1] to-[#1D8CB3] p-8 rounded-2xl shadow-xl">
         <div className="flex items-center gap-4 text-white">
           <Button
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-white/20 p-2"
+            className="text-white hover:bg-white/20 p-3 rounded-full transition-all duration-200"
             onClick={() => window.history.back()}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-6 w-6" />
           </Button>
-          <h1 className="text-2xl font-bold text-white tracking-wide">
-            ASSIGNMENTS
-          </h1>
+          <div>
+            <h1 className="text-3xl font-bold text-white tracking-wide mb-1">
+              ASSIGNMENTS
+            </h1>
+            <p className="text-white/80 text-sm">Manage and track your assignments</p>
+          </div>
         </div>
       </div>
-      <section className="flex flex-col gap-6 w-full mx-auto p-6 bg-gray-50 min-h-screen">
-        {/* Header Section */}
 
-        <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border">
+      <section className="flex flex-col gap-6 w-full mx-auto p-6 bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen rounded-2xl">
+        {/* Header Section avec design moderne */}
+        <div className="flex items-center justify-between bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
           <div className="flex items-center gap-4">
-            <div className="text-gray-600 font-medium">Filter Assignments</div>
+            <div className="text-gray-700 font-semibold text-lg">Filter Assignments</div>
             {(selectedClass !== "all-classes" || dateFilter !== "all-days") && (
               <button
                 onClick={() => {
@@ -49,7 +53,7 @@ export default function AssignmentsPage() {
                   setSelectedDates([]);
                   setDateFilter("all-days");
                 }}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                className="text-sm text-[#25AAE1] hover:text-[#1D8CB3] font-medium bg-blue-50 px-3 py-1 rounded-full transition-all duration-200"
               >
                 Clear Filters
               </button>
@@ -57,33 +61,26 @@ export default function AssignmentsPage() {
           </div>
           <div className="flex gap-3">
             <button
-              className="bg-white border border-gray-300 rounded-lg px-4 py-2 flex items-center gap-2 hover:bg-gray-50 transition-colors shadow-sm"
+              className="bg-white border-2 border-[#25AAE1] rounded-xl px-6 py-3 flex items-center gap-3 hover:bg-[#25AAE1] hover:text-white transition-all duration-300 shadow-md"
               onClick={() => setIsDatePickerOpen(true)}
             >
-              <span className="text-gray-700 font-medium">
+              <span className="text-[#25AAE1] font-semibold hover:text-white transition-colors">
                 {dateFilter === "custom" && selectedDates.length > 0
                   ? `${selectedDates.length} day${
                       selectedDates.length > 1 ? "s" : ""
                     } selected`
                   : "All Days"}
               </span>
-              <Calendar className="h-4 w-4 text-gray-500" />
+              <Calendar className="h-5 w-5 text-[#25AAE1] hover:text-white transition-colors" />
             </button>
-
-            {/* <Select value={selectedClass} onValueChange={setSelectedClass}>
-              <SelectTrigger className="w-[200px] bg-white border-gray-300 shadow-sm">
-                <SelectValue placeholder="All Classes" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all-classes">All Classes</SelectItem>
-                <SelectItem value="class-8-ela">Class 8 - ELA</SelectItem>
-                <SelectItem value="class-8-math">Class 8 - Math</SelectItem>
-              </SelectContent>
-            </Select> */}
           </div>
         </div>
 
-        <Card className="rounded-2xl shadow-sm p-0 overflow-hidden border border-gray-200 bg-white">
+        {/* Table avec design moderne */}
+        <Card className="rounded-2xl shadow-xl p-0 overflow-hidden border-0 bg-white">
+          <div className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] p-4">
+            <h2 className="text-white font-bold text-lg">Your Assignments</h2>
+          </div>
           <AssignmentsTable
             selectedClass={selectedClass}
             selectedDates={selectedDates}

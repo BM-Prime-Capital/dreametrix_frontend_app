@@ -196,10 +196,10 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
     console.log("Assignment updated:", updatedAssignment);
   };
 
-  const resetFilters = () => {
-    setGlobalFilter("");
-    setCourseFilter("all");
-  };
+  // const resetFilters = () => {
+  //   setGlobalFilter("");
+  //   setCourseFilter("all");
+  // };
 
   const columns: ColumnDef<Assignment>[] = [
     {
@@ -375,15 +375,15 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
   return (
     <div className="w-full space-y-6 p-6">
       {/* Enhanced Header */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto md:flex-1">
           <div className="relative w-full md:w-auto md:flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
-              placeholder="Search assignments..."
+              placeholder="Search assignments by name, course, or type..."
               value={globalFilter ?? ""}
               onChange={(event) => setGlobalFilter(event.target.value)}
-              className="pl-12 w-full md:w-[280px] h-12 rounded-xl border-gray-300 bg-white shadow-sm"
+              className="pl-12 w-full md:w-[400px] h-12 rounded-xl border-gray-300 bg-white shadow-sm"
             />
           </div>
 
@@ -408,7 +408,7 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-3">
           <Button
             onClick={handleExport}
             className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl px-6 py-3 shadow-lg font-medium"
@@ -421,12 +421,12 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="bg-white border-gray-300 rounded-xl px-6 py-3 shadow-lg font-medium whitespace-nowrap"
+                className="bg-white border-gray-300 rounded-xl px-6 py-3 shadow-lg font-medium"
               >
                 {viewMode === 'card' ? 'Card' : 'Table'} View <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-[120px]">
+            <DropdownMenuContent align="end">
               <DropdownMenuCheckboxItem 
                 checked={viewMode === 'card'} 
                 onCheckedChange={() => setViewMode('card')}

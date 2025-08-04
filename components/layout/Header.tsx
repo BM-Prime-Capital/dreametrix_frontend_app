@@ -3,12 +3,12 @@
 import { useRouter } from "next/navigation"
 import Cookies from "js-cookie"
 import { Bell, ChevronDown, LogOut, User, Settings, Search } from "lucide-react"
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { localStorageKey } from "@/constants/global"
 import { cn } from "@/utils/tailwind"
@@ -16,6 +16,7 @@ import DreaMetrixLogo from "../ui/dreametrix-logo"
 import UserAvatar from "../ui/user-avatar"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
+import Link from "next/link"
 
 export function Header() {
   const router = useRouter()
@@ -104,10 +105,7 @@ export function Header() {
               
               <DropdownMenuSeparator />
               
-              <DropdownMenuItem 
-                onClick={() => router.push('/profile')}
-                className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer"
-              >
+              <DropdownMenuItem className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-muted text-primary">
                   <User className="h-4 w-4" />
                 </div>

@@ -28,8 +28,8 @@ export const generalImages = {
   print: `${GENERAL_IMAGES_BASE_PATH}/print.svg`,
   filter: `${GENERAL_IMAGES_BASE_PATH}/filter.svg`,
   status: `${GENERAL_IMAGES_BASE_PATH}/status.svg`,
-  published: `${GENERAL_IMAGES_BASE_PATH}/published.svg`, // Ajouté
-  draft: `${GENERAL_IMAGES_BASE_PATH}/draft.svg`, // Ajouté
+  published: `${GENERAL_IMAGES_BASE_PATH}/published.svg`,
+  draft: `${GENERAL_IMAGES_BASE_PATH}/draft.svg`,
   arrow_down: `${GENERAL_IMAGES_BASE_PATH}/arrow_down.png`,
   student: `${GENERAL_IMAGES_BASE_PATH}/student.png`,
   student2: `${GENERAL_IMAGES_BASE_PATH}/student2.png`,
@@ -42,6 +42,15 @@ export const generalImages = {
   classes: `${GENERAL_IMAGES_BASE_PATH}/classes.png`,
   default_user: `${GENERAL_IMAGES_BASE_PATH}/default_user.png`,
   no_data: `${GENERAL_IMAGES_BASE_PATH}/no_data.png`,
+  // New additions for School Admin
+  family: `${GENERAL_IMAGES_BASE_PATH}/family.svg`,
+  payments: `${GENERAL_IMAGES_BASE_PATH}/payments.svg`,
+  analytics: `${GENERAL_IMAGES_BASE_PATH}/analytics.svg`,
+  transport: `${GENERAL_IMAGES_BASE_PATH}/transport.svg`,
+  health: `${GENERAL_IMAGES_BASE_PATH}/health.svg`,
+  grading: `${GENERAL_IMAGES_BASE_PATH}/grading.svg`,
+  calendar: `${GENERAL_IMAGES_BASE_PATH}/calendar.svg`,
+  libraryBooks: `${GENERAL_IMAGES_BASE_PATH}/library_books.svg`,
 };
 
 export const teacherImages = {
@@ -55,8 +64,8 @@ export const teacherImages = {
   profile: `${TEACHER_DASHBOARD_IMAGES_BASE_PATH}/profile.svg`,
   settings: `${TEACHER_DASHBOARD_IMAGES_BASE_PATH}/settings.svg`,
   upload: `${TEACHER_DASHBOARD_IMAGES_BASE_PATH}/upload.svg`,
-  published: `${GENERAL_IMAGES_BASE_PATH}/published.svg`, // Ajouté
-  draft: `${GENERAL_IMAGES_BASE_PATH}/draft.svg`, // Ajouté
+  published: `${GENERAL_IMAGES_BASE_PATH}/published.svg`,
+  draft: `${GENERAL_IMAGES_BASE_PATH}/draft.svg`,
   feedback: `${TEACHER_ASSIGNMENT_IMAGES_BASE_PATH}/feedback.svg`,
   files: `${TEACHER_ASSIGNMENT_IMAGES_BASE_PATH}/files.svg`,
   report: `${TEACHER_ATTENDANCE_IMAGES_BASE_PATH}/report.svg`,
@@ -110,4 +119,33 @@ export const menuImages = {
   plan: `${MENU_IMAGES_BASE_PATH}/Plan.svg`,
   report_card: `${MENU_IMAGES_BASE_PATH}/ReportCard.svg`,
   test_prep: `${MENU_IMAGES_BASE_PATH}/TestPrep.svg`,
+  // New additions for School Admin
+  family: `${MENU_IMAGES_BASE_PATH}/Family.svg`,
+  payments: `${MENU_IMAGES_BASE_PATH}/Payments.svg`,
+  analytics: `${MENU_IMAGES_BASE_PATH}/Analytics.svg`,
+  transport: `${MENU_IMAGES_BASE_PATH}/Transport.svg`,
+  health: `${MENU_IMAGES_BASE_PATH}/Health.svg`,
+  grading: `${MENU_IMAGES_BASE_PATH}/Grading.svg`,
+  calendar: `${MENU_IMAGES_BASE_PATH}/Timetable.svg`,
+  libraryBooks: `${MENU_IMAGES_BASE_PATH}/LibraryBooks.svg`,
+  settings: `${TEACHER_DASHBOARD_IMAGES_BASE_PATH}/settings.svg`,
+  
+
+  school: `${MENU_IMAGES_BASE_PATH}/School.svg`,
+  district: `${MENU_IMAGES_BASE_PATH}/District.svg`,
+  users: `${MENU_IMAGES_BASE_PATH}/Users.svg`,
+  system_settings: `${MENU_IMAGES_BASE_PATH}/SystemSettings.svg`,
+  templates: `${MENU_IMAGES_BASE_PATH}/Templates.svg`,
+  logs: `${MENU_IMAGES_BASE_PATH}/Logs.svg`,
+  subscriptions: `${MENU_IMAGES_BASE_PATH}/Subscriptions.svg`,
+  support: `${MENU_IMAGES_BASE_PATH}/Support.svg`,
+  api: `${MENU_IMAGES_BASE_PATH}/Api.svg`,
+  
+  backup: `${MENU_IMAGES_BASE_PATH}/Backup.svg`,
+  
+  global_settings: `${MENU_IMAGES_BASE_PATH}/GlobalSettings.svg`,
+  license: `${MENU_IMAGES_BASE_PATH}/License.svg`,
+  database: `${MENU_IMAGES_BASE_PATH}/Database.svg`,
+  notifications: `${MENU_IMAGES_BASE_PATH}/Notifications.svg`,
+  
 };

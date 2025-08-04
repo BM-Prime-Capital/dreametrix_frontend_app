@@ -1,18 +1,24 @@
 import React from "react";
-import { Card } from "@/components/ui/card";
+import { SidebarProvider } from "@/lib/SidebarContext";
 import { StudentSidebar } from "@/components/student/StudentSidebar";
 import { StudentRoutes } from "@/constants/routes";
-export default function SchoolAminDashboardLayout({
+
+export default function StudentDashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col lg:flex-row gap-6">
-      <Card className="w-full lg:w-[200px] h-fit">
-        <StudentSidebar routes={StudentRoutes} />
-      </Card>
-      {children}
+    <div className="min-h-screen bg-background">
+      <div className="flex flex-col lg:flex-row gap-6 p-4 lg:p-6">
+        <SidebarProvider>
+          <StudentSidebar routes={StudentRoutes} />
+        </SidebarProvider>
+        
+        <main className="flex-1 bg-background">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

@@ -65,35 +65,112 @@ export const StudentRoutes = [
 ];
 
 export const SchoolAdminRoutes = [
+
+  
+  // Dashboard
   {
-    path: userPath.SCHOOL_ADMIN_DASHBOARD_PATH,
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}`,
     icon: generalImages.home,
-    label: "HOME",
+    label: "Dashboard",
   },
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/classes`,
-    icon: menuImages.assignments,
-    label: "CLASSES",
-  },
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/teachers`,
-    icon: menuImages.teach,
-    label: "TEACHERS",
-  },
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/parents`,
-    icon: menuImages.assignments,
-    label: "PARENTS",
-  },
+  // Students
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/students`,
     icon: menuImages.seating,
-    label: "STUDENTS",
+    label: "Students",
   },
+
+  // Teachers
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/teachers`,
+    icon: menuImages.teach,
+    label: "Teachers",
+  },
+
+  // Parents
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/parents`,
+    icon: menuImages.family,
+    label: "Parents",
+  },
+
+  // Classes
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/classes`,
+    icon: menuImages.assignments,
+    label: "Classes",
+  },
+
+  // Subjects
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/subjects`,
+    icon: menuImages.libraryBooks,
+    label: "Subjects",
+  },
+
+  // Timetable
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/timetable`,
+    icon: menuImages.calendar,
+    label: "Timetable",
+  },
+
+  // Grades
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/grades`,
+    icon: menuImages.grading,
+    label: "Grades",
+  },
+
+  // Attendance
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/attendance`,
+    icon: menuImages.attendance,
+    label: "Attendance",
+  },
+
+  // Communication
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/communicate`,
     icon: menuImages.communicate,
-    label: "COMMUNICATE",
+    label: "Communication",
+  },
+
+ 
+
+  // Finance 
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/finance`,
+    icon: menuImages.payments,
+    label: "Finance",
+  },
+
+  // Library 
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/library`,
+    icon: menuImages.libraryBooks,
+    label: "Library",
+  },
+
+  // Reports 
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/reports`,
+    icon: menuImages.analytics,
+    label: "Reports",
+  },
+
+  // Transport
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/transports`,
+    icon: menuImages.transport,
+    label: "Transport",
+  },
+
+   // Settings
+   {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/settings`,
+    icon: menuImages.settings,
+    label: "Settings",
   },
 ];
 
@@ -194,6 +271,11 @@ export const TeacherRoutes = [
     icon: menuImages.report_card,
     label: "REPORT CARD",
   },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/support`,
+    icon: menuImages.support, // ajouté
+    label: "SUPPORT",
+  },
 ];
 
 export const ParentRoutes = [
@@ -237,5 +319,98 @@ export const ParentRoutes = [
     path: `${userPath.PARENT_BASE_PATH}/library`,
     icon: menuImages.report_card,
     label: "LIBRARY",
+  },
+];
+
+export const SuperAdminRoutes = [
+  // Dashboard
+  {
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}`,
+    icon: generalImages.home,
+    label: "Dashboard",
+  },
+  
+  // Schools Management
+  {
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/schools`,
+    icon: menuImages.school,
+    label: "Schools",
+  },
+  
+  // Districts Management
+  {
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/districts`,
+    icon: menuImages.district,
+    label: "Districts",
+  },
+  
+  // Users Management
+  {
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/users`,
+    icon: menuImages.users,
+    label: "Users",
+  },
+  
+  
+  // Templates
+  {
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/templates`,
+    icon: menuImages.templates,
+    label: "Templates",
+  },
+  
+  // Reports & Analytics
+  {
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/analytics`,
+    icon: menuImages.analytics,
+    label: "Analytics",
+  },
+  
+  // Audit Logs
+  {
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/audit-logs`,
+    icon: menuImages.logs,
+    label: "Audit Logs",
+  },
+  
+  // Subscription Management
+  {
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/subscriptions`,
+    icon: menuImages.subscriptions,
+    label: "Subscriptions",
+  },
+  
+  // Support Tickets
+  {
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/support`,
+    icon: menuImages.support,
+    label: "Support",
+  },
+  
+  // API Management
+  {
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/api`,
+    icon: menuImages.api,
+    label: "API Management",
+  },
+  
+  // Notifications
+  {
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/notifications`,
+    icon: menuImages.notifications,
+    label: "Notifications",
+  },
+  
+  // Backup & Restore
+  {
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/backup`,
+    icon: menuImages.backup,
+    label: "Backup",
+  },
+   // System Settings
+   {
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/system-settings`,
+    icon: menuImages.settings,
+    label: "System Settings",
   },
 ];

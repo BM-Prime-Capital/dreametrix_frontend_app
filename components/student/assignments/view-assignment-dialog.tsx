@@ -22,7 +22,8 @@ export function ViewAssignmentDialog({
 }: ViewAssignmentDialogProps) {
   const handleDownloadFile = () => {
     if (assignment?.file) {
-      // Créer un lien pour télécharger le fichier
+
+      //Create a link to download the file
       const link = document.createElement("a");
       link.href = assignment.file;
       link.download = `${assignment.name}.pdf`; // ou l'extension appropriée
@@ -96,7 +97,7 @@ export function ViewAssignmentDialog({
               onClick={onClose}
               className="h-6 w-6"
             >
-              <X className="h-4 w-4" />
+              {/*<X className="h-4 w-4" />*/}
             </Button>
           </div>
         </DialogHeader>

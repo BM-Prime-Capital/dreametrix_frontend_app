@@ -106,7 +106,7 @@ export default function Login() {
       <div className="w-full max-w-md bg-card rounded-2xl shadow-soft overflow-hidden animate-fade-in">
         <div className="relative bg-gradient-primary p-6 pb-10">
           <div className="absolute inset-0 bg-[url('/assets/images/bg.png')] bg-cover bg-center opacity-10"></div>
-          <div className="relative flex justify-center mb-2">
+          <div className="relative flex justify-center mb-2 p-3 bg-white rounded-lg">
             <DreaMetrixLogo />
           </div>
           <div className="relative text-center">
