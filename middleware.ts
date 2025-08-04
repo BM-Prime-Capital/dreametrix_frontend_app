@@ -6,11 +6,12 @@ export async function middleware(request: NextRequest) {
   let tokenExpired = false;
   let tenantDomain: string | undefined = undefined;
   if (
-    (currentPath.startsWith("/parent") ||
-      currentPath.startsWith("/school_admin"),
-    currentPath.startsWith("/student"),
-    currentPath.startsWith("/super_admin"),
-    currentPath.startsWith("/teacher"))
+    currentPath.startsWith("/parent") ||
+    currentPath.startsWith("/school_admin") ||
+    currentPath.startsWith("/student") ||
+    currentPath.startsWith("/super_admin") ||
+    currentPath.startsWith("/teacher") ||
+    currentPath === "/profile"
   ) {
     console.log("currentPath => ", currentPath);
 
@@ -45,5 +46,12 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: '/teacher/big_braain',
+  matcher: [
+    '/teacher/:path*',
+    '/student/:path*', 
+    '/parent/:path*',
+    '/school_admin/:path*',
+    '/super_admin/:path*',
+    '/profile'
+  ],
 }
