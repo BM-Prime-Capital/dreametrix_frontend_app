@@ -2,16 +2,16 @@ import React from "react";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-interface StudentButtonProps extends ButtonProps {
+interface StudentButtonProps extends Omit<ButtonProps, "size" | "variant"> {
   variant?: "primary" | "secondary" | "accent" | "success" | "destructive" | "outline" | "ghost";
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "default" | "lg";
   icon?: React.ReactNode;
   iconPosition?: "left" | "right";
 }
 
 const buttonVariants = {
-  primary: "bg-primary hover:bg-primary-hover text-white shadow-sm",
-  secondary: "bg-secondary hover:bg-secondary-hover text-white shadow-sm",
+  primary: "bg-primary hover:bg-primary/90 text-white shadow-sm",
+  secondary: "bg-secondary hover:bg-secondary/90 text-white shadow-sm",
   accent: "bg-accent hover:bg-accent/80 text-white shadow-sm",
   success: "bg-success hover:bg-success/90 text-white shadow-sm",
   destructive: "bg-destructive hover:bg-destructive/90 text-white shadow-sm",
@@ -21,13 +21,13 @@ const buttonVariants = {
 
 const buttonSizes = {
   sm: "h-8 px-3 text-sm",
-  md: "h-10 px-4",
+  default: "h-10 px-4 text-base", // correspond à l'ancien "md"
   lg: "h-12 px-6 text-lg",
 };
 
 export function StudentButton({
   variant = "primary",
-  size = "md",
+  size = "default",
   icon,
   iconPosition = "left",
   children,
@@ -37,86 +37,50 @@ export function StudentButton({
   return (
     <Button
       className={cn(
-        "transition-all duration-200 font-medium",
+        "transition-all duration-200 font-medium inline-flex items-center",
         buttonVariants[variant],
         buttonSizes[size],
         className
       )}
       {...props}
     >
-      {icon && iconPosition === "left" && (
-        <span className="mr-2">{icon}</span>
-      )}
+      {icon && iconPosition === "left" && <span className="mr-2">{icon}</span>}
       {children}
-      {icon && iconPosition === "right" && (
-        <span className="ml-2">{icon}</span>
-      )}
+      {icon && iconPosition === "right" && <span className="ml-2">{icon}</span>}
     </Button>
   );
 }
 
-// Specialized button components for common actions
-export function ActionButton({
-  children,
-  icon,
-  ...props
-}: Omit<StudentButtonProps, "variant">) {
-  return (
-    <StudentButton variant="primary" icon={icon} {...props}>
-      {children}
-    </StudentButton>
-  );
+// Specialized button variants
+export function ActionButton(props: StudentButtonProps) {
+  return <StudentButton variant="primary" {...props} />;
 }
 
-export function SecondaryActionButton({
-  children,
-  icon,
-  ...props
-}: Omit<StudentButtonProps, "variant">) {
-  return (
-    <StudentButton variant="secondary" icon={icon} {...props}>
-      {children}
-    </StudentButton>
-  );
+export function SecondaryActionButton(props: StudentButtonProps) {
+  return <StudentButton variant="secondary" {...props} />;
 }
 
-export function SuccessButton({
-  children,
-  icon,
-  ...props
-}: Omit<StudentButtonProps, "variant">) {
-  return (
-    <StudentButton variant="success" icon={icon} {...props}>
-      {children}
-    </StudentButton>
-  );
+export function SuccessButton(props: StudentButtonProps) {
+  return <StudentButton variant="success" {...props} />;
 }
 
-export function DestructiveButton({
-  children,
-  icon,
-  ...props
-}: Omit<StudentButtonProps, "variant">) {
-  return (
-    <StudentButton variant="destructive" icon={icon} {...props}>
-      {children}
-    </StudentButton>
-  );
+export function DestructiveButton(props: StudentButtonProps) {
+  return <StudentButton variant="destructive" {...props} />;
 }
 
 export function IconButton({
   icon,
   variant = "ghost",
-  size = "md",
+  size = "default",
   ...props
 }: Omit<StudentButtonProps, "children">) {
   return (
     <StudentButton
+      icon={icon}
       variant={variant}
       size={size}
-      icon={icon}
       className="p-2"
       {...props}
     />
   );
-} 
+}
