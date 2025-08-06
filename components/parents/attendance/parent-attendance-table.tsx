@@ -3,10 +3,13 @@
 import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { AttendanceDetailsDialog } from "./attendance-details-dialog"
+import { ParentChild, AttendanceData, ClassData } from "@/services/ParentAttendanceService"
+import { Loader2, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react"
 
-// Define proper types for our data
-interface AttendanceRecord {
+// Interface pour les données transformées
+interface TransformedAttendanceData {
   id: number
   class: string
   student: string
@@ -20,129 +23,116 @@ interface AttendanceRecord {
   teacher: string
 }
 
-// Sample attendance data
-const attendanceData: AttendanceRecord[] = [
-  {
-    id: 1,
-    class: "Class 5 - Sci",
-    student: "John Smith",
-    day: "TODAY",
-    status: "Present",
-    statistics: {
-      present: 45,
-      absent: 3,
-      late: 20,
-    },
-    teacher: "Eva Parker",
-  },
-  {
-    id: 2,
-    class: "Class 5 - Math",
-    student: "John Smith",
-    day: "TODAY",
-    status: "Present",
-    statistics: {
-      present: 45,
-      absent: 3,
-      late: 20,
-    },
-    teacher: "Eva Parker",
-  },
-  {
-    id: 3,
-    class: "Class 5 - Bio",
-    student: "John Smith",
-    day: "TODAY",
-    status: "Late",
-    statistics: {
-      present: 45,
-      absent: 3,
-      late: 20,
-    },
-    teacher: "Sam Burke",
-  },
-  {
-    id: 4,
-    class: "Class 5 - Lit",
-    student: "Emma Smith",
-    day: "TODAY",
-    status: "Present",
-    statistics: {
-      present: 45,
-      absent: 3,
-      late: 20,
-    },
-    teacher: "Anna Blake",
-  },
-  {
-    id: 5,
-    class: "Class 5 - Che",
-    student: "Emma Smith",
-    day: "TODAY",
-    status: "Present",
-    statistics: {
-      present: 45,
-      absent: 3,
-      late: 20,
-    },
-    teacher: "Sam Burke",
-  },
-  {
-    id: 6,
-    class: "Class 5 - Spa",
-    student: "Emma Smith",
-    day: "TODAY",
-    status: "Absent",
-    statistics: {
-      present: 45,
-      absent: 3,
-      late: 20,
-    },
-    teacher: "Anna Blake",
-  },
-  {
-    id: 7,
-    class: "Class 5 - Phy",
-    student: "John Smith",
-    day: "TODAY",
-    status: "Absent",
-    statistics: {
-      present: 45,
-      absent: 3,
-      late: 20,
-    },
-    teacher: "Eva Parker",
-  },
-]
-
 interface ParentAttendanceTableProps {
   selectedStudent: string
   selectedClass: string
   selectedDate: string
+  children: ParentChild[]
+  attendanceData: AttendanceData[]
+  classData: ClassData[]
+  loading: boolean
+  error: string | null
+  currentPage: number
+  totalPages: number
+  itemsPerPage: number
+  setCurrentPage: (page: number) => void
 }
 
-export function ParentAttendanceTable({ selectedStudent, selectedClass, selectedDate }: ParentAttendanceTableProps) {
+export function ParentAttendanceTable({ 
+  selectedStudent, 
+  selectedClass, 
+  selectedDate,
+  children,
+  attendanceData,
+  classData,
+  loading,
+  error,
+  currentPage,
+  totalPages,
+  itemsPerPage,
+  setCurrentPage
+}: ParentAttendanceTableProps) {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
-  const [selectedAttendance, setSelectedAttendance] = useState<AttendanceRecord | null>(null)
+  const [selectedAttendance, setSelectedAttendance] = useState<TransformedAttendanceData | null>(null)
 
-  const handleAttendanceClick = (attendance: AttendanceRecord) => {
+  // Fonction pour transformer les données API en format d'affichage
+  const transformAttendanceData = (): TransformedAttendanceData[] => {
+    return attendanceData.map((item, index) => {
+      // Déterminer le statut basé sur les statistiques
+      let status: "Present" | "Late" | "Absent" = "Present"
+      if (item.statistics.absent_days > 0) {
+        status = "Absent"
+      } else if (item.statistics.late_days > 0) {
+        status = "Late"
+      }
+
+      return {
+        id: index + 1,
+        class: item.class_name,
+        student: item.full_name,
+        day: selectedDate,
+        status,
+        statistics: {
+          present: item.statistics.present_days,
+          absent: item.statistics.absent_days,
+          late: item.statistics.late_days
+        },
+        teacher: "N/A" // En attendant l'API complète
+      }
+    })
+  }
+
+  const handleAttendanceClick = (attendance: TransformedAttendanceData) => {
     setSelectedAttendance(attendance)
     setIsDetailsModalOpen(true)
   }
 
-  // Filter attendance data based on selected student, class, and date
-  const filteredData = attendanceData.filter((item) => {
-    const studentMatch =
-      selectedStudent === "all-students" ||
-      (selectedStudent === "john" && item.student === "John Smith") ||
-      (selectedStudent === "emma" && item.student === "Emma Smith")
-
-    const classMatch = selectedClass === "all-classes" || item.class.toLowerCase().replace(/\s/g, "-") === selectedClass
-
+  // Filtrer les données transformées
+  const transformedData = transformAttendanceData()
+  const filteredData = transformedData.filter((item) => {
+    const studentMatch = 
+      selectedStudent === "all-students" || 
+      children.find(child => child.student_id.toString() === selectedStudent)?.full_name === item.student
+    
+    const classMatch = 
+      selectedClass === "all-classes" || 
+      classData.find(cls => cls.id.toString() === selectedClass)?.name === item.class
+    
     const dateMatch = selectedDate === "TODAY" || item.day === selectedDate
-
+    
     return studentMatch && classMatch && dateMatch
   })
+
+  // Pagination
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedData = filteredData.slice(startIndex, endIndex)
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+        <span className="ml-2">Loading attendance data...</span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-8 text-red-500">
+        <AlertCircle className="w-6 h-6 mr-2" />
+        <span>Error: {error}</span>
+      </div>
+    )
+  }
+
+  if (filteredData.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-8 text-gray-500">
+        <span>No attendance data available</span>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full relative">
@@ -158,7 +148,7 @@ export function ParentAttendanceTable({ selectedStudent, selectedClass, selected
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredData.map((attendance, index) => (
+          {paginatedData.map((attendance, index) => (
             <TableRow key={attendance.id} className={index % 2 === 0 ? "bg-[#EDF6FA]" : ""}>
               <TableCell className="font-medium text-gray-500">
                 <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-100">
@@ -195,13 +185,45 @@ export function ParentAttendanceTable({ selectedStudent, selectedClass, selected
               </TableCell>
               <TableCell className="text-gray-500">
                 <div className="flex items-center">
-                  {attendance.teacher} <MessageIcon />
+                  {attendance.teacher}
                 </div>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 bg-white border-t">
+          <div className="text-sm text-gray-700">
+            Showing {startIndex + 1} to {Math.min(endIndex, filteredData.length)} of {filteredData.length} results
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+            <span className="text-sm text-gray-700">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {selectedAttendance && (
         <AttendanceDetailsDialog
@@ -227,26 +249,4 @@ function getStatusStyles(status: string) {
     default:
       return "bg-gray-100 text-gray-800 hover:bg-gray-200"
   }
-}
-
-function MessageIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-[#25AAE1] ml-2"
-    >
-      <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <path
-        d="M22 2L15 22L11 13L2 9L22 2Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
 }

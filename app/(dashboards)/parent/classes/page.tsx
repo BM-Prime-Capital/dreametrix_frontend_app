@@ -8,25 +8,70 @@ import { useState, useEffect } from "react"
 import PageTitleH1 from "@/components/ui/page-title-h1"
 import { RefreshCw, Loader2 } from "lucide-react"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
-import { useParentFilters } from "@/hooks/useParentFilters"
+import { getParentClasses, ParentClass } from "@/services/ParentClassService"
 
 export default function ParentClassesPage() {
   const [selectedChild, setSelectedChild] = useState("all")
   const [selectedSubject, setSelectedSubject] = useState("all")
   const [selectedLevel, setSelectedLevel] = useState("all")
   const [refreshKey, setRefreshKey] = useState(0)
+  const [classes, setClasses] = useState<ParentClass[]>([])
+  const [filtersLoading, setFiltersLoading] = useState(true)
+  const [filtersError, setFiltersError] = useState<string | null>(null)
+  
   const { accessToken, refreshToken } = useRequestInfo()
 
-  // Get filter data from API
-  const { children, subjects, levels, loading: filtersLoading, error: filtersError, refreshFilters } = useParentFilters({
-    accessToken,
-    refreshToken
-  })
+  // Fetch classes data
+  const fetchClasses = async () => {
+    if (!accessToken) return
+    
+    setFiltersLoading(true)
+    setFiltersError(null)
+    
+    try {
+      const classesData = await getParentClasses(accessToken, refreshToken)
+      setClasses(classesData)
+    } catch (error) {
+      setFiltersError(error instanceof Error ? error.message : "Error loading classes")
+    } finally {
+      setFiltersLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchClasses()
+  }, [accessToken, refreshToken])
 
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1)
-    refreshFilters()
+    fetchClasses()
   }
+
+  // Extract unique subjects from classes
+  const subjects = classes.map(cls => ({
+    id: cls.subject,
+    name: cls.subject
+  })).filter((subject, index, self) => 
+    self.findIndex(s => s.id === subject.id) === index
+  )
+
+  // Extract unique levels (grades) from classes
+  const levels = classes.map(cls => ({
+    id: cls.level,
+    name: `Grade ${cls.level}`
+  })).filter((level, index, self) => 
+    self.findIndex(l => l.id === level.id) === index
+  )
+
+  // Extract unique children from classes
+  const children = classes.flatMap(cls => 
+    cls.students.map(student => ({
+      id: student.id,
+      name: `${student.first_name} ${student.last_name}`
+    }))
+  ).filter((child, index, self) => 
+    self.findIndex(c => c.id === child.id) === index
+  )
 
   return (
     <section className="flex flex-col gap-4 w-full mx-auto px-8">
@@ -59,7 +104,7 @@ export default function ParentClassesPage() {
                   <SelectItem value="all">All Children ({children.length})</SelectItem>
                   {children.map((child) => (
                     <SelectItem key={child.id} value={child.id.toString()}>
-                      {child.first_name} {child.last_name}
+                      {child.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -98,7 +143,7 @@ export default function ParentClassesPage() {
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="text-lg font-semibold text-gray-700">Classes (1)</div>
+        <div className="text-lg font-semibold text-gray-700">Classes ({classes.length})</div>
         <Button 
           onClick={handleRefresh}
           variant="outline"
@@ -113,6 +158,7 @@ export default function ParentClassesPage() {
         selectedChild={selectedChild}
         selectedSubject={selectedSubject}
         selectedLevel={selectedLevel}
+        classes={classes}
         key={refreshKey}
       />
     </section>
