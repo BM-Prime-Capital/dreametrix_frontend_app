@@ -2,9 +2,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  FiArrowLeft, FiUser, FiBook, FiAward, FiDollarSign, 
-  FiClipboard, FiHome, FiMail, FiPhone,
-  FiUsers, FiEdit2, FiMessageSquare, FiBarChart2, FiCalendar, FiClock
+  FiArrowLeft, FiUser, FiBook, FiAward, 
+  FiClipboard, FiHome, FiPhone,
+  FiUsers, FiEdit2, FiMessageSquare, FiCalendar
 } from 'react-icons/fi';
 
 interface TeacherDetail {
