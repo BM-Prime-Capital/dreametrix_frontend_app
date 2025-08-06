@@ -27,7 +27,7 @@ import { ActivityFeed } from "./ActivityFeed";
 
 export default function SuperAdminDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("overview");
+  //const [activeTab, setActiveTab] = useState("overview");
 
   // Default data
   const stats = [

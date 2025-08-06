@@ -2,8 +2,8 @@
 import React from 'react';
 import { 
   FiUsers, FiBook, FiCalendar, FiAward, 
-  FiClipboard, FiMail, FiDollarSign, 
-  FiBookOpen, FiBarChart2, FiTruck 
+  FiClipboard, FiMail, 
+  FiBookOpen, FiTruck 
 } from 'react-icons/fi';
 import { 
   Card, 

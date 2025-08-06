@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { 
   FiCheck, FiX, FiCalendar, FiUser, FiClock, 
-  FiEdit2, FiFilter, FiChevronDown, FiPlus, FiTrash2 
+  FiEdit2, FiFilter, FiChevronDown
 } from 'react-icons/fi';
 
 interface Student {
@@ -115,7 +115,7 @@ const AttendanceTable = () => {
   const uniqueClasses = [...new Set(students.map(student => student.class))];
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md w-full">
+    <div className="p-6 bg-white rounded-lg shadow-md">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <FiCalendar className="text-indigo-600" />

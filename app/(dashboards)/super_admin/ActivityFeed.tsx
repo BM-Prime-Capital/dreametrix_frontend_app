@@ -1,17 +1,14 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Activity,
   School,
   User,
-  Settings,
   Shield,
   AlertTriangle,
   CheckCircle,
   Clock,
-  FileText,
   Database,
   Globe
 } from "lucide-react";

@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+//import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Modal } from "@/components/ui/Modal";
 import {
   FileText,
@@ -17,19 +16,15 @@ import {
   Frown,
   ChevronLeft,
   ChevronRight,
-  MoreVertical,
   Filter,
   Download,
-  Upload,
   FileUp,
   X,
   Save,
   Loader2,
-  FileInput,
   FileOutput,
   FileEdit,
   FileCheck,
-  FileX,
   FileSearch,
   FilePlus2
 } from "lucide-react";
@@ -46,7 +41,7 @@ type Template = {
 };
 
 export default function TemplatesPage() {
-  const router = useRouter();
+  //const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -56,7 +51,7 @@ export default function TemplatesPage() {
   const [activeTab, setActiveTab] = useState<"all" | "reports" | "certificates" | "forms" | "emails">("all");
 
   // Sample data - replace with actual API calls
-  const [templates, setTemplates] = useState<Template[]>([
+  const [templates] = useState<Template[]>([
     {
       id: "1",
       name: "Student Progress Report",

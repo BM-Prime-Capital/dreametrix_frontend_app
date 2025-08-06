@@ -359,12 +359,7 @@ export const SuperAdminRoutes = [
     label: "Templates",
   },
   
-  // Reports & Analytics
-  {
-    path: `${userPath.SUPER_ADMIN_BASE_PATH}/analytics`,
-    icon: menuImages.analytics,
-    label: "Analytics",
-  },
+  
   
   // Audit Logs
   {
@@ -389,7 +384,7 @@ export const SuperAdminRoutes = [
   
   // API Management
   {
-    path: `${userPath.SUPER_ADMIN_BASE_PATH}/api`,
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/api-management`,
     icon: menuImages.api,
     label: "API Management",
   },
@@ -407,6 +402,13 @@ export const SuperAdminRoutes = [
     icon: menuImages.backup,
     label: "Backup",
   },
+  // Reports & Analytics
+  {
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/analytics`,
+    icon: menuImages.analytics,
+    label: "Analytics",
+  },
+
    // System Settings
    {
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/system-settings`,
