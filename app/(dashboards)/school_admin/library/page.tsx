@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -41,8 +42,8 @@ const LibraryPage = () => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | 'available' | 'checked-out' | 'reserved'>('all');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [isLoading] = useState(false);
+  //const [error, setError] = useState<Error | null>(null);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
