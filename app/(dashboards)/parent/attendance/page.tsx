@@ -4,12 +4,15 @@ import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { ParentAttendanceTable } from "@/components/parents/attendance/parent-attendance-table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FileText, Printer, Calendar } from "lucide-react"
+import { FileText, Printer, Calendar, RefreshCw, Loader2, AlertCircle } from "lucide-react"
 import { DatePickerDialog } from "@/components/parents/attendance/date-picker-dialog"
 import { ReportDialog } from "@/components/parents/attendance/report-dialog"
 import { PrintDialog } from "@/components/parents/attendance/print-dialog"
+import { useParentAttendance } from "@/hooks/useParentAttendance"
+import { useRequestInfo } from "@/hooks/useRequestInfo"
 
 export default function ParentAttendancePage() {
+  const { accessToken } = useRequestInfo()
   const [selectedClass, setSelectedClass] = useState<string>("all-classes")
   const [selectedStudent, setSelectedStudent] = useState<string>("all-students")
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
@@ -17,17 +20,28 @@ export default function ParentAttendancePage() {
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<string>("TODAY")
 
+  const {
+    children,
+    attendanceData,
+    classData,
+    loading,
+    error,
+    refreshData,
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    setCurrentPage
+  } = useParentAttendance({ accessToken: accessToken || '' })
+
   const handleDateSelection = (date: number) => {
     // Convert timestamp to readable date or use "TODAY"
     const newDate = date === 0 ? "TODAY" : new Date(date).toLocaleDateString()
     setSelectedDate(newDate)
   }
 
-  // Sample children data
-  const children = [
-    { id: "john", name: "John Smith" },
-    { id: "emma", name: "Emma Smith" },
-  ]
+  const handleRefresh = () => {
+    refreshData()
+  }
 
   return (
     <section className="flex flex-col gap-4 w-full mx-auto p-4">
@@ -49,8 +63,8 @@ export default function ParentAttendancePage() {
             <SelectContent>
               <SelectItem value="all-students">All Students</SelectItem>
               {children.map((child) => (
-                <SelectItem key={child.id} value={child.id}>
-                  {child.name}
+                <SelectItem key={child.student_id} value={child.student_id.toString()}>
+                  {child.full_name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -62,13 +76,11 @@ export default function ParentAttendancePage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all-classes">All Classes</SelectItem>
-              <SelectItem value="class-5-sci">Class 5 - Sci</SelectItem>
-              <SelectItem value="class-5-math">Class 5 - Math</SelectItem>
-              <SelectItem value="class-5-bio">Class 5 - Bio</SelectItem>
-              <SelectItem value="class-5-lit">Class 5 - Lit</SelectItem>
-              <SelectItem value="class-5-che">Class 5 - Che</SelectItem>
-              <SelectItem value="class-5-spa">Class 5 - Spa</SelectItem>
-              <SelectItem value="class-5-phy">Class 5 - Phy</SelectItem>
+              {classData.map((classItem) => (
+                <SelectItem key={classItem.id} value={classItem.id.toString()}>
+                  {classItem.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -85,15 +97,51 @@ export default function ParentAttendancePage() {
         <button className="bg-[#25AAE1] text-white px-4 py-3 rounded-md" onClick={() => setIsPrintModalOpen(true)}>
           <Printer className="h-5 w-5" />
         </button>
+        <button
+          className="bg-green-600 text-white px-4 py-3 rounded-md flex items-center gap-2"
+          onClick={handleRefresh}
+          disabled={loading}
+        >
+          {loading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <RefreshCw className="h-5 w-5" />
+          )}
+        </button>
       </div>
 
-      <Card className="rounded-lg shadow-sm p-0 overflow-hidden border-0">
-        <ParentAttendanceTable
-          selectedStudent={selectedStudent}
-          selectedClass={selectedClass}
-          selectedDate={selectedDate}
-        />
-      </Card>
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+          <span className="ml-2">Loading attendance data...</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="flex items-center justify-center py-8 text-red-500">
+          <AlertCircle className="w-6 h-6 mr-2" />
+          <span>Error: {error}</span>
+        </div>
+      )}
+
+      {!loading && !error && (
+        <Card className="rounded-lg shadow-sm p-0 overflow-hidden border-0">
+          <ParentAttendanceTable
+            selectedStudent={selectedStudent}
+            selectedClass={selectedClass}
+            selectedDate={selectedDate}
+            children={children}
+            attendanceData={attendanceData}
+            classData={classData}
+            loading={loading}
+            error={error}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            setCurrentPage={setCurrentPage}
+          />
+        </Card>
+      )}
 
       <DatePickerDialog
         isOpen={isDatePickerOpen}

@@ -4,26 +4,36 @@ import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { ParentGradebookTable } from "@/components/parents/gradebook/parent-gradebook-table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FileText, Printer } from 'lucide-react'
-import { ReportDialog } from "@/components/parents/gradebook/report-dialog"
-import { PrintDialog } from "@/components/parents/gradebook/print-dialog"
+import { FileText, Printer, RefreshCw, Loader2, AlertCircle } from 'lucide-react'
+import { useParentGradebook } from "@/hooks/useParentGradebook"
+import { useRequestInfo } from "@/hooks/useRequestInfo"
 
 export default function ParentGradebookPage() {
-  const [selectedClass, setSelectedClass] = useState<string>("all-classes")
+  const { accessToken } = useRequestInfo()
   const [selectedStudent, setSelectedStudent] = useState<string>("all-students")
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
-  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false)
+  const [selectedClass, setSelectedClass] = useState<string>("all-classes")
 
-  // Sample children data
-  const children = [
-    { id: "john", name: "John Smith" },
-    { id: "emma", name: "Emma Smith" },
-  ]
+  const {
+    children,
+    gradebookData,
+    classData,
+    loading,
+    error,
+    refreshData,
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    setCurrentPage
+  } = useParentGradebook({ accessToken: accessToken || '' })
+
+  const handleRefresh = () => {
+    refreshData()
+  }
 
   return (
     <section className="flex flex-col gap-4 w-full mx-auto p-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-[#B066F2] text-xl font-bold">GRADEBOOK</h1>
+        <h1 className="text-[#25AAE1] text-xl font-bold">GRADEBOOK</h1>
         <div className="flex gap-4">
           <Select value={selectedStudent} onValueChange={setSelectedStudent}>
             <SelectTrigger className="w-[180px] bg-white">
@@ -32,8 +42,8 @@ export default function ParentGradebookPage() {
             <SelectContent>
               <SelectItem value="all-students">All Students</SelectItem>
               {children.map((child) => (
-                <SelectItem key={child.id} value={child.id}>
-                  {child.name}
+                <SelectItem key={child.user_id} value={child.user_id.toString()}>
+                  {child.full_name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -45,41 +55,69 @@ export default function ParentGradebookPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all-classes">All Classes</SelectItem>
-              <SelectItem value="class-5-math">Class 5 - Math</SelectItem>
-              <SelectItem value="class-5-sci">Class 5 - Sci</SelectItem>
-              <SelectItem value="class-5-bio">Class 5 - Bio</SelectItem>
-              <SelectItem value="class-5-lit">Class 5 - Lit</SelectItem>
-              <SelectItem value="class-5-che">Class 5 - Che</SelectItem>
-              <SelectItem value="class-5-spa">Class 5 - Spa</SelectItem>
-              <SelectItem value="class-5-phy">Class 5 - Phy</SelectItem>
+              {classData.map((classItem) => (
+                <SelectItem key={classItem.id} value={classItem.id.toString()}>
+                  {classItem.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
       </div>
 
       <div className="flex gap-4">
-        <button
-          className="bg-[#B066F2] text-white px-6 py-3 rounded-md flex items-center gap-2"
-          onClick={() => setIsReportModalOpen(true)}
-        >
+        <button className="bg-[#B066F2] text-white px-6 py-3 rounded-md flex items-center gap-2">
           <FileText className="h-5 w-5" />
           <span>Report</span>
         </button>
-        <button 
-          className="bg-[#25AAE1] text-white px-4 py-3 rounded-md" 
-          onClick={() => setIsPrintModalOpen(true)}
-        >
+        <button className="bg-[#25AAE1] text-white px-4 py-3 rounded-md">
           <Printer className="h-5 w-5" />
+        </button>
+        <button
+          className="bg-green-600 text-white px-4 py-3 rounded-md flex items-center gap-2"
+          onClick={handleRefresh}
+          disabled={loading}
+        >
+          {loading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <RefreshCw className="h-5 w-5" />
+          )}
         </button>
       </div>
 
-      <Card className="rounded-lg shadow-sm p-0 overflow-hidden border-0">
-        <ParentGradebookTable selectedStudent={selectedStudent} selectedClass={selectedClass} />
-      </Card>
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+          <span className="ml-2">Loading gradebook data...</span>
+        </div>
+      )}
 
-      <ReportDialog isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} />
+      {error && (
+        <div className="flex items-center justify-center py-8 text-red-500">
+          <AlertCircle className="w-6 h-6 mr-2" />
+          <span>Error: {error}</span>
+        </div>
+      )}
 
-      <PrintDialog isOpen={isPrintModalOpen} onClose={() => setIsPrintModalOpen(false)} />
+      {!loading && !error && (
+        <Card className="rounded-lg shadow-sm p-0 overflow-hidden border-0">
+          <ParentGradebookTable
+            selectedStudent={selectedStudent}
+            selectedClass={selectedClass}
+            children={children}
+            gradebookData={gradebookData}
+            classData={classData}
+            loading={loading}
+            error={error}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            setCurrentPage={setCurrentPage}
+            accessToken={accessToken || ''}
+          />
+        </Card>
+      )}
     </section>
   )
 }

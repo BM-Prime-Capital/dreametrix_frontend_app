@@ -12,24 +12,62 @@ interface DatePickerDialogProps {
 }
 
 export function DatePickerDialog({ isOpen, onClose, onApply }: DatePickerDialogProps) {
-  const [month,] = useState("June")
-  const [year,] = useState("2020")
-  const [selectedDates, setSelectedDates] = useState<number[]>([11, 17])
-  const [highlightedDates,] = useState<number[]>([14, 15, 16])
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [selectedDates, setSelectedDates] = useState<number[]>([])
+  const [highlightedDates] = useState<number[]>([14, 15, 16])
 
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
-  // Generate calendar days for June 2020
-  const calendarDays = [
-    [1, 2, 3, 4, 5, 6, 7],
-    [8, 9, 10, 11, 12, 13, 14],
-    [15, 16, 17, 18, 19, 20, 21],
-    [22, 23, 24, 25, 26, 27, 28],
-    [29, 30, 1, 2, 3, 4, 5],
-  ]
+  // Get current month and year
+  const currentMonth = currentDate.toLocaleString('default', { month: 'long' })
+  const currentYear = currentDate.getFullYear()
 
-  const handleDateClick = (date: number) => {
-    if (date > 31 || date < 1) return // Skip dates from other months
+  // Generate calendar days for current month
+  const generateCalendarDays = (date: Date) => {
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    
+    // Get first day of month and number of days
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const daysInMonth = lastDay.getDate()
+    const startDay = firstDay.getDay() // 0 = Sunday, 1 = Monday, etc.
+    
+    // Adjust for Monday start (0 = Monday, 6 = Sunday)
+    const adjustedStartDay = startDay === 0 ? 6 : startDay - 1
+    
+    const calendarDays = []
+    let week = []
+    
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < adjustedStartDay; i++) {
+      week.push(null)
+    }
+    
+    // Add days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      week.push(day)
+      if (week.length === 7) {
+        calendarDays.push(week)
+        week = []
+      }
+    }
+    
+    // Add remaining days from next month to complete the last week
+    while (week.length < 7) {
+      week.push(null)
+    }
+    if (week.length > 0) {
+      calendarDays.push(week)
+    }
+    
+    return calendarDays
+  }
+
+  const calendarDays = generateCalendarDays(currentDate)
+
+  const handleDateClick = (date: number | null) => {
+    if (!date) return
 
     if (selectedDates.includes(date)) {
       setSelectedDates(selectedDates.filter((d) => d !== date))
@@ -39,11 +77,11 @@ export function DatePickerDialog({ isOpen, onClose, onApply }: DatePickerDialogP
   }
 
   const handlePrevMonth = () => {
-    // In a real app, this would change the month and regenerate the calendar
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
   }
 
   const handleNextMonth = () => {
-    // In a real app, this would change the month and regenerate the calendar
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
   }
 
   const handleApply = () => {
@@ -59,7 +97,7 @@ export function DatePickerDialog({ isOpen, onClose, onApply }: DatePickerDialogP
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div className="text-lg font-medium">
-            {month} {year}
+            {currentMonth} {currentYear}
           </div>
           <Button variant="ghost" size="icon" onClick={handleNextMonth} className="text-[#25AAE1]">
             <ChevronRight className="h-5 w-5" />
@@ -74,9 +112,9 @@ export function DatePickerDialog({ isOpen, onClose, onApply }: DatePickerDialogP
           ))}
 
           {calendarDays.flat().map((date, index) => {
-            const isOtherMonth = (index < 28 && date > 15) || (index > 28 && date < 15)
-            const isSelected = selectedDates.includes(date) && !isOtherMonth
-            const isHighlighted = highlightedDates.includes(date) && !isOtherMonth
+            const isOtherMonth = date === null
+            const isSelected = selectedDates.includes(date || 0)
+            const isHighlighted = highlightedDates.includes(date || 0)
 
             return (
               <button
@@ -91,7 +129,7 @@ export function DatePickerDialog({ isOpen, onClose, onApply }: DatePickerDialogP
                 onClick={() => handleDateClick(date)}
                 disabled={isOtherMonth}
               >
-                {date}
+                {date || ""}
               </button>
             )
           })}
@@ -101,7 +139,7 @@ export function DatePickerDialog({ isOpen, onClose, onApply }: DatePickerDialogP
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button className="bg-[#25AAE1] hover:bg-[#1D8CB3] text-white rounded-full px-8" onClick={handleApply}>
+          <Button onClick={handleApply} className="bg-[#25AAE1] hover:bg-[#1D8CB3] text-white">
             APPLY
           </Button>
         </div>
