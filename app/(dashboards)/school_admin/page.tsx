@@ -183,7 +183,7 @@ const SchoolAdminDashboard = () => {
             data={attendanceData}
             index="date"
             categories={['Present', 'Absent']}
-            colors={['emerald', 'red']}
+            colors={['blue', 'sky']} // Modifié ici
             yAxisWidth={30}
             showAnimation={true}
           />
@@ -197,7 +197,7 @@ const SchoolAdminDashboard = () => {
             data={gradeDistribution}
             category="students"
             index="name"
-            colors={['emerald', 'lime', 'yellow', 'amber', 'red']}
+            colors={['blue', 'sky', 'indigo', 'navy', 'cyan']} // Modifié ici
             showAnimation={true}
           />
         </Card>
