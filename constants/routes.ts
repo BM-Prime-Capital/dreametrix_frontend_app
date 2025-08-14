@@ -304,17 +304,21 @@ export const ParentRoutes = [
     icon: menuImages.attendance,
     label: "ATTENDANCE",
   },
-
-
-
+  {
+    path: `${userPath.PARENT_BASE_PATH}/rewards`,
+    icon: menuImages.rewards,
+    label: "REWARDS",
+  },
+  {
+    path: `${userPath.PARENT_BASE_PATH}/characters`,
+    icon: menuImages.character,
+    label: "CHARACTERS",
+  },
   {
     path: `${userPath.PARENT_BASE_PATH}/communicate`,
     icon: menuImages.communicate,
     label: "COMMUNICATE",
   },
-
-
-
   {
     path: `${userPath.PARENT_BASE_PATH}/library`,
     icon: menuImages.report_card,

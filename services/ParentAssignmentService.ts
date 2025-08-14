@@ -46,6 +46,10 @@ export interface ParentAssignment {
   day?: string;
   student_name?: string;
   student_id?: number;
+  students?: {
+    id: number;
+    name: string;
+  }[];
 }
 
 export interface ParentAssignmentsResponse {

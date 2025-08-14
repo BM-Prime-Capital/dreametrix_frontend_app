@@ -1,36 +1,91 @@
 "use server";
 
-export async function getRewardsGeneralView(
-tenantPrimaryDomain: string, accessToken: string, refreshToken: string, fromDate: string, toDate: string, id: any) {
+import { BACKEND_BASE_URL } from "@/app/utils/constants";
+
+// Interface pour les données rewards parent
+export interface ParentRewardsData {
+  student_id: number;
+  full_name: string;
+  report: {
+    name: string;
+    totalPoints: number;
+    goodDomains: any[];
+    focusDomains: any[];
+    attendanceBalance: {
+      present: number;
+      absent: number;
+      late: number;
+      half_day: number;
+    };
+    goodCharacter: any;
+    badCharacter: any;
+    latestNews: any[];
+  };
+}
+
+export async function getParentRewardsView(
+  accessToken: string
+): Promise<ParentRewardsData[]> {
   if (!accessToken) {
-    throw new Error("You're not authenticated. Please reload or try again!");
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
-  
+
+  const url = `${BACKEND_BASE_URL}/rewards/student-reports/parent_view/`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error("Session expirée. Veuillez vous reconnecter.");
+      } else if (response.status === 403) {
+        throw new Error("Vous n'avez pas la permission d'accéder aux rewards.");
+      } else {
+        throw new Error("Erreur lors de la récupération des rewards.");
+      }
+    }
+
+    const data = await response.json();
+    console.log("Parent rewards data:", data);
+    
+    return data;
+  } catch (error) {
+    console.error("Network error:", error);
+    throw new Error("Échec de la connexion au serveur");
+  }
+}
+
+export async function getRewardsGeneralView(
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  refreshToken: string
+) {
   const url = `${tenantPrimaryDomain}/rewards/student-reports/`;
+  
   const response = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
-    },
+    }
   });
 
   if (!response.ok) {
-    console.error("Error response => ", response);
-    if (response.status === 403) {
-      throw new Error("You don't have permission to access this data.");
-    } else {
-      throw new Error("Error while fetching rewards data.");
-    }
+    const errorData = await response.json();
+    console.error("Erreur du backend:", errorData);
+    throw new Error(errorData.message || "Erreur lors de la récupération des rewards");
   }
 
-  try {
-    const data = await response.json();
-    return formatRewardData(data);
-  } catch (error) {
-    console.error("Error parsing JSON:", error);
-    throw new Error("Invalid data format received from server");
-  }
+  const responseData = await response.json();
+  console.log("Réponse du backend:", responseData);
+
+  return responseData;
 }
 
 function formatRewardData(data: any) {

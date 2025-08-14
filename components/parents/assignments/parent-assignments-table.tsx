@@ -9,21 +9,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileIcon, FileTextIcon, Calendar } from "lucide-react";
+import { FileIcon, FileTextIcon, Calendar, Users } from "lucide-react";
 import { ViewAssignmentDialog } from "@/components/student/assignments/view-assignment-dialog";
 import { ViewSubmissionDialog } from "@/components/student/assignments/view-submission-dialog";
 import { Badge } from "@/components/ui/badge";
-import { useParentAssignments } from "@/hooks/useParentAssignments";
 import { ParentAssignment } from "@/services/ParentAssignmentService";
-
-// This will be replaced with API data
 
 interface ParentAssignmentsTableProps {
   selectedStudent: string;
   selectedClass: string;
   selectedType: string;
-  selectedDates: number[];
   refreshKey: number;
+  assignments: ParentAssignment[];
   accessToken: string;
   refreshToken: string;
 }
@@ -32,8 +29,8 @@ export function ParentAssignmentsTable({
   selectedStudent,
   selectedClass,
   selectedType,
-  selectedDates,
   refreshKey,
+  assignments,
   accessToken,
   refreshToken,
 }: ParentAssignmentsTableProps) {
@@ -43,19 +40,6 @@ export function ParentAssignmentsTable({
     useState(false);
   const [selectedAssignment, setSelectedAssignment] =
     useState<ParentAssignment | null>(null);
-
-  // Get child ID from selected student
-  const getChildId = () => {
-    if (selectedStudent === "all-students") return undefined;
-    return parseInt(selectedStudent);
-  };
-
-  // Use the API hook to fetch assignments
-  const { assignments, loading, error } = useParentAssignments({
-    accessToken,
-    refreshToken,
-    childId: getChildId(),
-  });
 
   const handleAssignmentClick = (assignment: ParentAssignment) => {
     setSelectedAssignment(assignment);
@@ -74,40 +58,29 @@ export function ParentAssignmentsTable({
     // Filter by class
     const classMatch =
       selectedClass === "all-classes" ||
-      assignment.course.name.toLowerCase().includes(selectedClass.toLowerCase());
+      assignment.course.id.toString() === selectedClass;
 
     // Filter by type
     const typeMatch =
       selectedType === "all-types" ||
       assignment.kind.toLowerCase() === selectedType.toLowerCase();
 
-    // Filter by dates (if selected)
-    const dateMatch = selectedDates.length === 0 || selectedDates.some(date => {
-      const assignmentDate = new Date(assignment.created_at);
-      const filterDate = new Date(date);
-      return assignmentDate.toDateString() === filterDate.toDateString();
-    });
+    // Filter by student
+    const studentMatch = selectedStudent === "all-students" || 
+      assignment.students?.some(student => student.id.toString() === selectedStudent);
 
-    return classMatch && typeMatch && dateMatch;
+    return classMatch && typeMatch && studentMatch;
   });
 
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="w-full flex items-center justify-center py-8">
-        <div className="text-gray-500">Loading assignments...</div>
-      </div>
-    );
-  }
-
-  // Show error state
-  if (error) {
-    return (
-      <div className="w-full flex items-center justify-center py-8">
-        <div className="text-red-500">Error: {error}</div>
-      </div>
-    );
-  }
+  // Get students to display based on filter
+  const getStudentsToDisplay = (assignment: ParentAssignment) => {
+    if (selectedStudent === "all-students") {
+      return assignment.students || [];
+    } else {
+      // Show only the selected student
+      return assignment.students?.filter(student => student.id.toString() === selectedStudent) || [];
+    }
+  };
 
   return (
     <div className="w-full relative">
@@ -120,8 +93,15 @@ export function ParentAssignmentsTable({
             <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
               CLASS
             </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">DUE DATE</TableHead>
-            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">TYPE</TableHead>
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
+              STUDENTS
+            </TableHead>
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
+              DUE DATE
+            </TableHead>
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
+              TYPE
+            </TableHead>
             <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
               WEIGHT
             </TableHead>
@@ -134,107 +114,138 @@ export function ParentAssignmentsTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredAssignments.map((assignment, index) => (
-            <TableRow
-              key={assignment.id}
-              className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
-            >
-              <TableCell className="py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <FileTextIcon className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900">{assignment.name}</div>
-                    <div className="text-sm text-gray-500">ID: {assignment.id}</div>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="py-4">
-                <Badge
-                  variant="outline"
-                  className="bg-purple-50 text-purple-700 border-purple-200"
-                >
-                  {assignment.course.name}
-                </Badge>
-              </TableCell>
-              <TableCell className="py-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <Calendar className="w-4 h-4 text-orange-600" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">
-                      {new Date(assignment.due_date).toLocaleDateString()}
+          {filteredAssignments.map((assignment, index) => {
+            const studentsToDisplay = getStudentsToDisplay(assignment);
+            
+            return (
+              <TableRow
+                key={assignment.id}
+                className={`hover:bg-gray-50 transition-colors ${
+                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                }`}
+              >
+                <TableCell className="py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <FileTextIcon className="w-4 h-4 text-blue-600" />
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {new Date(assignment.created_at).toLocaleDateString()}
+                    <div>
+                      <div className="font-semibold text-gray-800">
+                        {assignment.name}
+                      </div>
+                      <div className="text-sm text-gray-500">ID: {assignment.id}</div>
                     </div>
                   </div>
-                </div>
-              </TableCell>
-              <TableCell className="py-4">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 capitalize">
-                  {assignment.kind}
-                </span>
-              </TableCell>
-              <TableCell className="py-4">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {assignment.weight}%
-                </span>
-              </TableCell>
-              <TableCell className="py-4">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  assignment.published 
-                    ? "bg-green-100 text-green-800" 
-                    : "bg-yellow-100 text-yellow-800"
-                }`}>
-                  {assignment.published ? "Published" : "Draft"}
-                </span>
-              </TableCell>
-              <TableCell className="py-4">
-                <div className="flex items-center gap-2">
-                  <button
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    onClick={() => handleAssignmentClick(assignment)}
-                    title="View Assignment"
+                </TableCell>
+                <TableCell className="py-4">
+                  <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                    {assignment.course.name}
+                  </Badge>
+                </TableCell>
+                <TableCell className="py-4">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-gray-400" />
+                    <div className="flex flex-wrap gap-1">
+                      {studentsToDisplay.slice(0, 3).map((student, i) => (
+                        <span key={student.id} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                          {student.name}
+                        </span>
+                      ))}
+                      {studentsToDisplay.length > 3 && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          +{studentsToDisplay.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="py-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-600">{assignment.due_date}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="py-4">
+                  <span className="text-green-600 font-medium capitalize">
+                    {assignment.kind}
+                  </span>
+                </TableCell>
+                <TableCell className="py-4">
+                  <span className="text-gray-600">{assignment.weight}%</span>
+                </TableCell>
+                <TableCell className="py-4">
+                  <Badge
+                    variant={assignment.published ? "default" : "secondary"}
+                    className={
+                      assignment.published
+                        ? "bg-green-100 text-green-700 border-green-200"
+                        : "bg-gray-100 text-gray-700 border-gray-200"
+                    }
                   >
-                    <FileTextIcon className="h-4 w-4" />
-                  </button>
-                  {assignment.published && (
+                    {assignment.published ? "Published" : "Draft"}
+                  </Badge>
+                </TableCell>
+                <TableCell className="py-4">
+                  <div className="flex items-center gap-2">
                     <button
-                      className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                      onClick={() => handleSubmissionClick(assignment)}
-                      title="View Submissions"
+                      onClick={() => handleAssignmentClick(assignment)}
+                      className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="View Assignment"
                     >
-                      <FileIcon className="h-4 w-4" />
+                      <FileIcon className="w-4 h-4" />
                     </button>
-                  )}
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+                    {assignment.published && (
+                      <button
+                        onClick={() => handleSubmissionClick(assignment)}
+                        className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="View Submissions"
+                      >
+                        <FileTextIcon className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            )
+          })}
         </TableBody>
       </Table>
 
+      {filteredAssignments.length === 0 && assignments.length > 0 && (
+        <div className="text-center py-8 text-gray-500">
+          <FileTextIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+          <p>No assignments found for the selected filters</p>
+        </div>
+      )}
+
+      {assignments.length === 0 && (
+        <div className="text-center py-8 text-gray-500">
+          <FileTextIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+          <p>No assignments available</p>
+        </div>
+      )}
+
+      {/* Modals */}
       {selectedAssignment && (
         <>
           <ViewAssignmentDialog
             isOpen={isViewAssignmentModalOpen}
-            onClose={() => setIsViewAssignmentModalOpen(false)}
+            onClose={() => {
+              setIsViewAssignmentModalOpen(false);
+              setSelectedAssignment(null);
+            }}
             assignment={selectedAssignment}
           />
 
           <ViewSubmissionDialog
             isOpen={isViewSubmissionModalOpen}
-            onClose={() => setIsViewSubmissionModalOpen(false)}
+            onClose={() => {
+              setIsViewSubmissionModalOpen(false);
+              setSelectedAssignment(null);
+            }}
             assignment={selectedAssignment}
           />
         </>
-      )}
-
-      {(isViewAssignmentModalOpen || isViewSubmissionModalOpen) && (
-        <div className="absolute inset-0 bg-white/50 backdrop-blur-sm" />
       )}
     </div>
   );

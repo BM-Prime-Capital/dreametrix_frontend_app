@@ -5,45 +5,92 @@ import { Card } from "@/components/ui/card"
 import { ParentAssignmentsTable } from "@/components/parents/assignments/parent-assignments-table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Calendar, RefreshCw, Loader2 } from 'lucide-react'
-import { DatePickerDialog } from "@/components/student/assignments/date-picker-dialog"
+import { RefreshCw, Loader2 } from 'lucide-react'
 import { localStorageKey } from "@/constants/global"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
-import { useParentFilters } from "@/hooks/useParentFilters"
+import { getParentAssignments, ParentAssignment } from "@/services/ParentAssignmentService"
+import { getParentChildren, ParentChild } from "@/services/ParentGradebookService"
 
 export default function ParentAssignmentsPage() {
   const [selectedClass, setSelectedClass] = useState<string>("all-classes")
   const [selectedStudent, setSelectedStudent] = useState<string>("all-students")
   const [selectedType, setSelectedType] = useState<string>("all-types")
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
-  const [selectedDates, setSelectedDates] = useState<number[]>([])
   const [refreshKey, setRefreshKey] = useState(0)
+  const [assignments, setAssignments] = useState<ParentAssignment[]>([])
+  const [children, setChildren] = useState<ParentChild[]>([])
+  const [filtersLoading, setFiltersLoading] = useState(true)
+  const [filtersError, setFiltersError] = useState<string | null>(null)
   
   const { accessToken, refreshToken } = useRequestInfo()
 
-  // Get filter data from API
-  const { children, subjects, levels, loading: filtersLoading, error: filtersError, refreshFilters } = useParentFilters({
-    accessToken,
-    refreshToken
-  })
-
-  const handleDateSelection = (dates: number[]) => {
-    setSelectedDates(dates)
+  // Fetch assignments and children data
+  const fetchData = async () => {
+    if (!accessToken) return
+    
+    setFiltersLoading(true)
+    setFiltersError(null)
+    
+    try {
+      const [assignmentsData, childrenData] = await Promise.all([
+        getParentAssignments(accessToken, refreshToken),
+        getParentChildren(accessToken)
+      ])
+      
+      // Combine assignments with student information
+      const assignmentsWithStudents = assignmentsData.map(assignment => {
+        // Find which students are in this class
+        const studentsInClass = childrenData.flatMap(child => 
+          (child.courses || []).filter(course => course.course_id === assignment.course.id)
+            .map(() => ({
+              id: child.user_id,
+              name: child.full_name
+            }))
+        )
+        
+        return {
+          ...assignment,
+          students: studentsInClass
+        }
+      })
+      
+      setAssignments(assignmentsWithStudents)
+      setChildren(childrenData)
+    } catch (error) {
+      setFiltersError(error instanceof Error ? error.message : "Error loading data")
+    } finally {
+      setFiltersLoading(false)
+    }
   }
+
+  useEffect(() => {
+    fetchData()
+  }, [accessToken, refreshToken])
 
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1)
-    refreshFilters()
+    fetchData()
   }
 
-  // Assignment types based on API data
-  const assignmentTypes = [
+  // Extract unique classes from assignments
+  const classes = assignments.map(assignment => ({
+    id: assignment.course.id,
+    name: assignment.course.name
+  })).filter((cls, index, self) => 
+    self.findIndex(c => c.id === cls.id) === index
+  )
+
+  // Extract unique assignment types from assignments
+  const assignmentTypes = assignments.map(assignment => ({
+    id: assignment.kind,
+    name: assignment.kind.charAt(0).toUpperCase() + assignment.kind.slice(1)
+  })).filter((type, index, self) => 
+    self.findIndex(t => t.id === type.id) === index
+  )
+
+  // Add "All Types" option
+  const allTypes = [
     { id: "all-types", name: "All Types" },
-    { id: "test", name: "Test" },
-    { id: "quiz", name: "Quiz" },
-    { id: "homework", name: "Homework" },
-    { id: "project", name: "Project" },
-    { id: "exam", name: "Exam" }
+    ...assignmentTypes
   ]
 
   return (
@@ -62,15 +109,6 @@ export default function ParentAssignmentsPage() {
             </div>
           ) : (
             <>
-              <Button
-                variant="outline"
-                className="bg-white border-gray-300 hover:bg-gray-50"
-                onClick={() => setIsDatePickerOpen(true)}
-              >
-                <Calendar className="mr-2 h-4 w-4" />
-                All Days
-              </Button>
-
               <Select value={selectedStudent} onValueChange={setSelectedStudent}>
                 <SelectTrigger className="w-[180px] bg-white">
                   <SelectValue placeholder="All Students" />
@@ -78,8 +116,8 @@ export default function ParentAssignmentsPage() {
                 <SelectContent>
                   <SelectItem value="all-students">All Students ({children.length})</SelectItem>
                   {children.map((child) => (
-                    <SelectItem key={child.id} value={child.id.toString()}>
-                      {child.first_name} {child.last_name}
+                    <SelectItem key={child.user_id} value={child.user_id.toString()}>
+                      {child.full_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -91,9 +129,9 @@ export default function ParentAssignmentsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-classes">All Classes</SelectItem>
-                  {subjects.map((subject) => (
-                    <SelectItem key={subject.id} value={subject.id}>
-                      {subject.name}
+                  {classes.map((cls) => (
+                    <SelectItem key={cls.id} value={cls.id.toString()}>
+                      {cls.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -104,7 +142,7 @@ export default function ParentAssignmentsPage() {
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>
-                  {assignmentTypes.map((type) => (
+                  {allTypes.map((type) => (
                     <SelectItem key={type.id} value={type.id}>
                       {type.name}
                     </SelectItem>
@@ -131,18 +169,12 @@ export default function ParentAssignmentsPage() {
           selectedStudent={selectedStudent}
           selectedClass={selectedClass}
           selectedType={selectedType}
-          selectedDates={selectedDates}
           refreshKey={refreshKey}
+          assignments={assignments}
           accessToken={accessToken}
           refreshToken={refreshToken}
         />
       </Card>
-
-      <DatePickerDialog
-        isOpen={isDatePickerOpen}
-        onClose={() => setIsDatePickerOpen(false)}
-        onApply={handleDateSelection}
-      />
     </section>
   )
 }

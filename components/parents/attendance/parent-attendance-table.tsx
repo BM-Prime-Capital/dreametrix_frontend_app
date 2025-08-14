@@ -3,13 +3,18 @@
 import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { AttendanceDetailsDialog } from "./attendance-details-dialog"
+import { ParentAttendanceData } from "@/services/AttendanceService"
+import { Loader2, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react"
 
-// Define proper types for our data
-interface AttendanceRecord {
+// Interface pour les données transformées
+interface TransformedAttendanceData {
   id: number
   class: string
+  classId: number
   student: string
+  studentId: number
   day: string
   status: "Present" | "Late" | "Absent"
   statistics: {
@@ -20,198 +25,167 @@ interface AttendanceRecord {
   teacher: string
 }
 
-// Sample attendance data
-const attendanceData: AttendanceRecord[] = [
-  {
-    id: 1,
-    class: "Class 5 - Sci",
-    student: "John Smith",
-    day: "TODAY",
-    status: "Present",
-    statistics: {
-      present: 45,
-      absent: 3,
-      late: 20,
-    },
-    teacher: "Eva Parker",
-  },
-  {
-    id: 2,
-    class: "Class 5 - Math",
-    student: "John Smith",
-    day: "TODAY",
-    status: "Present",
-    statistics: {
-      present: 45,
-      absent: 3,
-      late: 20,
-    },
-    teacher: "Eva Parker",
-  },
-  {
-    id: 3,
-    class: "Class 5 - Bio",
-    student: "John Smith",
-    day: "TODAY",
-    status: "Late",
-    statistics: {
-      present: 45,
-      absent: 3,
-      late: 20,
-    },
-    teacher: "Sam Burke",
-  },
-  {
-    id: 4,
-    class: "Class 5 - Lit",
-    student: "Emma Smith",
-    day: "TODAY",
-    status: "Present",
-    statistics: {
-      present: 45,
-      absent: 3,
-      late: 20,
-    },
-    teacher: "Anna Blake",
-  },
-  {
-    id: 5,
-    class: "Class 5 - Che",
-    student: "Emma Smith",
-    day: "TODAY",
-    status: "Present",
-    statistics: {
-      present: 45,
-      absent: 3,
-      late: 20,
-    },
-    teacher: "Sam Burke",
-  },
-  {
-    id: 6,
-    class: "Class 5 - Spa",
-    student: "Emma Smith",
-    day: "TODAY",
-    status: "Absent",
-    statistics: {
-      present: 45,
-      absent: 3,
-      late: 20,
-    },
-    teacher: "Anna Blake",
-  },
-  {
-    id: 7,
-    class: "Class 5 - Phy",
-    student: "John Smith",
-    day: "TODAY",
-    status: "Absent",
-    statistics: {
-      present: 45,
-      absent: 3,
-      late: 20,
-    },
-    teacher: "Eva Parker",
-  },
-]
-
 interface ParentAttendanceTableProps {
   selectedStudent: string
   selectedClass: string
-  selectedDate: string
+  attendanceData: ParentAttendanceData | null
+  loading: boolean
+  error: string | null
 }
 
-export function ParentAttendanceTable({ selectedStudent, selectedClass, selectedDate }: ParentAttendanceTableProps) {
+export function ParentAttendanceTable({ 
+  selectedStudent, 
+  selectedClass, 
+  attendanceData,
+  loading,
+  error
+}: ParentAttendanceTableProps) {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
-  const [selectedAttendance, setSelectedAttendance] = useState<AttendanceRecord | null>(null)
+  const [selectedAttendance, setSelectedAttendance] = useState<TransformedAttendanceData | null>(null)
 
-  const handleAttendanceClick = (attendance: AttendanceRecord) => {
+  // Fonction pour transformer les données API en format d'affichage
+  const transformAttendanceData = (): TransformedAttendanceData[] => {
+    if (!attendanceData?.children_attendance) return []
+    
+    return attendanceData.children_attendance.flatMap(child => 
+      child.attendances.map((attendance, index) => {
+        // Déterminer le statut basé sur les statistiques
+        let status: "Present" | "Late" | "Absent" = "Present"
+        if (child.statistics.absent_days > 0) {
+          status = "Absent"
+        } else if (child.statistics.late_days > 0) {
+          status = "Late"
+        }
+
+        return {
+          id: attendance.id,
+          class: attendance.course.name,
+          classId: attendance.course.id,
+          student: child.full_name,
+          studentId: child.student_id,
+          day: attendance.date,
+          status,
+          statistics: {
+            present: child.statistics.present_days,
+            absent: child.statistics.absent_days,
+            late: child.statistics.late_days
+          },
+          teacher: attendance.teacher.name
+        }
+      })
+    )
+  }
+
+  const handleAttendanceClick = (attendance: TransformedAttendanceData) => {
     setSelectedAttendance(attendance)
     setIsDetailsModalOpen(true)
   }
 
-  // Filter attendance data based on selected student, class, and date
-  const filteredData = attendanceData.filter((item) => {
-    const studentMatch =
-      selectedStudent === "all-students" ||
-      (selectedStudent === "john" && item.student === "John Smith") ||
-      (selectedStudent === "emma" && item.student === "Emma Smith")
-
-    const classMatch = selectedClass === "all-classes" || item.class.toLowerCase().replace(/\s/g, "-") === selectedClass
-
-    const dateMatch = selectedDate === "TODAY" || item.day === selectedDate
-
-    return studentMatch && classMatch && dateMatch
+  // Filtrer les données transformées
+  const transformedData = transformAttendanceData()
+  const filteredData = transformedData.filter((item) => {
+    // Filtre par étudiant
+    const studentMatch = 
+      selectedStudent === "all-students" || 
+      item.studentId.toString() === selectedStudent
+    
+    // Filtre par classe
+    const classMatch = 
+      selectedClass === "all-classes" || 
+      item.classId.toString() === selectedClass
+    
+    return studentMatch && classMatch
   })
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="w-full flex items-center justify-center py-8">
+        <div className="flex items-center gap-2 text-gray-500">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Loading attendance data...
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="w-full flex items-center justify-center py-8">
+        <div className="text-red-500">Error: {error}</div>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full relative">
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent border-b">
-            <TableHead className="font-bold text-gray-700 py-4">STUDENT</TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">CLASS</TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">DAY</TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">ATTENDANCE</TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">HISTORICAL STATISTICS</TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">TEACHER</TableHead>
+          <TableRow className="hover:bg-transparent border-b bg-gray-50">
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">STUDENT</TableHead>
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">CLASS</TableHead>
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">DATE</TableHead>
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">STATUS</TableHead>
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">TEACHER</TableHead>
+            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">ACTIONS</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredData.map((attendance, index) => (
-            <TableRow key={attendance.id} className={index % 2 === 0 ? "bg-[#EDF6FA]" : ""}>
-              <TableCell className="font-medium text-gray-500">
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-100">
-                  {attendance.student}
+          {filteredData.map((item, index) => (
+            <TableRow key={item.id} className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}>
+              <TableCell className="py-4">
+                <div className="font-semibold text-gray-800">{item.student}</div>
+              </TableCell>
+              <TableCell className="py-4">
+                <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                  {item.class}
                 </Badge>
               </TableCell>
-              <TableCell className="font-medium text-gray-500">{attendance.class}</TableCell>
-              <TableCell className="text-gray-500">{attendance.day}</TableCell>
-              <TableCell>
-                <div
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer ${getStatusStyles(
-                    attendance.status,
-                  )}`}
-                  onClick={() => handleAttendanceClick(attendance)}
+              <TableCell className="py-4">
+                <span className="text-gray-600">{item.day}</span>
+              </TableCell>
+              <TableCell className="py-4">
+                <Badge className={getStatusStyles(item.status)}>
+                  {item.status}
+                </Badge>
+              </TableCell>
+              <TableCell className="py-4">
+                <span className="text-gray-600">{item.teacher}</span>
+              </TableCell>
+              <TableCell className="py-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleAttendanceClick(item)}
+                  className="text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300 hover:bg-blue-50"
                 >
-                  {attendance.status}
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
-                    <span className="text-sm text-gray-600 underline">{attendance.statistics.present}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mr-1"></div>
-                    <span className="text-sm text-gray-600 underline">{attendance.statistics.absent}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full mr-1"></div>
-                    <span className="text-sm text-gray-600 underline">{attendance.statistics.late}</span>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="text-gray-500">
-                <div className="flex items-center">
-                  {attendance.teacher} <MessageIcon />
-                </div>
+                  View Details
+                </Button>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
+      {filteredData.length === 0 && !loading && (
+        <div className="text-center py-8 text-gray-500">
+          <AlertCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+          <p>No attendance records found for the selected filters</p>
+        </div>
+      )}
+
+      {/* Attendance Details Dialog */}
       {selectedAttendance && (
         <AttendanceDetailsDialog
           isOpen={isDetailsModalOpen}
-          onClose={() => setIsDetailsModalOpen(false)}
+          onClose={() => {
+            setIsDetailsModalOpen(false)
+            setSelectedAttendance(null)
+          }}
           attendance={selectedAttendance}
         />
       )}
-
-      {isDetailsModalOpen && <div className="absolute inset-0 bg-white/50 backdrop-blur-sm" />}
     </div>
   )
 }
@@ -219,34 +193,12 @@ export function ParentAttendanceTable({ selectedStudent, selectedClass, selected
 function getStatusStyles(status: string) {
   switch (status) {
     case "Present":
-      return "bg-green-100 text-green-800 hover:bg-green-200"
+      return "bg-green-100 text-green-700 border-green-200"
     case "Late":
-      return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+      return "bg-yellow-100 text-yellow-700 border-yellow-200"
     case "Absent":
-      return "bg-red-100 text-red-800 hover:bg-red-200"
+      return "bg-red-100 text-red-700 border-red-200"
     default:
-      return "bg-gray-100 text-gray-800 hover:bg-gray-200"
+      return "bg-gray-100 text-gray-700 border-gray-200"
   }
-}
-
-function MessageIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-[#25AAE1] ml-2"
-    >
-      <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <path
-        d="M22 2L15 22L11 13L2 9L22 2Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
 }

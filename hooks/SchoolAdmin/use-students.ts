@@ -6,6 +6,10 @@ import { toast } from "react-toastify"
 import type { User, School } from "./use-teachers"
 
 export interface Student {
+  class: string
+  photo: string
+  status: string
+  attendance: number
   id: number
   user: User
   school: School

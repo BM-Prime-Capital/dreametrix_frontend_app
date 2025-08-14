@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { localStorageKey } from "@/constants/global";
 
 export interface User {
+  full_name: string | undefined;
   email: string;
   username: string;
   phone_number: string | null;
