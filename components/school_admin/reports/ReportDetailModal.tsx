@@ -296,8 +296,13 @@ const ReportDetailModal = ({ report, onClose }: ReportDetailModalProps) => {
           </div>
         </div>
       </div>
+      
     </div>
+
+    
   );
+
+  
 };
 
 export default ReportDetailModal;

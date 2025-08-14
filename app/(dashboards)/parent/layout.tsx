@@ -16,9 +16,9 @@ export default function ParentDashboardLayout({
       
 
       <SidebarProvider>
-      <Card className="w-full lg:w-[200px] h-fit">
-        <ParentSidebar routes={ParentRoutes} />
-      </Card>
+        <Card className="w-full lg:w-[200px] h-fit">
+          <ParentSidebar routes={ParentRoutes} />
+        </Card>
     </SidebarProvider>
       {children}
     </div>
