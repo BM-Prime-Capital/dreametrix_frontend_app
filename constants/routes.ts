@@ -315,6 +315,11 @@ export const ParentRoutes = [
     label: "CHARACTERS",
   },
   {
+    path: `${userPath.PARENT_BASE_PATH}/report-cards`,
+    icon: menuImages.report_card,
+    label: "REPORT CARDS",
+  },
+  {
     path: `${userPath.PARENT_BASE_PATH}/communicate`,
     icon: menuImages.communicate,
     label: "COMMUNICATE",

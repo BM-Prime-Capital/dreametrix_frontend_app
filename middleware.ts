@@ -24,21 +24,21 @@ export async function middleware(request: NextRequest) {
     }
 
     try {
-      // cal an API
-      const classes = await getClasses(
+      // Appel léger pour valider le token. En cas d'échec non-401, on NE déconnecte PAS.
+      await getClasses(
         `https://${tenantDomain}`,
         accessToken,
         ""
       );
-    } catch (error) {
-      // If there is 401 error set tokenExpired = true
+    } catch (error: any) {
       console.log("Middleware Error => ", error);
-      tokenExpired = true;
-    }
-
-    if (tokenExpired) {
-      console.log("tokenExpired");
-      return NextResponse.redirect(new URL("/", request.url)); // Redirect to login page
+      const message = typeof error?.message === 'string' ? error.message : '';
+      // Ne redirige que si le token est réellement expiré (401)
+      if (message.includes("Session expired") || message.includes("401")) {
+        console.log("tokenExpired");
+        return NextResponse.redirect(new URL("/", request.url)); // Redirect to login page
+      }
+      // Autres erreurs (403/500 etc.): on laisse l'accès, l'application gèrera l'erreur côté page
     }
   }
 

@@ -9,10 +9,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileIcon, FileTextIcon, Calendar, Users } from "lucide-react";
+import { FileIcon, FileTextIcon, Calendar, Users, Loader2, AlertCircle, RefreshCw, Eye, BookOpen, Clock, User, CheckCircle, XCircle } from "lucide-react";
 import { ViewAssignmentDialog } from "@/components/student/assignments/view-assignment-dialog";
 import { ViewSubmissionDialog } from "@/components/student/assignments/view-submission-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ParentAssignment } from "@/services/ParentAssignmentService";
 
 interface ParentAssignmentsTableProps {
@@ -82,170 +83,210 @@ export function ParentAssignmentsTable({
     }
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
+  };
+
+  const getStatusBadge = (published: boolean) => {
+    if (published) {
+      return (
+        <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">
+          <CheckCircle className="h-3 w-3 mr-1" />
+          Published
+        </Badge>
+      )
+    } else {
+      return (
+        <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 text-xs">
+          <Clock className="h-3 w-3 mr-1" />
+          Draft
+        </Badge>
+      )
+    }
+  };
+
+  const getTypeBadge = (type: string) => {
+    const typeColors = {
+      'homework': 'bg-blue-100 text-blue-700 border-blue-200',
+      'project': 'bg-purple-100 text-purple-700 border-purple-200',
+      'quiz': 'bg-orange-100 text-orange-700 border-orange-200',
+      'exam': 'bg-red-100 text-red-700 border-red-200',
+      'assignment': 'bg-green-100 text-green-700 border-green-200'
+    };
+    
+    const colorClass = typeColors[type.toLowerCase() as keyof typeof typeColors] || 'bg-gray-100 text-gray-700 border-gray-200';
+    
+    return (
+      <Badge variant="outline" className={`${colorClass} text-xs`}>
+        {type.charAt(0).toUpperCase() + type.slice(1)}
+      </Badge>
+    )
+  };
+
+  if (filteredAssignments.length === 0) {
+    return (
+      <div className="w-full flex items-center justify-center py-16">
+        <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-8 rounded-3xl border border-gray-200 shadow-lg max-w-md w-full">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">No Assignments Found</h3>
+            <p className="text-gray-600 text-center">No assignments match the selected filters</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="w-full relative">
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent border-b bg-gray-50">
-            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
-              ASSIGNMENT
-            </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
-              CLASS
-            </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
-              STUDENTS
-            </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
-              DUE DATE
-            </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
-              TYPE
-            </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
-              WEIGHT
-            </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
-              STATUS
-            </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide">
-              ACTIONS
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredAssignments.map((assignment, index) => {
-            const studentsToDisplay = getStudentsToDisplay(assignment);
-            
-            return (
-              <TableRow
-                key={assignment.id}
-                className={`hover:bg-gray-50 transition-colors ${
-                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
+      <div className="overflow-x-auto">
+        <Table className="w-full">
+          <TableHeader>
+            <TableRow className="hover:bg-transparent border-b border-gray-200">
+              <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide pl-6">ASSIGNMENT</TableHead>
+              <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide text-center">CLASS</TableHead>
+              <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide text-center">TYPE</TableHead>
+              <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide text-center">STUDENTS</TableHead>
+              <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide text-center">DUE DATE</TableHead>
+              <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide text-center">STATUS</TableHead>
+              <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide text-center">ACTIONS</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredAssignments.map((assignment, index) => (
+              <TableRow 
+                key={assignment.id} 
+                className={`hover:bg-blue-50/50 transition-all duration-200 cursor-pointer ${
+                  index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
                 }`}
+                onClick={() => handleAssignmentClick(assignment)}
               >
-                <TableCell className="py-4">
+                <TableCell className="py-4 pl-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <FileTextIcon className="w-4 h-4 text-blue-600" />
+                    <div className="w-10 h-10 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] rounded-full flex items-center justify-center">
+                      <FileTextIcon className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-800">
-                        {assignment.name}
+                      <div className="font-semibold text-gray-800">{assignment.title}</div>
+                      <div className="text-gray-500 text-sm line-clamp-2">{assignment.description}</div>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="py-4 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
+                      <BookOpen className="h-4 w-4 text-white" />
+                    </div>
+                    <span className="font-medium text-gray-700">{assignment.course.name}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="py-4 text-center">
+                  {getTypeBadge(assignment.kind)}
+                </TableCell>
+                <TableCell className="py-4 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                      <Users className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="text-sm">
+                      <div className="font-medium text-gray-700">
+                        {getStudentsToDisplay(assignment).length} student{getStudentsToDisplay(assignment).length !== 1 ? 's' : ''}
                       </div>
-                      <div className="text-sm text-gray-500">ID: {assignment.id}</div>
+                      <div className="text-gray-500 text-xs">
+                        {getStudentsToDisplay(assignment).slice(0, 2).map(s => s.name).join(', ')}
+                        {getStudentsToDisplay(assignment).length > 2 && ` +${getStudentsToDisplay(assignment).length - 2}`}
+                      </div>
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="py-4">
-                  <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
-                    {assignment.course.name}
-                  </Badge>
-                </TableCell>
-                <TableCell className="py-4">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-gray-400" />
-                    <div className="flex flex-wrap gap-1">
-                      {studentsToDisplay.slice(0, 3).map((student, i) => (
-                        <span key={student.id} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          {student.name}
-                        </span>
-                      ))}
-                      {studentsToDisplay.length > 3 && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          +{studentsToDisplay.length - 3} more
-                        </span>
-                      )}
+                <TableCell className="py-4 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
+                      <Calendar className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="text-sm">
+                      <div className="font-medium text-gray-700">
+                        {formatDate(assignment.due_date)}
+                      </div>
+                      <div className="text-gray-500 text-xs">
+                        {new Date(assignment.due_date) < new Date() ? 'Overdue' : 'Upcoming'}
+                      </div>
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="py-4">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-600">{assignment.due_date}</span>
-                  </div>
+                <TableCell className="py-4 text-center">
+                  {getStatusBadge(assignment.published)}
                 </TableCell>
-                <TableCell className="py-4">
-                  <span className="text-green-600 font-medium capitalize">
-                    {assignment.kind}
-                  </span>
-                </TableCell>
-                <TableCell className="py-4">
-                  <span className="text-gray-600">{assignment.weight}%</span>
-                </TableCell>
-                <TableCell className="py-4">
-                  <Badge
-                    variant={assignment.published ? "default" : "secondary"}
-                    className={
-                      assignment.published
-                        ? "bg-green-100 text-green-700 border-green-200"
-                        : "bg-gray-100 text-gray-700 border-gray-200"
-                    }
-                  >
-                    {assignment.published ? "Published" : "Draft"}
-                  </Badge>
-                </TableCell>
-                <TableCell className="py-4">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleAssignmentClick(assignment)}
-                      className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                      title="View Assignment"
+                <TableCell className="py-4 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white border-0 hover:from-[#1D8CB3] hover:to-[#1453B8] transition-all duration-300"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAssignmentClick(assignment);
+                      }}
                     >
-                      <FileIcon className="w-4 h-4" />
-                    </button>
+                      <Eye className="h-4 w-4 mr-2" />
+                      View
+                    </Button>
                     {assignment.published && (
-                      <button
-                        onClick={() => handleSubmissionClick(assignment)}
-                        className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="View Submissions"
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 hover:from-green-600 hover:to-green-700 transition-all duration-300"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSubmissionClick(assignment);
+                        }}
                       >
-                        <FileTextIcon className="w-4 h-4" />
-                      </button>
+                        <FileIcon className="h-4 w-4 mr-2" />
+                        Submission
+                      </Button>
                     )}
                   </div>
                 </TableCell>
               </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
-      {filteredAssignments.length === 0 && assignments.length > 0 && (
-        <div className="text-center py-8 text-gray-500">
-          <FileTextIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-          <p>No assignments found for the selected filters</p>
-        </div>
-      )}
-
-      {assignments.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          <FileTextIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-          <p>No assignments available</p>
-        </div>
-      )}
-
-      {/* Modals */}
+      {/* Assignment Details Dialog */}
       {selectedAssignment && (
-        <>
-          <ViewAssignmentDialog
-            isOpen={isViewAssignmentModalOpen}
-            onClose={() => {
-              setIsViewAssignmentModalOpen(false);
-              setSelectedAssignment(null);
-            }}
-            assignment={selectedAssignment}
-          />
+        <ViewAssignmentDialog
+          isOpen={isViewAssignmentModalOpen}
+          onClose={() => {
+            setIsViewAssignmentModalOpen(false);
+            setSelectedAssignment(null);
+          }}
+          assignment={selectedAssignment}
+          accessToken={accessToken}
+          refreshToken={refreshToken}
+        />
+      )}
 
-          <ViewSubmissionDialog
-            isOpen={isViewSubmissionModalOpen}
-            onClose={() => {
-              setIsViewSubmissionModalOpen(false);
-              setSelectedAssignment(null);
-            }}
-            assignment={selectedAssignment}
-          />
-        </>
+      {/* Submission Details Dialog */}
+      {selectedAssignment && (
+        <ViewSubmissionDialog
+          isOpen={isViewSubmissionModalOpen}
+          onClose={() => {
+            setIsViewSubmissionModalOpen(false);
+            setSelectedAssignment(null);
+          }}
+          assignment={selectedAssignment}
+          accessToken={accessToken}
+          refreshToken={refreshToken}
+        />
       )}
     </div>
   );

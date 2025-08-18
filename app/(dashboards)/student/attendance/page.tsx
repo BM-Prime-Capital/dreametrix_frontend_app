@@ -1,14 +1,80 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { AttendanceTable } from "../../../../components/student/attendance/attendance-table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FileText, Printer, Calendar, ArrowLeft } from "lucide-react"
+import { FileText, Printer, Calendar, ArrowLeft, TrendingUp, CheckCircle, Clock, AlertCircle } from "lucide-react"
 import { DatePickerDialog } from "../../../../components/student/attendance/date-picker-dialog"
 import { ReportDialog } from "../../../../components/student/attendance/report-dialog"
 import { PrintDialog } from "../../../../components/student/attendance/print-dialog"
 import { Button } from "@/components/ui/button"
+import { getStudentAttendanceView, StudentAttendanceData } from "@/services/AttendanceService"
+import { useRequestInfo } from "@/hooks/useRequestInfo"
+
+// Composant pour afficher les statistiques d'attendance
+function AttendanceStats({ attendanceData }: { attendanceData: StudentAttendanceData | null }) {
+  if (!attendanceData) return null
+
+  const { statistics, summary } = attendanceData
+  const attendanceRate = summary.attendance_rate || 0
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <Card className="p-6 bg-gradient-to-r from-green-500 to-green-600 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/20 rounded-xl">
+            <TrendingUp className="h-8 w-8" />
+          </div>
+          <div>
+            <p className="text-white/90 text-sm font-medium">Attendance Rate</p>
+            <p className="text-3xl font-bold">{attendanceRate.toFixed(1)}%</p>
+            <p className="text-white/70 text-xs">Over {statistics.total_days} days</p>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="p-6 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/20 rounded-xl">
+            <CheckCircle className="h-8 w-8" />
+          </div>
+          <div>
+            <p className="text-white/90 text-sm font-medium">Present Days</p>
+            <p className="text-3xl font-bold">{statistics.present_days}</p>
+            <p className="text-white/70 text-xs">Total present</p>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="p-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/20 rounded-xl">
+            <Clock className="h-8 w-8" />
+          </div>
+          <div>
+            <p className="text-white/90 text-sm font-medium">Late Days</p>
+            <p className="text-3xl font-bold">{statistics.late_days}</p>
+            <p className="text-white/70 text-xs">Days late</p>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="p-6 bg-gradient-to-r from-red-500 to-red-600 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/20 rounded-xl">
+            <AlertCircle className="h-8 w-8" />
+          </div>
+          <div>
+            <p className="text-white/90 text-sm font-medium">Absent Days</p>
+            <p className="text-3xl font-bold">{statistics.absent_days}</p>
+            <p className="text-white/70 text-xs">Days absent</p>
+          </div>
+        </div>
+      </Card>
+    </div>
+  )
+}
 
 export default function AttendancePage() {
   const [selectedClass, setSelectedClass] = useState<string>("all-classes")
@@ -16,6 +82,23 @@ export default function AttendancePage() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false)
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false)
   const [, setSelectedDate] = useState<number>(0)
+  const [attendanceData, setAttendanceData] = useState<StudentAttendanceData | null>(null)
+  const { accessToken } = useRequestInfo()
+
+  const fetchAttendanceData = async () => {
+    if (!accessToken) return
+    
+    try {
+      const data = await getStudentAttendanceView(accessToken)
+      setAttendanceData(data)
+    } catch (error) {
+      console.error("Error fetching attendance data:", error)
+    }
+  }
+
+  useEffect(() => {
+    fetchAttendanceData()
+  }, [accessToken])
 
   const handleDateSelection = (date: number) => {
     setSelectedDate(date)
@@ -44,43 +127,8 @@ export default function AttendancePage() {
       </div>
 
       <section className="flex flex-col gap-6 w-full mx-auto p-6 bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen rounded-2xl">
-        {/* Header Section avec design moderne */}
-        <div className="flex items-center justify-between bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] rounded-xl flex items-center justify-center">
-              <Calendar className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-[#25AAE1]">Attendance Records</h2>
-              <p className="text-gray-600 text-sm">Manage your attendance data</p>
-            </div>
-          </div>
-          
-          <div className="flex gap-4">
-            <button
-              className="bg-white border-2 border-[#25AAE1] rounded-xl px-6 py-3 flex items-center gap-3 hover:bg-[#25AAE1] hover:text-white transition-all duration-300 shadow-md"
-              onClick={() => setIsDatePickerOpen(true)}
-            >
-              <span className="text-[#25AAE1] font-semibold hover:text-white transition-colors">TODAY</span>
-              <Calendar className="h-5 w-5 text-[#25AAE1] hover:text-white transition-colors" />
-            </button>
-
-            <Select value={selectedClass} onValueChange={setSelectedClass}>
-              <SelectTrigger className="w-[200px] bg-white border-2 border-[#25AAE1] rounded-xl shadow-md">
-                <SelectValue placeholder="All Classes" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all-classes">All Classes</SelectItem>
-                <SelectItem value="class-5-math">Class 5 - Math</SelectItem>
-                <SelectItem value="class-n-1">Class N</SelectItem>
-                <SelectItem value="class-n-2">Class N</SelectItem>
-                <SelectItem value="class-n-3">Class N</SelectItem>
-                <SelectItem value="class-n-4">Class N</SelectItem>
-                <SelectItem value="class-n-5">Class N</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        {/* Statistiques d'attendance */}
+        <AttendanceStats attendanceData={attendanceData} />
 
         {/* Action buttons avec design moderne */}
         <div className="flex gap-4">
