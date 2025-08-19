@@ -115,6 +115,61 @@ export async function updateStudent(
   }
 }
 
+export async function getStudentReportCard(
+  studentId: number,
+  tenantPrimaryDomain: any,
+  accessToken: any,
+  maxRetries = 3,
+  retryDelay = 1000
+) {
+  if (!accessToken) {
+    throw new Error("You are not logged in. Please log in again.");
+  }
+
+  const url = `${tenantPrimaryDomain}/students/${studentId}/report_card/`;
+
+  let retryCount = 0;
+
+  while (retryCount < maxRetries) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          throw new Error(
+            "You don't have permission to access this student's report card."
+          );
+        } else if (response.status === 404) {
+          throw new Error("Student report card not found.");
+        } else {
+          throw new Error("Error while fetching student report card.");
+        }
+      }
+
+      return await response.json();
+    } catch (error: any) {
+      console.error(
+        `Error fetching student report card (attempt ${retryCount + 1}):`,
+        error
+      );
+
+      if (retryCount < maxRetries - 1) {
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        retryCount++;
+        continue;
+      }
+
+      throw error;
+    }
+  }
+
+  throw new Error("Max retries exceeded while fetching report card");
+}
+
 
 
 export async function enrollStudentsToClass(
