@@ -6,7 +6,7 @@ export async function fetchElaStandards(
   refreshToken: string
 ) {
   if (!accessToken) {
-    throw new Error("You are not logged in. Please log in again.");
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
   const url = `${tenantPrimaryDomain}/digital_library/standards_ela/${subject}/${grade}/`;
@@ -26,9 +26,9 @@ export async function fetchElaStandards(
 
     if (!response.ok) {
       if (response.status === 403) {
-        throw new Error("You don't have permission to access this data.");
+        throw new Error("Vous n'avez pas la permission d'accéder aux données.");
       } else {
-        throw new Error("Error while fetching ELA standards.");
+        throw new Error("Erreur lors de la récupération des standards ELA.");
       }
     }
 
@@ -55,7 +55,7 @@ export async function fetchElaStrands(
   refreshToken: string
 ) {
   if (!accessToken) {
-    throw new Error("You are not logged in. Please log in again.");
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
   const url = `${tenantPrimaryDomain}/digital_library/strands/${subject}/${grade}/${encodeURIComponent(
@@ -77,9 +77,9 @@ export async function fetchElaStrands(
 
     if (!response.ok) {
       if (response.status === 403) {
-        throw new Error("You don't have permission to access this data.");
+        throw new Error("Vous n'avez pas la permission d'accéder aux données.");
       } else {
-        throw new Error("Error while fetching ELA strands.");
+        throw new Error("Erreur lors de la récupération des strands ELA.");
       }
     }
 
@@ -107,7 +107,7 @@ export async function fetchElaSpecificStandards(
   refreshToken: string
 ) {
   if (!accessToken) {
-    throw new Error("You are not logged in. Please log in again.");
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
   const url = `${tenantPrimaryDomain}/digital_library/specific_standards/${subject}/${grade}/${encodeURIComponent(
@@ -123,9 +123,11 @@ export async function fetchElaSpecificStandards(
 
     if (!response.ok) {
       if (response.status === 403) {
-        throw new Error("You don't have permission to access this data.");
+        throw new Error("Vous n'avez pas la permission d'accéder aux données.");
       } else {
-        throw new Error("Error while fetching ELA specific standards.");
+        throw new Error(
+          "Erreur lors de la récupération des standards spécifiques ELA."
+        );
       }
     }
 
@@ -155,7 +157,7 @@ export async function fetchElaQuestionLinks(
   refreshToken: string
 ) {
   if (!accessToken) {
-    throw new Error("You are not logged in. Please log in again.");
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
   const url = `${tenantPrimaryDomain}/digital_library/links_ela/${subject}/${grade}/${standardsEla}/${strands}/${specificStandards}/${kind}/`;
@@ -175,9 +177,9 @@ export async function fetchElaQuestionLinks(
 
     if (!response.ok) {
       if (response.status === 403) {
-        throw new Error("You don't have permission to access this data.");
+        throw new Error("Vous n'avez pas la permission d'accéder aux données.");
       } else {
-        throw new Error("Error while fetching ELA question links.");
+        throw new Error("Erreur lors de la récupération des liens ELA.");
       }
     }
 
@@ -210,7 +212,7 @@ export async function generateElaPdf(
   refreshToken: string
 ) {
   if (!accessToken) {
-    throw new Error("You are not logged in. Please log in again.");
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
   const url = `${tenantPrimaryDomain}/digital_library/ela_generate-pdf/`;
@@ -227,9 +229,9 @@ export async function generateElaPdf(
 
     if (!response.ok) {
       if (response.status === 403) {
-        throw new Error("You don't have permission to generate the PDF.");
+        throw new Error("Vous n'avez pas la permission de générer le PDF.");
       } else {
-        throw new Error("Error while generating ELA PDF.");
+        throw new Error("Erreur lors de la génération du PDF ELA.");
       }
     }
 

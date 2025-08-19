@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Modal } from "@/components/ui/Modal";
 import {
   Plus,
   Search,
@@ -26,7 +27,6 @@ import {
   Eye,
   Pencil
 } from "lucide-react";
-import { Modal } from "@/components/ui/modal";
 
 type User = {
   id: string;
