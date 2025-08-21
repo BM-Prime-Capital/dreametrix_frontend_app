@@ -110,8 +110,7 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
     try {
       const data = await getAssignments(
         tenantDomain,
-        accessToken,
-        refreshToken
+        accessToken
       );
       setAssignments(data);
     } catch (err: any) {
@@ -178,8 +177,7 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
       await deleteAssignment(
         assignment.id,
         tenantDomain,
-        accessToken,
-        refreshToken
+        accessToken
       );
 
       // Reload assignments list

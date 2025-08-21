@@ -101,8 +101,7 @@ export function AssignmentsTable({
       try {
         const res = await getAssignments(
           tenantDomain,
-          accessToken,
-          refreshToken
+          accessToken
         );
 
         if (res && Array.isArray(res)) {

@@ -63,8 +63,7 @@ export function GradebookSettingsDialog({
       const data = await getAssessmentWeights(
         courseId,
         tenantDomain,
-        accessToken,
-        refreshToken
+        accessToken
       );
 
       console.log("📊 Assessment weights data:", data);
@@ -108,8 +107,7 @@ export function GradebookSettingsDialog({
         courseId,
         weights,
         tenantDomain,
-        accessToken,
-        refreshToken
+        accessToken
       );
 
       console.log("✅ Assessment weights saved successfully");

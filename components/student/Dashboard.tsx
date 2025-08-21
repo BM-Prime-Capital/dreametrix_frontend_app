@@ -1,14 +1,11 @@
 "use client";
 
-import { ActivityFeed } from "../layout/ActivityFeed";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
+import { Progress } from "@/components/ui/progress";
+import { localStorageKey } from "@/constants/global";
 import {
-  Instagram,
-  MessageCircle,
   Calendar,
   BookOpen,
   Trophy,
@@ -16,371 +13,257 @@ import {
   Star,
   Target,
   GraduationCap,
-  Zap,
-  Users,
-  Settings,
   Bell,
   TrendingUp,
   Award,
   BookMarked,
+  Brain,
+  CheckCircle,
+  AlertCircle,
+  ArrowRight,
+  Play,
+  Users,
+  MessageSquare,
 } from "lucide-react";
-import PageTitleH1 from "../ui/page-title-h1";
-import StudentProgress from "./StudentProgress";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
 export default function StudentDashboard() {
-  const [username, setUsername] = useState("John Smith");
-  const [email, setEmail] = useState("johnsmith@school.edu");
-  const [school, setSchool] = useState("School1");
   const router = useRouter();
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Get user data from localStorage
+  const userData = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const data = localStorage.getItem(localStorageKey.USER_DATA);
+      return data ? JSON.parse(data) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  // Update time every minute
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const getGreeting = () => {
+    const hour = currentTime.getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
+  const firstName = userData?.first_name || userData?.full_name?.split(' ')[0] || "Student";
+  const fullName = userData?.full_name || "Student";
+  const initials = fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase();
+
+  const quickActions = [
+    { icon: Calendar, label: "Attendance", path: "/student/attendance", color: "bg-blue-500" },
+    { icon: BookOpen, label: "Assignments", path: "/student/assignments", color: "bg-green-500" },
+    { icon: GraduationCap, label: "Grades", path: "/student/gradebook", color: "bg-purple-500" },
+    { icon: Brain, label: "AI Tutor", path: "/student/tutor", color: "bg-indigo-500" },
+  ];
+
+  const subjects = [
+    { name: "Mathematics", grade: "A-", progress: 85, color: "bg-blue-500" },
+    { name: "Science", grade: "B+", progress: 78, color: "bg-green-500" },
+    { name: "English", grade: "A", progress: 92, color: "bg-purple-500" },
+    { name: "History", grade: "B", progress: 70, color: "bg-orange-500" },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      <section className="flex flex-col gap-6 w-full">
-        {/* Header Section Moderne */}
-        <div className="bg-gradient-to-r from-[#25AAE1] via-[#25AAE1] to-[#1D8CB3] p-8 rounded-2xl shadow-xl">
-          <div className="flex flex-col md:flex-row items-center justify-between text-white">
-            <div className="flex items-center gap-6 mb-6 md:mb-0">
-              <div className="relative">
-                <Avatar className="h-20 w-20 border-4 border-white/30 shadow-xl">
-                  <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback className="bg-white/20 text-white text-2xl font-bold">
-                    JS
-                  </AvatarFallback>
-                </Avatar>
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#4CAF50] rounded-full flex items-center justify-center border-2 border-white">
-                  <TrendingUp className="h-4 w-4 text-white" />
-                </div>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* Welcome Section */}
+        <div className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-14 w-14 ring-4 ring-blue-100">
+                <AvatarImage src={userData?.avatar || "/placeholder.svg"} />
+                <AvatarFallback className="bg-blue-500 text-white font-bold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
               <div>
-                <h1 className="text-3xl font-bold mb-2">Welcome back, John!</h1>
-                <p className="text-white/90 text-lg">
-                  Ready to learn something new today?
-                </p>
-                <div className="flex items-center gap-4 mt-3">
-                  <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
-                    <BookMarked className="h-4 w-4" />
-                    <span className="text-sm">Grade 5</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
-                    <Award className="h-4 w-4" />
-                    <span className="text-sm">Top Student</span>
-                  </div>
-                </div>
+                <h1 className="text-2xl font-bold text-gray-900">{getGreeting()}, {firstName}!</h1>
+                <p className="text-gray-600">Let's make today productive</p>
               </div>
             </div>
-            <div className="flex gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-12 w-12 bg-white/10 hover:bg-white/20 text-white border-white/20 relative rounded-xl transition-all duration-300 hover:scale-110"
-              >
-                <Bell className="h-6 w-6" />
-                <span className="absolute -top-2 -right-2 bg-[#FF5252] text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold">
-                  3
-                </span>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm">
+                <Bell className="h-4 w-4 mr-2" />
+                Notifications
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-12 w-12 bg-white/10 hover:bg-white/20 text-white border-white/20 rounded-xl transition-all duration-300 hover:scale-110"
-              >
-                <MessageCircle className="h-6 w-6" />
+              <Button variant="outline" size="sm">
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Messages
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-12 w-12 bg-white/10 hover:bg-white/20 text-white border-white/20 rounded-xl transition-all duration-300 hover:scale-110"
-              >
-                <Settings className="h-6 w-6" />
-              </Button>
+            </div>
+          </div>
+          
+          {/* Stats Overview */}
+          <div className="grid grid-cols-4 gap-6">
+            <div className="text-center p-4 bg-blue-50 rounded-2xl">
+              <div className="text-3xl font-bold text-blue-600">85%</div>
+              <div className="text-sm text-gray-600 mt-1">Overall Grade</div>
+            </div>
+            <div className="text-center p-4 bg-green-50 rounded-2xl">
+              <div className="text-3xl font-bold text-green-600">12/15</div>
+              <div className="text-sm text-gray-600 mt-1">Assignments</div>
+            </div>
+            <div className="text-center p-4 bg-purple-50 rounded-2xl">
+              <div className="text-3xl font-bold text-purple-600">24h</div>
+              <div className="text-sm text-gray-600 mt-1">Study Time</div>
+            </div>
+            <div className="text-center p-4 bg-amber-50 rounded-2xl">
+              <div className="text-3xl font-bold text-amber-600">8</div>
+              <div className="text-sm text-gray-600 mt-1">Achievements</div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
-          <div className="flex-1 space-y-6">
-            {/* Quick Stats Section Moderne */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="p-6 bg-gradient-to-br from-[#4CAF50] to-[#45A049] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/20 rounded-xl">
-                    <Trophy className="h-8 w-8" />
-                  </div>
-                  <div>
-                    <p className="text-white/90 text-sm font-medium">Grade Average</p>
-                    <p className="text-3xl font-bold">85%</p>
-                    <p className="text-white/70 text-xs">+2.5% this week</p>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-6 bg-gradient-to-br from-[#25AAE1] to-[#1D8CB3] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/20 rounded-xl">
-                    <BookOpen className="h-8 w-8" />
-                  </div>
-                  <div>
-                    <p className="text-white/90 text-sm font-medium">Assignments</p>
-                    <p className="text-3xl font-bold">12/15</p>
-                    <p className="text-white/70 text-xs">80% completed</p>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-6 bg-gradient-to-br from-[#25AAE1] to-[#1D8CB3] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/20 rounded-xl">
-                    <Clock className="h-8 w-8" />
-                  </div>
-                  <div>
-                    <p className="text-white/90 text-sm font-medium">Study Time</p>
-                    <p className="text-3xl font-bold">24h</p>
-                    <p className="text-white/70 text-xs">This month</p>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-6 bg-gradient-to-br from-[#FF9800] to-[#F57C00] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/20 rounded-xl">
-                    <Star className="h-8 w-8" />
-                  </div>
-                  <div>
-                    <p className="text-white/90 text-sm font-medium">Achievements</p>
-                    <p className="text-3xl font-bold">8</p>
-                    <p className="text-white/70 text-xs">+2 this week</p>
-                  </div>
-                </div>
-              </Card>
-            </div>
-
-            {/* Quick Actions Moderne */}
-            <Card className="p-8 shadow-xl border-0 bg-white rounded-2xl">
-              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] rounded-xl">
-                  <Zap className="h-6 w-6 text-white" />
-                </div>
-                Quick Actions
-              </h2>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Quick Actions */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Button
-                  className="h-auto flex-col gap-3 p-6 bg-gradient-to-br from-[#25AAE1] to-[#1D8CB3] hover:from-[#1D8CB3] hover:to-[#25AAE1] transition-all duration-300 transform hover:scale-105 rounded-xl shadow-lg"
-                  onClick={() => router.push("/student/attendance")}
-                >
-                  <Calendar className="h-8 w-8" />
-                  <span className="text-sm font-semibold">Attendance</span>
-                </Button>
-                <Button
-                  className="h-auto flex-col gap-3 p-6 bg-gradient-to-br from-[#4CAF50] to-[#45A049] hover:from-[#45A049] hover:to-[#4CAF50] transition-all duration-300 transform hover:scale-105 rounded-xl shadow-lg"
-                  onClick={() => router.push("/student/assignments")}
-                >
-                  <BookOpen className="h-8 w-8" />
-                  <span className="text-sm font-semibold">Assignments</span>
-                </Button>
-                <Button
-                  className="h-auto flex-col gap-3 p-6 bg-gradient-to-br from-[#25AAE1] to-[#1D8CB3] hover:from-[#1D8CB3] hover:to-[#25AAE1] transition-all duration-300 transform hover:scale-105 rounded-xl shadow-lg"
-                  onClick={() => router.push("/student/gradebook")}
-                >
-                  <GraduationCap className="h-8 w-8" />
-                  <span className="text-sm font-semibold">Grades</span>
-                </Button>
-                <Button
-                  className="h-auto flex-col gap-3 p-6 bg-gradient-to-br from-[#FF9800] to-[#F57C00] hover:from-[#F57C00] hover:to-[#FF9800] transition-all duration-300 transform hover:scale-105 rounded-xl shadow-lg"
-                  onClick={() => router.push("/student/rewards")}
-                >
-                  <Target className="h-8 w-8" />
-                  <span className="text-sm font-semibold">Rewards</span>
-                </Button>
+                {quickActions.map((action, index) => (
+                  <button
+                    key={index}
+                    onClick={() => router.push(action.path)}
+                    className="flex flex-col items-center p-4 rounded-xl hover:bg-gray-50 transition-colors group"
+                  >
+                    <div className={`p-3 ${action.color} rounded-lg text-white mb-2 group-hover:scale-105 transition-transform`}>
+                      <action.icon className="h-5 w-5" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">{action.label}</span>
+                  </button>
+                ))}
               </div>
             </Card>
 
-            {/* Student Progress Section */}
-            <StudentProgress />
-
-            {/* Recent Achievements Section Moderne */}
-            <Card className="p-8 shadow-xl border-0 bg-white rounded-2xl">
-              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-r from-[#FF9800] to-[#F57C00] rounded-xl">
-                  <Trophy className="h-6 w-6 text-white" />
-                </div>
-                Recent Achievements
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex items-center gap-4 p-6 bg-gradient-to-r from-[#4CAF50]/10 to-[#45A049]/10 rounded-2xl hover:shadow-lg transition-all duration-300 transform hover:scale-105">
-                  <div className="p-4 bg-[#4CAF50] rounded-xl">
-                    <Trophy className="h-8 w-8 text-white" />
+            {/* Subject Progress */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-gray-900">Subject Progress</h2>
+                <Button variant="ghost" size="sm" onClick={() => router.push('/student/gradebook')}>
+                  View All <ArrowRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {subjects.map((subject, index) => (
+                  <div key={index} className="p-4 border border-gray-200 rounded-xl hover:shadow-sm transition-shadow">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 ${subject.color} rounded-full`}></div>
+                        <div>
+                          <div className="font-medium text-gray-900">{subject.name}</div>
+                          <div className="text-sm text-gray-500">Grade: {subject.grade}</div>
+                        </div>
+                      </div>
+                      <div className="text-lg font-bold text-gray-900">{subject.progress}%</div>
+                    </div>
+                    <Progress value={subject.progress} className="h-2" />
                   </div>
-                  <div>
-                    <p className="font-bold text-gray-800 text-lg">Perfect Score!</p>
-                    <p className="text-gray-600">Math Quiz - Yesterday</p>
-                    <p className="text-[#4CAF50] text-sm font-semibold">+100 points</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 p-6 bg-gradient-to-r from-[#25AAE1]/10 to-[#1D8CB3]/10 rounded-2xl hover:shadow-lg transition-all duration-300 transform hover:scale-105">
-                  <div className="p-4 bg-[#25AAE1] rounded-xl">
-                    <Star className="h-8 w-8 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-800 text-lg">Assignment Streak</p>
-                    <p className="text-gray-600">5 days in a row!</p>
-                    <p className="text-[#25AAE1] text-sm font-semibold">+50 points</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </Card>
 
-            {/* Today's Schedule Quick View Moderne */}
-            <Card className="p-8 shadow-xl border-0 bg-white rounded-2xl">
-              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] rounded-xl">
-                  <Calendar className="h-6 w-6 text-white" />
-                </div>
-                Today&apos;s Schedule
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-[#25AAE1]/10 to-[#1D8CB3]/10 rounded-xl hover:shadow-md transition-all duration-200">
-                  <div className="w-4 h-4 bg-[#25AAE1] rounded-full"></div>
+            {/* Recent Activity */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Achievements</h2>
+              <div className="space-y-3">
+                <div className="flex items-center gap-4 p-4 bg-green-50 rounded-xl">
+                  <div className="p-2 bg-green-500 rounded-lg">
+                    <Trophy className="h-5 w-5 text-white" />
+                  </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-800">Mathematics</p>
-                    <p className="text-gray-600">
-                      9:00 AM - 10:30 AM • Room 204
-                    </p>
+                    <div className="font-medium text-gray-900">Perfect Score!</div>
+                    <div className="text-sm text-gray-600">Math Quiz - Yesterday</div>
                   </div>
-                  <div className="text-[#25AAE1] font-semibold">Now</div>
+                  <div className="text-sm font-semibold text-green-600">+100 pts</div>
                 </div>
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-[#4CAF50]/10 to-[#45A049]/10 rounded-xl hover:shadow-md transition-all duration-200">
-                  <div className="w-4 h-4 bg-[#4CAF50] rounded-full"></div>
+                <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-xl">
+                  <div className="p-2 bg-blue-500 rounded-lg">
+                    <Star className="h-5 w-5 text-white" />
+                  </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-800">Science Lab</p>
-                    <p className="text-gray-600">
-                      11:00 AM - 12:30 PM • Lab 1
-                    </p>
+                    <div className="font-medium text-gray-900">Assignment Streak</div>
+                    <div className="text-sm text-gray-600">5 days in a row!</div>
                   </div>
-                  <div className="text-[#4CAF50] font-semibold">Next</div>
+                  <div className="text-sm font-semibold text-blue-600">+50 pts</div>
                 </div>
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-[#25AAE1]/10 to-[#1D8CB3]/10 rounded-xl hover:shadow-md transition-all duration-200">
-                  <div className="w-4 h-4 bg-[#25AAE1] rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-800">English Literature</p>
-                    <p className="text-gray-600">
-                      2:00 PM - 3:30 PM • Room 105
-                    </p>
-                  </div>
-                  <div className="text-[#25AAE1] font-semibold">Later</div>
-                </div>
-              </div>
-            </Card>
-
-            {/* AI Assistant Moderne */}
-            <Card className="p-8 shadow-xl border-0 bg-gradient-to-br from-[#FF9800]/10 to-[#F57C00]/10 rounded-2xl">
-              <div className="space-y-6">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-r from-[#FF9800] to-[#F57C00] rounded-xl">
-                    <Bell className="h-6 w-6 text-white" />
-                  </div>
-                  AI Student Assistant
-                </h2>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4 p-6 bg-white rounded-2xl shadow-lg border-l-4 border-[#FF5252]">
-                    <div className="p-3 bg-[#FF5252] rounded-xl mt-1">
-                      <Bell className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-gray-800 font-bold text-lg">
-                        Exam Alert
-                      </p>
-                      <p className="text-gray-600 mt-1">
-                        Tomorrow:{" "}
-                        <span className="font-bold text-[#FF5252]">
-                          Class 5 - Math Exam
-                        </span>
-                      </p>
-                      <Button
-                        size="sm"
-                        className="mt-3 bg-[#FF5252] hover:bg-[#D32F2F] text-white rounded-xl transition-all duration-300 hover:scale-105"
-                      >
-                        Study Now
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4 p-6 bg-white rounded-2xl shadow-lg border-l-4 border-[#25AAE1]">
-                    <div className="p-3 bg-[#25AAE1] rounded-xl mt-1">
-                      <BookOpen className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-gray-800 font-bold text-lg">
-                        Assignment Due
-                      </p>
-                      <p className="text-gray-600 mt-1">
-                        Today:{" "}
-                        <span className="font-bold text-[#25AAE1]">
-                          Science Project
-                        </span>
-                      </p>
-                      <Button
-                        size="sm"
-                        className="mt-3 bg-[#25AAE1] hover:bg-[#1D8CB3] text-white rounded-xl transition-all duration-300 hover:scale-105"
-                      >
-                        Submit Now
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Profile Summary Card Moderne */}
-            <Card className="p-8 shadow-xl border-0 bg-white rounded-2xl">
-              <div className="flex flex-col items-center text-center">
-                <div className="flex items-center gap-4 mb-8 w-full justify-center">
-                  <div className="p-4 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] rounded-xl">
-                    <GraduationCap className="h-8 w-8 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    Student Profile
-                  </h2>
-                </div>
-
-                <div className="flex flex-col items-center gap-6 mb-8">
-                  <div className="relative">
-                    <Avatar className="h-24 w-24 border-4 border-gradient-to-r from-[#25AAE1] to-[#1D8CB3] shadow-xl">
-                      <AvatarImage src="/placeholder.svg" />
-                      <AvatarFallback className="text-2xl font-bold bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white">
-                        JS
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="absolute -bottom-2 -right-2 p-2 bg-[#4CAF50] rounded-full shadow-lg">
-                      <TrendingUp className="h-4 w-4 text-white" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <h3 className="font-bold text-xl text-gray-800">
-                      {username}
-                    </h3>
-                    <p className="text-gray-600">{email}</p>
-                    <p className="text-gray-500">{school}</p>
-                  </div>
-                </div>
-
-                <Button
-                  className="w-full bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] hover:from-[#1D8CB3] hover:to-[#25AAE1] h-14 text-lg font-bold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 rounded-xl"
-                  onClick={() => {
-                    router.push("/student/profile");
-                  }}
-                >
-                  EDIT PROFILE
-                </Button>
               </div>
             </Card>
           </div>
 
-          {/* Activity Feed */}
-          <ActivityFeed />
+          {/* Right Sidebar */}
+          <div className="space-y-6">
+            {/* Today's Schedule */}
+            <Card className="p-6">
+              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-blue-600" />
+                Today's Schedule
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border-l-4 border-blue-500">
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900">Mathematics</div>
+                    <div className="text-sm text-gray-600">9:00 - 10:30 AM</div>
+                  </div>
+                  <div className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full font-medium">Now</div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900">Science Lab</div>
+                    <div className="text-sm text-gray-600">11:00 - 12:30 PM</div>
+                  </div>
+                  <div className="text-xs text-gray-500 font-medium">Next</div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900">English</div>
+                    <div className="text-sm text-gray-600">2:00 - 3:30 PM</div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* AI Study Assistant */}
+            <Card className="p-6 bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200">
+              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Brain className="h-5 w-5 text-purple-600" />
+                AI Study Assistant
+              </h3>
+              <div className="space-y-4">
+                <div className="p-4 bg-white rounded-xl border border-amber-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                    <span className="text-sm font-semibold text-amber-800">Math Quiz Tomorrow</span>
+                  </div>
+                  <p className="text-sm text-gray-700 mb-3">You need 20 minutes of algebra practice</p>
+                  <Button size="sm" className="w-full bg-amber-500 hover:bg-amber-600 text-white">
+                    <Play className="h-4 w-4 mr-2" /> Start Practice
+                  </Button>
+                </div>
+                <div className="p-4 bg-white rounded-xl border border-green-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span className="text-sm font-semibold text-green-800">Great Progress!</span>
+                  </div>
+                  <p className="text-sm text-gray-700">15% improvement in Science this week</p>
+                </div>
+              </div>
+            </Card>
+          </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

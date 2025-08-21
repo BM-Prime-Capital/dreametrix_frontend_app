@@ -101,8 +101,7 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
         const submissionsData = await getSubmissions(
           assignment.id,
           tenantDomain,
-          accessToken,
-          refreshToken
+          accessToken
         );
         
         // Log the structure to debug

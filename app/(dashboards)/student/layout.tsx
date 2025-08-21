@@ -1,7 +1,27 @@
+"use client";
+
 import React from "react";
-import { SidebarProvider } from "@/lib/SidebarContext";
-import { StudentSidebar } from "@/components/student/StudentSidebar";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { StudentRoutes } from "@/constants/routes";
+import { SidebarProvider, useSidebar } from "@/lib/SidebarContext";
+
+function LayoutContent({ children }: { children: React.ReactNode }) {
+  const { isCollapsed } = useSidebar();
+
+  return (
+    <>
+      <Sidebar routes={StudentRoutes} />
+
+      <div
+        className={`transition-all duration-500 ${
+          isCollapsed ? "ml-16" : "ml-64"
+        }`}
+      >
+        {children}
+      </div>
+    </>
+  );
+}
 
 export default function StudentDashboardLayout({
   children,
@@ -9,16 +29,8 @@ export default function StudentDashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex flex-col lg:flex-row gap-6 p-4 lg:p-6">
-        <SidebarProvider>
-          <StudentSidebar routes={StudentRoutes} />
-        </SidebarProvider>
-        
-        <main className="flex-1 bg-background">
-          {children}
-        </main>
-      </div>
-    </div>
+    <SidebarProvider>
+      <LayoutContent>{children}</LayoutContent>
+    </SidebarProvider>
   );
 }

@@ -137,8 +137,7 @@ export function EditAssignmentDialog({
         assignment.id,
         formDataWithFile,
         tenantDomain,
-        accessToken,
-        refreshToken
+        accessToken
       );
 
       // Create the updated assignment object with the course information
