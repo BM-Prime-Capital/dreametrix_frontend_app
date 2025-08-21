@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+//import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -47,7 +47,7 @@ type Ticket = {
 };
 
 export default function SupportPage() {
-  const router = useRouter();
+  //const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
@@ -57,8 +57,8 @@ export default function SupportPage() {
   const [newTicket, setNewTicket] = useState({
     title: "",
     description: "",
-    category: "general" as const,
-    priority: "medium" as const
+    category: "general" as "technical" | "billing" | "general" | "feature-request",
+    priority: "medium" as "low" | "medium" | "high" | "critical"
   });
 
   // Sample data - replace with actual API calls
