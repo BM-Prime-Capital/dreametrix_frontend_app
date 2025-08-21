@@ -37,7 +37,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Modal } from "@/components/ui/modal";
+import { Modal } from "@/components/ui/Modal";
 
 type AuditLog = {
   id: string;
