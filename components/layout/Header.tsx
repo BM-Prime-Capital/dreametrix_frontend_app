@@ -51,10 +51,8 @@ export function Header() {
       <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/5"></div>
       
       <div className="relative container flex h-16 items-center justify-between gap-4 z-10">
-        {/* Logo and navigation */}
-        <div className="flex items-center gap-4 lg:gap-6">
-          <DreaMetrixLogo height={28} />
-          
+        {/* Left navigation */}
+        <div className="flex items-center gap-4 lg:gap-6 flex-1">
           <div className="hidden md:flex md:gap-6">
             <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Dashboard</Button>
             <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Classes</Button>
@@ -63,8 +61,13 @@ export function Header() {
           </div>
         </div>
 
-        {/* Search and user actions */}
-        <div className="flex items-center gap-4">
+        {/* Centered Logo */}
+        <div className="flex items-center justify-center">
+          <DreaMetrixLogo height={28} />
+        </div>
+
+        {/* Right side - Search and user actions */}
+        <div className="flex items-center gap-4 flex-1 justify-end">
           {/* Search */}
           <div className="hidden md:block relative w-full max-w-[240px] lg:max-w-[280px]">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
