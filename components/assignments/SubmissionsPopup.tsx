@@ -351,8 +351,7 @@ export function SubmissionsPopup({
           const data = await getSubmissions(
             assessmentId,
             tenantDomain,
-            accessToken,
-            refreshToken
+            accessToken
           );
 
           // Handle different response structures
