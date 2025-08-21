@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
 import { useState, useEffect } from "react"
@@ -160,7 +161,7 @@ export default function ParentAssignmentsPage() {
               />
               Assignments Dashboard
             </h1>
-            <p className="text-blue-100 text-base">Monitor your children's homework and project deadlines</p>
+            <p className="text-blue-100 text-base">Monitor your children&apos;s homework and project deadlines</p>
           </div>
           <div className="flex gap-2">
             <Button 
@@ -267,7 +268,7 @@ export default function ParentAssignmentsPage() {
             />
             Assignments Overview
           </h2>
-          <p className="text-gray-600 text-sm mt-1">Detailed view of your children's homework and project assignments</p>
+          <p className="text-gray-600 text-sm mt-1">Detailed view of your children&apos;s homework and project assignments</p>
         </div>
         <ParentAssignmentsTable
           selectedStudent={selectedStudent}

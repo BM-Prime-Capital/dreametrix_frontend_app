@@ -52,6 +52,7 @@ type AuditLog = {
   userAgent?: string;
   status: "success" | "failed" | "warning";
   details?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
 };
 
@@ -66,7 +67,7 @@ export default function AuditLogsPage() {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   // Sample data
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([
+  const [auditLogs] = useState<AuditLog[]>([
     {
       id: "1",
       timestamp: "2024-02-15T09:30:45Z",
@@ -243,6 +244,7 @@ export default function AuditLogsPage() {
     navigator.clipboard.writeText(text);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const formatMetadataValue = (value: any) => {
     if (typeof value === 'object' && !Array.isArray(value)) {
       return Object.entries(value).map(([k, v]) => (
@@ -640,7 +642,7 @@ export default function AuditLogsPage() {
                   <Key className="h-6 w-6 text-muted-foreground mb-2" />
                   <h4 className="font-medium">No metadata available</h4>
                   <p className="text-sm text-muted-foreground mt-1">
-                    This action didn't generate additional metadata
+                    This action didn&apos;t generate additional metadata
                   </p>
                 </div>
               )}
