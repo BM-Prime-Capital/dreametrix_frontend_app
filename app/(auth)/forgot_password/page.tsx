@@ -55,6 +55,7 @@ export default function ForgotPasswordPage() {
         <div className="flex justify-center mb-6">
           <DreaMetrixLogo />
         </div>
+        
 
         <div className="text-center mb-6">
           <h2 className="text-[#1A73E8] text-2xl font-semibold">

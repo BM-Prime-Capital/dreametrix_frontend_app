@@ -58,7 +58,7 @@ export function AddAssignmentDialog() {
       form.append("published", formData.published.toString());
       if (file) form.append("file", file);
 
-      await createAssignment(form, tenantDomain, accessToken, refreshToken);
+      await createAssignment(form, tenantDomain, accessToken);
 
       setOpen(false);
       window.location.reload();

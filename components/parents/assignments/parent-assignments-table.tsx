@@ -9,18 +9,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileIcon, FileTextIcon } from "lucide-react";
+import { FileIcon, FileTextIcon, Calendar, Users, Loader2, AlertCircle, RefreshCw, Eye, BookOpen, Clock, User, CheckCircle, XCircle } from "lucide-react";
 import { ViewAssignmentDialog } from "@/components/student/assignments/view-assignment-dialog";
 import { ViewSubmissionDialog } from "@/components/student/assignments/view-submission-dialog";
 import { Badge } from "@/components/ui/badge";
-import { useParentAssignments } from "@/hooks/useParentAssignments";
+import { Button } from "@/components/ui/button";
 import { ParentAssignment } from "@/services/ParentAssignmentService";
-
-// This will be replaced with API data
 
 interface ParentAssignmentsTableProps {
   selectedStudent: string;
   selectedClass: string;
+  selectedType: string;
+  refreshKey: number;
+  assignments: ParentAssignment[];
   accessToken: string;
   refreshToken: string;
 }
@@ -28,6 +29,9 @@ interface ParentAssignmentsTableProps {
 export function ParentAssignmentsTable({
   selectedStudent,
   selectedClass,
+  selectedType,
+  refreshKey,
+  assignments,
   accessToken,
   refreshToken,
 }: ParentAssignmentsTableProps) {
@@ -37,20 +41,6 @@ export function ParentAssignmentsTable({
     useState(false);
   const [selectedAssignment, setSelectedAssignment] =
     useState<ParentAssignment | null>(null);
-
-  // Get child ID from selected student
-  const getChildId = () => {
-    if (selectedStudent === "john") return 1; // Replace with actual child ID
-    if (selectedStudent === "mia") return 2; // Replace with actual child ID
-    return undefined; // For "all-students"
-  };
-
-  // Use the API hook to fetch assignments
-  const { assignments, loading, error } = useParentAssignments({
-    accessToken,
-    refreshToken,
-    childId: getChildId(),
-  });
 
   const handleAssignmentClick = (assignment: ParentAssignment) => {
     setSelectedAssignment(assignment);
@@ -64,167 +54,240 @@ export function ParentAssignmentsTable({
     }
   };
 
-  // Filter assignments based on selected class
+  // Filter assignments based on selected filters
   const filteredAssignments = assignments.filter((assignment) => {
+    // Filter by class
     const classMatch =
       selectedClass === "all-classes" ||
-      assignment.class.toLowerCase() === selectedClass.replace(/-/g, " ");
+      assignment.course.id.toString() === selectedClass;
 
-    return classMatch;
+    // Filter by type
+    const typeMatch =
+      selectedType === "all-types" ||
+      assignment.kind.toLowerCase() === selectedType.toLowerCase();
+
+    // Filter by student
+    const studentMatch = selectedStudent === "all-students" || 
+      assignment.students?.some(student => student.id.toString() === selectedStudent);
+
+    return classMatch && typeMatch && studentMatch;
   });
 
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="w-full flex items-center justify-center py-8">
-        <div className="text-gray-500">Loading assignments...</div>
-      </div>
-    );
-  }
+  // Get students to display based on filter
+  const getStudentsToDisplay = (assignment: ParentAssignment) => {
+    if (selectedStudent === "all-students") {
+      return assignment.students || [];
+    } else {
+      // Show only the selected student
+      return assignment.students?.filter(student => student.id.toString() === selectedStudent) || [];
+    }
+  };
 
-  // Show error state
-  if (error) {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
+  };
+
+  const getStatusBadge = (published: boolean) => {
+    if (published) {
+      return (
+        <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">
+          <CheckCircle className="h-3 w-3 mr-1" />
+          Published
+        </Badge>
+      )
+    } else {
+      return (
+        <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 text-xs">
+          <Clock className="h-3 w-3 mr-1" />
+          Draft
+        </Badge>
+      )
+    }
+  };
+
+  const getTypeBadge = (type: string) => {
+    const typeColors = {
+      'homework': 'bg-blue-100 text-blue-700 border-blue-200',
+      'project': 'bg-purple-100 text-purple-700 border-purple-200',
+      'quiz': 'bg-orange-100 text-orange-700 border-orange-200',
+      'exam': 'bg-red-100 text-red-700 border-red-200',
+      'assignment': 'bg-green-100 text-green-700 border-green-200'
+    };
+    
+    const colorClass = typeColors[type.toLowerCase() as keyof typeof typeColors] || 'bg-gray-100 text-gray-700 border-gray-200';
+    
     return (
-      <div className="w-full flex items-center justify-center py-8">
-        <div className="text-red-500">Error: {error}</div>
+      <Badge variant="outline" className={`${colorClass} text-xs`}>
+        {type.charAt(0).toUpperCase() + type.slice(1)}
+      </Badge>
+    )
+  };
+
+  if (filteredAssignments.length === 0) {
+    return (
+      <div className="w-full flex items-center justify-center py-16">
+        <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-8 rounded-3xl border border-gray-200 shadow-lg max-w-md w-full">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">No Assignments Found</h3>
+            <p className="text-gray-600 text-center">No assignments match the selected filters</p>
+          </div>
+        </div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="w-full relative">
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent border-b">
-            <TableHead className="font-bold text-gray-700 py-4">
-              STUDENT
-            </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">
-              CLASS
-            </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">DAY</TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">TYPE</TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">
-              ASSIGNMENT
-            </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">
-              FILES
-            </TableHead>
-            <TableHead className="font-bold text-gray-700 py-4">
-              TEACHER
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredAssignments.map((assignment, index) => (
-            <TableRow
-              key={assignment.id}
-              className={index % 2 === 0 ? "bg-[#EDF6FA]" : ""}
-            >
-              <TableCell className="font-medium text-gray-500">
-                <Badge
-                  variant="outline"
-                  className="bg-blue-50 text-blue-700 hover:bg-blue-100"
-                >
-                  {assignment.name}
-                </Badge>
-              </TableCell>
-              <TableCell className="font-medium text-gray-500">
-                {assignment.course.name}
-              </TableCell>
-              <TableCell className="text-gray-500">
-                <span
-                  className={
-                    assignment.day === "TODAY"
-                      ? "text-[#25AAE1] underline"
-                      : assignment.day === "YESTERDAY"
-                      ? "text-orange-400 underline"
-                      : ""
-                  }
-                >
-                  {assignment.created_at}
-                </span>
-              </TableCell>
-              <TableCell className="text-gray-500">{assignment.kind}</TableCell>
-              <TableCell>
-                <div className="flex items-center justify-center">
-                  <button
-                    className="text-[#25AAE1] hover:text-[#1D8CB3]"
-                    onClick={() => handleAssignmentClick(assignment)}
-                  >
-                    <FileTextIcon className="h-5 w-5" />
-                  </button>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center justify-center">
-                  <button
-                    className={`${
-                      assignment.published ? "text-[#4CAF50]" : "text-gray-400"
-                    } hover:opacity-80`}
-                    onClick={() => handleSubmissionClick(assignment)}
-                  >
-                    <FileIcon className="h-5 w-5" />
-                  </button>
-                </div>
-              </TableCell>
-              <TableCell className="text-gray-500">
-                <div className="flex items-center">
-                  {assignment.teacher} <MessageIcon />
-                </div>
-              </TableCell>
+      <div className="overflow-x-auto">
+        <Table className="w-full">
+          <TableHeader>
+            <TableRow className="hover:bg-transparent border-b border-gray-200">
+              <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide pl-6">ASSIGNMENT</TableHead>
+              <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide text-center">CLASS</TableHead>
+              <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide text-center">TYPE</TableHead>
+              <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide text-center">STUDENTS</TableHead>
+              <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide text-center">DUE DATE</TableHead>
+              <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide text-center">STATUS</TableHead>
+              <TableHead className="font-bold text-gray-700 py-4 text-sm uppercase tracking-wide text-center">ACTIONS</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {filteredAssignments.map((assignment, index) => (
+              <TableRow 
+                key={assignment.id} 
+                className={`hover:bg-blue-50/50 transition-all duration-200 cursor-pointer ${
+                  index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
+                }`}
+                onClick={() => handleAssignmentClick(assignment)}
+              >
+                <TableCell className="py-4 pl-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] rounded-full flex items-center justify-center">
+                      <FileTextIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-800">{assignment.title}</div>
+                      <div className="text-gray-500 text-sm line-clamp-2">{assignment.description}</div>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="py-4 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
+                      <BookOpen className="h-4 w-4 text-white" />
+                    </div>
+                    <span className="font-medium text-gray-700">{assignment.course.name}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="py-4 text-center">
+                  {getTypeBadge(assignment.kind)}
+                </TableCell>
+                <TableCell className="py-4 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                      <Users className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="text-sm">
+                      <div className="font-medium text-gray-700">
+                        {getStudentsToDisplay(assignment).length} student{getStudentsToDisplay(assignment).length !== 1 ? 's' : ''}
+                      </div>
+                      <div className="text-gray-500 text-xs">
+                        {getStudentsToDisplay(assignment).slice(0, 2).map(s => s.name).join(', ')}
+                        {getStudentsToDisplay(assignment).length > 2 && ` +${getStudentsToDisplay(assignment).length - 2}`}
+                      </div>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="py-4 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
+                      <Calendar className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="text-sm">
+                      <div className="font-medium text-gray-700">
+                        {formatDate(assignment.due_date)}
+                      </div>
+                      <div className="text-gray-500 text-xs">
+                        {new Date(assignment.due_date) < new Date() ? 'Overdue' : 'Upcoming'}
+                      </div>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="py-4 text-center">
+                  {getStatusBadge(assignment.published)}
+                </TableCell>
+                <TableCell className="py-4 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white border-0 hover:from-[#1D8CB3] hover:to-[#1453B8] transition-all duration-300"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAssignmentClick(assignment);
+                      }}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      View
+                    </Button>
+                    {assignment.published && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 hover:from-green-600 hover:to-green-700 transition-all duration-300"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSubmissionClick(assignment);
+                        }}
+                      >
+                        <FileIcon className="h-4 w-4 mr-2" />
+                        Submission
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
+      {/* Assignment Details Dialog */}
       {selectedAssignment && (
-        <>
-          <ViewAssignmentDialog
-            isOpen={isViewAssignmentModalOpen}
-            onClose={() => setIsViewAssignmentModalOpen(false)}
-            assignment={selectedAssignment}
-          />
-
-          <ViewSubmissionDialog
-            isOpen={isViewSubmissionModalOpen}
-            onClose={() => setIsViewSubmissionModalOpen(false)}
-            assignment={selectedAssignment}
-          />
-        </>
+        <ViewAssignmentDialog
+          isOpen={isViewAssignmentModalOpen}
+          onClose={() => {
+            setIsViewAssignmentModalOpen(false);
+            setSelectedAssignment(null);
+          }}
+          assignment={selectedAssignment}
+          accessToken={accessToken}
+          refreshToken={refreshToken}
+        />
       )}
 
-      {(isViewAssignmentModalOpen || isViewSubmissionModalOpen) && (
-        <div className="absolute inset-0 bg-white/50 backdrop-blur-sm" />
+      {/* Submission Details Dialog */}
+      {selectedAssignment && (
+        <ViewSubmissionDialog
+          isOpen={isViewSubmissionModalOpen}
+          onClose={() => {
+            setIsViewSubmissionModalOpen(false);
+            setSelectedAssignment(null);
+          }}
+          assignment={selectedAssignment}
+          accessToken={accessToken}
+          refreshToken={refreshToken}
+        />
       )}
     </div>
-  );
-}
-
-function MessageIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-[#25AAE1] ml-2"
-    >
-      <path
-        d="M22 2L11 13"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M22 2L15 22L11 13L2 9L22 2Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }

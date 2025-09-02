@@ -304,17 +304,26 @@ export const ParentRoutes = [
     icon: menuImages.attendance,
     label: "ATTENDANCE",
   },
-
-
-
+  {
+    path: `${userPath.PARENT_BASE_PATH}/rewards`,
+    icon: menuImages.rewards,
+    label: "REWARDS",
+  },
+  {
+    path: `${userPath.PARENT_BASE_PATH}/characters`,
+    icon: menuImages.character,
+    label: "CHARACTERS",
+  },
+  {
+    path: `${userPath.PARENT_BASE_PATH}/report-cards`,
+    icon: menuImages.report_card,
+    label: "REPORT CARDS",
+  },
   {
     path: `${userPath.PARENT_BASE_PATH}/communicate`,
     icon: menuImages.communicate,
     label: "COMMUNICATE",
   },
-
-
-
   {
     path: `${userPath.PARENT_BASE_PATH}/library`,
     icon: menuImages.report_card,
@@ -359,12 +368,7 @@ export const SuperAdminRoutes = [
     label: "Templates",
   },
   
-  // Reports & Analytics
-  {
-    path: `${userPath.SUPER_ADMIN_BASE_PATH}/analytics`,
-    icon: menuImages.analytics,
-    label: "Analytics",
-  },
+  
   
   // Audit Logs
   {
@@ -389,7 +393,7 @@ export const SuperAdminRoutes = [
   
   // API Management
   {
-    path: `${userPath.SUPER_ADMIN_BASE_PATH}/api`,
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/api-management`,
     icon: menuImages.api,
     label: "API Management",
   },
@@ -407,6 +411,13 @@ export const SuperAdminRoutes = [
     icon: menuImages.backup,
     label: "Backup",
   },
+  // Reports & Analytics
+  {
+    path: `${userPath.SUPER_ADMIN_BASE_PATH}/analytics`,
+    icon: menuImages.analytics,
+    label: "Analytics",
+  },
+
    // System Settings
    {
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/system-settings`,
