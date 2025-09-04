@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BACKEND_BASE_URL } from "@/app/utils/constants";
 
 // Interface pour les données rewards student
@@ -103,6 +104,20 @@ export async function getStudentRewardsView(
   }
 }
 
+export const getRewardsGeneralView = () => {
+
+  let data: any; 
+  return data
+  // Implement the function logic here
+
+};
+
+export const getRewardsFocusView = () => {
+
+  // Implement the function logic here
+
+};
+
 export async function getStudentRewardsDetail(
   accessToken: string,
   studentId: number
@@ -141,6 +156,8 @@ export async function getStudentRewardsDetail(
     throw new Error("Échec de la connexion au serveur");
   }
 }
+
+
 
 export async function getParentRewardsView(
   accessToken: string

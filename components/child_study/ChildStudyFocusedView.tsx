@@ -3,14 +3,14 @@
 
 import { Card } from "@/components/ui/card";
 import PageTitleH1 from "@/components/ui/page-title-h1";
-import { generalImages } from "@/constants/images";
+//import { generalImages } from "@/constants/images";
 import { Button } from "../ui/button";
 import { ChevronLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Loader } from "../ui/loader";
 import NoDataPersonalized from "../ui/no-data-personalized";
-import { getRewardsFocusView } from "@/services/RewardsService";
+//import { getRewardsFocusView } from "@/services/RewardsService";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { views } from "@/constants/global";
@@ -22,7 +22,9 @@ export default function ChildStudyFocusedView({
   student: any;
   changeView: (viewName: string) => void;
 }) {
-  const [studentData, setStudentData] = useState<any>(null);
+  //const [studentData, setStudentData] = useState<any>(null);
+
+  const [studentData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const { tenantDomain: tenantPrimaryDomain, accessToken, refreshToken } = useRequestInfo();
   const [isLoading, setIsLoading] = useState(false);
@@ -40,77 +42,77 @@ export default function ChildStudyFocusedView({
           throw new Error("Missing student ID");
         }
 
-        const data = await getRewardsFocusView(
-          tenantPrimaryDomain,
-          accessToken,
-          refreshToken,
-          "",
-          "",
-          student.student.id 
-        );
+        //const data = await getRewardsFocusView(
+          // tenantPrimaryDomain,
+          // accessToken,
+          // refreshToken,
+          // "",
+          // "",
+          // student.student.id 
+        //);
 
-        const transformedData = {
-          ...data,
-          personalInfo: {
-            fullName: `${data.studentName || "N/A"}`,
-            birthDate: "2005-03-15", 
-            age: calculateAge("2005-03-15"), 
-            gender: "Male", 
-            address: "123 School St, Boston, MA",
-            phone: "(123) 456-7890", 
-            email: "student@example.com", 
-            nationality: "US Citizen", 
-            photoUrl: (data as any).photoUrl || generalImages.student
-          },
-          academicInfo: {
-            school: "Boston High School", 
-            grade: (data as any).className ? extractGrade((data as any).className) : "N/A",
-            homeroomTeacher: "Mr. Johnson", 
-            gpa: "3.2",
-            schedule: [
-              { time: "8:00-9:00", subject: "Math", teacher: "Mr. Smith" },
-              { time: "9:00-10:00", subject: "English", teacher: "Ms. Davis" },
-              { time: "10:00-11:00", subject: "Science", teacher: "Dr. Brown" },
-              { time: "11:00-12:00", subject: "History", teacher: "Mrs. Wilson" }
-            ],
-            reportCards: [
-              { term: "Fall 2023", link: "#" },
-              { term: "Winter 2023", link: "#" }
-            ]
-          },
-          medicalInfo: {
-            allergies: "Peanuts", 
-            conditions: "None",
-            iepStatus: data.totalPoints < 50 ? "Active" : "None",
-            accommodations: "Extended test time, Preferential seating" 
-          },
-          behaviorInfo: {
-            absences: 3,
-            tardies: 2,
-            incidents: [
-              { date: "2023-09-15", description: "Late to class", resolution: "Warning" },
-              { date: "2023-10-02", description: "Disruptive behavior", resolution: "Detention" }
-            ],
-            awards: [
-              { date: "2023-11-01", description: "Student of the Month" },
-              { date: "2023-09-20", description: "Perfect Attendance" }
-            ]
-          },
-          emergencyContacts: [
-            { name: "Jane Doe", relation: "Mother", phone: "(123) 456-7890", email: "parent@example.com" },
-            { name: "John Doe", relation: "Father", phone: "(987) 654-3210", email: "parent2@example.com" }
-          ],
-          extracurriculars: [
-            { activity: "Basketball", schedule: "Mon/Wed 3-5pm" },
-            { activity: "Debate Club", schedule: "Tue/Thu 4-6pm" }
-          ],
-          teacherComments: [
-            { teacher: "Mr. Smith", subject: "Math", comment: "Shows great potential but needs to complete homework regularly" },
-            { teacher: "Ms. Davis", subject: "English", comment: "Excellent participation in class discussions" }
-          ]
-        };
+        // const transformedData = {
+        //   ...data,
+        //   personalInfo: {
+        //     fullName: `${data.studentName || "N/A"}`,
+        //     birthDate: "2005-03-15", 
+        //     age: calculateAge("2005-03-15"), 
+        //     gender: "Male", 
+        //     address: "123 School St, Boston, MA",
+        //     phone: "(123) 456-7890", 
+        //     email: "student@example.com", 
+        //     nationality: "US Citizen", 
+        //     photoUrl: (data as any).photoUrl || generalImages.student
+        //   },
+        //   academicInfo: {
+        //     school: "Boston High School", 
+        //     grade: (data as any).className ? extractGrade((data as any).className) : "N/A",
+        //     homeroomTeacher: "Mr. Johnson", 
+        //     gpa: "3.2",
+        //     schedule: [
+        //       { time: "8:00-9:00", subject: "Math", teacher: "Mr. Smith" },
+        //       { time: "9:00-10:00", subject: "English", teacher: "Ms. Davis" },
+        //       { time: "10:00-11:00", subject: "Science", teacher: "Dr. Brown" },
+        //       { time: "11:00-12:00", subject: "History", teacher: "Mrs. Wilson" }
+        //     ],
+        //     reportCards: [
+        //       { term: "Fall 2023", link: "#" },
+        //       { term: "Winter 2023", link: "#" }
+        //     ]
+        //   },
+        //   medicalInfo: {
+        //     allergies: "Peanuts", 
+        //     conditions: "None",
+        //     iepStatus: data.totalPoints < 50 ? "Active" : "None",
+        //     accommodations: "Extended test time, Preferential seating" 
+        //   },
+        //   behaviorInfo: {
+        //     absences: 3,
+        //     tardies: 2,
+        //     incidents: [
+        //       { date: "2023-09-15", description: "Late to class", resolution: "Warning" },
+        //       { date: "2023-10-02", description: "Disruptive behavior", resolution: "Detention" }
+        //     ],
+        //     awards: [
+        //       { date: "2023-11-01", description: "Student of the Month" },
+        //       { date: "2023-09-20", description: "Perfect Attendance" }
+        //     ]
+        //   },
+        //   emergencyContacts: [
+        //     { name: "Jane Doe", relation: "Mother", phone: "(123) 456-7890", email: "parent@example.com" },
+        //     { name: "John Doe", relation: "Father", phone: "(987) 654-3210", email: "parent2@example.com" }
+        //   ],
+        //   extracurriculars: [
+        //     { activity: "Basketball", schedule: "Mon/Wed 3-5pm" },
+        //     { activity: "Debate Club", schedule: "Tue/Thu 4-6pm" }
+        //   ],
+        //   teacherComments: [
+        //     { teacher: "Mr. Smith", subject: "Math", comment: "Shows great potential but needs to complete homework regularly" },
+        //     { teacher: "Ms. Davis", subject: "English", comment: "Excellent participation in class discussions" }
+        //   ]
+        // };
 
-        setStudentData(transformedData);
+       // setStudentData(transformedData);
       } catch (err) {
         console.error("Failed to load student details:", err);
         setError(err instanceof Error ? err.message : "Failed to load student details");
@@ -122,23 +124,23 @@ export default function ChildStudyFocusedView({
     loadStudentDetails();
   }, [tenantPrimaryDomain, accessToken, refreshToken, student?.student?.id]);
 
-  const extractGrade = (className: string) => {
-    const match = className.match(/(\d+)(th|rd|nd|st)?\s?Grade/i);
-    return match ? `${match[1]}${match[2] || 'th'} Grade` : className;
-  };
+  // const extractGrade = (className: string) => {
+  //   const match = className.match(/(\d+)(th|rd|nd|st)?\s?Grade/i);
+  //   return match ? `${match[1]}${match[2] || 'th'} Grade` : className;
+  // };
 
-  function calculateAge(birthDate: string): number {
-    const today = new Date();
-    const birthDateObj = new Date(birthDate);
-    let age = today.getFullYear() - birthDateObj.getFullYear();
-    const monthDiff = today.getMonth() - birthDateObj.getMonth();
+  // function calculateAge(birthDate: string): number {
+  //   const today = new Date();
+  //   const birthDateObj = new Date(birthDate);
+  //   let age = today.getFullYear() - birthDateObj.getFullYear();
+  //   const monthDiff = today.getMonth() - birthDateObj.getMonth();
     
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
-      age--;
-    }
+  //   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+  //     age--;
+  //   }
     
-    return age;
-  }
+  //   return age;
+  // }
 
   if (isLoading) {
     return (

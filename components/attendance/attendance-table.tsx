@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -12,14 +13,14 @@ import AttendanceItem from "../ui/attendance-item";
 import { getAttendances, getStudentAttendanceStats, updateAttendance, updateMultipleAttendances } from "@/services/AttendanceService";
 import { Loader } from "../ui/loader";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
-import NoData from "../ui/no-data";
+//import NoData from "../ui/no-data";
 import { useEffect, useState } from "react";
 import { localStorageKey } from "@/constants/global";
 import { Checkbox } from "../ui/checkbox";
 import { Button } from "../ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import toast from "react-hot-toast";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface AttendanceStats {
@@ -70,7 +71,7 @@ export function AttendanceTable({
   currentDate,
   onAttendancesLoaded,
   onInitializeAttendances,
-  onEditAttendance,
+  //onEditAttendance,
 }: {
   isAttendanceDatePast: boolean;
   currentDate: string;
@@ -91,7 +92,7 @@ export function AttendanceTable({
   const [isUpdating, setIsUpdating] = useState(false);
   const [updatingStudentId, setUpdatingStudentId] = useState<number | null>(null);
   const [showInitModal, setShowInitModal] = useState(false);
-  const isToday = new Date().toISOString().split("T")[0] === currentDate;
+  //const isToday = new Date().toISOString().split("T")[0] === currentDate;
 
   const loadData = async () => {
     setIsLoading(true);

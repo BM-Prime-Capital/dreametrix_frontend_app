@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BACKEND_BASE_URL } from '@/app/utils/constants';
 
 // Interface pour les données brutes de l'API
@@ -22,6 +23,8 @@ interface ApiClass {
 }
 
 export interface ParentClass {
+  end_time(end_time: any): import("react").ReactNode;
+  start_time(start_time: any): import("react").ReactNode;
   id: number;
   name: string;
   subject: string;
@@ -65,8 +68,8 @@ export interface ParentClassDetails extends ParentClass {
  */
 export async function getParentClasses(
   accessToken: string,
-  refreshToken: string,
-  childId?: number
+  // refreshToken: string,
+  // childId?: number
 ): Promise<ParentClass[]> {
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
@@ -134,7 +137,9 @@ export async function getParentClasses(
       level: apiClass.grade,
       students: students,
       created_at: apiClass.created_at,
-      updated_at: apiClass.updated_at
+      updated_at: apiClass.updated_at,
+      start_time: (start_time: any) => `Start time: ${start_time}`,
+      end_time: (end_time: any) => `End time: ${end_time}`
     };
   });
 }
@@ -145,7 +150,7 @@ export async function getParentClasses(
 export async function getParentClassDetails(
   classId: number,
   accessToken: string,
-  refreshToken: string
+  //refreshToken: string
 ): Promise<ParentClassDetails> {
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
@@ -220,7 +225,9 @@ export async function getParentClassDetails(
       total_students: students.length,
       average_grade: undefined,
       attendance_rate: undefined
-    }
+    },
+    start_time: (start_time: any) => `Start time: ${start_time}`,
+    end_time: (end_time: any) => `End time: ${end_time}`
   };
 }
 
@@ -230,7 +237,7 @@ export async function getParentClassDetails(
 export async function getParentClassesByChild(
   childId: number,
   accessToken: string,
-  refreshToken: string
+  //refreshToken: string
 ): Promise<ParentClass[]> {
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");

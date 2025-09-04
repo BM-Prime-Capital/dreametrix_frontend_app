@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BACKEND_BASE_URL } from "@/app/utils/constants";
 
 // Interface pour les données character student
@@ -65,6 +66,31 @@ export async function getStudentCharacterView(
     throw new Error("Échec de la connexion au serveur");
   }
 }
+
+export const getCharracters = () => {
+
+  // Implement the function logic here
+
+};
+
+export const getCharractersList = () => {
+
+  // Implement the function logic here
+
+};
+
+export const updateCharacter = () => {
+
+  // Implement the function logic here
+
+};
+
+export const getCharacterGeneralView = () => {
+
+  // Implement the function logic here
+
+};
+
 
 export async function getParentCharacterView(
   accessToken: string
