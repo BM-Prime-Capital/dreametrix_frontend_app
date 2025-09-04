@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -12,15 +13,15 @@ import {
   type VisibilityState,
   type FilterFn
 } from "@tanstack/react-table";
-import { Eye, ChevronDown, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { Eye, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+// import {
+//   DropdownMenu,
+//   DropdownMenuCheckboxItem,
+//   DropdownMenuContent,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -171,12 +172,12 @@ export default function RewardsGeneralView({
         }
 
         const apiData = await getRewardsGeneralView(
-          tenantPrimaryDomain,
-          accessToken,
-          refreshToken,
-          fromDate,
-          toDate,
-          currentClass?.id
+          // tenantPrimaryDomain,
+          // accessToken,
+          // refreshToken,
+          // fromDate,
+          // toDate,
+          // currentClass?.id
         );
 
         const transformedData = apiData.classes.flatMap((classItem: any) =>
@@ -228,7 +229,7 @@ export default function RewardsGeneralView({
       ...rewards.map(item => 
         Object.entries(item)
           .filter(([key]) => key !== 'rawData')
-          .map(([_, value]) => value)
+          .map(([, value]) => value)
           .join(',')
       )
     ].join('\n');

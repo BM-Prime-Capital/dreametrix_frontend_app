@@ -34,7 +34,7 @@ export function GradebookSettingsDialog({
   courseId,
   children,
 }: GradebookSettingsDialogProps) {
-  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  const { tenantDomain, accessToken } = useRequestInfo();
   const [open, setOpen] = useState(false);
   const [weights, setWeights] = useState<Weights>({
     test: 20,
@@ -64,7 +64,7 @@ export function GradebookSettingsDialog({
         courseId,
         tenantDomain,
         accessToken,
-        refreshToken
+        //refreshToken
       );
 
       console.log("📊 Assessment weights data:", data);
@@ -109,7 +109,7 @@ export function GradebookSettingsDialog({
         weights,
         tenantDomain,
         accessToken,
-        refreshToken
+       // refreshToken
       );
 
       console.log("✅ Assessment weights saved successfully");

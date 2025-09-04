@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { attendanceLabel } from "@/constants/global";
 import React, { useState } from "react";
 
@@ -8,7 +9,7 @@ export default function AttendanceItem({
 }: {
   label: string;
   isAttendanceDatePast: boolean;
-  handleChange: Function;
+  handleChange: any;
 }) {
   const [currentAttendanceLabel, setCurrentAttendanceLabel] = useState(label);
 
@@ -20,7 +21,7 @@ export default function AttendanceItem({
   const PRESENT_COLOR = isAttendanceDatePast ? "gray-300" : "bgGreenLight2";
   const ABSENT_COLOR = isAttendanceDatePast ? "gray-300" : "bgPinkLight2";
   const LATE_COLOR = isAttendanceDatePast ? "gray-300" : "bgYellow";
-  const HALF_DAY_COLOR = isAttendanceDatePast ? "gray-300" : "bgOrangeLight2";
+  //const HALF_DAY_COLOR = isAttendanceDatePast ? "gray-300" : "bgOrangeLight2";
 
   function handleClick(attendanceLabel: string): void {
     if (!isAttendanceDatePast) {

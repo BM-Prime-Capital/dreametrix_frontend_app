@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 "use client";
 
 import {
@@ -8,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import NoData from "../ui/no-data";
@@ -50,6 +53,7 @@ const rewardsData = [
 
 export function RewardsTable({ refreshTime, onDataLoaded }: RewardsTableProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+ 
   const [rewards, setRewards] = useState<any[]>([]);
   const router = useRouter();
 

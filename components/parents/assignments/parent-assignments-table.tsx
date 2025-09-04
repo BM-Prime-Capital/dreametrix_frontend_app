@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileIcon, FileTextIcon, Calendar, Users, Loader2, AlertCircle, RefreshCw, Eye, BookOpen, Clock, User, CheckCircle, XCircle } from "lucide-react";
+import { FileIcon, FileTextIcon, Calendar, Users, AlertCircle, Eye, BookOpen, Clock, CheckCircle } from "lucide-react";
 import { ViewAssignmentDialog } from "@/components/student/assignments/view-assignment-dialog";
 import { ViewSubmissionDialog } from "@/components/student/assignments/view-submission-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -30,10 +30,10 @@ export function ParentAssignmentsTable({
   selectedStudent,
   selectedClass,
   selectedType,
-  refreshKey,
+  //refreshKey,
   assignments,
-  accessToken,
-  refreshToken,
+  //accessToken,
+  //refreshToken,
 }: ParentAssignmentsTableProps) {
   const [isViewAssignmentModalOpen, setIsViewAssignmentModalOpen] =
     useState(false);
@@ -179,7 +179,7 @@ export function ParentAssignmentsTable({
                       <div className="text-gray-500 text-sm line-clamp-2">{assignment.description}</div>
                     </div>
                   </div>
-                </TableCell>
+                </TableCell>x
                 <TableCell className="py-4 text-center">
                   <div className="flex items-center justify-center gap-2">
                     <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
@@ -270,8 +270,7 @@ export function ParentAssignmentsTable({
             setSelectedAssignment(null);
           }}
           assignment={selectedAssignment}
-          accessToken={accessToken}
-          refreshToken={refreshToken}
+         // refreshToken={refreshToken}
         />
       )}
 
@@ -284,8 +283,7 @@ export function ParentAssignmentsTable({
             setSelectedAssignment(null);
           }}
           assignment={selectedAssignment}
-          accessToken={accessToken}
-          refreshToken={refreshToken}
+         // refreshToken={refreshToken}
         />
       )}
     </div>

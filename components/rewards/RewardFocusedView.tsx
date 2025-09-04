@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import PageTitleH1 from "@/components/ui/page-title-h1";
 import { Button } from "../ui/button";
 import { ChevronLeft } from "lucide-react";
-import { localStorageKey, views } from "@/constants/global";
+import { views } from "@/constants/global";
 import { useEffect, useState } from "react";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Loader } from "../ui/loader";
@@ -48,12 +49,12 @@ export default function RewardsFocusedView({
         }
 
         const data = await getRewardsFocusView(
-          tenantPrimaryDomain,
-          accessToken,
-          refreshToken,
-          "",
-          "",
-          student.student.id // ← Utilisez student.student.id
+          // tenantPrimaryDomain,
+          // accessToken,
+          // refreshToken,
+          // "",
+          // "",
+          // student.student.id // ← Utilisez student.student.id
         );
 
         setStudentData(data);

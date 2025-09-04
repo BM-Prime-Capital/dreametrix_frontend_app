@@ -9,8 +9,8 @@ import { Button } from "../ui/button";
 import ClassSelect from "../ClassSelect";
 import Link from "next/link";
 //import { useSelector } from "react-redux";
-import LineChartComponent from "../ui/line-chart";
-import DoughnutChartComponent from "../ui/pie-chart";
+//import LineChartComponent from "../ui/line-chart";
+//import DoughnutChartComponent from "../ui/pie-chart";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import {  useEffect, useState } from "react";
 import { getStudentReportCard } from "@/services/student-service";
@@ -23,7 +23,7 @@ export default function ReportCard() {
   const [reportData, setReportData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedStudentId, setSelectedStudentId] = useState<number>(1); // Valeur par défaut à 1
+  const [selectedStudentId, setSelectedStudentId] = useState<number>(1); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,9 +35,11 @@ export default function ReportCard() {
   
       try {
         setLoading(true);
-        const response = await getStudentReportCard(selectedStudentId, tenantDomain, accessToken);
+        const response = await getStudentReportCard(
+         // selectedStudentId, tenantDomain, accessToken
+        );
         console.log("Report Card Data:", response);
-        setReportData(response.report_card);
+        setReportData(response?.report_card);
         //setLoading(false);
       } catch (err) {
         console.error("Error fetching report card:", err);
@@ -203,13 +205,13 @@ export default function ReportCard() {
             <h4 className="font-bold mb-3">Grade Trend</h4>
             <div className="h-64">
               
-              <LineChartComponent data={charts.performance_trend} />
+              {/* <LineChartComponent data={charts.performance_trend} /> */}
             </div>
           </div>
           <div className="bg-white p-4 rounded-lg border relative">
             <h4 className="font-bold mb-3">Grade Distribution</h4>
             <div className="h-64 flex items-center justify-center">
-              <DoughnutChartComponent data={charts.grade_distribution} />
+              {/* <DoughnutChartComponent data={charts.grade_distribution} /> */}
               <div className="absolute text-center">
                 <p className="text-2xl font-bold">{charts.grade_distribution.average_score}%</p>
                 <p className="text-sm text-gray-500">Class Average</p>

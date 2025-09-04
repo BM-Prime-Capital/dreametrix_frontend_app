@@ -54,10 +54,10 @@ export function useParentAssignments({
 
       if (childId) {
         // Fetch assignments for a specific child
-        data = await getChildAssignments(childId, accessToken, refreshToken, filters);
+        data = await getChildAssignments(childId, accessToken);
       } else {
         // Fetch assignments for all children
-        data = await getParentAssignments(accessToken, refreshToken, filters);
+        data = await getParentAssignments(accessToken);
       }
 
       setAssignments(data);

@@ -1,19 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { ParentChild, GradebookData, ClassData } from "@/services/ParentGradebookService"
-import { Loader2, AlertCircle, ChevronLeft, ChevronRight, Eye, User, BookOpen, GraduationCap, RefreshCw, Star, TrendingUp } from "lucide-react"
+//import { Card } from "@/components/ui/card"
+import { ParentChild, ClassData } from "@/services/ParentGradebookService"
+import { Loader2, AlertCircle, ChevronLeft, ChevronRight, Eye, BookOpen, RefreshCw, Star, TrendingUp } from "lucide-react"
 import { GradebookDetailsDialog } from "./gradebook-details-dialog"
 
 interface ParentGradebookTableProps {
   selectedStudent: string
   selectedClass: string
   children: ParentChild[]
-  gradebookData: GradebookData[]
+  gradebookData: any
   classData: ClassData[]
   loading: boolean
   error: string | null
@@ -29,7 +30,7 @@ export function ParentGradebookTable({
   selectedClass,
   children,
   gradebookData,
-  classData,
+  //classData,
   loading,
   error,
   currentPage,
@@ -157,7 +158,7 @@ export function ParentGradebookTable({
           <TableBody>
             {paginatedData.map((item, index) => {
               // Trouver les données de gradebook correspondantes
-              const gradebookItem = gradebookData.find(gb => 
+              const gradebookItem = gradebookData.find((gb: { student_id: number; class_id: number }) => 
                 gb.student_id === item.student_id && gb.class_id === item.class_id
               )
               const averageScore = gradebookItem?.average_score || 0

@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+//import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ParentClassesTable } from "@/components/parents/ParentClassesTable"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RefreshCw, Loader2, AlertCircle, BookOpen, Users, TrendingUp, Award, Star, GraduationCap, Clock, Calendar } from "lucide-react"
+import { RefreshCw, Loader2, AlertCircle, BookOpen, Users, TrendingUp, Award, Calendar } from "lucide-react"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
 import { getParentClasses, ParentClass } from "@/services/ParentClassService"
 import { menuImages } from "@/constants/images"
@@ -19,8 +19,8 @@ export default function ParentClassesPage() {
   const [selectedChild, setSelectedChild] = useState("all")
   const [selectedSubject, setSelectedSubject] = useState("all")
   const [selectedLevel, setSelectedLevel] = useState("all")
-  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
-  const [isProgramsModalOpen, setIsProgramsModalOpen] = useState(false)
+  //const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
+  //const [isProgramsModalOpen, setIsProgramsModalOpen] = useState(false)
   const [classes, setClasses] = useState<ParentClass[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -33,7 +33,7 @@ export default function ParentClassesPage() {
     setError(null)
     
     try {
-      const data = await getParentClasses(accessToken, refreshToken)
+      const data = await getParentClasses(accessToken)
       setClasses(data)
       // Arrêter le chargement dès qu'on reçoit une réponse (succès)
       stopLoading()
@@ -92,8 +92,8 @@ export default function ParentClassesPage() {
   const totalClasses = classes.length
   const totalStudents = children.length
   const totalSubjects = subjects.length
-  const totalTeachers = classes.map(cls => `${cls.teacher.first_name} ${cls.teacher.last_name}`)
-    .filter((teacher, index, self) => self.indexOf(teacher) === index).length
+  // const totalTeachers = classes.map(cls => `${cls.teacher.first_name} ${cls.teacher.last_name}`)
+  //   .filter((teacher, index, self) => self.indexOf(teacher) === index).length
 
   if (loading) {
     return (
@@ -147,7 +147,7 @@ export default function ParentClassesPage() {
               />
               Classes Dashboard
             </h1>
-            <p className="text-blue-100 text-base">Monitor your children's academic programs and class schedules</p>
+            <p className="text-blue-100 text-base">Monitor your children&apos;s academic programs and class schedules</p>
           </div>
           <div className="flex gap-2">
             <Button 
@@ -169,7 +169,7 @@ export default function ParentClassesPage() {
         <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm mb-4">
           <div className="flex items-center gap-2">
             <Award className="h-4 w-4 text-blue-200" />
-            <span className="text-blue-200 text-sm">Parent's Code:</span>
+            <span className="text-blue-200 text-sm">Parent&apos;s Code:</span>
             <span className="text-white font-mono font-bold text-lg">8787NK920</span>
           </div>
         </div>
@@ -264,7 +264,7 @@ export default function ParentClassesPage() {
             />
             Classes Overview
           </h2>
-          <p className="text-gray-600 text-sm mt-1">Detailed view of your children's academic programs and class schedules</p>
+          <p className="text-gray-600 text-sm mt-1">Detailed view of your children&apos;s academic programs and class schedules</p>
         </div>
         <ParentClassesTable 
           selectedChild={selectedChild}
