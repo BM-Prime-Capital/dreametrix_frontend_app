@@ -7,6 +7,7 @@ export function useRequestInfo() {
   const [accessToken, setAccessToken] = useState<string>("");
   const [refreshToken, setRefreshToken] = useState<string>("");
   const [tenantDomain, setTenantDomain] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -28,8 +29,18 @@ export function useRequestInfo() {
         setAccessToken(accessToken);
         setRefreshToken(refreshToken);
         setTenantDomain(domain);
+        setIsLoading(false);
+        
+        // Debug logging
+        console.log("useRequestInfo - Token loaded:", {
+          hasToken: !!accessToken,
+          tokenLength: accessToken.length,
+          hasDomain: !!domain
+        });
+        
       } catch (error) {
         console.error("Error reading from localStorage:", error);
+        setIsLoading(false);
       }
     }
   }, []);
@@ -39,7 +50,8 @@ export function useRequestInfo() {
       accessToken,
       refreshToken,
       tenantDomain,
+      isLoading,
     }),
-    [accessToken, refreshToken, tenantDomain]
+    [accessToken, refreshToken, tenantDomain, isLoading]
   );
 }

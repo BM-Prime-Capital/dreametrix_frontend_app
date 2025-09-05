@@ -55,6 +55,11 @@
   --primary-muted: 195 82% 95%;
   --primary-hover: 195 82% 42%;
   --primary-gradient: 195 82% 42%;
+  --primary-light: 195 82% 85%;
+  --primary-light-foreground: 0 0% 100%;
+  --primary-light-muted: 195 82% 90%;
+  --primary-light-hover: 195 82% 70%;
+  --primary-light-gradient: 195 82% 70%;
   
   --secondary: 322 65% 59%; /* #D15A9D */
   --secondary-foreground: 0 0% 100%;
