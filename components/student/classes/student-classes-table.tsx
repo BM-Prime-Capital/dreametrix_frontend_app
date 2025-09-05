@@ -54,11 +54,11 @@ export function StudentClassesTable({ onStatsUpdate, selectedSubject = "all-subj
         const today = new Date().toLocaleDateString();
         
         classes.forEach((class_: CourseRead) => {
-          if (class_.teacher_name) {
-            uniqueTeachers.add(class_.teacher_name);
+          if (class_.teacher?.full_name) {
+            uniqueTeachers.add(class_.teacher?.full_name);
           }
-          if (class_.subject) {
-            uniqueSubjects.add(class_.subject);
+          if (class_.subject_in_all_letter) {
+            uniqueSubjects.add(class_.subject_in_all_letter);
           }
           
           // Check if class is today
@@ -159,7 +159,7 @@ export function StudentClassesTable({ onStatsUpdate, selectedSubject = "all-subj
   const filteredClasses = selectedSubject === "all-subjects" 
     ? studentClasses 
     : studentClasses.filter(class_ => 
-        class_.subject?.toLowerCase().includes(selectedSubject.toLowerCase())
+        class_.subject_in_all_letter?.toLowerCase().includes(selectedSubject.toLowerCase())
       );
 
   if (loading || isFilterLoading) {
