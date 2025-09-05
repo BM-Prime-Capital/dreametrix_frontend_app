@@ -1,12 +1,14 @@
 "use client"
 
 import { useState } from "react"
+
 import { FileText, Printer, ArrowLeft, ChevronLeft, ChevronRight, RefreshCw, X } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { CharacterTable } from "../../../../components/student/character/character-table"
+
 import { CommentsModal } from "../../../../components/student/character/comments-modal"
 import { HistoryModal } from "../../../../components/student/character/history-modal"
 import { useCharacter } from "@/hooks/useCharacter"
@@ -222,6 +224,7 @@ export default function CharacterPage() {
           <div className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] p-4">
             <h2 className="text-white font-bold text-lg">Character Assessment</h2>
           </div>
+
           
           <CharacterTable 
             data={data || []} 
@@ -234,6 +237,7 @@ export default function CharacterPage() {
 
 
 
+
         {/* Print Modal */}
         <Dialog open={isPrintOpen} onOpenChange={setIsPrintOpen}>
           <DialogContent className="sm:max-w-[400px] p-0">
@@ -241,7 +245,9 @@ export default function CharacterPage() {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-medium text-gray-700">Print</h2>
                 <button onClick={() => setIsPrintOpen(false)} className="text-gray-500 hover:text-gray-700" title="Close">
-                  <X size={18} />
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
 

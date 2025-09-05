@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -12,14 +13,13 @@ import { Pencil, Calendar, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CharacterItem from "../ui/character-item";
 import { useEffect, useState } from "react";
-import { getAttendances } from "@/services/AttendanceService";
+//import { getAttendances } from "@/services/AttendanceService";
 import { localStorageKey } from "@/constants/global";
 import {
-  getCharracters,
+  //getCharracters,
   getCharractersList,
 } from "@/services/CharacterService";
 import { extractTraitsFromEntries } from "@/utils/characterUtils";
-import { getFormatedDate } from "@/utils/global";
 import { Loader } from "../ui/loader";
 import { useList } from "@/hooks/useList";
 import { Character } from "@/types";
@@ -32,9 +32,9 @@ export function CharacterTable({
   selectedClassId?: string | null;
 }) {
   const [characters, setCharacters] = useState<Character[]>([]);
-  const [primaryDomain, setPrimaryDomain] = useState<string>("");
-  const [accessToken, setAccessToken] = useState<string>("");
-  const [refreshToken, setRefreshToken] = useState<string>("");
+  const [, setPrimaryDomain] = useState<string>("");
+  const [, setAccessToken] = useState<string>("");
+  const [, setRefreshToken] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const { list: charractersList } = useList(getCharractersList);
   const [shouldRefreshData, setShouldRefreshData] = useState<boolean>(true);
@@ -78,7 +78,7 @@ export function CharacterTable({
       return;
     }
 
-    const { owner_id } = JSON.parse(userData);
+    //const { owner_id } = JSON.parse(userData);
 
     setPrimaryDomain(domain);
     setAccessToken(accessToken);
@@ -88,17 +88,17 @@ export function CharacterTable({
       if (shouldRefreshData && currentClassId) {
         setIsLoading(true);
         try {
-          const data = await getCharracters(
-            {
-              class_id: parseInt(currentClassId),
-              teacher_id: owner_id,
-              date: format(selectedDate, "yyyy-MM-dd"),
-            },
-            domain,
-            accessToken,
-            refreshToken
-          );
-          setCharacters(data);
+          // const data = await getCharracters(
+          //   {
+          //     class_id: parseInt(currentClassId),
+          //     teacher_id: owner_id,
+          //     date: format(selectedDate, "yyyy-MM-dd"),
+          //   },
+          //   domain,
+          //   accessToken,
+          //   refreshToken
+          // );
+          // setCharacters(data);
         } catch (error) {
           console.error("Error loading characters:", error);
           setCharacters([]);
@@ -141,10 +141,10 @@ export function CharacterTable({
     setShouldRefreshData(true);
   };
 
-  const isSelectedDateToday =
-    format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
+ // const isSelectedDateToday =
+   // format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
   // Remove isPastDate restriction - allow editing of past observations
-  const isPastDate = false; // Always allow editing
+ // const isPastDate = false; // Always allow editing
 
   console.log("NOW CHARACTERS =>", characters);
 
@@ -215,7 +215,7 @@ export function CharacterTable({
                   </TableCell>
                 </TableRow>
               ) : (
-                characters.map((character, index) => (
+                characters.map((character) => (
                   <TableRow key={character.character_id}>
                     <TableCell>{format(selectedDate, "MM/dd/yyyy")}</TableCell>
                     <TableCell className="font-medium">

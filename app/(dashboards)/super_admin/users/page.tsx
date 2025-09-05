@@ -1,29 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Modal } from "@/components/ui/Modal";
 import {
-  Users,
   Plus,
   Search,
   Frown,
   ChevronLeft,
   ChevronRight,
-  MoreVertical,
   Filter,
   Download,
   Mail,
   Phone,
   User,
-  Shield,
   FileUp,
   X,
   Save,
@@ -55,7 +49,7 @@ type User = {
 };
 
 export default function UsersPage() {
-  const router = useRouter();
+  //const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -65,7 +59,7 @@ export default function UsersPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Sample data - replace with actual API calls
-  const [users, setUsers] = useState<User[]>([
+  const [users,] = useState<User[]>([
     {
       "id": "1",
       "firstName": "John",

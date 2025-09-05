@@ -1,5 +1,6 @@
 "use client"
 
+
 import { CharacterRating } from "@/types/character"
 import { Loader2, AlertCircle, MessageCircle, HistoryIcon } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -139,6 +140,7 @@ export function CharacterTable({ data, loading, error, onOpenComments, onOpenHis
     </div>
   )
 }
+
 
 function MessageIcon() {
   return (

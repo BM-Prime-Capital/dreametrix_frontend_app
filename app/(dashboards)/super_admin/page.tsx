@@ -21,13 +21,13 @@ import {
   MessageCircle,
   Zap
 } from "lucide-react";
-import { useState } from "react";
+//import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ActivityFeed } from "./ActivityFeed";
 
 export default function SuperAdminDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("overview");
+  //const [activeTab, setActiveTab] = useState("overview");
 
   // Default data
   const stats = [
@@ -52,7 +52,7 @@ export default function SuperAdminDashboard() {
   return (
     <section className="flex flex-col gap-6 w-full min-h-screen bg-gray-50">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6 rounded-lg shadow-lg">
+      <div className="bg-gradient-to-r from-blue-400 to-blue-800 p-6 rounded-lg shadow-lg">
         <div className="flex flex-col md:flex-row items-center justify-between text-white">
           <div className="flex items-center gap-4 mb-4 md:mb-0">
             <Avatar className="h-16 w-16 border-4 border-white/20 shadow-lg">
@@ -110,7 +110,7 @@ export default function SuperAdminDashboard() {
           </div>
 
           {/* System Overview */}
-          <Card className="p-6 shadow-lg border-l-4 border-indigo-500">
+          <Card className="p-6 shadow-lg border-l-4 border-blue-400">
             <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <div className="p-2 bg-indigo-100 rounded-lg">
                 <Cpu className="h-5 w-5 text-indigo-500" />
@@ -316,10 +316,10 @@ export default function SuperAdminDashboard() {
               </div>
               <div className="pt-3">
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500 rounded-full" style={{ width: '84%' }}></div>
+                  <div className="h-full bg-blue-400 rounded-full" style={{ width: '84%' }}></div>
                 </div>
               </div>
-              <Button className="w-full mt-4 bg-green-500 hover:bg-green-600">
+              <Button className="w-full mt-4 bg-blue-400 hover:bg-green-600">
                 Manage license
               </Button>
             </div>

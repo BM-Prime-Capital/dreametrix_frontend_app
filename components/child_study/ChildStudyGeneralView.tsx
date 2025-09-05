@@ -54,16 +54,16 @@ export default function ChildStudyView({ changeView }: ChildStudyViewProps) {
         }
 
         const apiData = await getRewardsGeneralView(
-          tenantPrimaryDomain,
-          accessToken,
-          refreshToken,
-          "", 
-          "",
-          currentClass?.id
+          // tenantPrimaryDomain,
+          // accessToken,
+          // refreshToken,
+          // "", 
+          // "",
+          // currentClass?.id
         );
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const transformedData = apiData.classes.flatMap((classItem: any) => 
+        const transformedData = apiData?.classes.flatMap((classItem: any) => 
           classItem.students.map((studentItem: any) => ({
             id: studentItem.student.id,
             fullName: studentItem.student.name,

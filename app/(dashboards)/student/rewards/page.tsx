@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
+import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
+
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { X, Eye, ArrowLeft, RefreshCw, Trophy, TrendingUp, TrendingDown, Calendar } from "lucide-react"
 import { useRewards } from "@/hooks/useRewards"

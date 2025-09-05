@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+//import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Modal } from "@/components/ui/Modal";
 import {
   School,
   Plus,
@@ -17,7 +16,6 @@ import {
   Frown,
   ChevronLeft,
   ChevronRight,
-  MoreVertical,
   Filter,
   Download,
   Users,
@@ -28,6 +26,7 @@ import {
   Save,
   Loader2
 } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
 
 type School = {
   id: string;
@@ -50,7 +49,7 @@ type School = {
 };
 
 export default function SchoolsPage() {
-  const router = useRouter();
+  //const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -59,7 +58,7 @@ export default function SchoolsPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Sample data - replace with actual API calls
-  const [schools, setSchools] = useState<School[]>([
+  const [schools] = useState<School[]>([
     {
       "id": "1",
       "name": "Central Elementary School",

@@ -1,6 +1,8 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+
 import { AttendanceRecord, AttendanceStatus } from "@/types/attendance"
 import { Loader2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -85,7 +87,7 @@ export function AttendanceTable({ data, loading, error }: AttendanceTableProps) 
     <div className="w-full">
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent border-b">
+       <TableRow className="hover:bg-transparent border-b">
             <TableHead className="font-bold text-gray-700 py-4">ID</TableHead>
             <TableHead className="font-bold text-gray-700 py-4">DATE</TableHead>
             <TableHead className="font-bold text-gray-700 py-4">STATUS</TableHead>
@@ -137,12 +139,12 @@ export function AttendanceTable({ data, loading, error }: AttendanceTableProps) 
 function MessageIcon() {
   return (
     <svg
-      width="20"
-      height="20"
+      width="16"
+      height="16"
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="text-[#25AAE1] ml-2"
+      className="text-gray-400"
     >
       <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       <path

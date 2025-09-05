@@ -20,7 +20,7 @@ export interface Grade {
     };
   }
 
-const AddGradeModal = ({ isOpen, onClose, onGradeAdded }: { 
+const AddGradeModal = ({ isOpen, onClose, }: { 
   isOpen: boolean, 
   onClose: () => void, 
   onGradeAdded: (newGrade: Grade) => void;

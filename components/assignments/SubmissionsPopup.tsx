@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -241,9 +242,7 @@ export function SubmissionsPopup({
   };
 
   const hasVoiceRecording = (
-    studentId: string,
-    assessmentType: string,
-    assessmentIndex: number
+    studentId: string
   ) => {
     // For submissions, check if the submission has voice_notes
     const submission = submissions.find(
@@ -266,8 +265,6 @@ export function SubmissionsPopup({
 
   const getAudioUrl = (
     studentId: string,
-    assessmentType: string,
-    assessmentIndex: number
   ) => {
     const submission = submissions.find(
       (sub) => sub.student.id.toString() === studentId
@@ -352,7 +349,7 @@ export function SubmissionsPopup({
             assessmentId,
             tenantDomain,
             accessToken,
-            refreshToken
+            //refreshToken
           );
 
           // Handle different response structures
@@ -481,7 +478,7 @@ export function SubmissionsPopup({
       accessorFn: (row) => row.has_submitted,
       cell: ({ row }) => {
         const hasSubmitted = row.original.has_submitted;
-        const submission = row.original.submission;
+        //const submission = row.original.submission;
 
         return (
           <div className="flex items-center gap-2">
@@ -530,8 +527,8 @@ export function SubmissionsPopup({
             onGradeUpdate={handleGradeUpdate}
             hasVoiceRecording={hasVoiceRecording(
               submission.student.id.toString(),
-              "submission",
-              assessmentId
+              //"submission",
+             //assessmentId
             )}
             onRecordingSaved={(voiceNotesUrl) =>
               handleRecordingSaved(
@@ -544,8 +541,8 @@ export function SubmissionsPopup({
             audioUrl={
               getAudioUrl(
                 submission.student.id.toString(),
-                "submission",
-                assessmentId
+                // "submission",
+                // assessmentId
               ) ?? undefined
             }
           />
@@ -963,10 +960,10 @@ function GradeCell({
   audioUrl,
 }: GradeCellProps) {
   const [editValue, setEditValue] = useState<string>("");
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(
-    null
-  );
+  // const [isPlaying, setIsPlaying] = useState(false);
+  // const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(
+  //   null
+  // );
   const isEditing = editingCell === cellId;
 
   const handleCellClick = () => {

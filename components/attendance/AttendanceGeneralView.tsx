@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, {useState } from "react";
 import PageTitleH1 from "../ui/page-title-h1";
 import Image from "next/image";
 import { generalImages, teacherImages } from "@/constants/images";
-import StatisticItem from "../ui/StatisticItem";
 import { localStorageKey, views } from "@/constants/global";
 import { useList } from "@/hooks/useList";
-import { getClasses } from "@/services/ClassService";
 import { ISchoolClass } from "@/types";
-import { Loader } from "../ui/loader";
 import { getAttendanceGeneralView } from "@/services/AttendanceService";
 import {
   DropdownMenu,
@@ -18,7 +16,7 @@ import {
 import { Button } from "../ui/button";
 import { ChevronDown } from "lucide-react";
 
-function AttendanceGeneralView({ changeView }: { changeView: Function }) {
+function AttendanceGeneralView({ changeView }: { changeView: any }) {
   const { list: data, isLoading, error } = useList(getAttendanceGeneralView);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
   const allClasses = JSON.parse(

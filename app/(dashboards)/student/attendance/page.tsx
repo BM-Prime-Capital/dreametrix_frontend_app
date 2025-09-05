@@ -1,14 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { AttendanceTable } from "../../../../components/student/attendance/attendance-table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
 import { FileText, Printer, Calendar, ArrowLeft, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react"
 import { DatePickerDialog } from "../../../../components/student/attendance/date-picker-dialog"
 import { ReportDialog } from "../../../../components/student/attendance/report-dialog"
 import { PrintDialog } from "../../../../components/student/attendance/print-dialog"
 import { Button } from "@/components/ui/button"
+
 import { useAttendance } from "@/hooks/useAttendance"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
 
@@ -17,6 +19,7 @@ export default function AttendancePage() {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
   const [isReportModalOpen, setIsReportModalOpen] = useState(false)
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false)
+
   const { accessToken, isLoading: tokenLoading } = useRequestInfo();
   const {
     data,
@@ -31,7 +34,7 @@ export default function AttendancePage() {
     fetchByDate,
     clearError
   } = useAttendance({}, accessToken);
-
+  
   const handleDateSelection = (dateTimestamp: number) => {
     const selectedDate = new Date(dateTimestamp).toISOString().split('T')[0]
     fetchByDate(selectedDate)
@@ -102,6 +105,7 @@ export default function AttendancePage() {
       </div>
 
       <section className="flex flex-col gap-6 w-full mx-auto p-6 bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen rounded-2xl">
+
         {/* Header Section avec design moderne */}
         <div className="flex items-center justify-between bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
           <div className="flex items-center gap-4">

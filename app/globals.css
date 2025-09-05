@@ -146,6 +146,27 @@
   color: #a0aec0;
 }
 
+/* Force les légendes en bleu */
+.tremor-Legend-legendItem {
+  color: #3b82f6 !important;
+}
+
+/* Couleur des icônes de légende */
+.tremor-Legend-legendItem svg {
+  color: #1d4ed8 !important;
+}
+
+/* Couleur des barres (noir/gris) */
+.recharts-bar .recharts-bar-rectangle {
+  fill: #3e81d4 !important; /* Couleur slate-600 */
+}
+
+/* Couleur des secteurs du donut (noir/gris) */
+.recharts-sector {
+  stroke: #3e81d4 !important; /* Couleur slate-800 */
+  fill: #3e81d4 !important; /* Couleur slate-700 */
+}
+
 /* Date du jour (aujourd'hui) */
 .custom-calendar-day-cell.today {
   background-color: #dbeafe;

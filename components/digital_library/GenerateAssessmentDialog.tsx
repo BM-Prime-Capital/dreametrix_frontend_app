@@ -147,7 +147,7 @@ export default function GenerateAssessmentDialog({
       formData.append("published", isPublished.toString());
 
       // Create assignment via API
-      await createAssignment(formData, tenantDomain, accessToken, refreshToken);
+      await createAssignment(formData, tenantDomain, accessToken);
 
       // Show success message
       toast({
