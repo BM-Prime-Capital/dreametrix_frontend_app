@@ -46,7 +46,7 @@ export default function CharacterPage() {
   }
 
   const handleOpenReport = () => {
-    setIsReportOpen(true)
+    // setIsReportOpen(true)
   }
 
   const handleOpenPrint = () => {
