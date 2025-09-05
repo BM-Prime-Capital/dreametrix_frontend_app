@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/services/chatService.ts
 import { io, Socket } from "socket.io-client";
-import { Message, Conversation } from "@/types/chat";
+//import {Conversation } from "@/types/chat";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
@@ -90,7 +91,7 @@ class ChatService {
       console.log("Disconnected from WebSocket");
     });
 
-    this.socket.on("connect_error", (err) => {
+    this.socket.on("connect_error", (err: any) => {
       console.error("WebSocket connection error:", err);
     });
   }
@@ -270,7 +271,7 @@ class ChatService {
     };
   }
 
-  public transformToConversation(room: ChatRoom): Conversation {
+  public transformToConversation(room: ChatRoom): any {
     return {
       id: room.id.toString(),
       type: room.is_group ? "class" : "individual",
@@ -278,7 +279,7 @@ class ChatService {
         id: p.id.toString(),
         name: p.name,
         avatar: p.avatar || "/default-avatar.png",
-        role: p.role === "admin" ? "teacher" : p.role,
+        role: p.role,
       })),
       lastMessage: room.last_message
         ? {

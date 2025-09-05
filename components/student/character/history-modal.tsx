@@ -118,7 +118,7 @@ export function HistoryModal({ isOpen, onClose, selectedItem, allData = [] }: Hi
                 <p className="text-sm">This might be the first character assessment.</p>
               </div>
             ) : (
-              classHistory.map((record, index) => {
+              classHistory.map((record) => {
                 const goodCount = record.good_statistics_character.length;
                 const badCount = record.bad_statistics_character.length;
                 const netScore = goodCount - badCount;

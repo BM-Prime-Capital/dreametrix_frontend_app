@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface CharacterClass {
   id: number;
   name: string;
@@ -11,6 +12,8 @@ export interface CharacterTeacher {
 }
 
 export interface CharacterRating {
+  character_id:string;
+  class_info: any;
   id: number;
   date: string;
   class: CharacterClass;
