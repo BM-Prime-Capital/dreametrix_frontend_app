@@ -6,8 +6,23 @@ import { SendMessageDialog } from "./send-message-dialog"
 import { getAllClasses } from "@/app/api/student/class/classController" 
 import { CourseRead } from "@/app/api/student/class/classModel"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
+import { AlertCircle, RefreshCw, BookOpen } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
-export function StudentClassesTable() {
+interface StudentClassesTableProps {
+  onStatsUpdate?: (stats: {
+    totalClasses: number;
+    todayClasses: number;
+    totalTeachers: number;
+    activeSubjects: number;
+  }) => void;
+  selectedSubject?: string;
+  isFilterLoading?: boolean;
+}
+
+export function StudentClassesTable({ onStatsUpdate, selectedSubject = "all-subjects", isFilterLoading = false }: StudentClassesTableProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedTeacherName, setSelectedTeacherName] = useState("")
   const [studentClasses, setStudentClasses] = useState<CourseRead[]>([])
@@ -15,39 +30,77 @@ export function StudentClassesTable() {
   const [error, setError] = useState<string | null>(null);
   const { accessToken } = useRequestInfo();
   
-  useEffect(() => {
-    const fetchClasses = async () => {
-      setLoading(true);
-      setError(null);
-  
-      if (!accessToken) {
-        setError("Authentification requise.");
-        setLoading(false);
-        setStudentClasses([]);
-        return;
-      }
-      try {
-        const res = await getAllClasses(accessToken); // Passe le token
-  
-        if (res && res.data && Array.isArray(res.data.results)) {
-          setStudentClasses(res.data.results);
-        } else {
-          setStudentClasses([]);
-          setError("Format de données inattendu reçu de l'API.");
+  const fetchClasses = async () => {
+    setLoading(true);
+    setError(null);
+
+    if (!accessToken) {
+      setError("Authentification requise.");
+      setLoading(false);
+      setStudentClasses([]);
+      return;
+    }
+    try {
+      const res = await getAllClasses(accessToken); // Passe le token
+
+      if (res && res.data && Array.isArray(res.data.results)) {
+        setStudentClasses(res.data.results);
+        
+        // Calculate stats
+        const classes = res.data.results;
+        const uniqueTeachers = new Set();
+        const uniqueSubjects = new Set();
+        let todayClassesCount = 0;
+        const today = new Date().toLocaleDateString();
+        
+        classes.forEach((class_: CourseRead) => {
+          if (class_.teacher_name) {
+            uniqueTeachers.add(class_.teacher_name);
+          }
+          if (class_.subject) {
+            uniqueSubjects.add(class_.subject);
+          }
+          
+          // Check if class is today
+          if (class_.hours_and_dates_of_course_schedule && 
+              typeof class_.hours_and_dates_of_course_schedule === 'object') {
+            Object.entries(class_.hours_and_dates_of_course_schedule).forEach(([day, schedules]) => {
+              if (Array.isArray(schedules)) {
+                schedules.forEach((schedule) => {
+                  if (schedule.date === today) {
+                    todayClassesCount++;
+                  }
+                });
+              }
+            });
+          }
+        });
+        
+        if (onStatsUpdate) {
+          onStatsUpdate({
+            totalClasses: classes.length,
+            todayClasses: todayClassesCount,
+            totalTeachers: uniqueTeachers.size,
+            activeSubjects: uniqueSubjects.size
+          });
         }
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue';
-        setError(`Échec du chargement des classes: ${errorMessage}`);
+      } else {
         setStudentClasses([]);
-      } finally {
-        setLoading(false);
+        setError("Format de données inattendu reçu de l'API.");
       }
-    };
-    
-    if (accessToken) { // Optionnel mais recommandé : n'appelle fetchClasses que si un token (potentiellement non vide) est disponible initialement
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue';
+      setError(`Échec du chargement des classes: ${errorMessage}`);
+      setStudentClasses([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (accessToken) {
       fetchClasses();
     }
-  
   }, [accessToken]);
 
   const handleTeacherClick = (teacherData: string | { full_name: string } | null | undefined) => {
@@ -56,13 +109,97 @@ export function StudentClassesTable() {
         : (typeof teacherData === 'string' ? teacherData : "");
     setSelectedTeacherName(teacherName);
     setIsModalOpen(true);
+  };
+
+  const handleRetry = () => {
+    if (accessToken) {
+      fetchClasses();
+    }
+  };
+
+  // Skeleton Loading Component
+  const TableSkeleton = () => (
+    <Table>
+      <TableHeader>
+        <TableRow className="hover:bg-transparent border-b">
+          <TableHead className="font-bold text-gray-700 py-4">CLASS</TableHead>
+          <TableHead className="font-bold text-gray-700 py-4">SUBJECT</TableHead>
+          <TableHead className="font-bold text-gray-700 py-4">TEACHER</TableHead>
+          <TableHead className="font-bold text-gray-700 py-4">DAY & TIME</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {[...Array(5)].map((_, index) => (
+          <TableRow key={index} className={index % 2 === 0 ? "bg-[#EDF6FA]" : ""}>
+            <TableCell className="py-4">
+              <Skeleton className="h-4 w-32" />
+            </TableCell>
+            <TableCell className="py-4">
+              <Skeleton className="h-4 w-24" />
+            </TableCell>
+            <TableCell className="py-4">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-8 w-8 rounded" />
+              </div>
+            </TableCell>
+            <TableCell className="py-4">
+              <div className="space-y-1">
+                <Skeleton className="h-3 w-36" />
+                <Skeleton className="h-3 w-28" />
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+
+  // Filter classes based on selected subject
+  const filteredClasses = selectedSubject === "all-subjects" 
+    ? studentClasses 
+    : studentClasses.filter(class_ => 
+        class_.subject?.toLowerCase().includes(selectedSubject.toLowerCase())
+      );
+
+  if (loading || isFilterLoading) {
+    return (
+      <div className="w-full relative">
+        <TableSkeleton />
+        {isFilterLoading && (
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center">
+            <div className="bg-white p-4 rounded-xl shadow-lg flex items-center gap-3">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#25AAE1]"></div>
+              <span className="text-[#25AAE1] font-medium">Filtering classes...</span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   }
 
-  if (loading) {
-    return <div>Chargement...</div>
-  }
   if (error) {
-    return <div>Erreur : {error}</div>
+    return (
+      <div className="w-full relative">
+        <Alert className="border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">
+            <div className="flex items-center justify-between">
+              <span>{error}</span>
+              <Button 
+                onClick={handleRetry}
+                variant="outline" 
+                size="sm"
+                className="ml-4 border-red-300 text-red-700 hover:bg-red-100"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Réessayer
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
   }
 
   return (
@@ -77,7 +214,23 @@ export function StudentClassesTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {studentClasses.map((class_, index) => (
+          {filteredClasses.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={4} className="text-center py-8">
+                <div className="flex flex-col items-center gap-2 text-gray-500">
+                  <BookOpen className="h-8 w-8 text-gray-300" />
+                  <p className="font-medium">No classes found</p>
+                  <p className="text-sm">
+                    {selectedSubject === "all-subjects" 
+                      ? "You don't have any classes enrolled yet." 
+                      : `No classes found for "${selectedSubject}".`
+                    }
+                  </p>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            filteredClasses.map((class_, index) => (
             <TableRow key={class_.id} className={index % 2 === 0 ? "bg-[#EDF6FA]" : ""}>
               <TableCell className="font-medium text-gray-500">{class_.name}</TableCell>
               <TableCell className="text-gray-500">{class_.subject_in_short || class_.subject_in_all_letter}</TableCell>
@@ -120,7 +273,7 @@ export function StudentClassesTable() {
                 </div>
               </TableCell>
             </TableRow>
-          ))}
+          )))}
         </TableBody>
       </Table>
 
