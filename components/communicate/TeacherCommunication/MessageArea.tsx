@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import {
   Paperclip,
@@ -19,11 +20,13 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/utils/tailwind";
-import { Conversation, Message } from "./types";
+import { Conversation,
+   //Message 
+  } from "./types";
 
 interface MessageAreaProps {
   selectedConversation: Conversation | null;
-  messages: Message[];
+  messages: any;
   loading: boolean;
   newMessage: string;
   onMessageChange: (value: string) => void;
@@ -44,7 +47,7 @@ export function MessageArea({
   onOpenCompose,
   onOpenAnnounce,
 }: MessageAreaProps) {
-  const [isTyping, setIsTyping] = useState(false);
+  const [, setIsTyping] = useState(false);
 
   const handleMessageChange = (value: string) => {
     onMessageChange(value);
@@ -182,7 +185,7 @@ export function MessageArea({
               </div>
             ) : (
               <>
-                {messages.map((message) => (
+                {messages.map((message: any) => (
                   <div
                     key={message.id}
                     className={`flex gap-3 max-w-[85%] animate-fade-in ${
@@ -262,7 +265,7 @@ export function MessageArea({
                               : "border-t border-blue-100"
                           )}
                         >
-                          {message.attachments.map((attachment, i) => (
+                          {message.attachments.map((attachment: any, i: string) => (
                             <div
                               key={i}
                               className="flex items-center gap-1 text-xs mt-1"

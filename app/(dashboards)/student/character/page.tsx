@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 
-import { FileText, Printer, ArrowLeft, ChevronLeft, ChevronRight, RefreshCw, X } from "lucide-react"
+import { FileText, Printer, ArrowLeft, RefreshCw} from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -46,6 +46,7 @@ export default function CharacterPage() {
   }
 
   const handleOpenReport = () => {
+
     // setIsReportOpen(true)
   }
 

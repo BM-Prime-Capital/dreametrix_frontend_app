@@ -3,13 +3,15 @@
 import { Button } from "@/components/ui/button"
 
 import { Dialog, DialogContent } from "@/components/ui/dialog"
+
 import { X, ArrowLeft, RefreshCw, Trophy, TrendingUp, TrendingDown, Calendar } from "lucide-react"
 import { useRewards } from "@/hooks/useRewards"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
-import { RewardStudent, LatestNews } from "@/types/rewards"
+import { RewardStudent } from "@/types/rewards"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
+
 import { RewardsDashboard } from "../../../../components/student/rewards/rewards-dashboard"
 
 

@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export async function fetchElaStandards(
   subject: string,
   grade: string,
   tenantPrimaryDomain: string,
-  accessToken: string,
-  refreshToken: string
+  accessToken: string
 ) {
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
@@ -52,7 +52,6 @@ export async function fetchElaStrands(
   standardsEla: string,
   tenantPrimaryDomain: string,
   accessToken: string,
-  refreshToken: string
 ) {
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
@@ -103,8 +102,7 @@ export async function fetchElaSpecificStandards(
   standardsEla: string,
   strand: string,
   tenantPrimaryDomain: string,
-  accessToken: string,
-  refreshToken: string
+  accessToken: string
 ) {
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
@@ -153,8 +151,7 @@ export async function fetchElaQuestionLinks(
   specificStandards: string,
   kind: string,
   tenantPrimaryDomain: string,
-  accessToken: string,
-  refreshToken: string
+  accessToken: string
 ) {
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
@@ -209,7 +206,6 @@ export async function generateElaPdf(
   },
   tenantPrimaryDomain: string,
   accessToken: string,
-  refreshToken: string
 ) {
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");

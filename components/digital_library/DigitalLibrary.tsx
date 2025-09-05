@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Card } from "@/components/ui/card";
 import PageTitleH1 from "@/components/ui/page-title-h1";
-import { ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import GenerateAssessmentDialog from "./GenerateAssessmentDialog";
 import MultiSelectList from "../MultiSelectionList";
 import { useList } from "@/hooks/useList";
@@ -56,7 +57,7 @@ export default function DigitalLibrary() {
   const {
     list: initialClasses,
     isLoading: classesIsLoading,
-    error: classesError,
+    //error: classesError,
   } = useList(getClasses);
 
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
@@ -80,7 +81,7 @@ export default function DigitalLibrary() {
   const [digitalLibrarySheet, setDigitalLibrarySheet] =
     useState<DigitalLibrarySheet>(GRADEBOOK_SHEET_INIT_STATE);
 
-  const [isLoadingFileError, setIsLoadingFileError] = useState(false);
+  //const [isLoadingFileError, setIsLoadingFileError] = useState(false);
 
   const [sheetDomains, setSheetDomains] = useState<string[]>([]);
 
@@ -91,7 +92,7 @@ export default function DigitalLibrary() {
   const [selectedElaStandard, setSelectedElaStandard] = useState("");
   const [elaStrands, setElaStrands] = useState<string[]>([]);
   const [selectedElaStrand, setSelectedElaStrand] = useState("");
-  const [elaSpecificStandards, setElaSpecificStandards] = useState<string[]>(
+  const [, setElaSpecificStandards] = useState<string[]>(
     []
   );
   const [isLoadingElaData, setIsLoadingElaData] = useState(false);
@@ -100,7 +101,7 @@ export default function DigitalLibrary() {
   const {
     list: subjects,
     isLoading: isLoadingSubjects,
-    error: errorSubjects,
+    //error: errorSubjects,
   } = useList(getSubjects);
 
   const [grades, setGrades] = useState<string[]>([]); // Au lieu de useState<any[]>([])
@@ -601,7 +602,7 @@ export default function DigitalLibrary() {
           selectedGrade,
           tenantDomain,
           accessToken,
-          refreshToken
+          //refreshToken
         );
         setElaStandards(elaStandardsData || []);
       } catch (error) {
@@ -773,7 +774,7 @@ export default function DigitalLibrary() {
           selectedStandard,
           tenantDomain,
           accessToken,
-          refreshToken
+          //refreshToken
         );
         setElaStrands(strandsData || []);
       } catch (error) {
@@ -800,7 +801,7 @@ export default function DigitalLibrary() {
           selectedStrand,
           tenantDomain,
           accessToken,
-          refreshToken
+          //refreshToken
         );
         setElaSpecificStandards(specificStandardsData || []);
 
@@ -833,7 +834,7 @@ export default function DigitalLibrary() {
             digitalLibrarySheet.questionType,
             tenantDomain,
             accessToken,
-            refreshToken
+            //refreshToken
           );
           setQuestionsLinks(questionsLinksData);
           setIsLoadingQuestionLinks(false);
@@ -888,6 +889,8 @@ export default function DigitalLibrary() {
           throw Error("Number of Questions is not a valid number.");
         }
       } catch (error) {
+
+        console.log(error)
         alert(
           "Number of questions has to be a value from 1 to " +
             questionsLinks?.question_count
@@ -952,7 +955,7 @@ export default function DigitalLibrary() {
           elaPdfData,
           tenantDomain,
           accessToken,
-          refreshToken
+          //refreshToken
         );
       } else {
         // Use regular PDF generation API for non-ELA subjects
@@ -980,6 +983,7 @@ export default function DigitalLibrary() {
 
       setIsDialogOpen(true); // Open the dialog to display the generated file
     } catch (error) {
+      console.log(error)
       setError(
         "There is a server or internet issue, please try again, if this persits, contact you admin."
       );
@@ -988,56 +992,56 @@ export default function DigitalLibrary() {
     setIsLoading(false);
   };
 
-  async function handleQuestionsTypeChange(e: ChangeEvent<HTMLSelectElement>) {
-    setDigitalLibrarySheet({
-      ...digitalLibrarySheet,
-      questionType: e.target.value,
-    });
+  // async function handleQuestionsTypeChange(e: ChangeEvent<HTMLSelectElement>) {
+  //   setDigitalLibrarySheet({
+  //     ...digitalLibrarySheet,
+  //     questionType: e.target.value,
+  //   });
 
-    if (checkedStandards.length > 0) {
-      setIsLoadingQuestionLinks(true);
-      if (isElaSubjectSelected) {
-        // Use ELA-specific API for question links
-        const formattedStandards =
-          checkedStandards.length > 1
-            ? checkedStandards.join(",")
-            : checkedStandards[0];
-        const questionsLinksData = await fetchElaQuestionLinks(
-          digitalLibrarySheet.subject,
-          digitalLibrarySheet.grade,
-          selectedElaStandard,
-          selectedElaStrand,
-          formattedStandards,
-          e.target.value,
-          tenantDomain,
-          accessToken,
-          refreshToken
-        );
-        setQuestionsLinks(questionsLinksData);
-      } else {
-        // Use regular API for Math subjects
-        const data = {
-          subject: digitalLibrarySheet.subject,
-          grade: digitalLibrarySheet.grade,
-          domain: digitalLibrarySheet.domain,
-          questionsType: e.target.value,
-          standards: checkedStandards,
-        };
-        console.log("SENDING DATA => ", data);
-        const questionsLinksData = await getQuestionsLinks(
-          data,
-          tenantDomain,
-          accessToken,
-          refreshToken
-        );
-        setQuestionsLinks(questionsLinksData);
-      }
-      setIsLoadingQuestionLinks(false);
-    } else {
-      setQuestionsLinks(null);
-      setDigitalLibrarySheet({ ...digitalLibrarySheet, noOfQuestions: "" });
-    }
-  }
+  //   if (checkedStandards.length > 0) {
+  //     setIsLoadingQuestionLinks(true);
+  //     if (isElaSubjectSelected) {
+  //       // Use ELA-specific API for question links
+  //       const formattedStandards =
+  //         checkedStandards.length > 1
+  //           ? checkedStandards.join(",")
+  //           : checkedStandards[0];
+  //       const questionsLinksData = await fetchElaQuestionLinks(
+  //         digitalLibrarySheet.subject,
+  //         digitalLibrarySheet.grade,
+  //         selectedElaStandard,
+  //         selectedElaStrand,
+  //         formattedStandards,
+  //         e.target.value,
+  //         tenantDomain,
+  //         accessToken,
+  //         refreshToken
+  //       );
+  //       setQuestionsLinks(questionsLinksData);
+  //     } else {
+  //       // Use regular API for Math subjects
+  //       const data = {
+  //         subject: digitalLibrarySheet.subject,
+  //         grade: digitalLibrarySheet.grade,
+  //         domain: digitalLibrarySheet.domain,
+  //         questionsType: e.target.value,
+  //         standards: checkedStandards,
+  //       };
+  //       console.log("SENDING DATA => ", data);
+  //       const questionsLinksData = await getQuestionsLinks(
+  //         data,
+  //         tenantDomain,
+  //         accessToken,
+  //         refreshToken
+  //       );
+  //       setQuestionsLinks(questionsLinksData);
+  //     }
+  //     setIsLoadingQuestionLinks(false);
+  //   } else {
+  //     setQuestionsLinks(null);
+  //     setDigitalLibrarySheet({ ...digitalLibrarySheet, noOfQuestions: "" });
+  //   }
+  // }
 
   async function handleStandardsChange(items: string[]) {
     setCheckedStandards(items);
@@ -1055,7 +1059,7 @@ export default function DigitalLibrary() {
           digitalLibrarySheet.questionType,
           tenantDomain,
           accessToken,
-          refreshToken
+         // refreshToken
         );
         setQuestionsLinks(questionsLinksData);
       } else {
@@ -1609,7 +1613,7 @@ export default function DigitalLibrary() {
                                 value,
                                 tenantDomain,
                                 accessToken,
-                                refreshToken
+                                //refreshToken
                               );
                             setQuestionsLinks(questionsLinksData);
                           } else {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useChatRooms, useChatMessages } from "@/hooks/useChat";
 import { useChatNotifications } from "@/hooks/useChatNotifications";
 import { useCommunicationData } from "@/hooks/useCommunicationData"; 
@@ -28,7 +28,7 @@ export default function TeacherCommunication() {
     classes,
     students,
     parents,
-    teachers,
+   // teachers,
     loading: dataLoading,
     error: dataError,
     refetch: refetchData,
@@ -54,7 +54,7 @@ export default function TeacherCommunication() {
   const {
     messages,
     loading: messagesLoading,
-    error: messagesError,
+    //error: messagesError,
     sendMessage,
   } = useChatMessages(selectedRoom?.id || null);
 
