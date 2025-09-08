@@ -32,7 +32,7 @@ import { ViewSubmissionDialog } from "./view-submission-dialog";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import {
   Assignment,
-  AssignmentsResponse,
+  //AssignmentsResponse,
 } from "@/app/api/student/assignment/assignment.model";
 import { getAssignments } from "@/services/AssignmentService";
 
@@ -56,7 +56,7 @@ export function AssignmentsTable({
   const [filteredAssignments, setFilteredAssignments] = useState<Assignment[]>(
     []
   );
-  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  const { tenantDomain, accessToken } = useRequestInfo();
 
   // New state for enhanced filtering
   const [globalFilter, setGlobalFilter] = useState("");
@@ -102,7 +102,7 @@ export function AssignmentsTable({
         const res = await getAssignments(
           tenantDomain,
           accessToken,
-          refreshToken
+          // /refreshToken
         );
 
         if (res && Array.isArray(res)) {
@@ -371,7 +371,7 @@ export function AssignmentsTable({
           assignments
           {globalFilter && (
             <span className="ml-2">
-              • Search: "<strong>{globalFilter}</strong>"
+              • Search: &quot;<strong>{globalFilter}</strong>&quot;
             </span>
           )}
           {courseFilter !== "all" && (

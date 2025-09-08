@@ -115,6 +115,11 @@ export async function updateStudent(
   }
 }
 
+export async function getStudentReportCard (){
+  let data : any
+  return data
+}
+
 
 
 export async function enrollStudentsToClass(

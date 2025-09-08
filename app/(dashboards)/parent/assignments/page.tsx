@@ -35,8 +35,8 @@ export default function ParentAssignmentsPage() {
     
     try {
       const [assignmentsData, classesData] = await Promise.all([
-        getParentAssignments(accessToken, refreshToken),
-        getParentClasses(accessToken, refreshToken)
+        getParentAssignments(accessToken),
+        getParentClasses(accessToken)
       ])
       
       // Combine assignments with student information

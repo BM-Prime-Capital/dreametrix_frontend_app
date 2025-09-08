@@ -111,9 +111,10 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
       const data = await getAssignments(
         tenantDomain,
         accessToken,
-        refreshToken
+        //refreshToken
       );
       setAssignments(data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -179,7 +180,7 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
         assignment.id,
         tenantDomain,
         accessToken,
-        refreshToken
+        //refreshToken
       );
 
       // Reload assignments list

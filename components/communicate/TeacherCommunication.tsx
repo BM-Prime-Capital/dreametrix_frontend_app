@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Search,
-  Plus,
   MessageSquare,
   Users,
   User,
@@ -11,31 +10,30 @@ import {
   Send,
   Paperclip,
   Calendar,
-  ChevronDown,
   X,
   Megaphone,
   Star,
   Filter,
-  Image as ImageIcon,
-  Smile,
+  //Image as ImageIcon,
+  //Smile,
   MoreHorizontal,
   Clock,
   CheckCheck,
 } from "lucide-react";
 import { useChatRooms, useChatMessages } from "@/hooks/useChat";
-import { useTypingIndicator } from "@/hooks/useChatWebSocket";
+//import { useTypingIndicator } from "@/hooks/useChatWebSocket";
 import { useChatNotifications } from "@/hooks/useChatNotifications";
 import { useCommunicationData } from "@/hooks/useCommunicationData";
-import { EnhancedChatRoom, EnhancedChatMessage } from "@/types/chat";
-import TypingIndicatorComponent from "@/components/chat/TypingIndicator";
-import ConnectionStatus from "@/components/chat/ConnectionStatus";
+//import { EnhancedChatRoom, EnhancedChatMessage } from "@/types/chat";
+//import TypingIndicatorComponent from "@/components/chat/TypingIndicator";
+//import ConnectionStatus from "@/components/chat/ConnectionStatus";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -98,7 +96,7 @@ interface Conversation {
 }
 
 export default function TeacherCommunication() {
-  const [activeTab, setActiveTab] = useState("messages");
+  //const [activeTab, setActiveTab] = useState("messages");
   const [searchQuery, setSearchQuery] = useState("");
   const [newMessage, setNewMessage] = useState("");
   const [composeDialogOpen, setComposeDialogOpen] = useState(false);
@@ -162,7 +160,7 @@ export default function TeacherCommunication() {
   const {
     messages,
     loading: messagesLoading,
-    error: messagesError,
+   // error: messagesError,
     sendMessage,
     // typing,
     // userStatuses,
@@ -174,9 +172,10 @@ export default function TeacherCommunication() {
   // );
 
   // Variables temporaires pour remplacer les fonctionnalités WebSocket
-  const typing: any[] = [];
-  const userStatuses = {};
-  const isTyping = false;
+//   const typing: any[] = [];
+//   const userStatuses = {};
+//   const isTyping = false;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const setIsTyping = (_value?: boolean) => {};
 
   // Conversion des rooms en format de conversations pour l'interface existante
@@ -1279,7 +1278,7 @@ export default function TeacherCommunication() {
                     </div>
                   ) : (
                     <>
-                      {chatMessages.map((message, index) => (
+                      {chatMessages.map((message) => (
                         <div
                           key={message.id}
                           className={`flex gap-3 max-w-[85%] animate-fade-in ${

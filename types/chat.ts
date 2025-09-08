@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Types pour l'API Chat basés sur la documentation
 export interface ChatMessage {
   id: number;
@@ -6,7 +7,7 @@ export interface ChatMessage {
   uuid: string;
   created_at: string;
   last_update: string;
-  extra_data: Record<string, any>;
+  extra_data: any
   school: number;
   chat: number;
   sender: number;

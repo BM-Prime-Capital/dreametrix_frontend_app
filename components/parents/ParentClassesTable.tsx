@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useState } from "react"
@@ -6,15 +7,17 @@ import { SendMessageDialog } from "./SendMessageDialog"
 import { ClassDetailsDialog } from "./ClassDetailsDialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ParentClass } from "@/services/ParentClassService"
-import { Eye, Clock, BookOpen, Users, AlertCircle, MessageSquare, Calendar, User, GraduationCap } from "lucide-react"
+//import { ParentClass } from "@/services/ParentClassService"
+import { Eye, BookOpen, Users, AlertCircle, MessageSquare, Calendar, User } from "lucide-react"
 
 interface ParentClassesTableProps {
   selectedChild: string
   selectedSubject?: string
   selectedLevel?: string
-  classes: ParentClass[]
+  classes: any
 }
+
+
 
 export function ParentClassesTable({ 
   selectedChild, 
@@ -38,20 +41,20 @@ export function ParentClassesTable({
   }
 
   // Filter classes based on selected filters
-  const filteredClasses = classes.filter((cls) => {
+  const filteredClasses = classes.filter((cls: { subject: string; level: string; students: { id: { toString: () => string } }[] }) => {
     const subjectMatch = selectedSubject === "all" || cls.subject.toLowerCase() === selectedSubject.toLowerCase()
     const levelMatch = selectedLevel === "all" || cls.level === selectedLevel
-    const childMatch = selectedChild === "all" || cls.students.some(student => student.id.toString() === selectedChild)
+    const childMatch = selectedChild === "all" || cls.students.some((student: { id: { toString: () => string } }) => student.id.toString() === selectedChild)
     return subjectMatch && levelMatch && childMatch
   })
 
   // Get students to display based on filter
-  const getStudentsToDisplay = (cls: ParentClass) => {
+  const getStudentsToDisplay = (cls: any) => {
     if (selectedChild === "all") {
       return cls.students
     } else {
       // Show only the selected student
-      return cls.students.filter(student => student.id.toString() === selectedChild)
+      return cls.students.filter((student: { id: { toString: () => string } }) => student.id.toString() === selectedChild)
     }
   }
 
@@ -125,7 +128,7 @@ export function ParentClassesTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredClasses.map((class_, index) => {
+            {filteredClasses.map((class_: any, index: number) => {
               const studentsToDisplay = getStudentsToDisplay(class_)
               
               return (
@@ -191,7 +194,7 @@ export function ParentClassesTable({
                           {studentsToDisplay.length} student{studentsToDisplay.length !== 1 ? 's' : ''}
                         </div>
                         <div className="text-gray-500 text-xs">
-                          {studentsToDisplay.slice(0, 2).map(s => `${s.first_name} ${s.last_name}`).join(', ')}
+                          {studentsToDisplay.slice(0, 2).map((s: { first_name: any; last_name: any }) => `${s.first_name} ${s.last_name}`).join(', ')}
                           {studentsToDisplay.length > 2 && ` +${studentsToDisplay.length - 2}`}
                         </div>
                       </div>
@@ -240,7 +243,7 @@ export function ParentClassesTable({
             setIsModalOpen(false);
             setSelectedTeacher("");
           }}
-          teacherName={selectedTeacher}
+          teacher={selectedTeacher}
         />
       )}
 

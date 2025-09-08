@@ -73,7 +73,7 @@ const EnhancedTeacherCommunication: React.FC = () => {
                 <p className="text-sm">
                   Fonctionnalité de diffusion en cours de développement.
                   <br />
-                  Permettra d'envoyer des messages à plusieurs groupes
+                  Permettra d&apos;envoyer des messages à plusieurs groupes
                   simultanément.
                 </p>
               </div>

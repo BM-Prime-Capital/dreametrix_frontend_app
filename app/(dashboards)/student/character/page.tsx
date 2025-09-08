@@ -1,25 +1,99 @@
 "use client"
 
 import { useState } from "react"
-import { FileText, Printer, ArrowLeft } from "lucide-react"
+
+import { FileText, Printer, ArrowLeft, RefreshCw} from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { CharacterTable } from "../../../../components/student/character/character-table"
 
+import { CommentsModal } from "../../../../components/student/character/comments-modal"
+import { HistoryModal } from "../../../../components/student/character/history-modal"
+import { useCharacter } from "@/hooks/useCharacter"
+import { useRequestInfo } from "@/hooks/useRequestInfo"
+import { CharacterRating } from "@/types/character"
+
 export default function CharacterPage() {
   const [selectedClass, setSelectedClass] = useState<string>("all-classes")
-
-  // Modal states
-  const [isReportOpen, setIsReportOpen] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<CharacterRating | null>(null)
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false)
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
   const [isPrintOpen, setIsPrintOpen] = useState(false)
 
+  const { accessToken, isLoading: tokenLoading } = useRequestInfo();
+  
+  const {
+    data,
+    loading,
+    error,
+    studentInfo,
+    summary,
+    refetch,
+    fetchByPeriod,
+    clearError
+  } = useCharacter({}, accessToken);
+
+  const handleOpenComments = (item: CharacterRating) => {
+    setSelectedItem(item)
+    setIsCommentsOpen(true)
+  }
+
+  const handleOpenHistory = (item: CharacterRating) => {
+    setSelectedItem(item)
+    setIsHistoryOpen(true)
+  }
+
   const handleOpenReport = () => {
-    setIsReportOpen(true)
+
+    // setIsReportOpen(true)
   }
 
   const handleOpenPrint = () => {
     setIsPrintOpen(true)
+  }
+
+  const handleRefresh = () => {
+    clearError()
+    if (accessToken) {
+      refetch()
+    }
+  }
+
+  // Show loading while token is being loaded
+  if (tokenLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-[#25AAE1]" />
+          <p className="text-gray-600">Loading authentication...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error if no token after loading
+  if (!tokenLoading && (!accessToken || accessToken.trim() === '')) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Required</h2>
+          <p className="text-gray-600 mb-4">Please log in to view your character records.</p>
+          <Button 
+            onClick={() => window.location.href = '/login'} 
+            className="bg-[#25AAE1] hover:bg-[#1D8CB3]"
+          >
+            Go to Login
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -74,78 +148,96 @@ export default function CharacterPage() {
             >
               <Printer size={18} />
             </Button>
+            <Button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="bg-white border-2 border-[#25AAE1] text-[#25AAE1] hover:bg-[#25AAE1] hover:text-white rounded-xl shadow-md px-4 py-3"
+            >
+              <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+            </Button>
             <div className="relative">
-              <Select value={selectedClass} onValueChange={setSelectedClass}>
+              <Select value={selectedClass} onValueChange={(value) => {
+                setSelectedClass(value);
+                if (value !== "all-classes") {
+                  fetchByPeriod(value);
+                } else if (accessToken) {
+                  refetch();
+                }
+              }}>
                 <SelectTrigger className="w-[200px] bg-white border-2 border-[#25AAE1] rounded-xl shadow-md">
-                  <SelectValue placeholder="All Classes" />
+                  <SelectValue placeholder="All Periods" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all-classes">All Classes</SelectItem>
-                  <SelectItem value="class-5-math">Class 5 - Math</SelectItem>
-                  <SelectItem value="class-5-sci">Class 5 - Sci</SelectItem>
-                  <SelectItem value="class-n">Class N</SelectItem>
-                  <SelectItem value="class-n-1">Class N</SelectItem>
-                  <SelectItem value="class-n-2">Class N</SelectItem>
-                  <SelectItem value="class-n-3">Class N</SelectItem>
-                  <SelectItem value="class-n-4">Class N</SelectItem>
+                  <SelectItem value="all-classes">All Periods</SelectItem>
+                  <SelectItem value="morning">Morning</SelectItem>
+                  <SelectItem value="afternoon">Afternoon</SelectItem>
+                  <SelectItem value="evening">Evening</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
         </div>
 
+        {/* Student Info & Stats Summary */}
+        {!loading && studentInfo && summary && (
+          <>
+            <Card className="p-6 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white mb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold">{studentInfo.name}</h2>
+                  <p className="opacity-90">Student ID: {studentInfo.id}</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold">{summary.total_days_evaluated}</div>
+                  <div className="opacity-90">Days Evaluated</div>
+                </div>
+              </div>
+            </Card>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card className="p-4 bg-gradient-to-r from-green-50 to-green-100 border-green-200">
+                <div className="text-green-800 font-semibold">Good Behaviors</div>
+                <div className="text-2xl font-bold text-green-900">{summary.total_good_character}</div>
+                <div className="text-sm text-green-600">{summary.average_good_per_day.toFixed(1)} avg/day</div>
+              </Card>
+              <Card className="p-4 bg-gradient-to-r from-red-50 to-red-100 border-red-200">
+                <div className="text-red-800 font-semibold">Bad Behaviors</div>
+                <div className="text-2xl font-bold text-red-900">{summary.total_bad_character}</div>
+                <div className="text-sm text-red-600">{summary.average_bad_per_day.toFixed(1)} avg/day</div>
+              </Card>
+              <Card className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+                <div className="text-blue-800 font-semibold">Total Records</div>
+                <div className="text-2xl font-bold text-blue-900">{data?.length || 0}</div>
+              </Card>
+              <Card className="p-4 bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
+                <div className="text-purple-800 font-semibold">Success Rate</div>
+                <div className="text-2xl font-bold text-purple-900">
+                  {summary.total_good_character + summary.total_bad_character > 0 
+                    ? Math.round((summary.total_good_character / (summary.total_good_character + summary.total_bad_character)) * 100)
+                    : 0}%
+                </div>
+              </Card>
+            </div>
+          </>
+        )}
+
         {/* Table avec design moderne */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
           <div className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] p-4">
             <h2 className="text-white font-bold text-lg">Character Assessment</h2>
           </div>
-          <CharacterTable />
+
+          
+          <CharacterTable 
+            data={data || []} 
+            loading={loading} 
+            error={error}
+            onOpenComments={handleOpenComments}
+            onOpenHistory={handleOpenHistory}
+          />
         </div>
 
-        {/* Report Modal */}
-        <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
-          <DialogContent className="sm:max-w-[400px] p-0">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-medium text-gray-700">Report</h2>
-                <button onClick={() => setIsReportOpen(false)} className="text-gray-500 hover:text-gray-700" title="Close">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
 
-              <div className="border-t mb-6"></div>
 
-              <div className="space-y-4">
-                <Select defaultValue="class-5-math">
-                  <SelectTrigger className="w-full rounded-xl">
-                    <SelectValue placeholder="Class 5 - Math" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="class-5-math">Class 5 - Math</SelectItem>
-                    <SelectItem value="class-5-sci">Class 5 - Sci</SelectItem>
-                    <SelectItem value="class-5-bio">Class 5 - Bio</SelectItem>
-                    <SelectItem value="class-5-lit">Class 5 - Lit</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Button className="w-full bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] hover:shadow-lg text-white rounded-xl flex items-center justify-center gap-2 py-3">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <span>SAVE REPORT</span>
-                </Button>
-
-                <div className="text-center mt-2">
-                  <button onClick={() => setIsReportOpen(false)} className="text-gray-500 hover:text-gray-700">
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
 
         {/* Print Modal */}
         <Dialog open={isPrintOpen} onOpenChange={setIsPrintOpen}>
@@ -186,6 +278,19 @@ export default function CharacterPage() {
             </div>
           </DialogContent>
         </Dialog>
+
+        <CommentsModal 
+          isOpen={isCommentsOpen}
+          onClose={() => setIsCommentsOpen(false)}
+          selectedItem={selectedItem}
+        />
+
+        <HistoryModal 
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
+          selectedItem={selectedItem}
+          allData={data || []}
+        />
       </div>
     </div>
   )

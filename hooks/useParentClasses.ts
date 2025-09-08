@@ -38,10 +38,10 @@ export function useParentClasses({
 
       if (childId) {
         // Si un enfant spécifique est sélectionné, récupérer ses classes
-        fetchedClasses = await getParentClassesByChild(childId, accessToken, refreshToken);
+        fetchedClasses = await getParentClassesByChild(childId, accessToken);
       } else {
         // Sinon, récupérer toutes les classes
-        fetchedClasses = await getParentClasses(accessToken, refreshToken);
+        fetchedClasses = await getParentClasses(accessToken);
       }
 
       setClasses(fetchedClasses);
@@ -103,7 +103,7 @@ export function useParentClassDetails({
     setError(null);
 
     try {
-      const details = await getParentClassDetails(classId, accessToken, refreshToken);
+      const details = await getParentClassDetails(classId, accessToken);
       setClassDetails(details);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Erreur lors de la récupération des détails de la classe";
