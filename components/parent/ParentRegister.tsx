@@ -1,12 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/components/ParentRegister.tsx
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Phone, User, Lock, Hash, FileText, AlertTriangle, Eye, EyeOff } from "lucide-react";
+import { Mail, Phone, User, Lock, Hash, AlertTriangle, Eye, EyeOff } from "lucide-react";
 import DreaMetrixLogo from "../ui/dreametrix-logo";
 import { userPath } from "@/constants/userConstants";
 import { Input } from "../ui/input";
+import { validatePassword } from "@/lib/utils";
+import { createTeacher } from "@/services/TeacherService";
+import { useRequestInfo } from "@/hooks/useRequestInfo";
+
 
 export interface RegisterFormData {
   firstName: string;
@@ -14,7 +20,6 @@ export interface RegisterFormData {
   parentEmail: string;
   phone: string;
   studentCode: string;
-  identityCard: File | null;
   password: string;
   confirmPassword: string;
 }
@@ -25,20 +30,20 @@ export interface RegisterErrors {
   parentEmail: boolean;
   phone: boolean;
   studentCode: boolean;
-  identityCard: boolean;
   password: boolean;
   confirmPassword: boolean;
+  passwordStrength?: string[];
 }
 
 export default function ParentRegister() {
   const router = useRouter();
+  const { accessToken } = useRequestInfo()
   const [formData, setFormData] = useState<RegisterFormData>({
     firstName: "",
     lastName: "",
     parentEmail: "",
     phone: "",
     studentCode: "",
-    identityCard: null,
     password: "",
     confirmPassword: "",
   });
@@ -52,35 +57,34 @@ export default function ParentRegister() {
     parentEmail: false,
     phone: false,
     studentCode: false,
-    identityCard: false,
     password: false,
     confirmPassword: false,
+    passwordStrength: [],
   });
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: false }));
+    
+    // Validate password strength in real-time
+    if (name === "password") {
+      const validation = validatePassword(value);
+      setErrors((prev) => ({ 
+        ...prev, 
+        passwordStrength: validation.errors 
+      }));
+    }
   };
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    const { name, files } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: files && files.length > 0 ? files[0] : null }));
-    setErrors((prev) => ({ ...prev, [name]: false }));
-  };
-
-  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setFormSubmitted(true);
     setIsLoading(true);
 
+    // Validate required fields
     const hasEmptyFields = Object.entries(formData).some(
-      ([key, value]) => {
-        if (key === "identityCard") {
-          return value === null;
-        }
-        return !value;
-      }
+      ([, value]) => !value
     );
 
     if (hasEmptyFields) {
@@ -90,25 +94,64 @@ export default function ParentRegister() {
         parentEmail: !formData.parentEmail,
         phone: !formData.phone,
         studentCode: !formData.studentCode,
-        identityCard: !formData.identityCard,
         password: !formData.password,
         confirmPassword: !formData.confirmPassword,
+        passwordStrength: errors.passwordStrength,
       });
       setIsLoading(false);
       return;
     }
 
+    // Validate password strength
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      setErrors((prev) => ({ 
+        ...prev, 
+        passwordStrength: passwordValidation.errors 
+      }));
+      setIsLoading(false);
+      return;
+    }
+
+    // Check if passwords match
     if (formData.password !== formData.confirmPassword) {
       setErrors((prev) => ({ ...prev, confirmPassword: true }));
       setIsLoading(false);
       return;
     }
 
-    // API call simulation
-    setTimeout(() => {
+    try {
+      // Prepare data for API
+      const teacherData = {
+        email: formData.parentEmail,
+        password: formData.password,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone_number: formData.phone,
+        student_uuid: "55d05041-0d0e-44f8-8326-d9f7ce06332f",//formData.studentCode,
+        role: "parent"
+      };
+
+      console.log("accessToken", accessToken)
+      const result = await createTeacher(
+        "https://backend-dreametrix.com/accounts/users/create/",
+        accessToken, 
+        teacherData
+      );
+
+      if (result.success) {
+        router.push(userPath.PARENT_LOGIN_PATH);
+      } else {
+        // Handle API error
+        console.error("Account creation error:", result.message);
+        alert("Account creation error: " + result.message);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Account creation error:", error);
+      alert("An error occurred during account creation.");
       setIsLoading(false);
-      router.push(userPath.PARENT_LOGIN_PATH);
-    }, 1000);
+    }
   };
 
   const renderErrorMessage = (errorMessage: string | null) => {
@@ -225,7 +268,7 @@ export default function ParentRegister() {
             </div>
 
             {/* Student Code */}
-            <div className="relative">
+            <div className="relative md:col-span-2">
               <div className={`relative overflow-hidden border ${formSubmitted && errors.studentCode ? "border-red-500" : "border-gray-200"} rounded-lg`}>
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                   <Hash size={20} />
@@ -241,29 +284,6 @@ export default function ParentRegister() {
                 />
               </div>
               {formSubmitted && errors.studentCode && renderErrorMessage("Student code is required")}
-            </div>
-
-            {/* Identity Card */}
-            <div className="relative">
-              <div className={`relative overflow-hidden border ${formSubmitted && errors.identityCard ? "border-red-500" : "border-gray-200"} rounded-lg`}>
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <FileText size={20} />
-                </div>
-                <label className="flex items-center h-12 pl-10 pr-4 cursor-pointer">
-                  <span className="text-gray-500 truncate">
-                    {formData.identityCard ? formData.identityCard.name : "Upload Identity Card"}
-                  </span>
-                  <input
-                    type="file"
-                    name="identityCard"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    disabled={isLoading}
-                    accept=".pdf,.jpg,.jpeg,.png"
-                  />
-                </label>
-              </div>
-              {formSubmitted && errors.identityCard && renderErrorMessage("Identity card is required")}
             </div>
 
             {/* Password */}
@@ -291,6 +311,16 @@ export default function ParentRegister() {
                 </button>
               </div>
               {formSubmitted && errors.password && renderErrorMessage("Password is required")}
+              {errors.passwordStrength && errors.passwordStrength.length > 0 && (
+                <div className="mt-1 text-xs text-red-500">
+                  {errors.passwordStrength.map((error, index) => (
+                    <div key={index} className="flex items-center">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      {error}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Confirm Password */}
