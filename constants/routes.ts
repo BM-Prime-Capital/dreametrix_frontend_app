@@ -38,6 +38,11 @@ export const StudentRoutes = [
     label: "COMMUNICATE",
   },
   {
+    path: `${userPath.STUDENT_BASE_PATH}/polls`,
+    icon: generalImages.polls,
+    label: "POLLS",
+  },
+  {
     path: `${userPath.STUDENT_BASE_PATH}/library`,
     icon: generalImages.library,
     label: "LIBRARY",
