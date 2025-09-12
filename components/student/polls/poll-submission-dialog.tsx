@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useDrag } from "@use-gesture/react";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +25,12 @@ import {
   Send,
   X,
   Calendar,
+  ArrowLeft,
+  ArrowRight,
+  Save,
+  Info,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { format, parseISO, isAfter } from "date-fns";
 import { StudentPoll, PollFormData, PollResponse } from "@/types/student-polls";
@@ -37,6 +45,15 @@ interface PollSubmissionDialogProps {
   onSubmissionSuccess: () => void;
 }
 
+// Utility function for debouncing
+const debounce = (func: Function, delay: number) => {
+  let timeoutId: NodeJS.Timeout;
+  return (...args: any[]) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func.apply(null, args), delay);
+  };
+};
+
 export function PollSubmissionDialog({
   poll,
   open,
@@ -49,15 +66,64 @@ export function PollSubmissionDialog({
   const [currentStep, setCurrentStep] = useState(0);
   const [pollDetails, setPollDetails] = useState<StudentPoll | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isDraftSaving, setIsDraftSaving] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
 
   const { tenantDomain, accessToken } = useRequestInfo();
+
+  // Auto-save functionality
+  const saveDraft = useCallback(
+    debounce(async (pollId: number, data: PollFormData) => {
+      if (Object.keys(data).length === 0) return;
+      
+      try {
+        setIsDraftSaving(true);
+        localStorage.setItem(`poll_draft_${pollId}`, JSON.stringify(data));
+        setTimeout(() => setIsDraftSaving(false), 1000);
+      } catch (error) {
+        console.error("Error saving draft:", error);
+      }
+    }, 2000),
+    []
+  );
+
+  // Load saved draft
+  const loadDraft = useCallback((pollId: number) => {
+    try {
+      const saved = localStorage.getItem(`poll_draft_${pollId}`);
+      if (saved) {
+        const data = JSON.parse(saved);
+        setFormData(data);
+        toast.success("Previous draft loaded", { duration: 2000 });
+      }
+    } catch (error) {
+      console.error("Error loading draft:", error);
+    }
+  }, []);
+
+  // Clear draft after successful submission
+  const clearDraft = useCallback((pollId: number) => {
+    try {
+      localStorage.removeItem(`poll_draft_${pollId}`);
+    } catch (error) {
+      console.error("Error clearing draft:", error);
+    }
+  }, []);
 
   useEffect(() => {
     if (poll && open) {
       resetForm();
       fetchPollDetails();
+      loadDraft(poll.id);
     }
-  }, [poll, open]);
+  }, [poll, open, loadDraft]);
+
+  // Auto-save when form data changes
+  useEffect(() => {
+    if (poll && Object.keys(formData).length > 0) {
+      saveDraft(poll.id, formData);
+    }
+  }, [formData, poll, saveDraft]);
 
   const fetchPollDetails = async () => {
     if (!poll || !tenantDomain || !accessToken) return;
@@ -78,6 +144,7 @@ export function PollSubmissionDialog({
     setFormData({});
     setValidationErrors({});
     setCurrentStep(0);
+    setDragOffset(0);
   };
 
   const handleInputChange = (questionId: number, value: any) => {
@@ -117,6 +184,39 @@ export function PollSubmissionDialog({
     return Object.keys(errors).length === 0;
   };
 
+  // Enhanced navigation functions
+  const nextQuestion = () => {
+    if (!pollDetails || currentStep >= pollDetails.questions.length - 1) return;
+    setCurrentStep(prev => prev + 1);
+  };
+
+  const previousQuestion = () => {
+    if (currentStep <= 0) return;
+    setCurrentStep(prev => prev - 1);
+  };
+
+  const goToQuestion = (index: number) => {
+    if (!pollDetails || index < 0 || index >= pollDetails.questions.length) return;
+    setCurrentStep(index);
+  };
+
+  // Swipe gesture support
+  const bind = useDrag(
+    ({ last, movement: [mx], direction: [xDir], velocity: [vx] }) => {
+      if (last && Math.abs(mx) > 100 && Math.abs(vx) > 0.2) {
+        if (xDir > 0) {
+          previousQuestion();
+        } else {
+          nextQuestion();
+        }
+        setDragOffset(0);
+      } else {
+        setDragOffset(last ? 0 : mx);
+      }
+    },
+    { axis: 'x', bounds: { left: -200, right: 200 } }
+  );
+
   const handleSubmit = async () => {
     if (!pollDetails || !tenantDomain || !accessToken) return;
 
@@ -154,6 +254,10 @@ export function PollSubmissionDialog({
       });
 
       await submitPollResponse(pollDetails.id, responses, tenantDomain, accessToken);
+      
+      // Clear draft on successful submission
+      clearDraft(pollDetails.id);
+      
       toast.success("Your poll response has been submitted successfully!");
       onSubmissionSuccess();
       onOpenChange(false);
@@ -292,14 +396,14 @@ export function PollSubmissionDialog({
                   )}
                 </div>
               </div>
-              <Button
+              {/* <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => onOpenChange(false)}
                 className="text-white hover:bg-white/20 shrink-0"
               >
                 <X className="h-5 w-5" />
-              </Button>
+              </Button> */}
             </div>
           </DialogHeader>
         </div>

@@ -82,8 +82,9 @@ export function PollDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden p-0 border-0 rounded-xl">
-        <div className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] p-6 rounded-t-xl">
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-hidden p-0 border-0 rounded-xl flex flex-col">
+        {/* Fixed Header */}
+        <div className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] p-6 rounded-t-xl flex-shrink-0">
           <DialogHeader>
             <div className="flex items-start justify-between text-white">
               <div className="flex-1">
@@ -97,19 +98,20 @@ export function PollDetailsDialog({
                   Review poll information and questions
                 </p>
               </div>
-              <Button
+              {/* <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => onOpenChange(false)}
                 className="text-white hover:bg-white/20 shrink-0"
               >
                 <X className="h-5 w-5" />
-              </Button>
+              </Button> */}
             </div>
           </DialogHeader>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-6 min-h-0">
           <div className="space-y-6">
             {/* Poll Header */}
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
@@ -230,28 +232,29 @@ export function PollDetailsDialog({
               ))}
             </div>
 
-            {/* Action Buttons */}
-            <div className="sticky bottom-0 bg-white border-t border-gray-200 pt-6 mt-8">
-              <div className="flex justify-end gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  Close
-                </Button>
-                {canSubmit && (
-                  <Button
-                    onClick={() => onSubmitPoll(poll)}
-                    className="bg-[#25AAE1] hover:bg-[#1D8CB3] text-white"
-                  >
-                    <FileText className="h-4 w-4 mr-2" />
-                    Submit Responses
-                  </Button>
-                )}
-              </div>
-            </div>
+          </div>
+        </div>
+
+        {/* Fixed Footer */}
+        <div className="flex-shrink-0 bg-white border-t border-gray-200 p-6">
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              Close
+            </Button>
+            {canSubmit && (
+              <Button
+                onClick={() => onSubmitPoll(poll)}
+                className="bg-[#25AAE1] hover:bg-[#1D8CB3] text-white"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Submit Responses
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
