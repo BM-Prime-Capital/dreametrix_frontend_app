@@ -42,11 +42,11 @@ export const StudentRoutes = [
     icon: generalImages.polls,
     label: "POLLS",
   },
-  {
-    path: `${userPath.STUDENT_BASE_PATH}/library`,
-    icon: generalImages.library,
-    label: "LIBRARY",
-  },
+  // {
+  //   path: `${userPath.STUDENT_BASE_PATH}/library`,
+  //   icon: generalImages.library,
+  //   label: "LIBRARY",
+  // },
   {
     path: `${userPath.STUDENT_BASE_PATH}/rewards`,
     icon: generalImages.rewards,
@@ -57,15 +57,16 @@ export const StudentRoutes = [
     icon: generalImages.tutor,
     label: "TUTOR",
   },
-  {
-    path: `${userPath.STUDENT_BASE_PATH}/profile`,
-    icon: `/assets/images/teacher/dashboard/profile.svg`,
-    label: "STUDENT PROFILE",
-  },
+ 
   {
     path: `${userPath.STUDENT_BASE_PATH}/relationship`,
     icon: `/assets/images/teacher/dashboard/relationship.svg`,
     label: "RELATIONSHIP",
+  },
+  {
+    path: `${userPath.STUDENT_BASE_PATH}/profile`,
+    icon: `/assets/images/teacher/dashboard/profile.svg`,
+    label: "STUDENT PROFILE",
   },
 ];
 
@@ -226,11 +227,11 @@ export const TeacherRoutes = [
     icon: menuImages.communicate,
     label: "COMMUNICATE",
   },
-  {
-    path: `${userPath.TEACHER_BASE_PATH}/reports`,
-    icon: menuImages.reports,
-    label: "REPORTS",
-  },
+  // {
+  //   path: `${userPath.TEACHER_BASE_PATH}/reports`,
+  //   icon: menuImages.reports,
+  //   label: "REPORTS",
+  // },
   {
     path: `${userPath.TEACHER_BASE_PATH}/rewards`,
     icon: menuImages.rewards,

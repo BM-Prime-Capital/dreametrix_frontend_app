@@ -243,7 +243,7 @@ export function PollCard({ poll, onViewDetails, onSubmitPoll, index = 0 }: PollC
             )}
           </div>
 
-          {/* Progress Bar for Partially Completed Polls */}
+          {/* Progress Bar for Partially Completed Polls
           {poll.partial_completion && (
             <motion.div 
               initial={{ opacity: 0, scaleX: 0 }}
@@ -272,7 +272,7 @@ export function PollCard({ poll, onViewDetails, onSubmitPoll, index = 0 }: PollC
                 )}
               </div>
             </motion.div>
-          )}
+          )} */}
 
           {/* Action Buttons */}
           <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
@@ -298,19 +298,13 @@ export function PollCard({ poll, onViewDetails, onSubmitPoll, index = 0 }: PollC
                   onClick={() => onSubmitPoll(poll)}
                   className="w-full bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] hover:from-[#1D8CB3] hover:to-[#0F6A8A] text-white shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
                 >
-                  {poll.partial_completion ? (
-                    <>
-                      <Edit className="h-4 w-4" />
-                      <span className="hidden sm:inline">Continue Response</span>
-                      <span className="sm:hidden">Continue</span>
-                    </>
-                  ) : (
+                  
                     <>
                       <Zap className="h-4 w-4" />
                       <span className="hidden sm:inline">Submit Response</span>
                       <span className="sm:hidden">Submit</span>
                     </>
-                  )}
+                  
                 </Button>
               </motion.div>
             )}
