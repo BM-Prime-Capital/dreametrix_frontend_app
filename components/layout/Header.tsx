@@ -64,7 +64,7 @@ export function Header() {
         </div>
 
         {/* Search and user actions */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-1 justify-end">
           {/* Search */}
           {/* <div className="hidden md:block relative w-full max-w-[240px] lg:max-w-[280px]">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
