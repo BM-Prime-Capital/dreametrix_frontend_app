@@ -2,6 +2,7 @@ import React from "react";
 import { SidebarProvider } from "@/lib/SidebarContext";
 import { StudentSidebar } from "@/components/student/StudentSidebar";
 import { StudentRoutes } from "@/constants/routes";
+import { Toaster } from "sonner";
 
 export default function StudentDashboardLayout({
   children,
@@ -19,6 +20,7 @@ export default function StudentDashboardLayout({
           {children}
         </main>
       </div>
+      <Toaster position="top-right" richColors />
     </div>
   );
 }

@@ -26,7 +26,7 @@ import {
 import { useParents } from "@/hooks/useParents"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
 import { useState } from "react"
-import { confirmParentLink, rejectParentLink, requestUnlinkParent } from "@/services/parent-service"
+import { confirmParentLink, rejectParentLink, requestUnlinkParent, unlinkParent } from "@/services/parent-service"
 import { toast } from "sonner"
 
 export default function RelationshipPage() {
@@ -45,9 +45,25 @@ export default function RelationshipPage() {
   const handleAction = async (action: () => Promise<any>, actionKey: string, successMessage: string) => {
     setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
     try {
-      await action();
-      toast.success(successMessage);
-      refetch();
+      const response = await action();
+      
+      // Check for specific response messages
+      if (response?.message) {
+        const message = response.message;
+        
+        if (message.includes('demande de déliaison existe déjà') || 
+            message.includes('Notification renvoyée à l\'administrateur')) {
+          toast.info("ℹ️ Reminder: An unlink request already exists. Administrator has been notified again.");
+          // No refetch needed for reminder - no data changed
+        } else {
+          // Show the actual message from the server if it's different
+          toast.success(response.message || successMessage);
+          refetch();
+        }
+      } else {
+        toast.success(successMessage);
+        refetch();
+      }
     } catch (error: any) {
       toast.error(error.message || "An error occurred");
     } finally {
@@ -58,9 +74,9 @@ export default function RelationshipPage() {
   const handleRequestUnlinkParent = async (parentId: number) => {
     if (!tenantDomain || !accessToken) return;
     await handleAction(
-      () => requestUnlinkParent(parentId, tenantDomain, accessToken),
+      () => unlinkParent(parentId, tenantDomain, accessToken),
       `unlink-${parentId}`,
-      "Unlink request sent successfully"
+      "Parent unlinked successfully"
     );
   };
 

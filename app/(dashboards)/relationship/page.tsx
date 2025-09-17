@@ -22,7 +22,7 @@ import {
 import { useParents } from "@/hooks/useParents"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
 import { useState } from "react"
-import { confirmParentLink, rejectParentLink, unlinkParent } from "@/services/parent-service"
+import { confirmParentLink, rejectParentLink, requestUnlinkParent, unlinkParent } from "@/services/parent-service"
 import { toast } from "sonner"
 
 export default function RelationshipPage() {
@@ -30,8 +30,8 @@ export default function RelationshipPage() {
   const [loadingActions, setLoadingActions] = useState<{ [key: string]: boolean }>({});
   
   const {
-    data: parentsData,
-    pendingRequests,
+    linkedParents,
+    pendingLinks,
     loading,
     error,
     refetch,
@@ -178,25 +178,25 @@ export default function RelationshipPage() {
                   <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
                   <span className="ml-2 text-gray-600">Loading parents...</span>
                 </div>
-              ) : parentsData?.results?.length ? (
+              ) : linkedParents?.length ? (
                 <div className="space-y-4">
-                  {parentsData.results.map((parent) => (
-                    <Card key={parent.id} className="p-4 border border-gray-100 hover:shadow-md transition-shadow">
+                  {linkedParents.map((parent) => (
+                    <Card key={parent.parent_id} className="p-4 border border-gray-100 hover:shadow-md transition-shadow">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 font-bold">
-                            {parent.user.first_name.charAt(0)}{parent.user.last_name.charAt(0)}
+                            {parent.parent_full_name.charAt(0)}{parent.parent_full_name.charAt(0)}
                           </div>
                           <div>
-                            <h3 className="font-semibold text-gray-800">{parent.user.full_name}</h3>
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <h3 className="font-semibold text-gray-800">{parent.parent_full_name}</h3>
+                            {/* <div className="flex items-center gap-2 text-sm text-gray-600">
                               <Mail className="h-3 w-3" />
-                              {parent.user.email}
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                              {parent.parent_email}
+                            </div> */}
+                            {/* <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
                               <Calendar className="h-3 w-3" />
                               Linked {formatDate(parent.created_at)}
-                            </div>
+                            </div> */}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -207,10 +207,10 @@ export default function RelationshipPage() {
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => handleUnlinkParent(parent.id)}
-                            disabled={loadingActions[`unlink-${parent.id}`]}
+                            onClick={() => handleUnlinkParent(parent.parent_id)}
+                            disabled={loadingActions[`unlink-${parent.parent_id}`]}
                           >
-                            {loadingActions[`unlink-${parent.id}`] ? (
+                            {loadingActions[`unlink-${parent.parent_id}`] ? (
                               <RefreshCw className="h-3 w-3 animate-spin mr-1" />
                             ) : (
                               <UserMinus className="h-3 w-3 mr-1" />
@@ -220,13 +220,13 @@ export default function RelationshipPage() {
                         </div>
                       </div>
                       
-                      {parent.children?.length > 0 && (
+                      {/* {parent.children?.length && parent.children.length > 0 && (
                         <div className="mt-3 pt-3 border-t border-gray-100">
                           <p className="text-sm text-gray-600 mb-2">
                             Also parent to: {parent.children.length} other student(s)
                           </p>
                         </div>
-                      )}
+                      )} */}
                     </Card>
                   ))}
                 </div>
@@ -258,25 +258,25 @@ export default function RelationshipPage() {
                   <RefreshCw className="h-6 w-6 animate-spin text-orange-600" />
                   <span className="ml-2 text-gray-600">Loading requests...</span>
                 </div>
-              ) : pendingRequests?.length ? (
+              ) : pendingLinks?.length ? (
                 <div className="space-y-4">
-                  {pendingRequests.map((parent) => (
-                    <Card key={parent.id} className="p-4 border border-orange-100 bg-orange-50 hover:shadow-md transition-shadow">
+                  {pendingLinks.map((parent) => (
+                    <Card key={parent.parent_id} className="p-4 border border-orange-100 bg-orange-50 hover:shadow-md transition-shadow">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">
-                            {parent.user.first_name.charAt(0)}{parent.user.last_name.charAt(0)}
+                            {parent.parent_full_name.charAt(0)}{parent.parent_full_name.charAt(0)}
                           </div>
                           <div>
-                            <h3 className="font-semibold text-gray-800">{parent.user.full_name}</h3>
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <h3 className="font-semibold text-gray-800">{parent.parent_full_name}</h3>
+                            {/* <div className="flex items-center gap-2 text-sm text-gray-600">
                               <Mail className="h-3 w-3" />
-                              {parent.user.email}
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                              {parent.parent_email}
+                            </div> */}
+                            {/* <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
                               <Clock className="h-3 w-3" />
                               Requested {formatDate(parent.created_at)}
-                            </div>
+                            </div> */}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -291,10 +291,10 @@ export default function RelationshipPage() {
                         <Button
                           className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                           size="sm"
-                          onClick={() => handleConfirmLink(parent.id)}
-                          disabled={loadingActions[`confirm-${parent.id}`]}
+                          onClick={() => handleConfirmLink(parent.parent_id)}
+                          disabled={loadingActions[`confirm-${parent.parent_id}`]}
                         >
-                          {loadingActions[`confirm-${parent.id}`] ? (
+                          {loadingActions[`confirm-${parent.parent_id}`] ? (
                             <RefreshCw className="h-3 w-3 animate-spin mr-1" />
                           ) : (
                             <CheckCircle className="h-3 w-3 mr-1" />
@@ -305,10 +305,10 @@ export default function RelationshipPage() {
                           variant="destructive"
                           className="flex-1"
                           size="sm"
-                          onClick={() => handleRejectLink(parent.id)}
-                          disabled={loadingActions[`reject-${parent.id}`]}
+                          onClick={() => handleRejectLink(parent.parent_id)}
+                          disabled={loadingActions[`reject-${parent.parent_id}`]}
                         >
-                          {loadingActions[`reject-${parent.id}`] ? (
+                          {loadingActions[`reject-${parent.parent_id}`] ? (
                             <RefreshCw className="h-3 w-3 animate-spin mr-1" />
                           ) : (
                             <XCircle className="h-3 w-3 mr-1" />
@@ -339,13 +339,13 @@ export default function RelationshipPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-white bg-opacity-60 rounded-lg">
                   <div className="text-2xl font-bold text-blue-600">
-                    {parentsData?.count || 0}
+                    {linkedParents?.length || 0}
                   </div>
                   <div className="text-sm text-gray-600">Linked Parents</div>
                 </div>
                 <div className="text-center p-3 bg-white bg-opacity-60 rounded-lg">
                   <div className="text-2xl font-bold text-orange-600">
-                    {pendingRequests?.length || 0}
+                    {pendingLinks?.length || 0}
                   </div>
                   <div className="text-sm text-gray-600">Pending Requests</div>
                 </div>

@@ -89,7 +89,6 @@ export async function requestUnlinkParent(
       },
       body: JSON.stringify({ parent_id: parentId }),
     });
-    console.log("Error requesting parent unlink:", response.json());
 
     if (!response.ok) {
       // console.log("Error requesting parent unlink:", response.json());
@@ -99,8 +98,8 @@ export async function requestUnlinkParent(
         throw new Error("Error while requesting to unlink parent.");
       }
     }
-
-    return await response.json();
+    const body = await response.json();
+    return body;
   } catch (error: any) {
     console.error("Error requesting parent unlink:", error);
     throw error;
@@ -206,8 +205,9 @@ export async function unlinkParent(
         throw new Error("Error while unlinking parent.");
       }
     }
-
-    return await response.json();
+    const body = await response.json();
+    console.log("unlinkParent response:", body);
+    return body;
   } catch (error: any) {
     console.error("Error unlinking parent:", error);
     throw error;

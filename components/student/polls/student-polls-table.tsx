@@ -145,9 +145,9 @@ export function StudentPollsTable({
       switch (sortBy) {
         case "deadline":
           // Priority sorting: urgent first, then by deadline
-          if (a.urgency_score !== b.urgency_score) {
-            return b.urgency_score - a.urgency_score;
-          }
+          // if (a.urgency_score !== b.urgency_score) {
+          //   return b.urgency_score - a.urgency_score;
+          // }
           return parseISO(a.deadline).getTime() - parseISO(b.deadline).getTime();
         case "title":
           return a.title.localeCompare(b.title);
@@ -172,7 +172,7 @@ export function StudentPollsTable({
     const pending = polls.filter(p => !p.has_responded && !p.is_expired).length;
     const submitted = polls.filter(p => p.has_responded).length;
     const expired = polls.filter(p => p.is_expired).length;
-    const urgent = polls.filter(p => !p.has_responded && !p.is_expired && (p.hours_until_deadline || 0) <= 24).length;
+    const urgent = polls.filter(p => !p.has_responded && !p.is_expired).length;
     
     return { total, pending, submitted, expired, urgent };
   };

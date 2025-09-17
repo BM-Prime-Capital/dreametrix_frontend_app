@@ -3,14 +3,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { getLinkedParents, getPendingParentLinks } from "@/services/parent-service";
 
-interface LinkedParent {
+export interface LinkedParent {
   relation_id: number;
   parent_id: number;
   parent_user_id: number;
   parent_full_name: string;
 }
 
-interface PendingParentLink {
+export interface PendingParentLink {
   relation_id?: number;
   parent_id: number;
   parent_user_id: number;
@@ -44,12 +44,16 @@ export function useParents(
 
     try {
       const parentsData = await getLinkedParents(tenantDomain, accessToken);
-      setLinkedParents(Array.isArray(parentsData) ? parentsData : []);
+      // Handle both paginated response and direct array
+      const linkedData = parentsData?.results || parentsData;
+      setLinkedParents(Array.isArray(linkedData) ? linkedData : []);
 
       if (includePendingRequests) {
         try {
           const pendingData = await getPendingParentLinks(tenantDomain, accessToken);
-          setPendingLinks(Array.isArray(pendingData) ? pendingData : []);
+          // Handle both paginated response and direct array
+          const pendingArray = pendingData?.results || pendingData;
+          setPendingLinks(Array.isArray(pendingArray) ? pendingArray : []);
         } catch (pendingError) {
           console.warn("Could not fetch pending links:", pendingError);
           setPendingLinks([]);
