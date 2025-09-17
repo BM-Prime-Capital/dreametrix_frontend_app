@@ -108,7 +108,7 @@ export function StudentClassesTable({ onStatsUpdate, selectedSubject = "all-subj
         ? teacherData.full_name
         : (typeof teacherData === 'string' ? teacherData : "");
     setSelectedTeacherName(teacherName);
-    setIsModalOpen(true);
+    // setIsModalOpen(true);
   };
 
   const handleRetry = () => {
@@ -277,7 +277,7 @@ export function StudentClassesTable({ onStatsUpdate, selectedSubject = "all-subj
         </TableBody>
       </Table>
 
-      <SendMessageDialog isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} teacher={selectedTeacherName || ""} />
+      {/* <SendMessageDialog isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} teacher={selectedTeacherName || ""} /> */}
 
       {isModalOpen && <div className="absolute inset-0 bg-white/50 backdrop-blur-sm" />}
     </div>

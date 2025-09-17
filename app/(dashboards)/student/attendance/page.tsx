@@ -35,8 +35,9 @@ export default function AttendancePage() {
     clearError
   } = useAttendance({}, accessToken);
   
-  const handleDateSelection = (dateTimestamp: number) => {
+  const handleDateSelection = (dateTimestamp: Date) => {
     const selectedDate = new Date(dateTimestamp).toISOString().split('T')[0]
+    console.log('selectedDate => ', selectedDate);
     fetchByDate(selectedDate)
   }
 
