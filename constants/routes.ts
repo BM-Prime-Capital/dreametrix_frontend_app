@@ -227,11 +227,11 @@ export const TeacherRoutes = [
     icon: menuImages.communicate,
     label: "COMMUNICATE",
   },
-  {
-    path: `${userPath.TEACHER_BASE_PATH}/reports`,
-    icon: menuImages.reports,
-    label: "REPORTS",
-  },
+  // {
+  //   path: `${userPath.TEACHER_BASE_PATH}/reports`,
+  //   icon: menuImages.reports,
+  //   label: "REPORTS",
+  // },
   {
     path: `${userPath.TEACHER_BASE_PATH}/rewards`,
     icon: menuImages.rewards,

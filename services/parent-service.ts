@@ -89,9 +89,10 @@ export async function requestUnlinkParent(
       },
       body: JSON.stringify({ parent_id: parentId }),
     });
+    console.log("Error requesting parent unlink:", response.json());
 
     if (!response.ok) {
-      console.log("Error requesting parent unlink:", response);
+      // console.log("Error requesting parent unlink:", response.json());
       if (response.status === 403) {
         throw new Error("You don't have permission to request unlinking from this parent.");
       } else {
@@ -172,6 +173,43 @@ export async function rejectParentLink(
     return await response.json();
   } catch (error: any) {
     console.error("Error rejecting parent link:", error);
+    throw error;
+  }
+}
+
+export async function unlinkParent(
+  parentId: number,
+  tenantPrimaryDomain: string,
+  accessToken: string
+) {
+  if (!accessToken) {
+    throw new Error("You are not logged in. Please log in again.");
+  }
+
+  const url = `${tenantPrimaryDomain}/parents/request-unlink/`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ parent_id: parentId }),
+    });
+
+    if (!response.ok) {
+      console.log(response);
+      if (response.status === 403) {
+        throw new Error("You don't have permission to unlink from this parent.");
+      } else {
+        throw new Error("Error while unlinking parent.");
+      }
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error("Error unlinking parent:", error);
     throw error;
   }
 }

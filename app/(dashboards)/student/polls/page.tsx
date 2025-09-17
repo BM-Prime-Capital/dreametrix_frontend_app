@@ -322,9 +322,10 @@ export default function StudentPollsPage() {
               </div>
             </Card>
           </motion.div>
-        </div>
- {/* Quick Summary & Actions */}
- <div className="flex items-center justify-between bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+          </div>
+
+        {/* Quick Summary & Actions */}
+        <div className="flex items-center justify-between bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
           <div className="flex items-center gap-6">
             <div className="text-gray-700 font-semibold text-lg">Polls Summary</div>
             <div className="flex gap-4 text-sm">
