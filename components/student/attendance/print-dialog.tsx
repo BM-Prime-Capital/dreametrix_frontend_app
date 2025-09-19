@@ -14,11 +14,8 @@ export function PrintDialog({ isOpen, onClose }: PrintDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[400px] p-6 overflow-hidden gap-0">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center mb-4">
           <div className="text-lg font-medium">Print</div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-6 w-6">
-            <X className="h-4 w-4" />
-          </Button>
         </div>
 
         <div className="border-t pt-4" />

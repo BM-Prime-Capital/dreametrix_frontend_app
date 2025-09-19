@@ -134,20 +134,20 @@ export default function CharacterPage() {
           </div>
           
           <div className="flex gap-3">
-            <Button
+            {/* <Button
               className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] hover:shadow-lg hover:scale-105 text-white flex items-center gap-2 px-6 py-3 rounded-xl transition-all duration-300 shadow-md"
               onClick={handleOpenReport}
             >
               <FileText size={18} />
               <span>Report</span>
-            </Button>
-            <Button
+            </Button> */}
+            {/* <Button
               variant="outline"
               className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] hover:shadow-lg hover:scale-105 text-white border-none px-4 py-3 rounded-xl transition-all duration-300 shadow-md"
               onClick={handleOpenPrint}
             >
               <Printer size={18} />
-            </Button>
+            </Button> */}
             <Button
               onClick={handleRefresh}
               disabled={loading}

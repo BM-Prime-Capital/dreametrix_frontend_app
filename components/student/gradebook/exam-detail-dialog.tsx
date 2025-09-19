@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { X, ChevronLeft, ChevronRight, Play, Check, XIcon } from "lucide-react"
+import { ChevronLeft, ChevronRight, Play, Check, XIcon } from "lucide-react"
 import { useState } from "react"
 
 // Define proper types
@@ -51,11 +51,8 @@ export function ExamDetailDialog({ isOpen, onClose,  exams }: ExamDetailDialogPr
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden gap-0 flex">
         <div className="w-[300px] p-6 border-r">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             <div className="text-lg font-medium">EXAMS</div>
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-6 w-6">
-              <X className="h-4 w-4" />
-            </Button>
           </div>
 
           <div className="border-t pt-4" />

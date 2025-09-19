@@ -140,21 +140,21 @@ export default function AttendancePage() {
 
         {/* Action buttons avec design moderne */}
         <div className="flex gap-4">
-          <button
+          {/* <button
             className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white px-8 py-4 rounded-xl flex items-center gap-3 hover:shadow-lg hover:scale-105 transition-all duration-300 shadow-md"
             onClick={() => setIsReportModalOpen(true)}
           >
             <FileText className="h-6 w-6" />
             <span className="font-semibold">Generate Report</span>
-          </button>
+          </button> */}
           
-          <button 
+          {/* <button 
             className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white px-6 py-4 rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-300 shadow-md" 
             onClick={() => setIsPrintModalOpen(true)}
             title="Print"
           >
             <Printer className="h-6 w-6" />
-          </button>
+          </button> */}
         </div>
 
         {/* Stats Summary */}

@@ -498,6 +498,7 @@ export function AssignmentsTable({
                                 }
                               >
                                 <FileIcon className="h-4 w-4" />
+                                {/* {hasSubmission ? "View Submission" : "Submit Assignment"} */}
                               </button>
                             );
                           })()}
