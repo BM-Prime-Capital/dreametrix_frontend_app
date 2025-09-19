@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, Download, Printer, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, Printer, ChevronLeft, ChevronRight } from "lucide-react";
 import { Assignment } from "@/app/api/student/assignment/assignment.model";
 
 interface ViewSubmissionDialogProps {
@@ -44,17 +44,7 @@ export function ViewSubmissionDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[400px] p-0 overflow-hidden gap-0 bg-gray-50">
         <DialogHeader className="p-4 pb-2">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-gray-700">Your Files</DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="h-6 w-6"
-            >
-              {/*<X className="h-4 w-4" />*/}
-            </Button>
-          </div>
+          <DialogTitle className="text-gray-700">Your Files</DialogTitle>
         </DialogHeader>
         <div className="px-4 pb-4 space-y-4">
           <div className="text-gray-500 text-sm">

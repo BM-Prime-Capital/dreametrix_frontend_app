@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { X, Upload } from "lucide-react"
+import { Upload } from "lucide-react"
 
 interface SendMessageDialogProps {
   isOpen: boolean
@@ -25,12 +25,7 @@ export function SendMessageDialog({ isOpen, onClose, teacher }: SendMessageDialo
       <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden gap-0 flex">
         <div className="w-[400px] p-4">
           <DialogHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-gray-700">Send message</DialogTitle>
-              <Button variant="ghost" size="icon" onClick={onClose} className="h-6 w-6">
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+            <DialogTitle className="text-gray-700">Send message</DialogTitle>
           </DialogHeader>
           <div className="border-t pt-4" />
 

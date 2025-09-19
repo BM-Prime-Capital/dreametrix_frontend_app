@@ -47,10 +47,10 @@ export function PrintDialog({ isOpen, onClose }: PrintDialogProps) {
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          {/* <Button className="bg-blue-600 hover:bg-blue-700">
             <Printer className="h-4 w-4 mr-2" />
             Print
-          </Button>
+          </Button> */}
         </div>
       </DialogContent>
     </Dialog>

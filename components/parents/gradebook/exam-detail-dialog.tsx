@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { X, FileText, ChevronLeft, ChevronRight } from "lucide-react"
+import { FileText, ChevronLeft, ChevronRight } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 
 interface Exam {
@@ -64,11 +64,8 @@ export function ExamDetailDialog({ isOpen, onClose, exam, classData }: ExamDetai
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden">
         <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             <div className="text-lg font-medium">{exam.title}</div>
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-6 w-6">
-              <X className="h-4 w-4" />
-            </Button>
           </div>
 
           <div className="border-t pt-4 mb-4" />

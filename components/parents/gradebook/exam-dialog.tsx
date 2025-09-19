@@ -2,7 +2,6 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { X } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 interface Exam {
@@ -43,13 +42,10 @@ export function ExamsDialog({ isOpen, onClose, classData, onExamClick }: ExamsDi
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden">
         <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             <div className="text-lg font-medium">
               {classData.class} Exams - {classData.student}
             </div>
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-6 w-6">
-              <X className="h-4 w-4" />
-            </Button>
           </div>
 
           <div className="border-t pt-4 mb-4" />
