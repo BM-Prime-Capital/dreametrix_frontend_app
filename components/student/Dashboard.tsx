@@ -685,50 +685,7 @@ export default function StudentDashboard() {
               </div>
             </Card>
 
-            {/* Profile Summary Card Moderne */}
-            <Card className="p-8 shadow-xl border-0 bg-white rounded-2xl">
-              <div className="flex flex-col items-center text-center">
-                <div className="flex items-center gap-4 mb-8 w-full justify-center">
-                  <div className="p-4 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] rounded-xl">
-                    <GraduationCap className="h-8 w-8 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    Student Profile
-                  </h2>
-                </div>
-
-                <div className="flex flex-col items-center gap-6 mb-8">
-                  <div className="relative">
-                    <Avatar className="h-24 w-24 border-4 border-gradient-to-r from-[#25AAE1] to-[#1D8CB3] shadow-xl">
-                      <AvatarImage src="/placeholder.svg" />
-                      <AvatarFallback className="text-2xl font-bold bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="absolute -bottom-2 -right-2 p-2 bg-[#4CAF50] rounded-full shadow-lg">
-                      <TrendingUp className="h-4 w-4 text-white" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <h3 className="font-bold text-xl text-gray-800">
-                      {userProfile.full_name}
-                    </h3>
-                    <p className="text-gray-600">{userProfile.email}</p>
-                    <p className="text-gray-500">{userProfile.school}</p>
-                  </div>
-                </div>
-
-                <Button
-                  className="w-full bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] hover:from-[#1D8CB3] hover:to-[#25AAE1] h-14 text-lg font-bold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 rounded-xl"
-                  onClick={() => {
-                    router.push("/student/profile");
-                  }}
-                >
-                  EDIT PROFILE
-                </Button>
-              </div>
-            </Card>
+            
           </div>
 
           {/* Activity Feed */}
