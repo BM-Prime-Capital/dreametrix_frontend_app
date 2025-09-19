@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// src/components/ParentRegister.tsx
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
@@ -10,9 +8,6 @@ import DreaMetrixLogo from "../ui/dreametrix-logo";
 import { userPath } from "@/constants/userConstants";
 import { Input } from "../ui/input";
 import { validatePassword } from "@/lib/utils";
-import { createTeacher } from "@/services/TeacherService";
-import { useRequestInfo } from "@/hooks/useRequestInfo";
-
 
 export interface RegisterFormData {
   firstName: string;
@@ -35,9 +30,49 @@ export interface RegisterErrors {
   passwordStrength?: string[];
 }
 
+interface ApiResponse {
+  success: boolean;
+  message?: string;
+  data?: any;
+}
+
+async function createTeacher(
+  tenantPrimaryDomain: string,
+  teacherData: any
+): Promise<ApiResponse> {
+  try {
+    const response = await fetch(tenantPrimaryDomain, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(teacherData)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      return {
+        success: false,
+        message: errorData?.message || "Erreur lors de la création du compte."
+      };
+    }
+
+    const data = await response.json();
+    return {
+      success: true,
+      data: data
+    };
+  } catch (error) {
+    console.error("Erreur réseau lors de la création du compte:", error);
+    return {
+      success: false,
+      message: "Erreur réseau lors de la création du compte."
+    };
+  }
+}
+
 export default function ParentRegister() {
   const router = useRouter();
-  const { accessToken } = useRequestInfo()
   const [formData, setFormData] = useState<RegisterFormData>({
     firstName: "",
     lastName: "",
@@ -79,6 +114,7 @@ export default function ParentRegister() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
+    e.stopPropagation();
     setFormSubmitted(true);
     setIsLoading(true);
 
@@ -128,14 +164,12 @@ export default function ParentRegister() {
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone_number: formData.phone,
-        student_uuid: "55d05041-0d0e-44f8-8326-d9f7ce06332f",//formData.studentCode,
+        student_uuid: formData.studentCode,
         role: "parent"
       };
 
-      console.log("accessToken", accessToken)
       const result = await createTeacher(
         "https://backend-dreametrix.com/accounts/users/create/",
-        accessToken, 
         teacherData
       );
 

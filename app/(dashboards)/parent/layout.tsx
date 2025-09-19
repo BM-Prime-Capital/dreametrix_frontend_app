@@ -5,11 +5,9 @@ import { Card } from "@/components/ui/card"
 import { ParentSidebar } from "@/components/parents/ParentSidebar"
 import { ParentRoutes } from "@/constants/routes"
 import { SidebarProvider } from "@/lib/SidebarContext"
-import { LoadingProvider, useLoading } from "@/lib/LoadingContext"
-import { LoadingOverlay } from "@/components/ui/loading-overlay"
+import { LoadingProvider } from "@/lib/LoadingContext"
 
 function ParentDashboardContent({ children }: { children: React.ReactNode }) {
-  const { showSpinner } = useLoading()
 
   return (
     <div className="flex flex-col lg:flex-row gap-6">
@@ -19,12 +17,6 @@ function ParentDashboardContent({ children }: { children: React.ReactNode }) {
         </Card>
       </SidebarProvider>
       {children}
-      
-      {/* Smart loading overlay */}
-      <LoadingOverlay 
-        isVisible={showSpinner} 
-        message="Loading page..."
-      />
     </div>
   )
 }

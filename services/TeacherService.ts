@@ -57,27 +57,27 @@ export async function createTeacher(
   }
 
   try {
-    const response = await fetch("https://backend-dreametrix.com/accounts/users/create/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(teacherData)
-    });
+    // const response = await fetch("https://backend-dreametrix.com/accounts/users/create/", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify(teacherData)
+    // });
 
-    if (!response.ok) {
-      const errorData = await safeParseJSON(response);
-      return {
-        success: false,
-        message: errorData?.message || "Erreur lors de la création du compte."
-      };
-    }
+    // if (!response.ok) {
+    //   const errorData = await safeParseJSON(response);
+    //   return {
+    //     success: false,
+    //     message: errorData?.message || "Erreur lors de la création du compte."
+    //   };
+    // }
 
-    const data = await response.json();
-    return {
-      success: true,
-      data: data
-    };
+    // const data = await response.json();
+    // return {
+    //   success: true,
+    //   data: data
+    // };
   } catch (error) {
     console.error("Erreur réseau lors de la création du compte:", error);
     return {
