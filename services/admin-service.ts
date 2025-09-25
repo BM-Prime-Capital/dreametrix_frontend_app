@@ -52,9 +52,48 @@ export async function requestApprobationList(
     try {
 
         console.log("requestId", requestId); 
-      const url = `${tenantDomain}/parents/approve-unlink/${requestId}/`;
+      const url = `${tenantDomain}/parents
+      ${requestId}/`;
       const response = await fetch(url, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.text();
+        return {
+          success: false,
+          message: errorData || "Error approving request."
+        };
+      }
+  
+      const data = await response.json();
+      return {
+        success: true,
+        data: data
+      };
+    } catch (error) {
+      console.error("Error", error);
+      return {
+        success: false,
+        message: "Error approving request."
+      };
+    }
+  }
+
+
+  export async function getStudentProfileInfo(
+    accessToken: string,
+    tenantDomain: string
+  ) {
+    try {
+
+      const url = `${tenantDomain}/profiles/profile/`;
+      const response = await fetch(url, {
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -151,7 +152,6 @@ const ParentDetailsPage = ({ params }: { params: { id: string } }) => {
         console.log("result", result);
         
         if (result.success && result.data) {
-          // Transformer les données de l'API
           const apiParent: ParentDetail = {
             id: result.data.id,
             user: result.data.user,
@@ -161,14 +161,14 @@ const ParentDetailsPage = ({ params }: { params: { id: string } }) => {
             last_update: result.data.last_update,
             extra_data: result.data.extra_data,
             school: result.data.school,
-            status: 'active', // Par défaut
-            last_contact: result.data.last_update // Utiliser last_update comme last_contact
+            status: 'active',
+            last_contact: result.data.last_update 
           };
           
           setParent(apiParent);
         } else {
           // Utiliser les données par défaut en cas d'erreur
-          setParent(defaultParent);
+          //setParent(defaultParent);
         }
       } catch (error) {
         console.error('Error:', error);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
@@ -34,6 +35,7 @@ interface ApiResponse {
   success: boolean;
   message?: string;
   data?: any;
+  errors?: Record<string, string[]>; 
 }
 
 async function createTeacher(
@@ -53,7 +55,8 @@ async function createTeacher(
       const errorData = await response.json().catch(() => null);
       return {
         success: false,
-        message: errorData?.message || "Erreur lors de la création du compte."
+        message: errorData?.message || "Erreur lors de la création du compte.",
+        errors: errorData // Inclure les erreurs détaillées
       };
     }
 
@@ -96,19 +99,22 @@ export default function ParentRegister() {
     confirmPassword: false,
     passwordStrength: [],
   });
+  const [apiError, setApiError] = useState<string | null>(null); // État pour l'erreur API
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: false }));
     
-    // Validate password strength in real-time
-    if (name === "password") {
-      const validation = validatePassword(value);
-      setErrors((prev) => ({ 
-        ...prev, 
-        passwordStrength: validation.errors 
-      }));
+    // Réinitialiser l'erreur du champ modifié et l'erreur API
+    setErrors((prev) => ({ 
+      ...prev, 
+      [name]: false,
+      ...(name === "password" || name === "confirmPassword" ? { confirmPassword: false } : {})
+    }));
+    
+    // Réinitialiser l'erreur API quand l'utilisateur modifie un champ
+    if (apiError) {
+      setApiError(null);
     }
   };
 
@@ -117,8 +123,9 @@ export default function ParentRegister() {
     e.stopPropagation();
     setFormSubmitted(true);
     setIsLoading(true);
+    setApiError(null); // Réinitialiser l'erreur API à chaque soumission
 
-    // Validate required fields
+    // Valider les champs requis
     const hasEmptyFields = Object.entries(formData).some(
       ([, value]) => !value
     );
@@ -132,13 +139,13 @@ export default function ParentRegister() {
         studentCode: !formData.studentCode,
         password: !formData.password,
         confirmPassword: !formData.confirmPassword,
-        passwordStrength: errors.passwordStrength,
+        passwordStrength: [],
       });
       setIsLoading(false);
       return;
     }
 
-    // Validate password strength
+    // VALIDATION DU MOT DE PASSE UNIQUEMENT ICI (au clic sur Create Account)
     const passwordValidation = validatePassword(formData.password);
     if (!passwordValidation.isValid) {
       setErrors((prev) => ({ 
@@ -149,7 +156,7 @@ export default function ParentRegister() {
       return;
     }
 
-    // Check if passwords match
+    // Vérifier que les mots de passe correspondent
     if (formData.password !== formData.confirmPassword) {
       setErrors((prev) => ({ ...prev, confirmPassword: true }));
       setIsLoading(false);
@@ -157,7 +164,7 @@ export default function ParentRegister() {
     }
 
     try {
-      // Prepare data for API
+      // Préparer les données pour l'API
       const teacherData = {
         email: formData.parentEmail,
         password: formData.password,
@@ -176,14 +183,25 @@ export default function ParentRegister() {
       if (result.success) {
         router.push(userPath.PARENT_LOGIN_PATH);
       } else {
-        // Handle API error
+        // Gérer l'erreur API
         console.error("Account creation error:", result.message);
-        alert("Account creation error: " + result.message);
+        
+        // Extraire le message d'erreur de la réponse API
+        let errorMessage = result.message || "An error occurred during account creation.";
+        
+        // Si on a des erreurs détaillées comme {"email":["User with this email already exists"]}
+        if (result.errors) {
+          // Concaténer toutes les erreurs en une seule chaîne
+          const errorMessages = Object.values(result.errors).flat();
+          errorMessage = errorMessages.join(" ");
+        }
+        
+        setApiError(errorMessage);
         setIsLoading(false);
       }
     } catch (error) {
       console.error("Account creation error:", error);
-      alert("An error occurred during account creation.");
+      setApiError("An error occurred during account creation.");
       setIsLoading(false);
     }
   };
@@ -223,7 +241,18 @@ export default function ParentRegister() {
           </div>
         )}
 
+        {/* Affichage de l'erreur API */}
+        {apiError && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            <div className="flex items-center">
+              <AlertTriangle className="h-5 w-5 mr-2" />
+              <span className="text-sm">{apiError}</span>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* ... le reste du formulaire reste inchangé ... */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* First Name */}
             <div className="relative">
@@ -345,7 +374,7 @@ export default function ParentRegister() {
                 </button>
               </div>
               {formSubmitted && errors.password && renderErrorMessage("Password is required")}
-              {errors.passwordStrength && errors.passwordStrength.length > 0 && (
+              {formSubmitted && errors.passwordStrength && errors.passwordStrength.length > 0 && (
                 <div className="mt-1 text-xs text-red-500">
                   {errors.passwordStrength.map((error, index) => (
                     <div key={index} className="flex items-center">

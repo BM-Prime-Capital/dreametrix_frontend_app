@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   FiArrowLeft, FiUser, FiBook, FiAward, FiDollarSign, 
@@ -7,6 +7,8 @@ import {
   FiUsers, FiEdit2, FiMessageSquare, FiBarChart2,
   FiHeart, FiDroplet, FiThermometer, FiAlertCircle
 } from 'react-icons/fi';
+import { getStudentProfileInfo } from '@/services/admin-service';
+import { useRequestInfo } from '@/hooks/useRequestInfo';
 
 interface StudentDetail {
   id: number;
@@ -65,7 +67,20 @@ interface StudentDetail {
 const StudentDetailsPage = ({ params }: { params: { id: string } }) => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
+  const { accessToken, tenantDomain } = useRequestInfo();
 
+  useEffect(() => {
+    const getStudentProfile = async () => {
+        const result = await getStudentProfileInfo(accessToken, tenantDomain);
+        console.log("result", result);
+        
+        
+      
+    };
+    
+    getStudentProfile();
+  }, [accessToken, tenantDomain, params.id]);
+  
   // Test data
   const student: StudentDetail = {
     id: Number(params.id),
