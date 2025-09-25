@@ -289,7 +289,7 @@ export default function StudentDashboard() {
                 </div>
               </div>
             </div>
-            <div className="flex gap-3">
+            {/* <div className="flex gap-3">
               <Button
                 variant="ghost"
                 size="icon"
@@ -314,7 +314,7 @@ export default function StudentDashboard() {
               >
                 <Settings className="h-6 w-6" />
               </Button>
-            </div>
+            </div> */}
           </div>
         </div>
 

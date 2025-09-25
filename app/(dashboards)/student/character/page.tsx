@@ -155,7 +155,7 @@ export default function CharacterPage() {
             >
               <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
             </Button>
-            <div className="relative">
+            {/* <div className="relative">
               <Select value={selectedClass} onValueChange={(value) => {
                 setSelectedClass(value);
                 if (value !== "all-classes") {
@@ -174,7 +174,7 @@ export default function CharacterPage() {
                   <SelectItem value="evening">Evening</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
           </div>
         </div>
 

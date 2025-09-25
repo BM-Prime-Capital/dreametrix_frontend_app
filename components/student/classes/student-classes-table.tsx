@@ -240,7 +240,7 @@ export function StudentClassesTable({ onStatsUpdate, selectedSubject = "all-subj
                     {typeof class_.teacher === 'object' && class_.teacher !== null && 'full_name' in class_.teacher
                         ? class_.teacher.full_name
                         : (typeof class_.teacher === 'string' ? class_.teacher : "N/A")}
-                    <MessageIcon />
+                    {/* <MessageIcon /> */}
                   </div>
                 ) : (
                   "N/A"
