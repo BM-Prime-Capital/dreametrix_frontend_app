@@ -25,6 +25,8 @@ import {
   Download,
   X,
   Send,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { SubmitAssignmentDialog } from "./submit-assignment-dialog";
 import { ViewAssignmentDialog } from "./view-assignment-dialog";
@@ -61,6 +63,10 @@ export function AssignmentsTable({
   // New state for enhanced filtering
   const [globalFilter, setGlobalFilter] = useState("");
   const [courseFilter, setCourseFilter] = useState<string>("all");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -182,6 +188,8 @@ export function AssignmentsTable({
     }
 
     setFilteredAssignments(filtered);
+    // Reset to first page when filters change
+    setCurrentPage(1);
   }, [
     allAssignments,
     globalFilter,
@@ -215,10 +223,27 @@ export function AssignmentsTable({
     }
   };
 
+  // Calculate pagination values
+  const totalPages = Math.ceil(filteredAssignments.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedAssignments = filteredAssignments.slice(startIndex, endIndex);
+
   // Reset all filters
   const resetFilters = () => {
     setGlobalFilter("");
     setCourseFilter("all");
+    setCurrentPage(1);
+  };
+
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(parseInt(value));
+    setCurrentPage(1);
   };
 
   // Export functionality
@@ -417,8 +442,8 @@ export function AssignmentsTable({
             </TableRow>
           </TableHeader>
           <TableBody className="bg-white divide-y divide-gray-200">
-            {filteredAssignments.length > 0 ? (
-              filteredAssignments.map(
+            {paginatedAssignments.length > 0 ? (
+              paginatedAssignments.map(
                 (assignment: Assignment, index: number) => {
                   const isEvenRow = index % 2 === 0;
                   const formattedDate = formatDate(assignment.due_date);
@@ -530,18 +555,101 @@ export function AssignmentsTable({
         </Table>
       </div>
 
-      {/* Pagination Info */}
-      <div className="flex items-center justify-between px-4 py-3 bg-[#3e81d4]/5 rounded-lg">
-        <div className="text-sm text-[#3e81d4]">
-          Showing{" "}
-          <span className="font-medium">{filteredAssignments.length}</span> of{" "}
-          <span className="font-medium">{allAssignments.length}</span>{" "}
-          assignments
-          {(globalFilter || courseFilter !== "all") && (
-            <span className="text-gray-600"> (filtered)</span>
+      {/* Pagination Controls */}
+      {filteredAssignments.length > 0 && (
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-4 py-3 bg-[#3e81d4]/5 rounded-lg">
+          {/* Pagination Info */}
+          <div className="text-sm text-[#3e81d4]">
+            Showing{" "}
+            <span className="font-medium">
+              {startIndex + 1}-{Math.min(endIndex, filteredAssignments.length)}
+            </span>{" "}
+            of <span className="font-medium">{filteredAssignments.length}</span>{" "}
+            assignments
+            {(globalFilter || courseFilter !== "all") && (
+              <span className="text-gray-600"> (filtered)</span>
+            )}
+          </div>
+
+          {/* Items per page selector */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[#3e81d4]">Show:</span>
+            <Select
+              value={itemsPerPage.toString()}
+              onValueChange={handleItemsPerPageChange}
+            >
+              <SelectTrigger className="w-[70px] h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">5</SelectItem>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Pagination Buttons */}
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              {/* Page numbers */}
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((page) => {
+                    // Show first page, last page, current page, and pages around current
+                    if (page === 1 || page === totalPages) return true;
+                    if (Math.abs(page - currentPage) <= 1) return true;
+                    return false;
+                  })
+                  .map((page, index, visiblePages) => {
+                    const showEllipsis =
+                      index > 0 && visiblePages[index - 1] !== page - 1;
+                    return (
+                      <div key={page} className="flex items-center">
+                        {showEllipsis && (
+                          <span className="px-2 text-sm text-gray-400">...</span>
+                        )}
+                        <Button
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(page)}
+                          className={`h-8 w-8 p-0 ${
+                            currentPage === page
+                              ? "bg-[#3e81d4] text-white"
+                              : "text-[#3e81d4]"
+                          }`}
+                        >
+                          {page}
+                        </Button>
+                      </div>
+                    );
+                  })}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           )}
         </div>
-      </div>
+      )}
 
       {/* Modal Dialogs */}
       {selectedAssignment && (

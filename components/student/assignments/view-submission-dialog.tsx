@@ -20,12 +20,12 @@ export function ViewSubmissionDialog({
   onClose,
   assignment,
 }: ViewSubmissionDialogProps) {
-  const getSubmissionContent = (assignmentName: string) => {
-    if (assignmentName === "Science Homework") {
+  const getSubmissionContent = (assignment: Assignment) => {
+    if (assignment.submission?.file) {
       return {
         status: "Submitted",
         submittedAt: "June 12, 2025 at 2:30 PM",
-        file: "science_homework.pdf",
+        file: assignment.submission.file,
         message:
           "Hi Teacher, I have completed all the exercises and the leaf experiment. Please find my work attached.",
       };
@@ -38,7 +38,17 @@ export function ViewSubmissionDialog({
     };
   };
 
-  const submission = assignment ? getSubmissionContent(assignment.name) : null;
+  const submission = assignment ? getSubmissionContent(assignment) : null;
+
+  const handleDownloadFile = (file: string) => {
+    const link = document.createElement("a");
+    link.href = file;
+    link.download = file;
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -53,7 +63,7 @@ export function ViewSubmissionDialog({
             {assignment?.kind}
           </div>
 
-          <div className="bg-white rounded-lg p-4 min-h-[200px]">
+          <div className="bg-white rounded-lg p-4 min-h-[100px]">
             {submission?.status === "Submitted" ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
@@ -63,14 +73,20 @@ export function ViewSubmissionDialog({
                 <div className="text-sm text-gray-600">
                   <strong>Submitted:</strong> {submission.submittedAt}
                 </div>
-                <div className="text-sm text-gray-600">
-                  <strong>File:</strong> {submission.file}
-                </div>
-                <div className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
+                {/* <div className="text-sm text-gray-600">
+                  <strong>File:</strong> 
+                  <Button variant="ghost" size="icon" className="text-purple-500">
+                    <Download 
+                    onClick={() => handleDownloadFile(submission.file)}
+                    className="h-5 w-5" />
+                  </Button>
+
+                </div> */}
+                {/* <div className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
                   <strong>Message:</strong>
                   <br />
                   {submission.message}
-                </div>
+                </div> */}
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
@@ -81,16 +97,22 @@ export function ViewSubmissionDialog({
 
           <div className="flex justify-center items-center gap-4">
             <Button variant="ghost" size="icon" className="text-purple-500">
-              <Download className="h-5 w-5" />
+              <Download 
+              onClick={() => handleDownloadFile(submission?.file || "")}
+              className="h-5 w-5" />
             </Button>
             <Button variant="ghost" size="icon" className="text-[#25AAE1]">
-              <Printer className="h-5 w-5" />
+              <Printer 
+              onClick={() => window.print()}
+              className="h-5 w-5" />
             </Button>
           </div>
 
           <div className="flex justify-center items-center gap-2 text-sm text-gray-500">
             <Button variant="ghost" size="icon" className="h-6 w-6">
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft 
+              onClick={() => onClose()}
+              className="h-4 w-4" />
             </Button>
             <span>1/4</span>
             <Button variant="ghost" size="icon" className="h-6 w-6">
