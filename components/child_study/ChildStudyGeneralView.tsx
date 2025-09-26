@@ -54,12 +54,12 @@ export default function ChildStudyView({ changeView }: ChildStudyViewProps) {
         }
 
         const apiData = await getRewardsGeneralView(
-          // tenantPrimaryDomain,
-          // accessToken,
-          // refreshToken,
-          // "", 
-          // "",
-          // currentClass?.id
+          tenantPrimaryDomain,
+          accessToken,
+          refreshToken,
+          "", 
+          "",
+          currentClass?.id
         );
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
