@@ -120,7 +120,7 @@ export default function AttendanceFocusedView({
           date: attendanceDate,
           class_id: currentClassId,
           teacher_id: userData.owner_id,
-          //status: "present",
+          status: "present",
         },
         tenantDomain!,
         accessToken!,
