@@ -111,7 +111,7 @@ export default function StudentProgress() {
       </Card>
 
       {/* Study Tips Section */}
-      <Card className="p-6 shadow-lg border-l-4 border-indigo-500 bg-gradient-to-br from-indigo-50 to-blue-50">
+      {/* <Card className="p-6 shadow-lg border-l-4 border-indigo-500 bg-gradient-to-br from-indigo-50 to-blue-50">
         <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
           <div className="p-2 bg-indigo-100 rounded-lg">
             <Target className="h-5 w-5 text-indigo-600" />
@@ -136,7 +136,7 @@ export default function StudentProgress() {
             </p>
           </div>
         </div>
-      </Card>
+      </Card> */}
     </div>
   );
 }

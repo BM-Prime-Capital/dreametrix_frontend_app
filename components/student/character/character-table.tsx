@@ -121,7 +121,7 @@ export function CharacterTable({ data, loading, error, onOpenComments, onOpenHis
                 <MessageCircle className="h-6 w-6" />
               </button>
             </div>
-            <div className="p-4 flex items-center justify-between">
+            <div className="p-4 flex items-center justify-center">
               <button 
                 className="text-[#25AAE1] hover:text-[#1D8CB3] hover:scale-110 transition-all duration-200" 
                 onClick={() => onOpenHistory?.(item)}
@@ -129,10 +129,10 @@ export function CharacterTable({ data, loading, error, onOpenComments, onOpenHis
               >
                 <HistoryIcon className="h-6 w-6" />
               </button>
-              <div className="flex items-center text-gray-500">
+              {/* <div className="flex items-center text-gray-500">
                 Class {item.class_info}
                 <MessageIcon />
-              </div>
+              </div> */}
             </div>
           </div>
         )

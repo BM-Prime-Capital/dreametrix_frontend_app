@@ -188,13 +188,7 @@ export default function RelationshipPage() {
               >
                 <RefreshCw className={`h-6 w-6 ${loading ? 'animate-spin' : ''}`} />
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-12 w-12 bg-white/10 hover:bg-white/20 text-white border-white/20 rounded-xl transition-all duration-300 hover:scale-110"
-              >
-                <Settings className="h-6 w-6" />
-              </Button>
+            
             </div>
           </div>
         </div>
