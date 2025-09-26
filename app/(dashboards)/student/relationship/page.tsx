@@ -33,6 +33,14 @@ export default function RelationshipPage() {
   const { accessToken, tenantDomain, isLoading: tokenLoading } = useRequestInfo();
   const [loadingActions, setLoadingActions] = useState<{ [key: string]: boolean }>({});
   
+  // Pagination state for linked parents
+  const [currentPageLinked, setCurrentPageLinked] = useState(1);
+  const [itemsPerPageLinked] = useState(3);
+  
+  // Pagination state for pending requests
+  const [currentPagePending, setCurrentPagePending] = useState(1);
+  const [itemsPerPagePending] = useState(3);
+  
   const {
     linkedParents,
     pendingLinks,
@@ -105,6 +113,121 @@ export default function RelationshipPage() {
       day: "numeric",
       year: "numeric"
     });
+  };
+
+  // Pagination logic functions
+  const paginateLinkedParents = () => {
+    if (!linkedParents) return [];
+    const startIndex = (currentPageLinked - 1) * itemsPerPageLinked;
+    const endIndex = startIndex + itemsPerPageLinked;
+    return linkedParents.slice(startIndex, endIndex);
+  };
+
+  const paginatePendingLinks = () => {
+    if (!pendingLinks) return [];
+    const startIndex = (currentPagePending - 1) * itemsPerPagePending;
+    const endIndex = startIndex + itemsPerPagePending;
+    return pendingLinks.slice(startIndex, endIndex);
+  };
+
+  const getTotalPagesLinked = () => {
+    if (!linkedParents) return 0;
+    return Math.ceil(linkedParents.length / itemsPerPageLinked);
+  };
+
+  const getTotalPagesPending = () => {
+    if (!pendingLinks) return 0;
+    return Math.ceil(pendingLinks.length / itemsPerPagePending);
+  };
+
+  const handleLinkedPageChange = (page: number) => {
+    setCurrentPageLinked(page);
+  };
+
+  const handlePendingPageChange = (page: number) => {
+    setCurrentPagePending(page);
+  };
+
+  // Reusable Pagination Controls Component
+  const PaginationControls = ({ 
+    currentPage, 
+    totalPages, 
+    onPageChange, 
+    totalItems, 
+    itemsPerPage,
+    itemName 
+  }: {
+    currentPage: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
+    totalItems: number;
+    itemsPerPage: number;
+    itemName: string;
+  }) => {
+    if (totalPages <= 1) return null;
+    
+    const startItem = (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+    
+    return (
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-6 border-t border-gray-200">
+        <div className="text-sm text-gray-600 order-2 sm:order-1">
+          Showing {startItem}-{endItem} of {totalItems} {itemName}
+        </div>
+        <div className="flex items-center gap-2 order-1 sm:order-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="text-gray-600 border-gray-300 hover:bg-gray-100 rounded-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          >
+            Previous
+          </Button>
+          
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+              let pageNumber;
+              if (totalPages <= 5) {
+                pageNumber = i + 1;
+              } else if (currentPage <= 3) {
+                pageNumber = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNumber = totalPages - 4 + i;
+              } else {
+                pageNumber = currentPage - 2 + i;
+              }
+              
+              return (
+                <Button
+                  key={pageNumber}
+                  variant={currentPage === pageNumber ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onPageChange(pageNumber)}
+                  className={
+                    currentPage === pageNumber
+                      ? "bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white hover:from-[#1D8CB3] hover:to-[#25AAE1] rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
+                      : "text-gray-600 border-gray-300 hover:bg-gray-100 rounded-xl transition-all duration-300 hover:scale-105"
+                  }
+                >
+                  {pageNumber}
+                </Button>
+              );
+            })}
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="text-gray-600 border-gray-300 hover:bg-gray-100 rounded-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+    );
   };
 
   if (tokenLoading) {
@@ -285,50 +408,62 @@ export default function RelationshipPage() {
                   <span className="ml-2 text-gray-600">Loading parents...</span>
                 </div>
               ) : linkedParents?.length ? (
-                <div className="space-y-4">
-                  {linkedParents.map((parent) => (
-                    <Card key={parent.parent_id} className="p-6 border-0 bg-gradient-to-r from-green-50 to-blue-50 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] rounded-2xl">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 bg-gradient-to-br from-[#4CAF50] to-[#45A049] rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                            {parent.parent_full_name.split(' ').map(name => name.charAt(0)).join('').slice(0, 2)}
+                <>
+                  <div className="space-y-4">
+                    {paginateLinkedParents().map((parent) => (
+                      <Card key={parent.parent_id} className="p-6 border-0 bg-gradient-to-r from-green-50 to-blue-50 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] rounded-2xl">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 bg-gradient-to-br from-[#4CAF50] to-[#45A049] rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                              {parent.parent_full_name.split(' ').map(name => name.charAt(0)).join('').slice(0, 2)}
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-bold text-gray-800 mb-1">{parent.parent_full_name}</h3>
+                              <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                                <User className="h-4 w-4" />
+                                Parent ID: {parent.parent_id}
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-gray-500">
+                                <CheckCircle className="h-4 w-4" />
+                                Relationship ID: {parent.relation_id}
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-gray-800 mb-1">{parent.parent_full_name}</h3>
-                            <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                              <User className="h-4 w-4" />
-                              Parent ID: {parent.parent_id}
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                              <CheckCircle className="h-4 w-4" />
-                              Relationship ID: {parent.relation_id}
-                            </div>
+                          <div className="flex items-center gap-3">
+                            <Badge className="bg-gradient-to-r from-[#4CAF50] to-[#45A049] text-white border-0 px-3 py-1 rounded-full shadow-lg">
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Linked
+                            </Badge>
+                            <Button
+                              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
+                              size="sm"
+                              onClick={() => handleRequestUnlinkParent(parent.parent_id)}
+                              disabled={loadingActions[`unlink-${parent.parent_id}`]}
+                            >
+                              {loadingActions[`unlink-${parent.parent_id}`] ? (
+                                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                              ) : (
+                                <UserMinus className="h-4 w-4 mr-2" />
+                              )}
+                              Request Unlink
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <Badge className="bg-gradient-to-r from-[#4CAF50] to-[#45A049] text-white border-0 px-3 py-1 rounded-full shadow-lg">
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Linked
-                          </Badge>
-                          <Button
-                            className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
-                            size="sm"
-                            onClick={() => handleRequestUnlinkParent(parent.parent_id)}
-                            disabled={loadingActions[`unlink-${parent.parent_id}`]}
-                          >
-                            {loadingActions[`unlink-${parent.parent_id}`] ? (
-                              <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                            ) : (
-                              <UserMinus className="h-4 w-4 mr-2" />
-                            )}
-                            Request Unlink
-                          </Button>
-                        </div>
-                      </div>
-                      
-                    </Card>
-                  ))}
-                </div>
+                        
+                      </Card>
+                    ))}
+                  </div>
+                  
+                  <PaginationControls
+                    currentPage={currentPageLinked}
+                    totalPages={getTotalPagesLinked()}
+                    onPageChange={handleLinkedPageChange}
+                    totalItems={linkedParents.length}
+                    itemsPerPage={itemsPerPageLinked}
+                    itemName="linked parents"
+                  />
+                </>
+              
               ) : (
                 <div className="text-center py-8">
                   <User className="h-12 w-12 text-gray-400 mx-auto mb-3" />
@@ -356,61 +491,73 @@ export default function RelationshipPage() {
                   <span className="ml-2 text-gray-600">Loading requests...</span>
                 </div>
               ) : pendingLinks?.length ? (
-                <div className="space-y-4">
-                  {pendingLinks.map((parent) => (
-                    <Card key={parent.parent_id} className="p-6 border-0 bg-gradient-to-r from-orange-50 to-yellow-50 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] rounded-2xl">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 bg-gradient-to-br from-[#FF9800] to-[#F57C00] rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                            {parent.parent_full_name.split(' ').map(name => name.charAt(0)).join('').slice(0, 2)}
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-gray-800 mb-1">{parent.parent_full_name}</h3>
-                            <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                              <User className="h-4 w-4" />
-                              Parent ID: {parent.parent_id}
+                <>
+                  <div className="space-y-4">
+                    {paginatePendingLinks().map((parent) => (
+                      <Card key={parent.parent_id} className="p-6 border-0 bg-gradient-to-r from-orange-50 to-yellow-50 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] rounded-2xl">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 bg-gradient-to-br from-[#FF9800] to-[#F57C00] rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                              {parent.parent_full_name.split(' ').map(name => name.charAt(0)).join('').slice(0, 2)}
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                              <Clock className="h-4 w-4" />
-                              Pending link request
+                            <div>
+                              <h3 className="text-xl font-bold text-gray-800 mb-1">{parent.parent_full_name}</h3>
+                              <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                                <User className="h-4 w-4" />
+                                Parent ID: {parent.parent_id}
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-gray-500">
+                                <Clock className="h-4 w-4" />
+                                Pending link request
+                              </div>
                             </div>
                           </div>
+                          <Badge className="bg-gradient-to-r from-[#FF9800] to-[#F57C00] text-white border-0 px-3 py-1 rounded-full shadow-lg">
+                            <Clock className="h-4 w-4 mr-1" />
+                            Pending
+                          </Badge>
                         </div>
-                        <Badge className="bg-gradient-to-r from-[#FF9800] to-[#F57C00] text-white border-0 px-3 py-1 rounded-full shadow-lg">
-                          <Clock className="h-4 w-4 mr-1" />
-                          Pending
-                        </Badge>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-3">
-                        <Button
-                          className="bg-gradient-to-r from-[#4CAF50] to-[#45A049] hover:from-[#45A049] hover:to-[#4CAF50] text-white border-0 rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
-                          onClick={() => handleConfirmLink(parent.parent_id)}
-                          disabled={loadingActions[`confirm-${parent.parent_id}`]}
-                        >
-                          {loadingActions[`confirm-${parent.parent_id}`] ? (
-                            <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                          ) : (
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                          )}
-                          Approve
-                        </Button>
-                        <Button
-                          className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
-                          onClick={() => handleRejectLink(parent.parent_id)}
-                          disabled={loadingActions[`reject-${parent.parent_id}`]}
-                        >
-                          {loadingActions[`reject-${parent.parent_id}`] ? (
-                            <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                          ) : (
-                            <XCircle className="h-4 w-4 mr-2" />
-                          )}
-                          Reject
-                        </Button>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button
+                            className="bg-gradient-to-r from-[#4CAF50] to-[#45A049] hover:from-[#45A049] hover:to-[#4CAF50] text-white border-0 rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
+                            onClick={() => handleConfirmLink(parent.parent_id)}
+                            disabled={loadingActions[`confirm-${parent.parent_id}`]}
+                          >
+                            {loadingActions[`confirm-${parent.parent_id}`] ? (
+                              <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                            ) : (
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                            )}
+                            Approve
+                          </Button>
+                          <Button
+                            className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
+                            onClick={() => handleRejectLink(parent.parent_id)}
+                            disabled={loadingActions[`reject-${parent.parent_id}`]}
+                          >
+                            {loadingActions[`reject-${parent.parent_id}`] ? (
+                              <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                            ) : (
+                              <XCircle className="h-4 w-4 mr-2" />
+                            )}
+                            Reject
+                          </Button>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                  
+                  <PaginationControls
+                    currentPage={currentPagePending}
+                    totalPages={getTotalPagesPending()}
+                    onPageChange={handlePendingPageChange}
+                    totalItems={pendingLinks.length}
+                    itemsPerPage={itemsPerPagePending}
+                    itemName="pending requests"
+                  />
+                </>
+              
               ) : (
                 <div className="text-center py-8">
                   <Bell className="h-12 w-12 text-gray-400 mx-auto mb-3" />

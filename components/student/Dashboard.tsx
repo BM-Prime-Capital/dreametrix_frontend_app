@@ -1,6 +1,5 @@
 "use client";
 
-import { ActivityFeed } from "../layout/ActivityFeed";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -23,6 +22,9 @@ import {
   TrendingUp,
   Award,
   BookMarked,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
 } from "lucide-react";
 import PageTitleH1 from "../ui/page-title-h1";
 import StudentProgress from "./StudentProgress";
@@ -30,7 +32,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getUserData } from "@/app/utils/getUserFullName";
 import { localStorageKey } from "@/constants/global";
-import { getStudentClasses, StudentClass } from "@/services/StudentGradebookService";
+import { getStudentClasses, StudentClass, getStudentDashboard, StudentDashboardData } from "@/services/StudentGradebookService";
 import { getAssignments } from "@/services/AssignmentService";
 import { getStudentAttendanceView, StudentAttendanceData } from "@/services/AttendanceService";
 import { getStudentRewardsView, StudentRewardsData } from "@/services/RewardsService";
@@ -51,11 +53,13 @@ interface UserProfile {
 
 export default function StudentDashboard() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(null);
   const [studentClasses, setStudentClasses] = useState<StudentClass[]>([]);
   const [assignments, setAssignments] = useState<any[]>([]);
   const [attendanceData, setAttendanceData] = useState<StudentAttendanceData | null>(null);
   const [rewardsData, setRewardsData] = useState<StudentRewardsData | null>(null);
   const [pollsData, setPollsData] = useState<any[]>([]);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
   const [gradesLoading, setGradesLoading] = useState(true);
   const [assignmentsLoading, setAssignmentsLoading] = useState(true);
   const [attendanceLoading, setAttendanceLoading] = useState(true);
@@ -115,6 +119,7 @@ export default function StudentDashboard() {
         tenantDomainType: typeof tenantDomain,
         fullUrl: tenantDomain + '/test'
       });
+      loadDashboardData();
       loadGradesData();
       loadAssignmentsData();
       loadAttendanceData();
@@ -122,6 +127,35 @@ export default function StudentDashboard() {
       loadPollsData();
     }
   }, [requestInfoLoading, tenantDomain, accessToken]);
+
+  const loadDashboardData = async () => {
+    try {
+      if (tenantDomain && accessToken) {
+        console.log("Loading dashboard data with tenantDomain:", tenantDomain);
+        const data = await getStudentDashboard(tenantDomain, accessToken);
+        setDashboardData(data);
+        
+        // Update user profile with dashboard data if available
+        if (data.student) {
+          setUserProfile(prev => ({
+            full_name: data.student.name,
+            email: prev?.email || "student@school.edu",
+            role: prev?.role || "student",
+            phone: prev?.phone,
+            gender: prev?.gender,
+            date_of_birth: prev?.date_of_birth,
+            address: prev?.address,
+            school: prev?.school || "School",
+            grade: data.student.grade_level.toString(),
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+    } finally {
+      setDashboardLoading(false);
+    }
+  };
 
   const loadGradesData = async () => {
     try {
@@ -152,9 +186,22 @@ export default function StudentDashboard() {
   };
 
   const getAssignmentStats = () => {
+    // Use dashboard data if available, otherwise fall back to assignments
+    if (dashboardData?.recent_submissions) {
+      const submissions = dashboardData.recent_submissions;
+      const completed = submissions.filter(sub => sub.marked).length;
+      const total = submissions.length;
+      
+      return {
+        completed,
+        total,
+        percentage: total > 0 ? Math.round((completed / total) * 100) : 0
+      };
+    }
+    
     if (assignments.length === 0) return { completed: 0, total: 0, percentage: 0 };
     
-    // Assuming assignments have a status or completed field
+    // Fallback to original logic for assignments
     const completed = assignments.filter(assignment => 
       assignment.status === 'completed' || assignment.marked === true
     ).length;
@@ -181,12 +228,25 @@ export default function StudentDashboard() {
   };
 
   const getStudyTimeFromAttendance = () => {
+    // Use dashboard attendance data if available, otherwise fall back to old attendance API
+    if (dashboardData?.attendance) {
+      const attendance = dashboardData.attendance;
+      // Calculate estimated study time based on present days
+      // Assuming 6 hours per school day
+      const hoursPerDay = 6;
+      const totalHours = attendance.present_days * hoursPerDay;
+      
+      if (totalHours >= 24) {
+        return `${Math.round(totalHours / 24)}d`;
+      }
+      return `${totalHours}h`;
+    }
+    
+    // Fallback to old attendance data structure
     if (!attendanceData || !attendanceData.summary) {
       return "0h";
     }
     
-    // Calculate estimated study time based on present days
-    // Assuming 6 hours per school day
     const hoursPerDay = 6;
     const totalHours = attendanceData.summary.present * hoursPerDay;
     
@@ -318,8 +378,8 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
-          <div className="flex-1 space-y-6">
+        <div className="flex flex-col gap-6">
+          <div className="space-y-6">
             {/* Quick Stats Section Moderne */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Card className="p-6 bg-gradient-to-br from-[#4CAF50] to-[#45A049] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
@@ -330,10 +390,10 @@ export default function StudentDashboard() {
                   <div>
                     <p className="text-white/90 text-sm font-medium">Grade Average</p>
                     <p className="text-3xl font-bold">
-                      {gradesLoading ? "--" : `${calculateOverallAverage(studentClasses)}%`}
+                      {dashboardLoading ? "--" : dashboardData?.academic_overview?.overall_average ? `${dashboardData.academic_overview.overall_average}%` : `${calculateOverallAverage(studentClasses)}%`}
                     </p>
                     <p className="text-white/70 text-xs">
-                      {studentClasses.length} {studentClasses.length === 1 ? 'class' : 'classes'}
+                      {dashboardData?.academic_overview?.total_courses || studentClasses.length} {(dashboardData?.academic_overview?.total_courses || studentClasses.length) === 1 ? 'class' : 'classes'}
                     </p>
                   </div>
                 </div>
@@ -347,10 +407,10 @@ export default function StudentDashboard() {
                   <div>
                     <p className="text-white/90 text-sm font-medium">Assignments</p>
                     <p className="text-3xl font-bold">
-                      {assignmentsLoading ? "--" : `${getAssignmentStats().completed}/${getAssignmentStats().total}`}
+                      {(dashboardLoading && assignmentsLoading) ? "--" : `${getAssignmentStats().completed}/${getAssignmentStats().total}`}
                     </p>
                     <p className="text-white/70 text-xs">
-                      {assignmentsLoading ? "Loading..." : `${getAssignmentStats().percentage}% completed`}
+                      {(dashboardLoading && assignmentsLoading) ? "Loading..." : `${getAssignmentStats().percentage}% completed`}
                     </p>
                   </div>
                 </div>
@@ -367,7 +427,8 @@ export default function StudentDashboard() {
                       {attendanceLoading ? "--" : getStudyTimeFromAttendance()}
                     </p>
                     <p className="text-white/70 text-xs">
-                      {attendanceData ? `${attendanceData.summary?.attendance_rate || 0}% attendance` : "This month"}
+                      {dashboardData?.attendance ? `${dashboardData.attendance.rate}% attendance` : 
+                       attendanceData ? `${attendanceData.summary?.attendance_rate || 0}% attendance` : "This month"}
                     </p>
                   </div>
                 </div>
@@ -432,7 +493,148 @@ export default function StudentDashboard() {
             </Card>
 
             {/* Student Progress Section */}
-            <StudentProgress />
+            <StudentProgress dashboardData={dashboardData} />
+
+            {/* Recent Submissions Section */}
+            {dashboardData?.recent_submissions && dashboardData.recent_submissions.length > 0 && (
+              <Card className="p-8 shadow-xl border-0 bg-white rounded-2xl">
+                <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                  <div className="p-3 bg-gradient-to-r from-[#4CAF50] to-[#45A049] rounded-xl">
+                    <BookOpen className="h-6 w-6 text-white" />
+                  </div>
+                  Recent Submissions
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {dashboardData.recent_submissions.slice(0, 4).map((submission) => (
+                    <div 
+                      key={submission.id} 
+                      className={`flex items-center gap-4 p-4 rounded-xl ${
+                        submission.marked && submission.grade !== null 
+                          ? submission.grade >= 85 ? 'bg-green-50' 
+                            : submission.grade >= 70 ? 'bg-yellow-50'
+                            : 'bg-red-50'
+                          : 'bg-gray-50'
+                      }`}
+                    >
+                      <div className={`p-3 rounded-xl ${
+                        submission.marked && submission.grade !== null
+                          ? submission.grade >= 85 ? 'bg-green-500'
+                            : submission.grade >= 70 ? 'bg-yellow-500' 
+                            : 'bg-red-500'
+                          : 'bg-gray-400'
+                      }`}>
+                        {submission.marked && submission.grade !== null 
+                          ? <Trophy className="h-6 w-6 text-white" />
+                          : <Clock className="h-6 w-6 text-white" />
+                        }
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-800">{submission.assessment_name}</p>
+                        <p className="text-sm text-gray-600">{submission.course_name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            submission.marked 
+                              ? 'bg-green-100 text-green-700' 
+                              : 'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {submission.marked ? 'Graded' : 'Pending'}
+                          </span>
+                          {submission.grade !== null && (
+                            <span className="text-sm font-semibold text-gray-700">
+                              {submission.grade}%
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(submission.submitted_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            {/* Attendance Summary Section */}
+            {dashboardData?.attendance && (
+              <Card className="p-8 shadow-xl border-0 bg-white rounded-2xl">
+                <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                  <div className="p-3 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] rounded-xl">
+                    <Calendar className="h-6 w-6 text-white" />
+                  </div>
+                  Attendance Summary
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* Attendance Rate */}
+                  <div className={`p-4 rounded-xl ${
+                    dashboardData.attendance.rate >= 95 ? 'bg-green-50' :
+                    dashboardData.attendance.rate >= 85 ? 'bg-yellow-50' :
+                    'bg-red-50'
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-xl ${
+                        dashboardData.attendance.rate >= 95 ? 'bg-green-500' :
+                        dashboardData.attendance.rate >= 85 ? 'bg-yellow-500' :
+                        'bg-red-500'
+                      }`}>
+                        {dashboardData.attendance.rate >= 95 ? 
+                          <CheckCircle className="h-5 w-5 text-white" /> :
+                          dashboardData.attendance.rate >= 85 ?
+                          <AlertCircle className="h-5 w-5 text-white" /> :
+                          <XCircle className="h-5 w-5 text-white" />
+                        }
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800">Overall Rate</p>
+                        <p className="text-2xl font-bold text-gray-900">{dashboardData.attendance.rate}%</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Present Days */}
+                  <div className="p-4 rounded-xl bg-green-50">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-500 rounded-xl">
+                        <CheckCircle className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800">Present</p>
+                        <p className="text-2xl font-bold text-gray-900">{dashboardData.attendance.present_days}</p>
+                        <p className="text-sm text-gray-600">of {dashboardData.attendance.total_days} days</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Absent Days */}
+                  <div className="p-4 rounded-xl bg-red-50">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-red-500 rounded-xl">
+                        <XCircle className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800">Absent</p>
+                        <p className="text-2xl font-bold text-gray-900">{dashboardData.attendance.absent_days}</p>
+                        <p className="text-sm text-gray-600">days missed</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Late Days */}
+                  <div className="p-4 rounded-xl bg-yellow-50">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-yellow-500 rounded-xl">
+                        <AlertCircle className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800">Late</p>
+                        <p className="text-2xl font-bold text-gray-900">{dashboardData.attendance.late_days}</p>
+                        <p className="text-sm text-gray-600">days late</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
 
             {/* Recent Achievements Section Moderne */}
             <Card className="p-8 shadow-xl border-0 bg-white rounded-2xl">
@@ -518,7 +720,7 @@ export default function StudentDashboard() {
                 Today&apos;s Schedule
               </h2>
               <div className="space-y-4">
-                {gradesLoading ? (
+                {(dashboardLoading && gradesLoading) ? (
                   // Loading state
                   <>
                     <div className="flex items-center gap-4 p-4 bg-gray-100 rounded-xl animate-pulse">
@@ -536,8 +738,32 @@ export default function StudentDashboard() {
                       </div>
                     </div>
                   </>
+                ) : dashboardData?.academic_overview?.courses && dashboardData.academic_overview.courses.length > 0 ? (
+                  // Real courses from dashboard API
+                  dashboardData.academic_overview.courses.slice(0, 3).map((course, index) => {
+                    const colors = [
+                      { bg: 'from-[#25AAE1]/10 to-[#1D8CB3]/10', dot: 'bg-[#25AAE1]', text: 'text-[#25AAE1]' },
+                      { bg: 'from-[#4CAF50]/10 to-[#45A049]/10', dot: 'bg-[#4CAF50]', text: 'text-[#4CAF50]' },
+                      { bg: 'from-[#FF9800]/10 to-[#F57C00]/10', dot: 'bg-[#FF9800]', text: 'text-[#FF9800]' }
+                    ];
+                    const color = colors[index % colors.length];
+                    const status = index === 0 ? 'Available' : index === 1 ? 'Upcoming' : 'Later';
+                    
+                    return (
+                      <div key={course.id} className={`flex items-center gap-4 p-4 bg-gradient-to-r ${color.bg} rounded-xl hover:shadow-md transition-all duration-200`}>
+                        <div className={`w-4 h-4 ${color.dot} rounded-full`}></div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-800">{course.name}</p>
+                          <p className="text-gray-600">
+                            {course.subject} • {course.teacher} • Grade: {course.grade}%
+                          </p>
+                        </div>
+                        <div className={`${color.text} font-semibold`}>{status}</div>
+                      </div>
+                    );
+                  })
                 ) : studentClasses && studentClasses.length > 0 ? (
-                  // Real classes from API
+                  // Fallback to original studentClasses data
                   studentClasses.slice(0, 3).map((studentClass, index) => {
                     const colors = [
                       { bg: 'from-[#25AAE1]/10 to-[#1D8CB3]/10', dot: 'bg-[#25AAE1]', text: 'text-[#25AAE1]' },
@@ -604,7 +830,7 @@ export default function StudentDashboard() {
                   ) : pollsData && pollsData.length > 0 ? (
                     // Real polls from API
                     pollsData.slice(0, 2).map((poll, index) => (
-                      <div key={poll.id || index} className="flex items-start gap-4 p-6 bg-white rounded-2xl shadow-lg border-l-4 border-[#25AAE1]">
+                      <div key={poll.id || index} className="flex items-start gap-4 p-6 bg-white rounded-2xl shadow-lg">
                         <div className="p-3 bg-[#25AAE1] rounded-xl mt-1">
                           <Bell className="h-6 w-6 text-white" />
                         </div>
@@ -635,7 +861,7 @@ export default function StudentDashboard() {
                   ) : (
                     // Fallback when no polls
                     <>
-                      <div className="flex items-start gap-4 p-6 bg-white rounded-2xl shadow-lg border-l-4 border-[#4CAF50]">
+                      <div className="flex items-start gap-4 p-6 bg-white rounded-2xl shadow-lg">
                         <div className="p-3 bg-[#4CAF50] rounded-xl mt-1">
                           <BookOpen className="h-6 w-6 text-white" />
                         </div>
@@ -657,7 +883,7 @@ export default function StudentDashboard() {
                           </Button>
                         </div>
                       </div>
-                      <div className="flex items-start gap-4 p-6 bg-white rounded-2xl shadow-lg border-l-4 border-[#FF9800]">
+                      <div className="flex items-start gap-4 p-6 bg-white rounded-2xl shadow-lg">
                         <div className="p-3 bg-[#FF9800] rounded-xl mt-1">
                           <Star className="h-6 w-6 text-white" />
                         </div>
@@ -687,9 +913,6 @@ export default function StudentDashboard() {
 
             
           </div>
-
-          {/* Activity Feed */}
-          <ActivityFeed />
         </div>
       </section>
     </div>

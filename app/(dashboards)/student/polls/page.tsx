@@ -20,6 +20,7 @@ import { StudentPoll } from "@/types/student-polls";
 
 interface EnrichedStudentPoll extends StudentPoll {
   hours_until_deadline?: number;
+  isUrgent?: boolean;
 }
 
 interface PaginatedResponse {
@@ -83,16 +84,20 @@ export default function StudentPollsPage() {
         const endIndex = startIndex + itemsPerPage;
         const paginatedPolls = pollsData.slice(startIndex, endIndex);
         
-        setPolls(paginatedPolls.map((poll) => {
+        const enrichedPolls = paginatedPolls.map((poll) => {
           const isExpired = isAfter(new Date(), parseISO(poll.deadline));
           const hoursUntilDeadline = differenceInHours(parseISO(poll.deadline), new Date());
+          const isUrgent = !poll.has_responded && !isExpired && hoursUntilDeadline <= 24;
           
           return {
             ...poll,
             is_expired: isExpired,
             hours_until_deadline: hoursUntilDeadline,
+            isUrgent: isUrgent,
           };
-        }));
+        });
+        
+        setPolls(sortPolls(enrichedPolls));
         
         setTotalCount(count);
         setHasNext(endIndex < count);
@@ -103,15 +108,17 @@ export default function StudentPollsPage() {
       const enrichedPolls = pollsData.map((poll) => {
         const isExpired = isAfter(new Date(), parseISO(poll.deadline));
         const hoursUntilDeadline = differenceInHours(parseISO(poll.deadline), new Date());
+        const isUrgent = !poll.has_responded && !isExpired && hoursUntilDeadline <= 24;
         
         return {
           ...poll,
           is_expired: isExpired,
           hours_until_deadline: hoursUntilDeadline,
+          isUrgent: isUrgent,
         };
       });
       
-      setPolls(enrichedPolls);
+      setPolls(sortPolls(enrichedPolls));
       setTotalCount(count);
     } catch (error) {
       console.error("Error fetching polls for stats:", error);
@@ -154,6 +161,31 @@ export default function StudentPollsPage() {
     setIsDetailsDialogOpen(false);
     setSelectedPoll(poll);
     setIsSubmissionDialogOpen(true);
+  };
+
+  // Sorting function to prioritize urgent polls and sort by deadline
+  const sortPolls = (polls: EnrichedStudentPoll[]): EnrichedStudentPoll[] => {
+    return polls.sort((a, b) => {
+      // First priority: urgent polls first
+      if (a.isUrgent && !b.isUrgent) return -1;
+      if (!a.isUrgent && b.isUrgent) return 1;
+      
+      // Second priority: sort by deadline (earliest first)
+      const deadlineA = new Date(a.deadline).getTime();
+      const deadlineB = new Date(b.deadline).getTime();
+      
+      // For urgent polls or equal urgency status, sort by earliest deadline first
+      if (deadlineA !== deadlineB) {
+        return deadlineA - deadlineB;
+      }
+      
+      // Third priority: pending polls before completed/expired
+      if (!a.has_responded && !a.is_expired && (b.has_responded || b.is_expired)) return -1;
+      if ((a.has_responded || a.is_expired) && !b.has_responded && !b.is_expired) return 1;
+      
+      // Final fallback: by poll ID
+      return a.id - b.id;
+    });
   };
 
   return (
@@ -410,10 +442,12 @@ export default function StudentPollsPage() {
                 ) : (
                   polls.map((poll) => {
                     const isExpired = poll.is_expired || false;
-                    const isUrgent = poll.hours_until_deadline !== undefined && poll.hours_until_deadline <= 24 && !poll.has_responded && !isExpired;
+                    const isUrgent = poll.isUrgent || false;
                     
                     return (
-                      <tr key={poll.id} className="hover:bg-gray-50 transition-colors duration-150">
+                      <tr key={poll.id} className={`hover:bg-gray-50 transition-colors duration-150 ${
+                        isUrgent ? "bg-gradient-to-r from-red-50 to-transparent border-l-4 border-red-400" : ""
+                      }`}>
                         <td className="px-6 py-4">
                           <div className="flex items-start">
                             <div>
