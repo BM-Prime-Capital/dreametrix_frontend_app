@@ -394,7 +394,7 @@ export default function BigBrain({ accessToken, tenantDomain }: BigBrainProps) {
       title: `New conversation ${conversations.length + 1}`,
       messages: [{
         id: "1",
-        text: "Hello! I'm BiG BrA.In, your educational AI assistant. How can I help you today?",
+        text: "Hello! I'm TuTor, your educational AI assistant. How can I help you today?",
         sender: "ai",
         timestamp: new Date()
       }],
@@ -478,7 +478,7 @@ export default function BigBrain({ accessToken, tenantDomain }: BigBrainProps) {
         title: "New conversation",
         messages: [{
           id: "1",
-          text: "Hello! I'm BiG BrA.In, your educational AI assistant. How can I help you today?",
+          text: "Hello! I'm TuTor, your educational AI assistant. How can I help you today?",
           sender: "ai",
           timestamp: new Date()
         }],
@@ -560,7 +560,7 @@ export default function BigBrain({ accessToken, tenantDomain }: BigBrainProps) {
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm mr-3">
                 <History className="h-5 w-5 text-white" />
               </div>
-              <span>BiG BrA.In</span>
+              <span>TuTor</span>
             </h3>
             <Button 
               onClick={startNewConversation}
@@ -784,7 +784,7 @@ export default function BigBrain({ accessToken, tenantDomain }: BigBrainProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
-              <p className="text-lg font-medium text-gray-600">Start a new conversation with BiG BrA.In</p>
+              <p className="text-lg font-medium text-gray-600">Start a new conversation with TuTor</p>
               <p className="text-sm text-gray-400 mt-2">Your AI educational assistant is ready to help</p>
             </div>
           )}
@@ -922,7 +922,7 @@ export default function BigBrain({ accessToken, tenantDomain }: BigBrainProps) {
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask BiG BrA.In anything about education..."
+                placeholder="Ask TuTor anything about education..."
                 className="w-full rounded-2xl px-6 py-4 text-base border-gray-300 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 shadow-sm"
                 disabled={isLoading}
               />
@@ -954,7 +954,7 @@ export default function BigBrain({ accessToken, tenantDomain }: BigBrainProps) {
             </Button>
           </form>
           <p className="text-xs text-gray-400 mt-3 text-center">
-            BiG BrA.In can make mistakes. Consider checking important information.
+            TuTor can make mistakes. Consider checking important information.
           </p>
         </div>
       </div>

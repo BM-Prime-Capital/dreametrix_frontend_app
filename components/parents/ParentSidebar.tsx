@@ -6,9 +6,18 @@ import { cn } from "@/libs/utils"
 import Image from "next/image"
 import { Card } from "@/components/ui/card"
 import type { MenuRoute } from "@/types"
+import { useLoading } from "@/lib/LoadingContext"
 
 export function ParentSidebar({ routes }: { routes: MenuRoute[] }) {
   const pathname = usePathname()
+  const { startLoading } = useLoading()
+
+  const handleLinkClick = (targetPath: string) => {
+    // Démarrer le chargement seulement si on clique sur un lien différent de la page actuelle
+    if (pathname !== targetPath) {
+      startLoading()
+    }
+  }
 
   return (
     <Card className="w-full lg:w-[200px] h-fit lg:rounded-tr-none lg:rounded-br-none bg-white">
@@ -22,6 +31,7 @@ export function ParentSidebar({ routes }: { routes: MenuRoute[] }) {
             <Link
               key={route.path}
               href={route.path}
+              onClick={() => handleLinkClick(route.path)}
               className={cn(
                 "flex flex-shrink-0 items-center gap-3 p-3 text-sm rounded-md whitespace-nowrap transition-colors",
                 "hover:bg-blue-50 hover:text-blue-600",

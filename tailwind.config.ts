@@ -24,6 +24,7 @@ const config: Config = {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
         "gradient-primary": "linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-gradient)))",
+        "gradient-primary-light": "linear-gradient(to right, hsl(var(--primary-light)), hsl(var(--primary-light-gradient)))",
         "gradient-secondary": "linear-gradient(to right, hsl(var(--secondary)), hsl(var(--secondary-gradient)))",
       },
       borderRadius: {
@@ -84,6 +85,12 @@ const config: Config = {
           foreground: "hsl(var(--primary-foreground))",
           muted: "hsl(var(--primary-muted))",
           hover: "hsl(var(--primary-hover))",
+        },
+        primaryLight: {
+          DEFAULT: "hsl(var(--primary-light))",
+          foreground: "hsl(var(--primary-light-foreground))",
+          muted: "hsl(var(--primary-light-muted))",
+          hover: "hsl(var(--primary-light-hover))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",

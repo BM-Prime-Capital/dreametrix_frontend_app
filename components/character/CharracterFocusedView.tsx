@@ -45,7 +45,7 @@ export default function CharacterFocusedView({
   return (
     <section className="flex flex-col h-full w-full bg-gradient-to-br from-orange-50/30 to-red-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-orange-600 via-orange-700 to-red-700 px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-gradient-to-r from-orange-600 via-orange-700 to-red-700 px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,7 +81,7 @@ export default function CharacterFocusedView({
             <span>Back to Overview</span>
           </Button>
           
-          <div className="flex gap-3">
+          {/* <div className="flex gap-3">
             <ReportAttendanceDialog />
             <Link
               target="_blank"
@@ -97,7 +97,7 @@ export default function CharacterFocusedView({
               />
               <span>Print Report</span>
             </Link>
-          </div>
+          </div> */}
         </div>
 
         {/* Enhanced Character Table Card */}

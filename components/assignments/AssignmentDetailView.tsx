@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,7 +20,7 @@ import {
   Mic,
   MicOff,
   Play,
-  Pause,
+ // Pause,
   Save
 } from "lucide-react";
 import { Assignment } from "@/types";
@@ -42,32 +43,32 @@ interface Student {
   };
 }
 
-interface ApiSubmissionResponse {
-  student: {
-    id: number;
-    user: {
-      id: number;
-      email: string;
-      username: string;
-      first_name: string;
-      last_name: string;
-      avatar?: string;
-    };
-    uuid: string;
-    grade: number;
-    enrolled_courses: number[];
-  };
-  has_submitted: boolean;
-  submission: {
-    id: number;
-    submitted_at: string;
-    file_url: string;
-    file_name: string;
-    grade?: number;
-    feedback?: string;
-    voice_note_url?: string;
-  } | null;
-}
+// interface ApiSubmissionResponse {
+//   student: {
+//     id: number;
+//     user: {
+//       id: number;
+//       email: string;
+//       username: string;
+//       first_name: string;
+//       last_name: string;
+//       avatar?: string;
+//     };
+//     uuid: string;
+//     grade: number;
+//     enrolled_courses: number[];
+//   };
+//   has_submitted: boolean;
+//   submission: {
+//     id: number;
+//     submitted_at: string;
+//     file_url: string;
+//     file_name: string;
+//     grade?: number;
+//     feedback?: string;
+//     voice_note_url?: string;
+//   } | null;
+// }
 
 interface AssignmentDetailViewProps {
   assignment: Assignment;
@@ -102,7 +103,7 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
           assignment.id,
           tenantDomain,
           accessToken,
-          refreshToken
+          //refreshToken
         );
         
         // Log the structure to debug

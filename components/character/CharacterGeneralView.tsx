@@ -1,12 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import PageTitleH1 from "../ui/page-title-h1";
 import Image from "next/image";
 import { generalImages, teacherImages } from "@/constants/images";
-import StatisticItem from "../ui/StatisticItem";
 import { localStorageKey, views } from "@/constants/global";
 import { ISchoolClass } from "@/types";
 import { useList } from "@/hooks/useList";
-import { Loader } from "../ui/loader";
 import { getCharacterGeneralView } from "@/services/CharacterService";
 import {
   DropdownMenu,
@@ -17,9 +16,9 @@ import {
 import { Button } from "../ui/button";
 import { ChevronDown } from "lucide-react";
 
-function CharacterGeneralView({ changeView }: { changeView: Function }) {
+function CharacterGeneralView({ changeView }: { changeView: any }) {
   const { list: data, isLoading, error } = useList(getCharacterGeneralView);
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
   const allClasses = JSON.parse(
     localStorage.getItem(localStorageKey.ALL_CLASSES)!
   );

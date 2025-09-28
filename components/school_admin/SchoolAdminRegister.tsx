@@ -55,7 +55,11 @@ enum RegistrationStep {
   MANUAL_FORM = "manual",
 }
 
-export default function SchoolAdminRegister() {
+interface RegisterProps {
+  userType: string;
+  userBasePath: string;
+}
+export default function SchoolAdminRegister({ userType, userBasePath }: RegisterProps) {
   const router = useRouter();
   const { formData, errors, isLoading, handleInputChange, handleSubmit } =
     useSchoolRegistration();

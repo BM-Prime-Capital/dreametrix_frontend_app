@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { 
   FiCheck, FiX, FiCalendar, FiUser, FiClock, 
-  FiEdit2, FiFilter, FiChevronDown, FiPlus, FiTrash2 
+  FiEdit2, FiFilter, FiChevronDown
 } from 'react-icons/fi';
 
 interface Student {

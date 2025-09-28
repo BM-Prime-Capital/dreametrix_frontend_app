@@ -29,6 +29,80 @@ export interface Assignment {
   average_grade?: number;
 }
 
+export interface School {
+  id: string; 
+  name: string; 
+  shortName: string; 
+  district: string; 
+  address: string; 
+  city: string; 
+  postalCode: string; 
+  country: string; 
+  phone: string; 
+  email: string; 
+  website?: string; 
+  principal: string; 
+  vicePrincipal?: string; 
+  description?: string; 
+  studentCount: number; 
+  teacherCount: number; 
+  courseCount: number; 
+  establishmentDate: string; 
+  isActive: boolean; 
+  hasInternetAccess: boolean; 
+  internetSpeed?: string; 
+  facilities?: string[]; 
+  additionalInfo?: string; 
+  status: 'active' | 'pending' | 'inactive';
+  lastUpdated: string; 
+  createdAt: string; 
+  updatedAt: string; 
+}
+
+export type District = {
+  id: string;
+  name: string;
+  code: string;
+  region: string;
+  superintendent: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  website?: string;
+  description?: string;
+  schoolsCount: number;
+  studentsCount: number;
+  staffCount: number;
+  status: "active" | "inactive";
+  establishedDate: string;
+  lastUpdated: string;
+};
+
+export type UserRole = 'super_admin' | 'school_admin' | 'teacher' | 'student' | 'parent';
+
+export type User = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: UserRole;
+  avatarUrl?: string;
+  schoolId?: string;
+  districtId?: string;
+  isActive: boolean;
+  lastLogin?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type UserFormData = Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'lastLogin'>;
+
+export type DistrictFormData = Omit<District, "id" | "lastUpdated">;
+
 export interface ClassDay {
   id: number;
   day: string;
@@ -180,3 +254,20 @@ export interface SeatingCondition {
   studentIds: string[];
   priority?: number;
 }
+
+export type CreateSchool = Omit<School, 
+  'id' | 'status' | 'lastUpdated' | 'createdAt' | 'updatedAt'
+>;
+
+export type UpdateSchool = Partial<CreateSchool> & {
+  id: string;
+};
+
+export type SchoolFilters = {
+  search?: string;
+  district?: string;
+  status?: 'active' | 'pending' | 'inactive';
+  hasInternet?: boolean;
+  minStudents?: number;
+  maxStudents?: number;
+};

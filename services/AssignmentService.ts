@@ -1,7 +1,6 @@
 export async function getAssignments(
   tenantPrimaryDomain: string,
-  accessToken: string,
-  refreshToken: string
+  accessToken: string
 ) {
   const url = `${tenantPrimaryDomain}/assessments/`;
 
@@ -27,8 +26,7 @@ export async function getAssignments(
 export async function createAssignment(
   formData: FormData,
   tenantPrimaryDomain: string,
-  accessToken: string,
-  refreshToken: string
+  accessToken: string
 ) {
   const url = `${tenantPrimaryDomain}/assessments/`;
 
@@ -57,8 +55,7 @@ export async function createAssignment(
 export async function getSubmissions(
   assessmentId: number,
   tenantPrimaryDomain: string,
-  accessToken: string,
-  refreshToken: string
+  accessToken: string
 ) {
   const url = `${tenantPrimaryDomain}/submissions/?assessment_id=${assessmentId}`;
 
@@ -85,11 +82,46 @@ export async function getSubmissions(
   }
 }
 
-export async function getAssessmentWeights(
-  courseId: number,
+export async function submitAssignment(
+  assessmentId: number,
   tenantPrimaryDomain: string,
   accessToken: string,
-  refreshToken: string
+  file: File,
+  courseId: number
+) {
+  const url = `${tenantPrimaryDomain}/submissions/`;
+
+  try {
+    const formData = new FormData();
+    formData.append("course", courseId.toString());
+    formData.append("assessment", assessmentId.toString());
+    formData.append("file", file);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        // Ne pas définir Content-Type - le navigateur le fera automatiquement avec le bon boundary
+      },
+      body: formData,
+    }); 
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Backend error:", errorData);
+      throw new Error(errorData.detail || "Error submitting assignment");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Network error:", error);
+    throw new Error("Failed to connect to server");
+  }
+}
+  export async function getAssessmentWeights(
+  courseId: number,
+  tenantPrimaryDomain: string,
+  accessToken: string
 ) {
   const url = `${tenantPrimaryDomain}/assessments/classes/${courseId}/assessment_weights/`;
   console.log("URL => ", url);
@@ -126,8 +158,7 @@ export async function updateAssessmentWeights(
     other: number;
   },
   tenantPrimaryDomain: string,
-  accessToken: string,
-  refreshToken: string
+  accessToken: string
 ) {
   const url = `${tenantPrimaryDomain}/assessments/classes/${courseId}/assessment_weights/`;
 
@@ -167,8 +198,7 @@ export async function updateAssignment(
         course: number;
       },
   tenantPrimaryDomain: string,
-  accessToken: string,
-  refreshToken: string
+  accessToken: string
 ) {
   const url = `${tenantPrimaryDomain}/assessments/${id}/`;
 
@@ -201,8 +231,7 @@ export async function updateAssignment(
 export async function deleteAssignment(
   id: number,
   tenantPrimaryDomain: string,
-  accessToken: string,
-  refreshToken: string
+  accessToken: string
 ) {
   const url = `${tenantPrimaryDomain}/assessments/${id}/`;
 

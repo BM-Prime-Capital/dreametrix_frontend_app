@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -138,7 +139,7 @@ export function EditAssignmentDialog({
         formDataWithFile,
         tenantDomain,
         accessToken,
-        refreshToken
+        //refreshToken
       );
 
       // Create the updated assignment object with the course information

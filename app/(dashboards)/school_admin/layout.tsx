@@ -10,13 +10,13 @@ export default function SchoolAminDashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col lg:flex-row gap-6">
-      <SidebarProvider>
-      <Card className="w-full lg:w-[200px] h-fit">
+    <SidebarProvider>
+      <div className="flex flex-col lg:flex-row gap-6">
+        <Card className="w-full lg:w-[200px] h-fit">
           <Sidebar routes={SchoolAdminRoutes} />
         </Card>
-      </SidebarProvider>
         {children}
       </div>
+    </SidebarProvider>
   );
 }

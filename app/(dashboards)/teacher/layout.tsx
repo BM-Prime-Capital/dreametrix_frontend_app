@@ -7,14 +7,16 @@ import { SidebarProvider, useSidebar } from "@/lib/SidebarContext";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
-  
+
   return (
     <>
-      
-      <SidebarProvider>
       <Sidebar routes={TeacherRoutes} />
-    </SidebarProvider>
-      <div className={`transition-all duration-500 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+
+      <div
+        className={`transition-all duration-500 ${
+          isCollapsed ? "ml-16" : "ml-64"
+        }`}
+      >
         {children}
       </div>
     </>

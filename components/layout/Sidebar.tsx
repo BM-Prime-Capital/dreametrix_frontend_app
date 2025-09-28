@@ -10,8 +10,11 @@ import { ScrollArea } from "../ui/scroll-area";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../ui/button";
 import { useSidebar } from "@/lib/SidebarContext";
+import DreaMetrixLogo from "../ui/dreametrix-logo";
 
 export function Sidebar({ routes }: { routes: MenuRoute[] }) {
+
+  console.log("routes", routes)
   const pathname = usePathname();
   const { isCollapsed, setIsCollapsed } = useSidebar();
 
@@ -118,9 +121,9 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
         "flex items-center justify-center"
       )}>
         {!isCollapsed && (
-          <p className="text-xs text-gray-500 text-center font-medium">
-            Teacher Portal
-          </p>
+          <div className="flex justify-center mb-6 w-[80px]">
+          <DreaMetrixLogo />
+        </div>
         )}
       </div>
     </div>

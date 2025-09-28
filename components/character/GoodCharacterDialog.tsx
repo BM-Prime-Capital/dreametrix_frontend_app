@@ -1,14 +1,15 @@
-import React, { useEffect, useState, useMemo } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, {useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { teacherImages } from "@/constants/images";
 import Image from "next/image";
-import PageTitleH2 from "../ui/page-title-h2";
 import { localStorageKey } from "@/constants/global";
-import { updateCharacter } from "@/services/CharacterService";
+//import { updateCharacter } from "@/services/CharacterService";
 import { extractTraitsFromEntries } from "@/utils/characterUtils";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { format } from "date-fns";
 import { Character } from "@/types";
+import { updateCharacter } from "@/services/CharacterService";
 
 const GoodCharacterDialog = React.memo(
   ({
@@ -18,7 +19,7 @@ const GoodCharacterDialog = React.memo(
     isReadOnly = false,
   }: {
     character: Character;
-    setShouldRefreshData: Function;
+    setShouldRefreshData: any;
     selectedDate?: Date;
     isReadOnly?: boolean;
   }) => {
@@ -44,11 +45,11 @@ const GoodCharacterDialog = React.memo(
 
     // Get current entries grouped by trait
     const currentEntries = useMemo(() => {
-      if (!Array.isArray(character.good_characters)) return {};
+      if (!Array.isArray(character.good_characters)) return   [];
 
       const entriesMap: Record<string, number> = {};
       character.good_characters.forEach((entry) => {
-        if (typeof entry === "string") {
+        if (typeof entry === "string") {    
           const trait = entry;
           entriesMap[trait] = (entriesMap[trait] || 0) + 1;
         }
@@ -138,7 +139,7 @@ const GoodCharacterDialog = React.memo(
             : undefined,
         };
 
-        await updateCharacter(data, tenantDomain, accessToken, refreshToken);
+       await updateCharacter(data, tenantDomain, accessToken, refreshToken);
 
         setShouldRefreshData(true);
         setOpen(false);

@@ -1,14 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { teacherImages } from "@/constants/images";
 import Image from "next/image";
-import PageTitleH2 from "../ui/page-title-h2";
 import { localStorageKey } from "@/constants/global";
 import { Character } from "@/types";
-import { updateCharacter } from "@/services/CharacterService";
+//import { updateCharacter } from "@/services/CharacterService";
 import { extractTraitsFromEntries } from "@/utils/characterUtils";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { format } from "date-fns";
+import { updateCharacter } from "@/services/CharacterService";
 
 const BadCharacterDialog = React.memo(
   ({
@@ -18,7 +19,7 @@ const BadCharacterDialog = React.memo(
     isReadOnly = false,
   }: {
     character: Character;
-    setShouldRefreshData: Function;
+    setShouldRefreshData: any;
     selectedDate?: Date;
     isReadOnly?: boolean;
   }) => {
@@ -41,11 +42,11 @@ const BadCharacterDialog = React.memo(
       return extractTraitsFromEntries(character.bad_characters);
     }, [character.bad_characters]); // Get current entries grouped by trait
     const currentEntries = useMemo(() => {
-      if (!Array.isArray(character.bad_characters)) return {};
+      if (!Array.isArray(character.bad_characters)) return   [];
 
       const entriesMap: Record<string, number> = {};
       character.bad_characters.forEach((entry) => {
-        if (typeof entry === "string") {
+        if (typeof entry === "string") {  
           const trait = entry;
           entriesMap[trait] = (entriesMap[trait] || 0) + 1;
         }
@@ -113,7 +114,7 @@ const BadCharacterDialog = React.memo(
         const existingEntries = Array.isArray(character.bad_characters)
           ? character.bad_characters.filter(
               (entry) =>
-                typeof entry === "string" &&
+                    typeof entry === "string" &&
                 !Object.keys(checkedItems).includes(entry)
             )
           : [];
@@ -130,7 +131,7 @@ const BadCharacterDialog = React.memo(
             : undefined,
         };
 
-        await updateCharacter(data, tenantDomain, accessToken, refreshToken);
+          await updateCharacter(data, tenantDomain, accessToken, refreshToken);
 
         setShouldRefreshData(true);
         setOpen(false);

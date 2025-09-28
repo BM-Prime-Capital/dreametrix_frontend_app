@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { X, Book, FileText, Sparkles, TrendingUp } from 'lucide-react'
+import { Book, FileText, Sparkles, TrendingUp } from 'lucide-react'
 import { Progress } from "@/components/ui/progress"
 
 interface ClassData {
@@ -40,11 +40,8 @@ export function StudentDialog({ isOpen, onClose, studentData }: StudentDialogPro
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden">
         <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             <div className="text-xl font-medium">{studentData.student}</div>
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-6 w-6">
-              <X className="h-4 w-4" />
-            </Button>
           </div>
 
           <div className="border-t pt-4 mb-4" />
@@ -136,10 +133,10 @@ export function StudentDialog({ isOpen, onClose, studentData }: StudentDialogPro
           </div>
 
           <div className="flex justify-between">
-            <Button variant="outline" className="bg-white">
+            {/* <Button variant="outline" className="bg-white">
               <FileText className="h-4 w-4 mr-2" />
               Full Report
-            </Button>
+            </Button> */}
             <Button className="bg-[#B066F2] hover:bg-[#9A4DD9] text-white">
               View All Classes
             </Button>

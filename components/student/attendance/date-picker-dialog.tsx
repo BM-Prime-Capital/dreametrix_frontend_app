@@ -8,36 +8,69 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 interface DatePickerDialogProps {
   isOpen: boolean
   onClose: () => void
-  onApply: (selectedDate: number) => void
+  onApply: (selectedDate: Date) => void
 }
 
 export function DatePickerDialog({ isOpen, onClose, onApply }: DatePickerDialogProps) {
-  const [month,] = useState("June")
-  const [year,] = useState("2020")
-  const [selectedDate, setSelectedDate] = useState<number>(11)
+  //use today's date
+  const today = new Date()
+  const [month, setMonth] = useState(today.getMonth())
+  const [year, setYear] = useState(today.getFullYear())
+  const [selectedDate, setSelectedDate] = useState<Date>(today)
+  /* //use today's date
+  const [month, setMonth] = useState(today.getMonth())
+  const [year, setYear] = useState(today.getFullYear())
+  const [selectedDate, setSelectedDate] = useState<Date>(today) */
 
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
-  // Generate calendar days for June 2020
-  const calendarDays = [
-    [1, 2, 3, 4, 5, 6, 7],
-    [8, 9, 10, 11, 12, 13, 14],
-    [15, 16, 17, 18, 19, 20, 21],
-    [22, 23, 24, 25, 26, 27, 28],
-    [29, 30, 1, 2, 3, 4, 5],
-  ]
+  // Generate calendar days for the current month/year
+  const generateCalendarDays = () => {
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const startDate = new Date(firstDay)
+    
+    // Adjust to start from Monday (1 = Monday, 0 = Sunday)
+    const dayOfWeek = (firstDay.getDay() + 6) % 7
+    startDate.setDate(firstDay.getDate() - dayOfWeek)
+    
+    const days = []
+    const current = new Date(startDate)
+    
+    for (let week = 0; week < 6; week++) {
+      const weekDays = []
+      for (let day = 0; day < 7; day++) {
+        weekDays.push(new Date(current))
+        current.setDate(current.getDate() + 1)
+      }
+      days.push(weekDays)
+    }
+    
+    return days
+  }
 
-  const handleDateClick = (date: number) => {
-    if (date > 31 || date < 1) return // Skip dates from other months
-    setSelectedDate(date)
+  const calendarDays = generateCalendarDays()
+
+  const handleDateClick = (date: Date) => {
+    setSelectedDate(new Date(date))
   }
 
   const handlePrevMonth = () => {
-    // In a real app, this would change the month and regenerate the calendar
+    if (month === 0) {
+      setMonth(11)
+      setYear(year - 1)
+    } else {
+      setMonth(month - 1)
+    }
   }
 
   const handleNextMonth = () => {
-    // In a real app, this would change the month and regenerate the calendar
+    if (month === 11) {
+      setMonth(0)
+      setYear(year + 1)
+    } else {
+      setMonth(month + 1)
+    }
   }
 
   const handleApply = () => {
@@ -53,7 +86,7 @@ export function DatePickerDialog({ isOpen, onClose, onApply }: DatePickerDialogP
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div className="text-lg font-medium">
-            {month} {year}
+            {new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
           </div>
           <Button variant="ghost" size="icon" onClick={handleNextMonth} className="text-[#25AAE1]">
             <ChevronRight className="h-5 w-5" />
@@ -68,12 +101,12 @@ export function DatePickerDialog({ isOpen, onClose, onApply }: DatePickerDialogP
           ))}
 
           {calendarDays.flat().map((date, index) => {
-            const isOtherMonth = (index < 28 && date > 15) || (index > 28 && date < 15)
-            const isSelected = selectedDate === date && !isOtherMonth
+            const isOtherMonth = date.getMonth() !== month
+            const isSelected = selectedDate.toDateString() === date.toDateString()
 
             return (
               <button
-                key={`${date}-${index}`}
+                key={`${date.getTime()}-${index}`}
                 className={`
                   h-8 w-8 rounded-full flex items-center justify-center text-sm
                   ${isOtherMonth ? "text-gray-300" : "text-gray-700"}
@@ -83,7 +116,7 @@ export function DatePickerDialog({ isOpen, onClose, onApply }: DatePickerDialogP
                 onClick={() => handleDateClick(date)}
                 disabled={isOtherMonth}
               >
-                {date}
+                {date.getDate()}
               </button>
             )
           })}
