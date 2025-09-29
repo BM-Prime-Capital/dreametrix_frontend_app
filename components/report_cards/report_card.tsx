@@ -13,7 +13,7 @@ import Link from "next/link";
 //import DoughnutChartComponent from "../ui/pie-chart";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import {  useEffect, useState } from "react";
-import { getStudentReportCard } from "@/services/student-service";
+import { getStudentReportCard } from "@/services/ReportCardService";
 import { Loader } from "@/components/ui/loader";
 ///import Login from "../Home";
 
@@ -36,11 +36,12 @@ export default function ReportCard() {
       try {
         setLoading(true);
         const response = await getStudentReportCard(
-         // selectedStudentId, tenantDomain, accessToken
+          accessToken,
+          selectedStudentId.toString()
         );
         console.log("Report Card Data:", response);
-        setReportData(response?.report_card);
-        //setLoading(false);
+        setReportData(response);
+        setLoading(false);
       } catch (err) {
         console.error("Error fetching report card:", err);
         setError("Failed to load report card data");
@@ -66,7 +67,10 @@ export default function ReportCard() {
   if (!reportData) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <Loader />
+        <div className="text-center">
+          <p className="text-gray-500 mb-4">No report card data available</p>
+          <p className="text-sm text-gray-400">Please select a student or try again later</p>
+        </div>
       </div>
     );
   }
@@ -132,11 +136,13 @@ export default function ReportCard() {
           value={selectedStudentId}
           onChange={(e) => setSelectedStudentId(Number(e.target.value))}
         >
-          {class_information.classmates.map((classmate: any) => (
+          {class_information?.classmates?.map((classmate: any) => (
             <option key={classmate.id} value={classmate.id}>
               {classmate.name}
             </option>
-          ))}
+          )) || (
+            <option value={selectedStudentId}>Current Student</option>
+          )}
         </select>
       </div>
 
