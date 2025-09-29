@@ -72,30 +72,30 @@ export default function TeacherCommunication() {
             ? "teacher"
             : (p.role as "teacher" | "student" | "parent"),
       })),
-      lastMessage: room.last_message
+      lastMessage: room.last_message?.id // ✅ Utilisation de l'opérateur de chaînage optionnel
         ? {
             id: room.last_message.id.toString(),
             sender: {
-              id: room.last_message.sender_info.id.toString(),
-              name: room.last_message.sender_info.name,
+              id: room.last_message.sender_info?.id?.toString() || "unknown", // ✅ Chaînage optionnel
+              name: room.last_message.sender_info?.name || "Unknown User", // ✅ Chaînage optionnel
               avatar:
-                room.last_message.sender_info.avatar ||
+                room.last_message.sender_info?.avatar || // ✅ Chaînage optionnel
                 "/assets/images/general/student.png",
               role:
-                room.last_message.sender_info.role === "admin"
+                room.last_message.sender_info?.role === "admin" // ✅ Chaînage optionnel
                   ? "teacher"
-                  : (room.last_message.sender_info.role as
+                  : (room.last_message.sender_info?.role as // ✅ Chaînage optionnel
                       | "teacher"
                       | "student"
-                      | "parent"),
+                      | "parent" || "student"), // ✅ Fallback
             },
-            content: room.last_message.content,
-            timestamp: new Date(
-              room.last_message.created_at
-            ).toLocaleTimeString("fr-FR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
+            content: room.last_message.content || "Aucun message", // ✅ Fallback
+            timestamp: room.last_message.created_at 
+              ? new Date(room.last_message.created_at).toLocaleTimeString("fr-FR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "",
             read: room.last_message.status !== "sent",
           }
         : {
