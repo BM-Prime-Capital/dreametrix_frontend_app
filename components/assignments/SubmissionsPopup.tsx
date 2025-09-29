@@ -302,8 +302,7 @@ export function SubmissionsPopup({
         tenantDomain,
         accessToken,
         targetSubmission.submission.id, // Use submission ID instead of student ID
-        assessmentType,
-        assessmentIndex,
+      
         newGrade,
         refreshToken
       );
