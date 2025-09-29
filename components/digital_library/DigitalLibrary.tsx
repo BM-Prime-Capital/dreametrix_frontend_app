@@ -1156,7 +1156,7 @@ export default function DigitalLibrary() {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 pb-8 space-y-8 max-w-6xl mx-auto w-full">
+      <div className="flex-1 mx-6 pb-8 space-y-6">
         {/* Assignment Context Banner */}
         {assignmentContext && (
           <Card className="rounded-2xl shadow-lg p-6 bg-gradient-to-r from-blue-50/80 to-purple-50/80 border border-blue-200/50 backdrop-blur-sm">
