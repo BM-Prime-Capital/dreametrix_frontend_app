@@ -79,10 +79,10 @@ export default function Seating({
 
   const formatArrangements = useCallback((apiData: any) => {
     const result: any[] = [];
-    
+
     for (const courseName in apiData) {
       const courseData = apiData[courseName];
-      
+
       for (const eventName in courseData) {
         const eventData = courseData[eventName];
         const students: {
@@ -93,7 +93,7 @@ export default function Seating({
           seatingId: number;
           isSeated: boolean;
         }[] = [];
-        
+
         if (eventData.seating_data && eventData.seating_data.length > 0) {
           eventData.seating_data.forEach((studentData: any) => {
             students.push({
@@ -106,7 +106,7 @@ export default function Seating({
             });
           });
         }
-  
+
         result.push({
           id: eventData.arrangement_event_id.toString(),
           title: eventData.name,
@@ -119,14 +119,14 @@ export default function Seating({
         });
       }
     }
-  
+
     return result;
   }, []);
 
   const filteredStudents = useMemo(() => {
     if (!currentArrangement) return [];
     if (!searchTerm) return currentArrangement.arrangements;
-  
+
     return currentArrangement.arrangements.filter((student: any) =>
       student.studentName.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -140,13 +140,13 @@ export default function Seating({
     if (!draggedStudent || !currentArrangement) return;
 
     const selectedStudent = draggedStudent;
-    
+
     const seatOccupiedBy = currentArrangement.arrangements.find(
       (s: any) => s.seatNumber === targetSeatNumber && s.studentId !== selectedStudent.studentId
     );
-    
+
     let newArrangements;
-    
+
     if (seatOccupiedBy) {
       newArrangements = currentArrangement.arrangements.map((student: any) => {
         if (student.studentId === selectedStudent.studentId) {
@@ -165,12 +165,12 @@ export default function Seating({
         return student;
       });
     }
-    
+
     const newCurrentArrangement = {
       ...currentArrangement,
       arrangements: newArrangements,
     };
-    
+
     setCurrentArrangement(newCurrentArrangement);
     setArrangements(
       arrangements.map((arr) =>
@@ -183,17 +183,17 @@ export default function Seating({
 
   const handleSeatClick = useCallback((targetSeatNumber: number) => {
     if (!currentArrangement) return;
-  
+
     if (selectedStudentId !== null) {
       const selectedStudent = currentArrangement.arrangements.find(
         (s: any) => s.studentId === selectedStudentId
       );
-      
+
       if (selectedStudent) {
         const seatOccupiedBy = currentArrangement.arrangements.find(
           (s: any) => s.seatNumber === targetSeatNumber && s.studentId !== selectedStudentId
         );
-        
+
         if (seatOccupiedBy) {
           const newArrangements = currentArrangement.arrangements.map(
             (student: any) => {
@@ -206,12 +206,12 @@ export default function Seating({
               return student;
             }
           );
-          
+
           const newCurrentArrangement = {
             ...currentArrangement,
             arrangements: newArrangements,
           };
-          
+
           setCurrentArrangement(newCurrentArrangement);
           setArrangements(
             arrangements.map((arr) =>
@@ -227,12 +227,12 @@ export default function Seating({
               return student;
             }
           );
-          
+
           const newCurrentArrangement = {
             ...currentArrangement,
             arrangements: newArrangements,
           };
-          
+
           setCurrentArrangement(newCurrentArrangement);
           setArrangements(
             arrangements.map((arr) =>
@@ -240,37 +240,37 @@ export default function Seating({
             )
           );
         }
-        
+
         setIsModified(true);
       }
       setSelectedStudentId(null);
       setFirstSelectedSeatNumber(-1);
       return;
     }
-  
+
     if (firstSelectedSeatNumber === -1) {
       const targetStudent = currentArrangement.arrangements.find(
         (s: any) => s.seatNumber === targetSeatNumber
       );
-      
+
       if (targetStudent) {
         setFirstSelectedSeatNumber(targetSeatNumber);
       }
       return;
     }
-    
+
     if (firstSelectedSeatNumber === targetSeatNumber) {
       setFirstSelectedSeatNumber(-1);
       return;
     }
-  
+
     const firstStudent = currentArrangement.arrangements.find(
       (s: any) => s.seatNumber === firstSelectedSeatNumber
     );
     const secondStudent = currentArrangement.arrangements.find(
       (s: any) => s.seatNumber === targetSeatNumber
     );
-  
+
     const newArrangements = currentArrangement.arrangements.map(
       (student: any) => {
         if (firstStudent && student.studentId === firstStudent.studentId) {
@@ -282,12 +282,12 @@ export default function Seating({
         return student;
       }
     );
-    
+
     const newCurrentArrangement = {
       ...currentArrangement,
       arrangements: newArrangements,
     };
-    
+
     setCurrentArrangement(newCurrentArrangement);
     setArrangements(
       arrangements.map((arr) =>
@@ -300,20 +300,20 @@ export default function Seating({
 
   const handleSave = useCallback(async () => {
     if (!currentArrangement || !isModified) return;
-  
+
     try {
       setIsSaving(true);
       const updates = currentArrangement.arrangements.map((student: any) => ({
         seating_id: student.seatingId,
         site_number: student.seatNumber
       }));
-      
+
       await updateSeatingArrangement(
         tenantPrimaryDomain,
         accessToken,
         updates
       );
-      
+
       setIsModified(false);
     } catch (error) {
       console.error("Error saving arrangement:", error);
@@ -321,10 +321,10 @@ export default function Seating({
       setIsSaving(false);
     }
   }, [currentArrangement, isModified, tenantPrimaryDomain, accessToken]);
-  
+
   const confirmDeactivation = useCallback(async () => {
     if (!eventToDeactivate) return;
-  
+
     try {
       setIsDeactivating(true);
       await deactivateArrangementEvent(tenantPrimaryDomain, accessToken, eventToDeactivate);
@@ -340,9 +340,9 @@ export default function Seating({
 
   const GridComponent = useMemo(() => {
     if (!currentArrangement) return null;
-    
+
     const seats = currentArrangement.available_place_number || DEFAULT_SEAT_COUNT;
-    
+
     return (
       <div className="grid grid-cols-8 gap-2 p-2 border-2 border-gray-200">
         {Array.from({ length: seats }).map((_, index) => {
@@ -388,62 +388,62 @@ export default function Seating({
 
   const handleSeatingArrangementAuto = useCallback(() => {
     if (!currentArrangement) return;
-  
+
     let studentsToPlace = [...currentArrangement.arrangements];
     const placedStudents: any[] = [];
     const availableSeats = Array.from(
-      { length: currentArrangement.available_place_number || DEFAULT_SEAT_COUNT }, 
+      { length: currentArrangement.available_place_number || DEFAULT_SEAT_COUNT },
       (_, i) => i + 1
-    ); 
-  
-    const sortedConditions = [...seatingConditions].sort((a, b) => 
+    );
+
+    const sortedConditions = [...seatingConditions].sort((a, b) =>
       (b.priority || 0) - (a.priority || 0)
     );
-  
+
     for (const condition of sortedConditions) {
       switch (condition.type) {
         case 'separate':
-          const studentsToSeparate = studentsToPlace.filter(s => 
+          const studentsToSeparate = studentsToPlace.filter(s =>
             condition.studentIds.includes(s.studentId)
           );
-          
+
           if (studentsToSeparate.length > 0) {
             for (const student of studentsToSeparate) {
               if (availableSeats.length === 0) break;
-              
+
               const randomIndex = Math.floor(Math.random() * availableSeats.length);
               const seatNumber = availableSeats[randomIndex];
-              
+
               placedStudents.push({
                 ...student,
                 seatNumber
               });
-              
+
               availableSeats.splice(randomIndex, 1);
               const adjacentIndex = availableSeats.indexOf(seatNumber + 1);
               if (adjacentIndex !== -1) availableSeats.splice(adjacentIndex, 1);
               const prevAdjacentIndex = availableSeats.indexOf(seatNumber - 1);
               if (prevAdjacentIndex !== -1) availableSeats.splice(prevAdjacentIndex, 1);
             }
-            
-            studentsToPlace = studentsToPlace.filter(s => 
+
+            studentsToPlace = studentsToPlace.filter(s =>
               !condition.studentIds.includes(s.studentId)
             );
           }
           break;
-  
+
         case 'group':
-          const studentsToGroup = studentsToPlace.filter(s => 
+          const studentsToGroup = studentsToPlace.filter(s =>
             condition.studentIds.includes(s.studentId)
           );
-          
+
           if (studentsToGroup.length > 0) {
             const groupSize = studentsToGroup.length;
             let foundBlock = false;
-            
+
             for (let i = 0; i <= availableSeats.length - groupSize; i++) {
               const block = availableSeats.slice(i, i + groupSize);
-              if (block.every((seat, idx) => 
+              if (block.every((seat, idx) =>
                 idx === 0 || seat === block[idx - 1] + 1
               )) {
                 foundBlock = true;
@@ -453,111 +453,111 @@ export default function Seating({
                     seatNumber: block[idx]
                   });
                 });
-                
+
                 availableSeats.splice(i, groupSize);
                 break;
               }
             }
-            
+
             if (!foundBlock) {
               studentsToGroup.forEach(student => {
                 if (availableSeats.length === 0) return;
-                
+
                 const randomIndex = Math.floor(Math.random() * availableSeats.length);
                 const seatNumber = availableSeats[randomIndex];
-                
+
                 placedStudents.push({
                   ...student,
                   seatNumber
                 });
-                
+
                 availableSeats.splice(randomIndex, 1);
               });
             }
-            
-            studentsToPlace = studentsToPlace.filter(s => 
+
+            studentsToPlace = studentsToPlace.filter(s =>
               !condition.studentIds.includes(s.studentId)
             );
           }
           break;
-  
+
         case 'front':
-          const studentsForFront = studentsToPlace.filter(s => 
+          const studentsForFront = studentsToPlace.filter(s =>
             condition.studentIds.includes(s.studentId)
           );
-          
+
           const frontSeats = availableSeats.filter(seat => seat <= 8);
-          
+
           studentsForFront.forEach(student => {
             if (frontSeats.length === 0) return;
-            
+
             const randomIndex = Math.floor(Math.random() * frontSeats.length);
             const seatNumber = frontSeats[randomIndex];
-            
+
             placedStudents.push({
               ...student,
               seatNumber
             });
-            
+
             availableSeats.splice(availableSeats.indexOf(seatNumber), 1);
             frontSeats.splice(randomIndex, 1);
           });
-          
-          studentsToPlace = studentsToPlace.filter(s => 
+
+          studentsToPlace = studentsToPlace.filter(s =>
             !condition.studentIds.includes(s.studentId)
           );
           break;
-  
+
         case 'back':
-          const studentsForBack = studentsToPlace.filter(s => 
+          const studentsForBack = studentsToPlace.filter(s =>
             condition.studentIds.includes(s.studentId)
           );
-          
-          const backSeats = availableSeats.filter(seat => 
+
+          const backSeats = availableSeats.filter(seat =>
             seat >= (currentArrangement.available_place_number || DEFAULT_SEAT_COUNT) - 8
           );
-          
+
           studentsForBack.forEach(student => {
             if (backSeats.length === 0) return;
-            
+
             const randomIndex = Math.floor(Math.random() * backSeats.length);
             const seatNumber = backSeats[randomIndex];
-            
+
             placedStudents.push({
               ...student,
               seatNumber
             });
-            
+
             availableSeats.splice(availableSeats.indexOf(seatNumber), 1);
             backSeats.splice(randomIndex, 1);
           });
-          
-          studentsToPlace = studentsToPlace.filter(s => 
+
+          studentsToPlace = studentsToPlace.filter(s =>
             !condition.studentIds.includes(s.studentId)
           );
           break;
       }
     }
-  
+
     studentsToPlace.forEach(student => {
       if (availableSeats.length === 0) return;
-      
+
       const randomIndex = Math.floor(Math.random() * availableSeats.length);
       const seatNumber = availableSeats[randomIndex];
-      
+
       placedStudents.push({
         ...student,
         seatNumber
       });
-      
+
       availableSeats.splice(randomIndex, 1);
     });
-  
+
     const newCurrentArrangement = {
       ...currentArrangement,
       arrangements: placedStudents,
     };
-    
+
     setCurrentArrangement(newCurrentArrangement);
     setArrangements(
       arrangements.map(arr =>
@@ -573,22 +573,22 @@ export default function Seating({
     setEventToDeactivate(eventId);
     setIsConfirmDialogOpen(true);
   }, []);
-  
+
 
 
   const handleCleanAllSeats = useCallback(() => {
     if (!currentArrangement) return;
-  
+
     const cleanedArrangements = currentArrangement.arrangements.map((student: any) => ({
       ...student,
       seatNumber: null
     }));
-  
+
     const newCurrentArrangement = {
       ...currentArrangement,
       arrangements: cleanedArrangements,
     };
-  
+
     setCurrentArrangement(newCurrentArrangement);
     setArrangements(
       arrangements.map(arr =>
@@ -604,7 +604,7 @@ export default function Seating({
     return filteredStudents.map((student: any) => (
       <div
         key={student.studentId}
-        draggable={student.seatNumber === null} 
+        draggable={student.seatNumber === null}
         onDragStart={() => student.seatNumber === null && handleDragStart(student)}
         onClick={() => {
           if (student.seatNumber === null) {
@@ -712,7 +712,7 @@ export default function Seating({
             <span className="font-medium">Manual</span>
           </Button>
 
-          <StudentSeatingConditionsDialog 
+          <StudentSeatingConditionsDialog
             studentClassName="flex gap-3 items-center text-lg text-white rounded-xl px-6 py-3 shadow-lg transition-all duration-300 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 font-medium"
             conditions={seatingConditions}
             setConditions={setSeatingConditions}
@@ -730,16 +730,16 @@ export default function Seating({
             onSuccess={() => loadArrangements(selectedCourse || undefined)}
           />
 
-          <Button className="flex gap-3 items-center text-lg bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white rounded-xl px-6 py-3 shadow-lg transition-all duration-300 font-medium">
-            <Image
-              src={generalImages.print}
-              alt="print"
-              width={20}
-              height={20}
-              className="w-5 h-5"
-            />
-            <span>Print Layout</span>
-          </Button>
+          {/*<Button className="flex gap-3 items-center text-lg bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white rounded-xl px-6 py-3 shadow-lg transition-all duration-300 font-medium">*/}
+          {/*  <Image*/}
+          {/*    src={generalImages.print}*/}
+          {/*    alt="print"*/}
+          {/*    width={20}*/}
+          {/*    height={20}*/}
+          {/*    className="w-5 h-5"*/}
+          {/*  />*/}
+          {/*  <span>Print Layout</span>*/}
+          {/*</Button>*/}
       </div>
 
         {/* Enhanced Seating Card */}
@@ -791,7 +791,7 @@ export default function Seating({
                   </Button>
                 </div>
               </div>
-              
+
               <div className="flex gap-6">
                 <div className="w-[20%] flex flex-col gap-4 pr-6">
                   <button
@@ -875,7 +875,7 @@ export default function Seating({
 
             <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
               <SeatingHistory
-                arrangements={arrangements.filter(arr => 
+                arrangements={arrangements.filter(arr =>
                   selectedClasses.length === 0 || selectedClasses.includes(arr.courseName)
                 )}
                 currentArrangement={currentArrangement}
@@ -901,13 +901,13 @@ export default function Seating({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setIsConfirmDialogOpen(false)}
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               variant="destructive"
               onClick={confirmDeactivation}
               isLoading={isDeactivating}

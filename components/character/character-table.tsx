@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 //import { getAttendances } from "@/services/AttendanceService";
 import { localStorageKey } from "@/constants/global";
 import {
+  getCharracters,
   //getCharracters,
   getCharractersList,
 } from "@/services/CharacterService";
@@ -78,7 +79,7 @@ export function CharacterTable({
       return;
     }
 
-    //const { owner_id } = JSON.parse(userData);
+    const { owner_id } = JSON.parse(userData);
 
     setPrimaryDomain(domain);
     setAccessToken(accessToken);
@@ -88,17 +89,17 @@ export function CharacterTable({
       if (shouldRefreshData && currentClassId) {
         setIsLoading(true);
         try {
-          // const data = await getCharracters(
-          //   {
-          //     class_id: parseInt(currentClassId),
-          //     teacher_id: owner_id,
-          //     date: format(selectedDate, "yyyy-MM-dd"),
-          //   },
-          //   domain,
-          //   accessToken,
-          //   refreshToken
-          // );
-          // setCharacters(data);
+          const data = await getCharracters(
+            {
+              class_id: parseInt(currentClassId),
+              teacher_id: owner_id,
+              date: format(selectedDate, "yyyy-MM-dd"),
+            },
+            domain,
+            accessToken,
+            refreshToken
+          );
+          setCharacters(data);
         } catch (error) {
           console.error("Error loading characters:", error);
           setCharacters([]);

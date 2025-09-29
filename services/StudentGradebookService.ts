@@ -32,6 +32,92 @@ export interface StudentGradebookDetail {
   submissions: Submission[];
 }
 
+export interface StudentInfo {
+  id: number;
+  name: string;
+  grade_level: number;
+}
+
+export interface CourseInfo {
+  id: number;
+  name: string;
+  subject: string;
+  teacher: string;
+  grade: number;
+}
+
+export interface AcademicOverview {
+  overall_average: number;
+  total_courses: number;
+  courses: CourseInfo[];
+}
+
+export interface RecentSubmission {
+  id: number;
+  assessment_name: string;
+  course_name: string;
+  grade: number | null;
+  marked: boolean;
+  submitted_at: string;
+}
+
+export interface UpcomingAssessment {
+  id: number;
+  name: string;
+  course_name: string;
+  type: string;
+  due_date: string;
+}
+
+export interface AttendanceInfo {
+  rate: number;
+  total_days: number;
+  present_days: number;
+  absent_days: number;
+  late_days: number;
+}
+
+export interface StudentDashboardData {
+  student: StudentInfo;
+  academic_overview: AcademicOverview;
+  recent_submissions: RecentSubmission[];
+  upcoming_assessments: UpcomingAssessment[];
+  attendance: AttendanceInfo;
+}
+
+/**
+ * Récupère les données complètes du tableau de bord étudiant
+ */
+export async function getStudentDashboard(
+  tenantPrimaryDomain: string,
+  accessToken: string
+): Promise<StudentDashboardData> {
+  const url = `${tenantPrimaryDomain}/gradebooks/student/dashboard/`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Backend error:", errorData);
+      throw new Error(errorData.detail || "Error fetching student dashboard");
+    }
+
+    const data = await response.json();
+    console.log("Student dashboard data:", data);
+    return data;
+  } catch (error) {
+    console.error("Network error:", error);
+    throw new Error("Failed to connect to server");
+  }
+}
+
 /**
  * Récupère la liste de tous les cours de l'étudiant avec leurs assessments
  */

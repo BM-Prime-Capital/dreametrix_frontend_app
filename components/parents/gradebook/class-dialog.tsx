@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { X, Calendar, BookOpen, FileText, Users } from "lucide-react"
+import { Calendar, BookOpen, FileText, Users } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 
 interface ClassData {
@@ -48,11 +48,8 @@ export function ClassDialog({ isOpen, onClose, classData }: ClassDialogProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden">
         <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             <div className="text-xl font-medium">{classData.class}</div>
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-6 w-6">
-              <X className="h-4 w-4" />
-            </Button>
           </div>
 
           <div className="border-t pt-4 mb-4" />
@@ -132,10 +129,10 @@ export function ClassDialog({ isOpen, onClose, classData }: ClassDialogProps) {
           </div>
 
           <div className="mt-6 flex justify-end space-x-3">
-            <Button variant="outline" className="bg-white">
+            {/* <Button variant="outline" className="bg-white">
               <FileText className="h-4 w-4 mr-2" />
               Class Report
-            </Button>
+            </Button> */}
             <Button className="bg-[#25AAE1] hover:bg-[#1D8CB3] text-white">Contact Teacher</Button>
           </div>
         </div>

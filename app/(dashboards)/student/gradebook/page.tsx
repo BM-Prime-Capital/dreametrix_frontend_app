@@ -68,21 +68,21 @@ export default function GradebookPage() {
           </div>
           
           <div className="flex gap-4">
-            <Button
+            {/* <Button
               className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] hover:from-[#1D8CB3] hover:to-[#25AAE1] text-white px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
               onClick={() => setIsReportModalOpen(true)}
             >
               <FileText className="h-5 w-5 mr-2" />
               Generate Report
-            </Button>
+            </Button> */}
             
-            <Button 
+            {/* <Button 
               className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] hover:from-[#1D8CB3] hover:to-[#25AAE1] text-white p-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300" 
               onClick={() => setIsPrintModalOpen(true)}
               title="Print"
             >
               <Printer className="h-5 w-5" />
-            </Button>
+            </Button> */}
           </div>
         </div>
 

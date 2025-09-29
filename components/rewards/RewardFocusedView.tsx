@@ -49,12 +49,12 @@ export default function RewardsFocusedView({
         }
 
         const data = await getRewardsFocusView(
-          // tenantPrimaryDomain,
-          // accessToken,
-          // refreshToken,
-          // "",
-          // "",
-          // student.student.id // ← Utilisez student.student.id
+          tenantPrimaryDomain,
+          accessToken,
+          refreshToken,
+          "",
+          "",
+          student.student.id // ← Utilisez student.student.id
         );
 
         setStudentData(data);
@@ -104,7 +104,7 @@ export default function RewardsFocusedView({
   return (
     <section className="flex flex-col h-full w-full bg-gradient-to-br from-amber-50/30 to-orange-50/20">
       {/* Enhanced Header */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-amber-600 via-amber-700 to-orange-700 px-8 py-6 shadow-xl">
+      <div className="flex justify-between items-center bg-gradient-to-r from-amber-600 via-amber-700 to-orange-700 px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"

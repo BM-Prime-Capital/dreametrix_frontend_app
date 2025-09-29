@@ -33,10 +33,16 @@ export interface ChatRoomDetail extends ChatRoom {
 export interface CreateChatMessage {
   chat_room_id: number;
   content: string;
+  message_type?: "text" | "image" | "file" | "audio" | "video"; // Ajout de cette propriété optionnelle
+  attachment?: File; // Optionnel pour les fichiers
+  voice_note?: File; // Optionnel pour les notes vocales
 }
 
 export interface CreateChatRoom {
   name: string;
+  participants?: number[];
+  is_group?: boolean;
+  room_type?: 'private' | 'group';
 }
 
 export interface ChatMessagesResponse {

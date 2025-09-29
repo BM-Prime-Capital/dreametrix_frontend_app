@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { X, Calendar, Printer } from "lucide-react"
+import { Calendar, Printer } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState } from "react"
 
@@ -18,11 +18,8 @@ export function PrintDialog({ isOpen, onClose }: PrintDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[400px] p-6 overflow-hidden gap-0">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4">
           <div className="text-lg font-medium">Print Attendance</div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-6 w-6">
-            <X className="h-4 w-4" />
-          </Button>
         </div>
 
         <div className="border-t pt-4" />
@@ -84,10 +81,10 @@ export function PrintDialog({ isOpen, onClose }: PrintDialogProps) {
             </div>
           </div>
 
-          <Button className="w-full bg-[#25AAE1] hover:bg-[#1D8CB3] text-white rounded-full">
+          {/* <Button className="w-full bg-[#25AAE1] hover:bg-[#1D8CB3] text-white rounded-full">
             <Printer className="h-4 w-4 mr-2" />
             PRINT
-          </Button>
+          </Button> */}
 
           <div className="text-center">
             <Button variant="ghost" onClick={onClose} className="text-gray-500">

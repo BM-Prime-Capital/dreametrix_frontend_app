@@ -12,9 +12,15 @@ interface DatePickerDialogProps {
 }
 
 export function DatePickerDialog({ isOpen, onClose, onApply }: DatePickerDialogProps) {
-  const [month, setMonth] = useState(5) // June is month 5 (0-indexed)
-  const [year, setYear] = useState(2020)
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date(2020, 5, 11))
+  //use today's date
+  const today = new Date()
+  const [month, setMonth] = useState(today.getMonth())
+  const [year, setYear] = useState(today.getFullYear())
+  const [selectedDate, setSelectedDate] = useState<Date>(today)
+  /* //use today's date
+  const [month, setMonth] = useState(today.getMonth())
+  const [year, setYear] = useState(today.getFullYear())
+  const [selectedDate, setSelectedDate] = useState<Date>(today) */
 
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
