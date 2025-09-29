@@ -208,7 +208,7 @@ export function MessageArea({
                         className="object-cover rounded-lg"
                       />
                       <AvatarFallback className="rounded-lg">
-                        {message.sender.name.charAt(0)}
+                        {message.sender?.name?.charAt(0) || "?"}
                       </AvatarFallback>
                     </Avatar>
 
