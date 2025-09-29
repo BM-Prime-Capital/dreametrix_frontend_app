@@ -340,6 +340,48 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
     setIsPlaying(false);
   };
 
+  const exportGrades = () => {
+    try {
+      // Prepare CSV data
+      const csvHeaders = ['Student Name', 'Email', 'Submission Status', 'Submitted Date', 'Grade', 'Marked'];
+      
+      const csvData = students.map(student => [
+        student.full_name,
+        student.email,
+        student.submission ? 'Submitted' : 'Missing',
+        student.submission ? new Date(student.submission.submitted_at).toLocaleDateString() : '-',
+        student.submission?.grade ? `${student.submission.grade}%` : '-',
+        student.submission?.marked ? 'Yes' : 'No'
+      ]);
+
+      // Create CSV content
+      const csvContent = [
+        csvHeaders.join(','),
+        ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n');
+
+      // Create and download the file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${assignment.name}_grades_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      URL.revokeObjectURL(url);
+      
+      console.log('Grades exported successfully');
+    } catch (error) {
+      console.error('Error exporting grades:', error);
+      alert('Failed to export grades. Please try again.');
+    }
+  };
+
   const handleSaveGrade = async () => {
     if (!selectedSubmission || !tenantDomain || !accessToken || !refreshToken) {
       alert('Missing required information to save grade');
@@ -553,7 +595,10 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
               className="pl-10 h-10 rounded-lg border-gray-300"
             />
           </div>
-          <Button className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg">
+          <Button 
+            onClick={exportGrades}
+            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg"
+          >
             <Download className="h-4 w-4 mr-2" />
             Export Grades
           </Button>
