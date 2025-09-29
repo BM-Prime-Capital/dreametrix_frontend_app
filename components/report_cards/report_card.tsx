@@ -6,16 +6,142 @@ import PageTitleH1 from "@/components/ui/page-title-h1";
 import Image from "next/image";
 import { generalImages, teacherImages } from "@/constants/images";
 import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Label } from "../ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import ClassSelect from "../ClassSelect";
-import Link from "next/link";
 //import { useSelector } from "react-redux";
 import LineChartComponent from "../ui/line-chart";
 import DoughnutChartComponent from "../ui/pie-chart";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import {  useEffect, useState } from "react";
 import { getStudentReportCard } from "@/services/ReportCardService";
-import { Loader } from "@/components/ui/loader";
+import { Skeleton } from "@/components/ui/skeleton";
 ///import Login from "../Home";
+
+// Helper function to get grade variant
+const getGradeVariant = (grade: string) => {
+  switch (grade.toUpperCase()) {
+    case 'A': return 'grade-a';
+    case 'B': return 'grade-b';
+    case 'C': return 'grade-c';
+    case 'D': return 'grade-d';
+    case 'F': return 'grade-f';
+    default: return 'secondary';
+  }
+};
+
+// Helper function to get performance variant
+const getPerformanceVariant = (rating: string) => {
+  switch (rating.toLowerCase()) {
+    case 'excellent': return 'performance-excellent';
+    case 'good': return 'performance-good';
+    case 'satisfactory': return 'performance-satisfactory';
+    default: return 'performance-needs-improvement';
+  }
+};
+
+// ReportCard Skeleton component
+function ReportCardSkeleton() {
+  return (
+    <div className="space-y-4 w-full">
+      {/* Header Skeleton */}
+      <Card className="p-6">
+        <div className="flex justify-between items-center">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-6 w-20" />
+        </div>
+      </Card>
+      
+      {/* Controls Skeleton */}
+      <Card className="p-4">
+        <div className="flex justify-between items-center">
+          <div className="flex gap-3">
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-40" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-10 w-40" />
+          </div>
+        </div>
+      </Card>
+      
+      {/* Main Content Skeleton */}
+      <Card className="p-6">
+        {/* Student Info */}
+        <div className="flex justify-between items-center border-b pb-6 mb-6">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-20 w-20 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-64" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="text-center space-y-2">
+                <Skeleton className="h-4 w-16 mx-auto" />
+                <Skeleton className="h-8 w-12 mx-auto" />
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Table Skeleton */}
+        <div className="mb-8">
+          <Skeleton className="h-6 w-48 mb-4" />
+          <div className="rounded-md border">
+            <div className="p-4">
+              <div className="grid grid-cols-5 gap-4 mb-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-4" />
+                ))}
+              </div>
+              {Array.from({ length: 3 }).map((_, rowIndex) => (
+                <div key={rowIndex} className="grid grid-cols-5 gap-4 py-3">
+                  {Array.from({ length: 5 }).map((_, colIndex) => (
+                    <Skeleton key={colIndex} className="h-4" />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Charts Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="space-y-3">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+          <div className="space-y-3">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        </div>
+        
+        {/* Additional sections skeletons */}
+        <div className="space-y-6">
+          <div>
+            <Skeleton className="h-6 w-48 mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-32 w-full" />
+            </div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
 
 export default function ReportCard() {
  // const { selectedClass } = useSelector((state: any) => state.generalInfo);
@@ -54,11 +180,7 @@ export default function ReportCard() {
   }, [accessToken, tenantDomain, refreshToken, selectedStudentId]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader />
-      </div>
-    );
+    return <ReportCardSkeleton />;
   }
 
   if (error) {
@@ -90,75 +212,119 @@ export default function ReportCard() {
 
   return (
     <section className="flex flex-col gap-4 w-full">
-      <div className="flex justify-between items-center bg-[#3e81d4] px-4 py-3 rounded-md">
-        <PageTitleH1 title="Academic Report Card" className="text-white" />
-        <span className="text-white font-medium">{student_info.current_term}</span>
-      </div>
-
-      <div className="flex justify-between items-center">
-        <div className="flex flex-wrap items-center gap-4">
-          <ClassSelect />
-          {class_information?.available_terms && (
-            <select 
-              className="bg-white rounded-md p-2 border text-sm"
-              value={selectedTermId}
-              onChange={(e) => setSelectedTermId(e.target.value)}
-            >
-              <option value="">Select Term</option>
-              {class_information.available_terms.map((term: any) => (
-                <option key={term.id} value={term.id}>
-                  {term.name}
-                </option>
-              ))}
-            </select>
-          )}
-          <select className="bg-white rounded-md p-2 border text-sm">
-            <option>All Subjects</option>
-            <option>Core Subjects</option>
-            <option>Electives</option>
-          </select>
+      <Card className="bg-gradient-to-r from-blue-600 to-blue-700 border-0 shadow-lg">
+        <div className="flex justify-between items-center p-6">
+          <div>
+            <PageTitleH1 title="Academic Report Card" className="text-white mb-1" />
+            <p className="text-blue-100 text-sm font-medium">
+              {student_info.current_term}
+            </p>
+          </div>
+          <Badge variant="secondary" className="bg-white/20 text-white border-white/30 hover:bg-white/30">
+            {class_information?.available_terms?.find((t: any) => t.is_current)?.name?.split(' ')[1] || 'Current'}
+          </Badge>
         </div>
-      </div>
+      </Card>
 
-      <div className="flex justify-between items-center">
-        <div className="flex gap-4">
-          <Button className="flex gap-2 items-center text-lg bg-[#c586d1] hover:bg-[#A36EAD] rounded-md px-2 py-4 lg:px-4 lg:py-6">
-            <Image
-              src={teacherImages.save}
-              alt="report"
-              width={100}
-              height={100}
-              className="w-8 h-8"
-            />
-            <span>Save</span>
-          </Button>
-          <Link
-            target="_blank"
-            href={"/assets/google_search.pdf"}
-            className="flex gap-2 items-center text-lg bg-blue-500 hover:bg-blue-600 rounded-md px-4"
+      <Card className="bg-muted/50 border-muted">
+        <div className="flex flex-wrap justify-between items-center p-4 gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="class-select" className="text-xs font-medium text-muted-foreground">
+                Class
+              </Label>
+              <ClassSelect />
+            </div>
+            {class_information?.available_terms && (
+              <div className="space-y-1">
+                <Label htmlFor="term-select" className="text-xs font-medium text-muted-foreground">
+                  Term
+                </Label>
+                <Select value={selectedTermId} onValueChange={setSelectedTermId}>
+                  <SelectTrigger id="term-select" className="w-[200px]">
+                    <SelectValue placeholder="Select term..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {class_information.available_terms.map((term: any) => (
+                      <SelectItem key={term.id} value={term.id}>
+                        {term.name}
+                        {term.is_current && (
+                          <Badge variant="secondary" className="ml-2 text-xs">
+                            Current
+                          </Badge>
+                        )}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="space-y-1">
+              <Label htmlFor="subject-filter" className="text-xs font-medium text-muted-foreground">
+                Filter
+              </Label>
+              <Select defaultValue="all">
+                <SelectTrigger id="subject-filter" className="w-[150px]">
+                  <SelectValue placeholder="Filter subjects..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Subjects</SelectItem>
+                  <SelectItem value="core">Core Subjects</SelectItem>
+                  <SelectItem value="electives">Electives</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <div className="flex justify-end items-center">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="gap-2">
+              <Image
+                src={teacherImages.save}
+                alt="save"
+                width={16}
+                height={16}
+                className="w-4 h-4"
+              />
+              Save Report
+            </Button>
+            <Button variant="default" size="sm" className="gap-2">
+              <Image
+                src={teacherImages.print}
+                alt="print"
+                width={16}
+                height={16}
+                className="w-4 h-4"
+              />
+              Print
+            </Button>
+          </div>
+          <Select 
+            value={selectedStudentId.toString()} 
+            onValueChange={(value) => setSelectedStudentId(Number(value))}
           >
-            <Image
-              src={teacherImages.print}
-              alt="print"
-              width={100}
-              height={100}
-              className="w-8 h-8"
-            />
-          </Link>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select student..." />
+            </SelectTrigger>
+            <SelectContent>
+              {class_information?.classmates?.map((classmate: any) => (
+                <SelectItem key={classmate.id} value={classmate.id}>
+                  {classmate.name}
+                  {classmate.is_current && (
+                    <Badge variant="secondary" className="ml-2 text-xs">
+                      Current
+                    </Badge>
+                  )}
+                </SelectItem>
+              )) || (
+                <SelectItem value={selectedStudentId.toString()}>Current Student</SelectItem>
+              )}
+            </SelectContent>
+          </Select>
         </div>
-        <select 
-          className="bg-white font-bold p-1 rounded-md"
-          value={selectedStudentId}
-          onChange={(e) => setSelectedStudentId(Number(e.target.value))}
-        >
-          {class_information?.classmates?.map((classmate: any) => (
-            <option key={classmate.id} value={classmate.id}>
-              {classmate.name}
-            </option>
-          )) || (
-            <option value={selectedStudentId}>Current Student</option>
-          )}
-        </select>
       </div>
 
       <Card className="rounded-lg p-6">
@@ -213,58 +379,49 @@ export default function ReportCard() {
             </div>
             <div>
               <p className="text-sm text-gray-500">Behavior</p>
-              <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                academic_performance.behavior_rating === 'Excellent' ? 'bg-green-100 text-green-800' :
-                academic_performance.behavior_rating === 'Good' ? 'bg-blue-100 text-blue-800' :
-                academic_performance.behavior_rating === 'Satisfactory' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-red-100 text-red-800'
-              }`}>
+              <Badge variant={getPerformanceVariant(academic_performance.behavior_rating)}>
                 {academic_performance.behavior_rating}
-              </div>
+              </Badge>
             </div>
           </div>
         </div>
 
         <div className="mb-8">
           <h3 className="text-lg font-bold mb-4">Subject Performance</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-gray-100 text-left">
-                  <th className="p-3">Subject</th>
-                  <th className="p-3 text-center">Grade</th>
-                  <th className="p-3 text-center">Score</th>
-                  <th className="p-3">Teacher</th>
-                  <th className="p-3">Teacher&apos;s Comments</th>
-                </tr>
-              </thead>
-              <tbody>
-                {subjects.map((subject: any, index: number) => {
-                  const gradeColor = subject.grade === 'A' ? 'text-green-600 bg-green-50' :
-                                    subject.grade === 'B' ? 'text-blue-600 bg-blue-50' :
-                                    subject.grade === 'C' ? 'text-yellow-600 bg-yellow-50' :
-                                    subject.grade === 'D' ? 'text-orange-600 bg-orange-50' :
-                                    'text-red-600 bg-red-50';
-                  
-                  return (
-                    <tr key={index} className="border-b hover:bg-gray-50">
-                      <td className="p-3 font-medium">{subject.name}</td>
-                      <td className="p-3 text-center">
-                        <span className={`px-2 py-1 rounded-full text-sm font-bold ${gradeColor}`}>
-                          {subject.grade}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center">
-                        <span className="font-semibold">{subject.score}</span>
-                        <span className="text-gray-500">/{subject.max_score}</span>
-                      </td>
-                      <td className="p-3 text-sm font-medium text-gray-600">{subject.teacher_name}</td>
-                      <td className="p-3 text-sm">{subject.teacher_comment}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Subject</TableHead>
+                  <TableHead className="text-center">Grade</TableHead>
+                  <TableHead className="text-center">Score</TableHead>
+                  <TableHead className="hidden md:table-cell">Teacher</TableHead>
+                  <TableHead className="hidden lg:table-cell">Comments</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {subjects.map((subject: any, index: number) => (
+                  <TableRow key={index} className="hover:bg-muted/50 transition-colors">
+                    <TableCell className="font-medium">{subject.name}</TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant={getGradeVariant(subject.grade)}>
+                        {subject.grade}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <span className="font-semibold">{subject.score}</span>
+                      <span className="text-muted-foreground">/{subject.max_score}</span>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                      {subject.teacher_name}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell text-sm">
+                      {subject.teacher_comment}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </div>
 
