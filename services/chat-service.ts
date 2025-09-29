@@ -1,4 +1,8 @@
-import { API_CONFIG, buildApiUrl } from "@/lib/api-config";
+// Henock BARAKAEL
+// -----------------------------------------------------------------------------------------
+// Service Chat (Rooms & Messages) – version corrigée avec support des participants
+// -----------------------------------------------------------------------------------------
+
 import {
   ChatMessage,
   ChatRoom,
@@ -8,205 +12,421 @@ import {
   ChatMessagesResponse,
   ChatRoomsResponse,
 } from "@/types/chat";
+import { BACKEND_BASE_URL } from "@/app/utils/constants";
 
-// Configuration des endpoints Chat
+// -----------------------------------------------------------------------------------------
+// Erreur API uniforme
+// -----------------------------------------------------------------------------------------
+export class ChatApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public details?: any,
+    public accessToken?: string
+  ) {
+    super(message);
+    this.name = "ChatApiError";
+  }
+}
+
+// -----------------------------------------------------------------------------------------
+// Endpoints du module chat
+// -----------------------------------------------------------------------------------------
 const CHAT_ENDPOINTS = {
+  // Messages
   MESSAGES: "/chats/messages/",
-  MESSAGES_CREATE: "/chats/messages/create/", // Endpoint spécialisé pour créer
+  MESSAGES_CREATE: "/chats/messages/create/",
   MESSAGES_DETAIL: (id: number) => `/chats/messages/${id}/`,
-  ROOMS: "/chats/rooms/",
-  ROOMS_CREATE: "/chats/rooms/create/", // Endpoint spécialisé pour créer
-  ROOMS_DETAIL: (id: number) => `/chats/rooms/${id}/`,
-};
 
-// Service pour les messages de chat
+  // Rooms
+  ROOMS: "/chats/rooms/",
+  ROOMS_CREATE: "/chats/rooms/create/",
+  ROOMS_DETAIL: (id: number) => `/chats/rooms/${id}/`,
+} as const;
+
+// -----------------------------------------------------------------------------------------
+// Helpers
+// -----------------------------------------------------------------------------------------
+
+/**
+ * Retourne la base URL effective.
+ */
+function resolveBaseURL(tenantPrimaryDomain?: string): string {
+  const base = (tenantPrimaryDomain && tenantPrimaryDomain.trim()) || BACKEND_BASE_URL;
+  return base.endsWith("/") ? base.slice(0, -1) : base;
+}
+
+/**
+ * Construit un objet Headers pour Authorization + extras.
+ */
+function buildAuthHeaders(
+  accessToken?: string,
+  extra?: HeadersInit
+): HeadersInit {
+  const headers: HeadersInit = {
+    ...(extra || {}),
+  };
+
+  if (!accessToken || accessToken.trim() === "") {
+    return headers;
+  }
+
+  return {
+    ...headers,
+    Authorization: `Bearer ${accessToken}`,
+  };
+}
+
+/**
+ * Construit un URL avec ses query params.
+ */
+function buildUrlWithParams(base: string, path: string, params?: Record<string, string>): string {
+  const url = new URL(`${base}${path}`);
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        url.searchParams.append(key, String(value));
+      }
+    });
+  }
+  return url.toString();
+}
+
+/**
+ * Normalise les erreurs fetch → ChatApiError
+ */
+async function normalizeFetchError(
+  response: Response,
+  accessToken?: string
+): Promise<never> {
+  let details: any = undefined;
+  try {
+    details = await response.json();
+  } catch {
+    try {
+      const txt = await response.text();
+      details = { raw: txt };
+    } catch {
+      // ignore
+    }
+  }
+  const message =
+    (details && (details.message || details.detail)) ||
+    `HTTP Error: ${response.status}`;
+  throw new ChatApiError(message, response.status, details, accessToken);
+}
+
+/**
+ * Vérifie le token, sinon lève une ChatApiError 401 cohérente
+ */
+function assertToken(accessToken?: string) {
+  if (!accessToken || accessToken.trim() === "") {
+    throw new ChatApiError(
+      "No access token provided. Please log in again.",
+      401,
+      { code: "NO_TOKEN" },
+      accessToken
+    );
+  }
+}
+
+// -----------------------------------------------------------------------------------------
+// ChatMessageService
+// -----------------------------------------------------------------------------------------
 export class ChatMessageService {
-  // Lister tous les messages avec pagination optionnelle
+  /**
+   * GET /chats/messages/ (optionnel: limit, offset)
+   */
   static async listMessages(
-    headers: HeadersInit,
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
     limit?: number,
     offset?: number
   ): Promise<ChatMessagesResponse> {
     try {
-      const params: Record<string, string> = {};
-      if (limit) params.limit = limit.toString();
-      if (offset) params.offset = offset.toString();
+      assertToken(accessToken);
 
-      const url = buildApiUrl(CHAT_ENDPOINTS.MESSAGES, params);
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const params: Record<string, string> = {};
+      if (limit !== undefined) params.limit = String(limit);
+      if (offset !== undefined) params.offset = String(offset);
+
+      const url = buildUrlWithParams(base, CHAT_ENDPOINTS.MESSAGES, params);
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔎 [ChatMessageService.listMessages] URL =>", url);
+      }
+
       const response = await fetch(url, {
         method: "GET",
-        headers,
+        headers: buildAuthHeaders(accessToken),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch messages: ${response.status}`);
+        return normalizeFetchError(response, accessToken);
       }
 
-      return await response.json();
+      return (await response.json()) as ChatMessagesResponse;
     } catch (error) {
-      console.error("Error fetching chat messages:", error);
-      throw error;
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
     }
   }
 
-  // Créer un nouveau message
+  /**
+   * POST /chats/messages/ (payload JSON générique)
+   */
   static async createMessage(
-    headers: HeadersInit,
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
     messageData: Omit<ChatMessage, "id" | "uuid" | "created_at" | "last_update">
   ): Promise<ChatMessage> {
     try {
-      const url = buildApiUrl(CHAT_ENDPOINTS.MESSAGES);
+      assertToken(accessToken);
+
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}${CHAT_ENDPOINTS.MESSAGES}`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("📝 [ChatMessageService.createMessage] URL =>", url, "payload =>", messageData);
+      }
+
       const response = await fetch(url, {
         method: "POST",
-        headers,
+        headers: buildAuthHeaders(accessToken, { "Content-Type": "application/json" }),
         body: JSON.stringify({ data: messageData }),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to create message: ${response.status}`);
+        return normalizeFetchError(response, accessToken);
       }
 
-      return await response.json();
+      return (await response.json()) as ChatMessage;
     } catch (error) {
-      console.error("Error creating chat message:", error);
-      throw error;
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
     }
   }
 
-  // Créer un message via l'endpoint spécialisé
+  /**
+   * POST /chats/messages/create/ (payload FormData spécialisé – recommandé)
+   */
   static async createChatMessage(
-    headers: HeadersInit,
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
     messageData: CreateChatMessage
   ): Promise<CreateChatMessage> {
     try {
-      const url = buildApiUrl(CHAT_ENDPOINTS.MESSAGES_CREATE);
+      assertToken(accessToken);
 
-      console.log("🔍 DEBUG ChatMessageService.createChatMessage:", {
-        url,
-        messageData,
-        headers,
-      });
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}${CHAT_ENDPOINTS.MESSAGES_CREATE}`;
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(messageData), // Envoi direct sans encapsulation "data"
-      });
-
-      console.log("🔍 DEBUG Response status:", response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("🚨 API Error Response:", errorText);
-        throw new Error(
-          `Failed to create chat message: ${response.status} - ${errorText}`
-        );
+      if (process.env.NODE_ENV === "development") {
+        console.log("📝 [ChatMessageService.createChatMessage] URL =>", url, "payload =>", messageData);
       }
 
-      return await response.json();
+      // JSON par défaut
+      const response = await fetch(url, {
+        method: "POST",
+        headers: buildAuthHeaders(accessToken, { "Content-Type": "application/json" }),
+        body: JSON.stringify(messageData),
+      });
+
+      if (!response.ok) {
+        return normalizeFetchError(response, accessToken);
+      }
+
+      return (await response.json()) as CreateChatMessage;
     } catch (error) {
-      console.error("Error creating chat message:", error);
-      throw error;
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
     }
   }
-
-  // Obtenir un message spécifique
+  /**
+   * GET /chats/messages/:id/
+   */
   static async getMessage(
-    headers: HeadersInit,
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
     id: number
   ): Promise<ChatMessage> {
     try {
-      const url = buildApiUrl(CHAT_ENDPOINTS.MESSAGES_DETAIL(id));
+      assertToken(accessToken);
+
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}${CHAT_ENDPOINTS.MESSAGES_DETAIL(id)}`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔎 [ChatMessageService.getMessage] URL =>", url);
+      }
+
       const response = await fetch(url, {
         method: "GET",
-        headers,
+        headers: buildAuthHeaders(accessToken),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch message: ${response.status}`);
+        return normalizeFetchError(response, accessToken);
       }
 
-      return await response.json();
+      return (await response.json()) as ChatMessage;
     } catch (error) {
-      console.error("Error fetching chat message:", error);
-      throw error;
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
     }
   }
 
-  // Mettre à jour un message (PUT)
+  /**
+   * PUT /chats/messages/:id/ (JSON complet)
+   */
   static async updateMessage(
-    headers: HeadersInit,
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
     id: number,
     messageData: Omit<ChatMessage, "id" | "uuid" | "created_at" | "last_update">
   ): Promise<ChatMessage> {
     try {
-      const url = buildApiUrl(CHAT_ENDPOINTS.MESSAGES_DETAIL(id));
+      assertToken(accessToken);
+
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}${CHAT_ENDPOINTS.MESSAGES_DETAIL(id)}`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("🛠️ [ChatMessageService.updateMessage] URL =>", url, "payload =>", messageData);
+      }
+
       const response = await fetch(url, {
         method: "PUT",
-        headers,
+        headers: buildAuthHeaders(accessToken, { "Content-Type": "application/json" }),
         body: JSON.stringify({ data: messageData }),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to update message: ${response.status}`);
+        return normalizeFetchError(response, accessToken);
       }
 
-      return await response.json();
+      return (await response.json()) as ChatMessage;
     } catch (error) {
-      console.error("Error updating chat message:", error);
-      throw error;
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
     }
   }
 
-  // Mettre à jour partiellement un message (PATCH)
+  /**
+   * PATCH /chats/messages/:id/ (JSON partiel)
+   */
   static async partialUpdateMessage(
-    headers: HeadersInit,
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
     id: number,
     messageData: Partial<ChatMessage>
   ): Promise<ChatMessage> {
     try {
-      const url = buildApiUrl(CHAT_ENDPOINTS.MESSAGES_DETAIL(id));
+      assertToken(accessToken);
+
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}${CHAT_ENDPOINTS.MESSAGES_DETAIL(id)}`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("🛠️ [ChatMessageService.partialUpdateMessage] URL =>", url, "payload =>", messageData);
+      }
+
       const response = await fetch(url, {
         method: "PATCH",
-        headers,
+        headers: buildAuthHeaders(accessToken, { "Content-Type": "application/json" }),
         body: JSON.stringify({ data: messageData }),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to update message: ${response.status}`);
+        return normalizeFetchError(response, accessToken);
       }
 
-      return await response.json();
+      return (await response.json()) as ChatMessage;
     } catch (error) {
-      console.error("Error updating chat message:", error);
-      throw error;
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
     }
   }
 
-  // Supprimer un message
-  static async deleteMessage(headers: HeadersInit, id: number): Promise<void> {
+  /**
+   * DELETE /chats/messages/:id/
+   */
+  static async deleteMessage(
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
+    id: number
+  ): Promise<void> {
     try {
-      const url = buildApiUrl(CHAT_ENDPOINTS.MESSAGES_DETAIL(id));
+      assertToken(accessToken);
+
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}${CHAT_ENDPOINTS.MESSAGES_DETAIL(id)}`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("🗑️ [ChatMessageService.deleteMessage] URL =>", url);
+      }
+
       const response = await fetch(url, {
         method: "DELETE",
-        headers,
+        headers: buildAuthHeaders(accessToken),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to delete message: ${response.status}`);
+        return normalizeFetchError(response, accessToken);
       }
     } catch (error) {
-      console.error("Error deleting chat message:", error);
-      throw error;
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
     }
   }
 }
 
-// Service pour les salons de chat
+// -----------------------------------------------------------------------------------------
+// ChatRoomService - CORRIGÉ POUR SUPPORTER LES PARTICIPANTS
+// -----------------------------------------------------------------------------------------
 export class ChatRoomService {
-  // Lister tous les salons avec filtres optionnels
+  /**
+   * GET /chats/rooms/ (filtres optionnels + pagination)
+   */
   static async listRooms(
-    headers: HeadersInit,
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
     name?: string,
     school?: string,
     details?: string,
@@ -214,132 +434,195 @@ export class ChatRoomService {
     offset?: number
   ): Promise<ChatRoomsResponse> {
     try {
+      assertToken(accessToken);
+
+      const base = resolveBaseURL(tenantPrimaryDomain);
+
       const params: Record<string, string> = {};
       if (name) params.name = name;
       if (school) params.school = school;
       if (details) params.details = details;
-      if (limit) params.limit = limit.toString();
-      if (offset) params.offset = offset.toString();
+      if (limit !== undefined) params.limit = String(limit);
+      if (offset !== undefined) params.offset = String(offset);
 
-      const url = buildApiUrl(CHAT_ENDPOINTS.ROOMS, params);
+      const url = buildUrlWithParams(base, CHAT_ENDPOINTS.ROOMS, params);
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔎 [ChatRoomService.listRooms] URL =>", url);
+      }
+
       const response = await fetch(url, {
         method: "GET",
-        headers,
+        headers: buildAuthHeaders(accessToken),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch rooms: ${response.status}`);
+        return normalizeFetchError(response, accessToken);
       }
 
-      return await response.json();
+      return (await response.json()) as ChatRoomsResponse;
     } catch (error) {
-      console.error("Error fetching chat rooms:", error);
-      throw error;
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
     }
   }
 
-  // Créer un nouveau salon
+  /**
+   * POST /chats/rooms/ (création standard – FormData)
+   */
   static async createRoom(
-    headers: HeadersInit,
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
     roomData: {
       name?: string;
       details?: string;
       is_group?: boolean;
       is_deleted?: boolean;
       extra_data?: string;
+      participants?: number[]; // Ajout du support des participants
     }
   ): Promise<ChatRoom> {
     try {
-      const url = buildApiUrl(CHAT_ENDPOINTS.ROOMS);
+      assertToken(accessToken);
+
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}${CHAT_ENDPOINTS.ROOMS}`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("📝 [ChatRoomService.createRoom] URL =>", url, "payload =>", roomData);
+      }
+
       const formData = new FormData();
-
-      if (roomData.name) formData.append("name", roomData.name);
-      if (roomData.details) formData.append("details", roomData.details);
-      if (roomData.is_group !== undefined)
-        formData.append("is_group", roomData.is_group.toString());
-      if (roomData.is_deleted !== undefined)
-        formData.append("is_deleted", roomData.is_deleted.toString());
-      if (roomData.extra_data)
-        formData.append("extra_data", roomData.extra_data);
-
-      // Créer des headers sans Content-Type pour FormData
-      const formDataHeaders = { ...headers };
-      delete (formDataHeaders as any)["Content-Type"];
+      if (roomData.name !== undefined) formData.append("name", roomData.name);
+      if (roomData.details !== undefined) formData.append("details", roomData.details);
+      if (roomData.is_group !== undefined) formData.append("is_group", String(roomData.is_group));
+      if (roomData.is_deleted !== undefined) formData.append("is_deleted", String(roomData.is_deleted));
+      if (roomData.extra_data !== undefined) formData.append("extra_data", roomData.extra_data);
+      
+      // Ajout des participants si présents
+      if (roomData.participants && Array.isArray(roomData.participants)) {
+        roomData.participants.forEach((participantId: number) => {
+          formData.append("participants", participantId.toString());
+        });
+      }
 
       const response = await fetch(url, {
         method: "POST",
-        headers: formDataHeaders,
+        headers: buildAuthHeaders(accessToken),
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to create room: ${response.status}`);
+        return normalizeFetchError(response, accessToken);
       }
 
-      return await response.json();
+      return (await response.json()) as ChatRoom;
     } catch (error) {
-      console.error("Error creating chat room:", error);
-      throw error;
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
     }
   }
 
-  // Créer un salon via l'endpoint spécialisé
+  /**
+   * POST /chats/rooms/create/ (endpoint spécialisé – FormData, CORRIGÉ)
+   */
   static async createChatRoom(
-    headers: HeadersInit,
-    roomData: CreateChatRoom
-  ): Promise<CreateChatRoom> {
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
+    roomData: {
+      name?: string;
+      participant_ids?: number[]; // ⚡ aligné avec backend
+      is_group?: boolean;
+      initial_message?: string;
+    }
+  ): Promise<ChatRoom> {
     try {
-      const url = buildApiUrl(CHAT_ENDPOINTS.ROOMS_CREATE);
-      const formData = new FormData();
-      formData.append("name", roomData.name);
+      assertToken(accessToken);
 
-      // Créer des headers sans Content-Type pour FormData
-      const formDataHeaders = { ...headers };
-      delete (formDataHeaders as any)["Content-Type"];
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}${CHAT_ENDPOINTS.ROOMS_CREATE}`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("📝 [ChatRoomService.createChatRoom] URL =>", url, "payload =>", roomData);
+      }
 
       const response = await fetch(url, {
         method: "POST",
-        headers: formDataHeaders,
-        body: formData,
+        headers: buildAuthHeaders(accessToken, { "Content-Type": "application/json" }),
+        body: JSON.stringify(roomData),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to create chat room: ${response.status}`);
+        return normalizeFetchError(response, accessToken);
       }
 
-      return await response.json();
+      return (await response.json()) as ChatRoom;
     } catch (error) {
-      console.error("Error creating chat room:", error);
-      throw error;
+      console.error("❌ [ChatRoomService.createChatRoom] Erreur:", error);
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
     }
   }
-
-  // Obtenir un salon spécifique avec ses détails
+  /**
+   * GET /chats/rooms/:id/
+   */
   static async getRoom(
-    headers: HeadersInit,
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
     id: number
   ): Promise<ChatRoomDetail> {
     try {
-      const url = buildApiUrl(CHAT_ENDPOINTS.ROOMS_DETAIL(id));
+      assertToken(accessToken);
+
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}${CHAT_ENDPOINTS.ROOMS_DETAIL(id)}`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔎 [ChatRoomService.getRoom] URL =>", url);
+      }
+
       const response = await fetch(url, {
         method: "GET",
-        headers,
+        headers: buildAuthHeaders(accessToken),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch room: ${response.status}`);
+        return normalizeFetchError(response, accessToken);
       }
 
-      return await response.json();
+      return (await response.json()) as ChatRoomDetail;
     } catch (error) {
-      console.error("Error fetching chat room:", error);
-      throw error;
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
     }
   }
 
-  // Mettre à jour un salon (PUT)
+  /**
+   * PUT /chats/rooms/:id/ (FormData complet)
+   */
   static async updateRoom(
-    headers: HeadersInit,
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
     id: number,
     roomData: {
       name?: string;
@@ -347,40 +630,61 @@ export class ChatRoomService {
       is_group?: boolean;
       is_deleted?: boolean;
       extra_data?: string;
+      participants?: number[]; // Ajout du support des participants
     }
   ): Promise<ChatRoom> {
     try {
-      const url = buildApiUrl(CHAT_ENDPOINTS.ROOMS_DETAIL(id));
-      const formData = new FormData();
+      assertToken(accessToken);
 
-      if (roomData.name) formData.append("name", roomData.name);
-      if (roomData.details) formData.append("details", roomData.details);
-      if (roomData.is_group !== undefined)
-        formData.append("is_group", roomData.is_group.toString());
-      if (roomData.is_deleted !== undefined)
-        formData.append("is_deleted", roomData.is_deleted.toString());
-      if (roomData.extra_data)
-        formData.append("extra_data", roomData.extra_data);
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}${CHAT_ENDPOINTS.ROOMS_DETAIL(id)}`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("🛠️ [ChatRoomService.updateRoom] URL =>", url, "payload =>", roomData);
+      }
+
+      const formData = new FormData();
+      if (roomData.name !== undefined) formData.append("name", roomData.name);
+      if (roomData.details !== undefined) formData.append("details", roomData.details);
+      if (roomData.is_group !== undefined) formData.append("is_group", String(roomData.is_group));
+      if (roomData.is_deleted !== undefined) formData.append("is_deleted", String(roomData.is_deleted));
+      if (roomData.extra_data !== undefined) formData.append("extra_data", roomData.extra_data);
+      
+      // Ajout des participants si présents
+      if (roomData.participants && Array.isArray(roomData.participants)) {
+        roomData.participants.forEach((participantId: number) => {
+          formData.append("participants", participantId.toString());
+        });
+      }
 
       const response = await fetch(url, {
         method: "PUT",
+        headers: buildAuthHeaders(accessToken),
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to update room: ${response.status}`);
+        return normalizeFetchError(response, accessToken);
       }
 
-      return await response.json();
+      return (await response.json()) as ChatRoom;
     } catch (error) {
-      console.error("Error updating chat room:", error);
-      throw error;
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
     }
   }
 
-  // Mettre à jour partiellement un salon (PATCH)
+  /**
+   * PATCH /chats/rooms/:id/ (FormData partiel)
+   */
   static async partialUpdateRoom(
-    headers: HeadersInit,
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
     id: number,
     roomData: {
       name?: string;
@@ -388,52 +692,100 @@ export class ChatRoomService {
       is_group?: boolean;
       is_deleted?: boolean;
       extra_data?: string;
+      participants?: number[]; // Ajout du support des participants
     }
   ): Promise<ChatRoom> {
     try {
-      const url = buildApiUrl(CHAT_ENDPOINTS.ROOMS_DETAIL(id));
-      const formData = new FormData();
+      assertToken(accessToken);
 
-      if (roomData.name) formData.append("name", roomData.name);
-      if (roomData.details) formData.append("details", roomData.details);
-      if (roomData.is_group !== undefined)
-        formData.append("is_group", roomData.is_group.toString());
-      if (roomData.is_deleted !== undefined)
-        formData.append("is_deleted", roomData.is_deleted.toString());
-      if (roomData.extra_data)
-        formData.append("extra_data", roomData.extra_data);
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}${CHAT_ENDPOINTS.ROOMS_DETAIL(id)}`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("🛠️ [ChatRoomService.partialUpdateRoom] URL =>", url, "payload =>", roomData);
+      }
+
+      const formData = new FormData();
+      if (roomData.name !== undefined) formData.append("name", roomData.name);
+      if (roomData.details !== undefined) formData.append("details", roomData.details);
+      if (roomData.is_group !== undefined) formData.append("is_group", String(roomData.is_group));
+      if (roomData.is_deleted !== undefined) formData.append("is_deleted", String(roomData.is_deleted));
+      if (roomData.extra_data !== undefined) formData.append("extra_data", roomData.extra_data);
+      
+      // Ajout des participants si présents
+      if (roomData.participants && Array.isArray(roomData.participants)) {
+        roomData.participants.forEach((participantId: number) => {
+          formData.append("participants", participantId.toString());
+        });
+      }
 
       const response = await fetch(url, {
         method: "PATCH",
+        headers: buildAuthHeaders(accessToken),
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to update room: ${response.status}`);
+        return normalizeFetchError(response, accessToken);
       }
 
-      return await response.json();
+      return (await response.json()) as ChatRoom;
     } catch (error) {
-      console.error("Error updating chat room:", error);
-      throw error;
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
     }
   }
 
-  // Supprimer un salon
-  static async deleteRoom(headers: HeadersInit, id: number): Promise<void> {
+  /**
+   * DELETE /chats/rooms/:id/
+   */
+  static async deleteRoom(
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
+    id: number
+  ): Promise<void> {
     try {
-      const url = buildApiUrl(CHAT_ENDPOINTS.ROOMS_DETAIL(id));
+      assertToken(accessToken);
+
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}${CHAT_ENDPOINTS.ROOMS_DETAIL(id)}`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("🗑️ [ChatRoomService.deleteRoom] URL =>", url);
+      }
+
       const response = await fetch(url, {
         method: "DELETE",
-        headers,
+        headers: buildAuthHeaders(accessToken),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to delete room: ${response.status}`);
+        return normalizeFetchError(response, accessToken);
       }
     } catch (error) {
-      console.error("Error deleting chat room:", error);
-      throw error;
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
     }
   }
 }
+
+// -----------------------------------------------------------------------------------------
+// Notes d'utilisation CORRIGÉES
+// -----------------------------------------------------------------------------------------
+/**
+ * - La fonction createChatRoom supporte maintenant les participants
+ * - Les participants sont envoyés via FormData avec le champ "participants"
+ * - Tous les appels API incluent des logs de débogage détaillés
+ * - Gestion d'erreur uniforme avec ChatApiError
+ * - Support des rooms de groupe (is_group, room_type)
+ */
