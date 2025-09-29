@@ -16,6 +16,7 @@ import LineChartComponent from "../ui/line-chart";
 import DoughnutChartComponent from "../ui/pie-chart";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import {  useEffect, useState } from "react";
+import { toast } from "sonner";
 import { getStudentReportCard } from "@/services/ReportCardService";
 import { Skeleton } from "@/components/ui/skeleton";
 ///import Login from "../Home";
@@ -150,7 +151,9 @@ export default function ReportCard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<number>(1);
-  const [selectedTermId, setSelectedTermId] = useState<string>(""); 
+  const [selectedTermId, setSelectedTermId] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -178,6 +181,185 @@ export default function ReportCard() {
   
     fetchData();
   }, [accessToken, tenantDomain, refreshToken, selectedStudentId]);
+
+  // Save report function
+  const handleSaveReport = async () => {
+    if (!reportData) return;
+    
+    setIsSaving(true);
+    try {
+      // Create downloadable JSON file
+      const dataStr = JSON.stringify(reportData, null, 2);
+      const dataBlob = new Blob([dataStr], {type: 'application/json'});
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `report-card-${reportData.student_info.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success("Report saved successfully!");
+    } catch (error) {
+      console.error("Error saving report:", error);
+      toast.error("Failed to save report");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Print report function
+  const handlePrintReport = async () => {
+    setIsPrinting(true);
+    try {
+      // Create a print-friendly version
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        toast.error("Please allow pop-ups to print the report");
+        return;
+      }
+
+      // Generate HTML content for printing
+      const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Report Card - ${reportData.student_info.name}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+            .header { text-align: center; border-bottom: 2px solid #3e81d4; padding-bottom: 20px; margin-bottom: 20px; }
+            .student-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
+            .metrics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-bottom: 20px; }
+            .metric { text-align: center; padding: 10px; border: 1px solid #ddd; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f5f5f5; }
+            .grade-a { color: #16a34a; font-weight: bold; }
+            .grade-b { color: #2563eb; font-weight: bold; }
+            .grade-c { color: #ca8a04; font-weight: bold; }
+            .grade-d { color: #ea580c; font-weight: bold; }
+            .grade-f { color: #dc2626; font-weight: bold; }
+            .section { margin-bottom: 30px; }
+            .section h3 { border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Academic Report Card</h1>
+            <p>${reportData.student_info.current_term}</p>
+          </div>
+          
+          <div class="student-info">
+            <div>
+              <h2>${reportData.student_info.name}</h2>
+              <p>${reportData.student_info.grade_level} • Class: ${reportData.student_info.class_name}</p>
+              <p>Student ID: ${reportData.student_info.student_id}</p>
+            </div>
+          </div>
+          
+          <div class="metrics">
+            <div class="metric">
+              <div>Overall Grade</div>
+              <div class="grade-${reportData.academic_performance.overall_grade.toLowerCase()}">${reportData.academic_performance.overall_grade}</div>
+            </div>
+            <div class="metric">
+              <div>Score</div>
+              <div>${reportData.academic_performance.overall_score}%</div>
+            </div>
+            <div class="metric">
+              <div>Ranking</div>
+              <div>${reportData.academic_performance.ranking.position}/${reportData.academic_performance.ranking.out_of}</div>
+            </div>
+            <div class="metric">
+              <div>Attendance</div>
+              <div>${reportData.academic_performance.attendance_percentage}</div>
+            </div>
+            <div class="metric">
+              <div>Behavior</div>
+              <div>${reportData.academic_performance.behavior_rating}</div>
+            </div>
+          </div>
+          
+          <div class="section">
+            <h3>Subject Performance</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Subject</th>
+                  <th>Grade</th>
+                  <th>Score</th>
+                  <th>Teacher</th>
+                  <th>Comments</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${reportData.subjects.map((subject: any) => `
+                  <tr>
+                    <td>${subject.name}</td>
+                    <td class="grade-${subject.grade.toLowerCase()}">${subject.grade}</td>
+                    <td>${subject.score}/${subject.max_score}</td>
+                    <td>${subject.teacher_name}</td>
+                    <td>${subject.teacher_comment}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="section">
+            <h3>Teacher's Remarks</h3>
+            <div>
+              <h4>Strengths:</h4>
+              <ul>
+                ${reportData.teacher_comments.strengths.map((strength: string) => `<li>${strength}</li>`).join('')}
+              </ul>
+              <h4>Areas for Improvement:</h4>
+              <ul>
+                ${reportData.teacher_comments.areas_for_improvement.map((area: string) => `<li>${area}</li>`).join('')}
+              </ul>
+              <h4>General Comments:</h4>
+              <p>${reportData.teacher_comments.general_remarks}</p>
+            </div>
+          </div>
+          
+          <div class="section">
+            <h3>Attendance Summary</h3>
+            <p>Days Present: ${reportData.attendance.term_summary.days_present}</p>
+            <p>Days Absent: ${reportData.attendance.term_summary.days_absent}</p>
+            <p>Days Late: ${reportData.attendance.term_summary.days_late}</p>
+            <p>Attendance Rate: ${reportData.attendance.term_summary.attendance_rate}</p>
+          </div>
+          
+          <div style="margin-top: 40px; text-align: center; font-size: 12px;">
+            <p>Report generated on: ${new Date(reportData.report_metadata.generated_date).toLocaleDateString()}</p>
+            <div style="margin-top: 30px;">
+              <p><strong>${reportData.report_metadata.authorized_by.name}</strong></p>
+              <p>${reportData.report_metadata.authorized_by.position}</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      
+      // Wait for content to load then print
+      printWindow.onload = () => {
+        printWindow.print();
+        printWindow.close();
+      };
+      
+      toast.success("Print dialog opened!");
+    } catch (error) {
+      console.error("Error printing report:", error);
+      toast.error("Failed to print report");
+    } finally {
+      setIsPrinting(false);
+    }
+  };
 
   if (loading) {
     return <ReportCardSkeleton />;
@@ -281,25 +463,45 @@ export default function ReportCard() {
       <div className="flex justify-end items-center">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2">
-              <Image
-                src={teacherImages.save}
-                alt="save"
-                width={16}
-                height={16}
-                className="w-4 h-4"
-              />
-              Save Report
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2" 
+              onClick={handleSaveReport}
+              disabled={isSaving || !reportData}
+            >
+              {isSaving ? (
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Image
+                  src={teacherImages.save}
+                  alt="save"
+                  width={16}
+                  height={16}
+                  className="w-4 h-4"
+                />
+              )}
+              {isSaving ? "Saving..." : "Save Report"}
             </Button>
-            <Button variant="default" size="sm" className="gap-2">
-              <Image
-                src={teacherImages.print}
-                alt="print"
-                width={16}
-                height={16}
-                className="w-4 h-4"
-              />
-              Print
+            <Button 
+              variant="default" 
+              size="sm" 
+              className="gap-2"
+              onClick={handlePrintReport}
+              disabled={isPrinting || !reportData}
+            >
+              {isPrinting ? (
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Image
+                  src={teacherImages.print}
+                  alt="print"
+                  width={16}
+                  height={16}
+                  className="w-4 h-4"
+                />
+              )}
+              {isPrinting ? "Printing..." : "Print"}
             </Button>
           </div>
           <Select 
