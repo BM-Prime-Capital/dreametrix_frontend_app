@@ -219,8 +219,8 @@ export function GradebookClassTable({
         tenantPrimaryDomain,
         accessToken,
         submissionId,
-        assessmentType,
-        assessmentIndex,
+        // assessmentType,
+        // assessmentIndex,
         newGrade,
         refreshToken
       );
