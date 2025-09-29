@@ -19,6 +19,7 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
     grade: 0,
     domain: "",
   });
+  const [isLoading, setIsLoading] = useState(false); // État de chargement
 
   // Get authentication and tenant info
   const { tenantDomain, accessToken } = useRequestInfo();
@@ -65,12 +66,12 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
     });
   };
 
- 
-
   const handleLaunchTest = async () => {
     if (!formData.subject || !formData.grade || !formData.domain || !tenantDomain || !accessToken) {
       return;
     }
+
+    setIsLoading(true); // Activer le chargement
   
     // Stocker les infos du test pour le PDF
     localStorage.setItem('testSubject', formData.subject);
@@ -93,7 +94,6 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
   
       const data = await response.json();
     
-  
       // Transformer les questions pour correspondre à l'interface attendue
       const transformedQuestions = data.questions.map((question: any, index: number) => ({
         id: question.id,
@@ -112,6 +112,8 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
       onStartTest(transformedQuestions);
     } catch (error) {
       console.error('Error fetching questions:', error);
+    } finally {
+      setIsLoading(false); // Désactiver le chargement même en cas d'erreur
     }
   };
 
@@ -149,7 +151,7 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
               <Select
                 value={formData.subject}
                 onValueChange={(value: string) => handleInputChange("subject", value)}
-                disabled={isLoadingSubjects}
+                disabled={isLoadingSubjects || isLoading} // Désactiver pendant le chargement
               >
                 <SelectTrigger className="w-full h-12 rounded-xl border-gray-300 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                   <SelectValue placeholder="Choose a subject" />
@@ -174,7 +176,7 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
               <Select
                 value={formData.grade.toString()}
                 onValueChange={(value: string) => handleInputChange("grade", parseInt(value))}
-                disabled={isLoadingGrades || !formData.subject}
+                disabled={isLoadingGrades || !formData.subject || isLoading} // Désactiver pendant le chargement
               >
                 <SelectTrigger className="w-full h-12 rounded-xl border-gray-300 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                   <SelectValue placeholder="Choose a grade" />
@@ -199,7 +201,7 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
               <Select
                 value={formData.domain}
                 onValueChange={(value: string) => handleInputChange("domain", value)}
-                disabled={isLoadingDomains || !formData.grade}
+                disabled={isLoadingDomains || !formData.grade || isLoading} // Désactiver pendant le chargement
               >
                 <SelectTrigger className="w-full h-12 rounded-xl border-gray-300 focus:border-green-400 focus:ring-2 focus:ring-green-100">
                   <SelectValue placeholder="Choose a domain" />
@@ -219,13 +221,25 @@ export default function TestPrep({ onStartTest }: TestPrepProps) {
             <Button
               type="button"
               onClick={handleLaunchTest}
-              className="bg-[#79bef2] hover:bg-[#6bb0e8] text-white px-8 py-4 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
-              disabled={!formData.subject || !formData.grade || !formData.domain || !tenantDomain || !accessToken}
+              className="bg-[#79bef2] hover:bg-[#6bb0e8] text-white px-8 py-4 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              disabled={!formData.subject || !formData.grade || !formData.domain || !tenantDomain || !accessToken || isLoading}
             >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M19 10a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Launch Test
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M19 10a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Launch Test
+                </>
+              )}
             </Button>
           </div>
         </div>

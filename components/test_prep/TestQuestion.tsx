@@ -152,6 +152,12 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
     );
   }, [questions]);
 
+  // Mise à jour de selectedAnswer basée sur les réponses enregistrées
+  useEffect(() => {
+    const currentAnswer = answers[currentQuestion]?.selectedOption;
+    setSelectedAnswer(currentAnswer || null);
+  }, [currentQuestion, answers]);
+
   // Mise à jour des réponses
   useEffect(() => {
     if (selectedAnswer !== null) {
@@ -166,15 +172,17 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
     }
   }, [selectedAnswer, currentQuestion]);
 
-  // Mise à jour de la largeur du conteneur
+  // Mise à jour de la largeur du conteneur avec gestion responsive
   useEffect(() => {
     const updateContainerWidth = () => {
       if (mainImageRef.current) {
         setQuestionContainerWidth(mainImageRef.current.offsetWidth);
       }
     };
+    
     updateContainerWidth();
     window.addEventListener("resize", updateContainerWidth);
+    
     return () => window.removeEventListener("resize", updateContainerWidth);
   }, []);
 
@@ -253,14 +261,12 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
   const handleNextQuestion = () => {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
-      setSelectedAnswer(null);
       setPreviewImageSrc(null);
     }
   };
   const handlePrevQuestion = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1);
-      setSelectedAnswer(null);
       setPreviewImageSrc(null);
     }
   };
@@ -363,29 +369,31 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
 
   return (
     <div ref={fullscreenContentRef} className="min-h-screen bg-gradient-to-br from-green-50/30 to-emerald-50/20 flex flex-col w-full relative overflow-auto">
-      {/* Header (inchangé) */}
-      <header className="flex justify-between items-center p-6 border-b border-gray-200/60 w-full bg-gradient-to-r from-green-600 via-emerald-600 to-teal-700 shadow-xl">
-        <Button variant="ghost" onClick={onBack} className="flex items-center gap-2 text-white hover:bg-white/20 rounded-xl backdrop-blur-sm px-4 py-2">
+      {/* Header - Responsive */}
+      <header className="flex flex-col lg:flex-row justify-between items-center p-4 lg:p-6 border-b border-gray-200/60 w-full bg-gradient-to-r from-green-600 via-emerald-600 to-teal-700 shadow-xl gap-4 lg:gap-0">
+        <Button variant="ghost" onClick={onBack} className="flex items-center gap-2 text-white hover:bg-white/20 rounded-xl backdrop-blur-sm px-4 py-2 w-full lg:w-auto justify-center lg:justify-start">
           <ArrowLeft size={20} />
-          <span className="font-medium">Return to Test Prep</span>
+          <span className="font-medium text-sm lg:text-base">Return to Test Prep</span>
         </Button>
-        <div className="flex items-center gap-4">
-          <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl text-sm flex items-center gap-2 text-white">
-            <Timer size={16} />
+        <div className="flex flex-col sm:flex-row items-center gap-3 lg:gap-4 w-full lg:w-auto justify-center">
+          <div className="bg-white/20 backdrop-blur-sm px-3 lg:px-4 py-2 rounded-xl text-xs lg:text-sm flex items-center gap-2 text-white w-full sm:w-auto justify-center">
+            <Timer size={14} className="lg:w-4 lg:h-4" />
             <span className="font-medium">Time remaining: 45:00</span>
           </div>
-          <Button variant="outline" className="border-white/30 text-white hover:bg-white/20 backdrop-blur-sm rounded-xl">
-            <HelpCircle size={18} className="mr-2" />
+          <Button
+            className="bg-white/20 hover:bg-white/30 text-white border-white/30 rounded-xl backdrop-blur-sm font-medium text-xs lg:text-sm px-3 lg:px-4 py-2"
+          >
+            <HelpCircle size={14} className="lg:w-4 lg:h-4 mr-1 lg:mr-2" />
             Help
           </Button>
           <Button
-            className="bg-white/20 hover:bg-white/30 text-white border-white/30 rounded-xl backdrop-blur-sm font-medium"
+            className="bg-white/20 hover:bg-white/30 text-white border-white/30 rounded-xl backdrop-blur-sm font-medium text-xs lg:text-sm px-3 lg:px-4 py-2"
             onClick={handleSubmit}
             disabled={isSubmitting}
           >
             {isSubmitting ? (
               <>
-                <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -393,7 +401,7 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
               </>
             ) : (
               <>
-                <Send size={18} className="mr-2" />
+                <Send size={14} className="lg:w-4 lg:h-4 mr-1 lg:mr-2" />
                 Submit Test
               </>
             )}
@@ -401,8 +409,8 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="flex-1 p-8 w-full max-w-6xl mx-auto">
+      {/* Main Content - Responsive */}
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto">
         {questions.length === 0 ? (
           <div className="flex flex-col justify-center items-center h-64 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg">
             <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center mb-4">
@@ -413,45 +421,47 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
             <p className="text-gray-500 text-lg font-medium">No questions available</p>
           </div>
         ) : (
-          <div className="w-full mx-auto bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 p-8">
-            {/* Question Header */}
-            <div className="flex justify-between items-center mb-8">
-              <div>
-                <h2 className="font-bold text-2xl bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+          <div className="w-full mx-auto bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 lg:p-8">
+            {/* Question Header - Responsive */}
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 lg:mb-8 gap-4 lg:gap-0">
+              <div className="text-center lg:text-left w-full lg:w-auto">
+                <h2 className="font-bold text-xl sm:text-2xl bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                   Question {currentQuestion + 1} of {questions.length}
                 </h2>
-                <p className="text-gray-500 text-sm mt-1">Select the best answer from the options below</p>
+                <p className="text-gray-500 text-xs sm:text-sm mt-1">Select the best answer from the options below</p>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-gray-50 px-3 py-2 rounded-xl text-sm font-medium text-gray-600">
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto justify-center lg:justify-end">
+                <div className="bg-gray-50 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-gray-600 w-full sm:w-auto text-center">
                   Progress: {Math.round(((currentQuestion + 1) / questions.length) * 100)}%
                 </div>
-                <Button variant="ghost" size="sm" className="text-green-600 hover:bg-green-50 rounded-xl">
-                  <Bookmark size={18} className="mr-2" />
+                <Button variant="ghost" size="sm" className="text-green-600 hover:bg-green-50 rounded-xl text-xs sm:text-sm w-full sm:w-auto justify-center">
+                  <Bookmark size={16} className="mr-1 lg:mr-2" />
                   Save
                 </Button>
               </div>
             </div>
 
-            {/* Question Image Container (mis à jour) */}
-            <div className="mb-8 bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-2xl relative shadow-inner border border-gray-200" ref={mainImageRef}>
-              <div className="relative">
+            {/* Question Image Container - Fixed height frame */}
+            <div className="mb-6 lg:mb-8 bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6 lg:p-8 rounded-2xl relative shadow-inner border border-gray-200" ref={mainImageRef}>
+              <div className="relative min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] flex items-center justify-center">
                 {!previewImageSrc && (
-                  <div className="w-full aspect-video flex justify-center items-center">
+                  <div className="w-full h-full flex justify-center items-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
                   </div>
                 )}
                 {previewImageSrc && (
-                  <img
-                    src={previewImageSrc}
-                    alt={`Question ${currentQuestion + 1}`}
-                    className="w-full h-auto rounded-lg"
-                    onLoad={() => handleImageLoad(currentQuestionData.id)}
-                    onError={(e) => {
-                      console.error("Failed to load image:", e);
-                      e.currentTarget.src = "/fallback-question.png"; // Fallback local
-                    }}
-                  />
+                  <div className="w-full h-full flex items-center justify-center">
+                    <img
+                      src={previewImageSrc}
+                      alt={`Question ${currentQuestion + 1}`}
+                      className="max-w-full max-h-[450px] sm:max-h-[550px] lg:max-h-[600px] w-auto h-auto object-contain rounded-lg"
+                      onLoad={() => handleImageLoad(currentQuestionData.id)}
+                      onError={(e) => {
+                        console.error("Failed to load image:", e);
+                        e.currentTarget.src = "/fallback-question.png";
+                      }}
+                    />
+                  </div>
                 )}
                 {isLineReaderVisible && (
                   <LineReaderComponent
@@ -463,13 +473,13 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
               </div>
             </div>
 
-            {/* Answer Options (inchangé) */}
-            <div className="flex justify-center gap-6 mt-8">
+            {/* Answer Options - Responsive */}
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-4 lg:gap-6 mt-6 lg:mt-8">
               {["A", "B", "C", "D", "E"].map((option) => (
                 <button
                   key={option}
                   onClick={() => setSelectedAnswer(option)}
-                  className={`w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105
+                  className={`w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center text-lg sm:text-xl font-bold transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105
                     ${
                       selectedAnswer === option
                         ? "bg-gradient-to-br from-green-500 to-emerald-600 text-white"
@@ -481,22 +491,23 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
               ))}
             </div>
 
-            {/* Navigation Buttons (inchangé) */}
-            <div className="flex justify-between items-center mt-10 border-t border-gray-200 pt-8">
+            {/* Navigation Buttons - Responsive */}
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 lg:mt-10 border-t border-gray-200 pt-6 lg:pt-8">
               <Button
                 variant="outline"
                 onClick={handlePrevQuestion}
                 disabled={currentQuestion === 0}
-                className="flex items-center gap-2 px-6 py-3 h-auto text-green-700 border-green-200 hover:bg-green-50 disabled:opacity-50 rounded-xl font-medium"
+                className="flex items-center gap-2 px-4 lg:px-6 py-2 lg:py-3 h-auto text-green-700 border-green-200 hover:bg-green-50 disabled:opacity-50 rounded-xl font-medium w-full sm:w-auto justify-center order-2 sm:order-1"
               >
-                <ChevronLeft size={20} />
-                Previous Question
+                <ChevronLeft size={18} className="lg:w-5 lg:h-5" />
+                <span className="text-sm lg:text-base">Previous Question</span>
               </Button>
-              <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl">
+              
+              <div className="flex items-center gap-1 sm:gap-2 bg-gray-50 px-3 lg:px-4 py-2 rounded-xl order-1 sm:order-2 mb-4 sm:mb-0">
                 {questions.map((_, index) => (
                   <div
                     key={index}
-                    className={`w-3 h-3 rounded-full transition-all duration-200 cursor-pointer hover:scale-125 ${
+                    className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-200 cursor-pointer hover:scale-125 ${
                       currentQuestion === index
                         ? "bg-gradient-to-r from-green-500 to-emerald-600 shadow-lg"
                         : "bg-gray-300 hover:bg-gray-400"
@@ -505,50 +516,72 @@ export default function TestQuestion({ onBack, questions }: TestQuestionProps) {
                   />
                 ))}
               </div>
+              
               <Button
                 variant="outline"
                 onClick={handleNextQuestion}
                 disabled={currentQuestion === questions.length - 1}
-                className="flex items-center gap-2 px-6 py-3 h-auto bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 border-0 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+                className="flex items-center gap-2 px-4 lg:px-6 py-2 lg:py-3 h-auto bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 border-0 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto justify-center order-3"
               >
-                Next Question
-                <ChevronRight size={20} />
+                <span className="text-sm lg:text-base">Next Question</span>
+                <ChevronRight size={18} className="lg:w-5 lg:h-5" />
               </Button>
             </div>
 
-            {/* Tools Toolbar (inchangé) */}
-            <div className="mt-8 pt-8 border-t border-gray-200">
-              <h3 className="text-lg font-bold text-gray-800 mb-6 text-center flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {/* Tools Toolbar - Responsive avec disposition en 2 lignes de 4 éléments */}
+            <div className="mt-6 lg:mt-8 pt-6 lg:pt-8 border-t border-gray-200">
+              <h3 className="text-base sm:text-lg font-bold text-gray-800 mb-4 lg:mb-6 text-center flex items-center justify-center gap-2">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 Test Tools
               </h3>
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-2xl shadow-inner border border-green-100">
-                <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
-                  {[
-                    { icon: <Lightbulb size={20} />, label: "Hint", color: "bg-gradient-to-br from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600" },
-                    { icon: <TextCursor size={20} />, label: "Line Reader", color: "bg-gradient-to-br from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600" },
-                    { icon: <Calculator size={20} />, label: "Calculator", color: "bg-gradient-to-br from-purple-400 to-violet-500 hover:from-purple-500 hover:to-violet-600" },
-                    { icon: <Palette size={20} />, label: "Highlighter", color: "bg-gradient-to-br from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600" },
-                    { icon: <Ruler size={20} />, label: "Ruler", color: "bg-gradient-to-br from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600" },
-                    { icon: <PenTool size={20} />, label: "Notes", color: "bg-gradient-to-br from-indigo-400 to-blue-500 hover:from-indigo-500 hover:to-blue-600" },
-                    { icon: <ImageIcon size={20} />, label: "Reference", color: "bg-gradient-to-br from-pink-400 to-rose-500 hover:from-pink-500 hover:to-rose-600" },
-                    { icon: <Maximize size={20} />, label: isFullscreen ? "Exit Fullscreen" : "Fullscreen", color: "bg-gradient-to-br from-gray-400 to-slate-500 hover:from-gray-500 hover:to-slate-600" },
-                  ].map((tool, index) => (
-                    <Button
-                      key={index}
-                      variant="ghost"
-                      className="text-gray-700 hover:text-white flex flex-col items-center gap-2 p-4 rounded-2xl h-fit transition-all duration-200 hover:scale-105 hover:shadow-lg"
-                      onClick={() => handleToolClick(tool.label)}
-                    >
-                      <div className={`${tool.color} p-3 rounded-2xl shadow-lg transition-all duration-200`}>
-                        {tool.icon}
-                      </div>
-                      <span className="text-xs font-semibold text-center leading-tight">{tool.label}</span>
-                    </Button>
-                  ))}
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 sm:p-6 rounded-2xl shadow-inner border border-green-100">
+                <div className="grid grid-cols-4 gap-4 sm:gap-6">
+                  {/* Première ligne - 4 outils */}
+                  <div className="col-span-4 grid grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    {[
+                      { icon: <Lightbulb size={20} className="sm:w-6 sm:h-6" />, label: "Hint", color: "bg-gradient-to-br from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600" },
+                      { icon: <TextCursor size={20} className="sm:w-6 sm:h-6" />, label: "Line Reader", color: "bg-gradient-to-br from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600" },
+                      { icon: <Calculator size={20} className="sm:w-6 sm:h-6" />, label: "Calculator", color: "bg-gradient-to-br from-purple-400 to-violet-500 hover:from-purple-500 hover:to-violet-600" },
+                      { icon: <Palette size={20} className="sm:w-6 sm:h-6" />, label: "Highlighter", color: "bg-gradient-to-br from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600" },
+                    ].map((tool, index) => (
+                      <Button
+                        key={index}
+                        variant="ghost"
+                        className="text-gray-700 hover:text-white flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl lg:rounded-2xl h-fit transition-all duration-200 hover:scale-105 hover:shadow-lg w-full"
+                        onClick={() => handleToolClick(tool.label)}
+                      >
+                        <div className={`${tool.color} p-3 sm:p-4 rounded-xl lg:rounded-2xl shadow-lg transition-all duration-200 w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center`}>
+                          {tool.icon}
+                        </div>
+                        <span className="text-xs font-semibold text-center leading-tight mt-1">{tool.label}</span>
+                      </Button>
+                    ))}
+                  </div>
+                  
+                  {/* Deuxième ligne - 4 outils */}
+                  <div className="col-span-4 grid grid-cols-4 gap-3 sm:gap-4">
+                    {[
+                      { icon: <Ruler size={20} className="sm:w-6 sm:h-6" />, label: "Ruler", color: "bg-gradient-to-br from-teal-400 to-cyan-500 hover:from-teal-500 hover:to-cyan-600" },
+                      { icon: <PenTool size={20} className="sm:w-6 sm:h-6" />, label: "Notes", color: "bg-gradient-to-br from-indigo-400 to-blue-500 hover:from-indigo-500 hover:to-blue-600" },
+                      { icon: <ImageIcon size={20} className="sm:w-6 sm:h-6" />, label: "Reference", color: "bg-gradient-to-br from-pink-400 to-rose-500 hover:from-pink-500 hover:to-rose-600" },
+                      { icon: <Maximize size={20} className="sm:w-6 sm:h-6" />, label: isFullscreen ? "Exit Fullscreen" : "Fullscreen", color: "bg-gradient-to-br from-gray-400 to-slate-500 hover:from-gray-500 hover:to-slate-600" },
+                    ].map((tool, index) => (
+                      <Button
+                        key={index + 4}
+                        variant="ghost"
+                        className="text-gray-700 hover:text-white flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl lg:rounded-2xl h-fit transition-all duration-200 hover:scale-105 hover:shadow-lg w-full"
+                        onClick={() => handleToolClick(tool.label)}
+                      >
+                        <div className={`${tool.color} p-3 sm:p-4 rounded-xl lg:rounded-2xl shadow-lg transition-all duration-200 w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center`}>
+                          {tool.icon}
+                        </div>
+                        <span className="text-xs font-semibold text-center leading-tight mt-1">{tool.label}</span>
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
