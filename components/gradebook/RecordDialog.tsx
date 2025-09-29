@@ -70,7 +70,7 @@ export function RecordDialog({
       console.log("Using provided voiceUrl:", voiceUrl);
       const fullAudioUrl = voiceUrl.startsWith("http")
         ? voiceUrl
-        : `${tenantPrimaryDomain}${voiceUrl}`;
+        : `${tenantPrimaryDomain}${ voiceUrl.startsWith("/") ? voiceUrl : `/${voiceUrl}`}`;
       setAudioUrl(fullAudioUrl);
       setHasRecording(true);
       return;

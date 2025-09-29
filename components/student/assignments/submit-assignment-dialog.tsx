@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Upload, FileText, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { Upload, FileText, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 import { Assignment } from "@/app/api/student/assignment/assignment.model";
 import { submitAssignment } from "@/services/AssignmentService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
@@ -162,20 +162,9 @@ export function SubmitAssignmentDialog({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden gap-0">
         <DialogHeader className="p-6 pb-4 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-white text-xl font-bold">
-              Submit Assignment
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleClose}
-              className="h-8 w-8 text-white hover:bg-white/20"
-              disabled={isSubmitting}
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
+          <DialogTitle className="text-white text-xl font-bold">
+            Submit Assignment
+          </DialogTitle>
         </DialogHeader>
 
         <div className="p-6 space-y-6">

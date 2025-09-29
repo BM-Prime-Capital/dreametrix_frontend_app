@@ -98,14 +98,6 @@ export function PollDetailsDialog({
                   Review poll information and questions
                 </p>
               </div>
-              {/* <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onOpenChange(false)}
-                className="text-white hover:bg-white/20 shrink-0"
-              >
-                <X className="h-5 w-5" />
-              </Button> */}
             </div>
           </DialogHeader>
         </div>

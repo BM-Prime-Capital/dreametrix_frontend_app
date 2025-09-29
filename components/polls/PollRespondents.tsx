@@ -68,7 +68,7 @@ export default function PollRespondents({ pollId, onBack }: PollRespondentsProps
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-pulse text-blue-600">Chargement des données...</div>
+        <div className="animate-pulse text-blue-600">Data loading...</div>
       </div>
     );
   }
@@ -78,28 +78,28 @@ export default function PollRespondents({ pollId, onBack }: PollRespondentsProps
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            size="icon" 
+          <Button
+            variant="outline"
+            size="icon"
             onClick={onBack}
             className="rounded-full border-blue-200 text-blue-600 hover:bg-blue-50"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Participants du sondage</h1>
-            <p className="text-blue-600">Analyse des répondants et non-répondants</p>
+            <h1 className="text-2xl font-bold text-gray-900">Poll participants</h1>
+            <p className="text-blue-600"> Participants and non-participants Analysis</p>
           </div>
         </div>
-        
+
         <div className="flex gap-3">
           <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50">
             <Mail className="h-4 w-4 mr-2" />
-            Relancer
+            Recall
           </Button>
           <Button variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50">
             <Download className="h-4 w-4 mr-2" />
-            Exporter
+            Export
           </Button>
         </div>
       </div>
@@ -109,15 +109,15 @@ export default function PollRespondents({ pollId, onBack }: PollRespondentsProps
         <div className="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Taux de réponse</p>
+              <p className="text-sm text-gray-500">Response rate</p>
               <h3 className="text-3xl font-bold mt-1">{responseRate}%</h3>
             </div>
             <div className={`p-3 rounded-lg ${responseRateColor(responseRate)} bg-opacity-10`}>
               <UserCheck className={`h-6 w-6 ${responseRateColor(responseRate)}`} />
             </div>
           </div>
-          <Progress 
-            value={responseRate} 
+          <Progress
+            value={responseRate}
             className={`mt-4 h-2 bg-gray-100 ${responseRateColor(responseRate)}`}
           />
         </div>
@@ -125,7 +125,7 @@ export default function PollRespondents({ pollId, onBack }: PollRespondentsProps
         <div className="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Répondants</p>
+              <p className="text-sm text-gray-500">Respondents</p>
               <h3 className="text-3xl font-bold mt-1 text-emerald-600">{respondents.length}</h3>
             </div>
             <div className="p-3 rounded-lg bg-emerald-50">
@@ -133,16 +133,16 @@ export default function PollRespondents({ pollId, onBack }: PollRespondentsProps
             </div>
           </div>
           <p className="mt-2 text-sm text-gray-500">
-            {respondents.length > 0 ? 
-              `Dernière réponse: ${respondents[0]?.responseTime || 'N/A'}` : 
-              'Aucune réponse encore'}
+            {respondents.length > 0 ?
+              `Last response: ${respondents[0]?.responseTime || 'N/A'}` :
+              'No response yet'}
           </p>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-xs border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Non-répondants</p>
+              <p className="text-sm text-gray-500">Non-respondents</p>
               <h3 className="text-3xl font-bold mt-1 text-red-600">{nonRespondents.length}</h3>
             </div>
             <div className="p-3 rounded-lg bg-red-50">
@@ -151,7 +151,7 @@ export default function PollRespondents({ pollId, onBack }: PollRespondentsProps
           </div>
           <Button variant="link" className="mt-2 text-blue-600 hover:text-blue-700 p-0 h-auto">
             <Send className="h-4 w-4 mr-2" />
-            Envoyer un rappel
+            Send a reminder
           </Button>
         </div>
       </div>
@@ -164,14 +164,14 @@ export default function PollRespondents({ pollId, onBack }: PollRespondentsProps
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <Badge className="bg-emerald-100 text-emerald-800">
                 <UserCheck className="h-4 w-4 mr-2" />
-                Répondants ({respondents.length})
+                Respondents ({respondents.length})
               </Badge>
             </h2>
             <Badge variant="outline" className="border-emerald-200 text-emerald-600">
-              {responseRate}% de participation
+              {responseRate}% participation
             </Badge>
           </div>
-          
+
           <div className="space-y-4">
             {respondents.length > 0 ? (
               respondents.map((s) => (
@@ -194,7 +194,7 @@ export default function PollRespondents({ pollId, onBack }: PollRespondentsProps
             ) : (
               <div className="text-center py-8 text-gray-500">
                 <UserX className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                Aucun répondant pour le moment
+                No respondent yet
               </div>
             )}
           </div>
@@ -206,15 +206,15 @@ export default function PollRespondents({ pollId, onBack }: PollRespondentsProps
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <Badge className="bg-red-100 text-red-800">
                 <UserX className="h-4 w-4 mr-2" />
-                Non-répondants ({nonRespondents.length})
+                Non-respondents
               </Badge>
             </h2>
             <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50">
               <Bell className="h-4 w-4 mr-2" />
-              Rappeler tous
+              Remind all
             </Button>
           </div>
-          
+
           <div className="space-y-4">
             {nonRespondents.length > 0 ? (
               nonRespondents.map((s) => (
@@ -237,7 +237,8 @@ export default function PollRespondents({ pollId, onBack }: PollRespondentsProps
             ) : (
               <div className="text-center py-8 text-gray-500">
                 <UserCheck className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                Tous les participants ont répondu !
+                All participants have responded !
+
               </div>
             )}
           </div>

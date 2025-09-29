@@ -172,12 +172,12 @@ export default function RewardsGeneralView({
         }
 
         const apiData = await getRewardsGeneralView(
-          // tenantPrimaryDomain,
-          // accessToken,
-          // refreshToken,
-          // fromDate,
-          // toDate,
-          // currentClass?.id
+          tenantPrimaryDomain,
+          accessToken,
+          refreshToken,
+          fromDate,
+          toDate,
+          currentClass?.id
         );
 
         const transformedData = apiData.classes.flatMap((classItem: any) =>

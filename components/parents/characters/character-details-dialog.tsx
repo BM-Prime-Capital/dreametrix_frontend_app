@@ -219,12 +219,12 @@ export function CharacterDetailsDialog({ isOpen, onClose, character }: Character
               <MessageCircle className="h-4 w-4 mr-2" />
               Contact Teacher
             </Button>
-            <Button 
+            {/* <Button 
               className="flex-1 bg-gradient-to-r from-blue-300 to-indigo-400 hover:from-blue-400 hover:to-indigo-500 text-white shadow-lg"
             >
               <Award className="h-4 w-4 mr-2" />
               View Full Report
-            </Button>
+            </Button> */}
           </div>
         </div>
       </DialogContent>

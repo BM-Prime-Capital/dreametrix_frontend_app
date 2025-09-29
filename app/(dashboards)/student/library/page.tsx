@@ -103,13 +103,13 @@ export default function LibraryPage() {
           </div>
           
           <div className="flex gap-4">
-            <button
+            {/* <button
               className="bg-white border-2 border-[#25AAE1] rounded-xl px-6 py-3 flex items-center gap-3 hover:bg-[#25AAE1] hover:text-white transition-all duration-300 shadow-md"
               onClick={() => setIsPrintDialogOpen(true)}
               title="Calendar"
             >
               <Calendar className="h-5 w-5 text-[#25AAE1] hover:text-white transition-colors" />
-            </button>
+            </button> */}
 
             <Select value={selectedClass} onValueChange={setSelectedClass}>
               <SelectTrigger className="w-[200px] bg-white border-2 border-[#25AAE1] rounded-xl shadow-md">
@@ -197,9 +197,9 @@ export default function LibraryPage() {
                   <button className="text-[#D15A9D] hover:text-[#B066F2] hover:scale-110 transition-all duration-200" title="Download">
                     <Download className="h-5 w-5" />
                   </button>
-                  <button className="text-[#25AAE1] hover:text-[#1D8CB3] hover:scale-110 transition-all duration-200" title="Print">
+                  {/* <button className="text-[#25AAE1] hover:text-[#1D8CB3] hover:scale-110 transition-all duration-200" title="Print">
                     <Printer className="h-5 w-5" />
-                  </button>
+                  </button> */}
                 </div>
                 <div className="flex justify-center items-center gap-2 mt-4 text-sm text-gray-500">
                   <span>Page 1 of 1</span>
@@ -235,7 +235,7 @@ export default function LibraryPage() {
                   </SelectContent>
                 </Select>
 
-                <Button className="w-full bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] hover:shadow-lg text-white rounded-xl">PRINT</Button>
+                {/* <Button className="w-full bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] hover:shadow-lg text-white rounded-xl">PRINT</Button> */}
 
                 <div className="text-center mt-2">
                   <Button variant="ghost" onClick={() => setIsPrintDialogOpen(false)} className="text-gray-500">

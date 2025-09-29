@@ -99,7 +99,7 @@ export async function updateStudent(
       },
       body: JSON.stringify(studentData),
     });
-
+// console.log("response", response);
     if (!response.ok) {
       if (response.status === 403) {
         throw new Error("You don't have permission to update this student.");
@@ -115,10 +115,6 @@ export async function updateStudent(
   }
 }
 
-export async function getStudentReportCard (){
-  let data : any
-  return data
-}
 
 
 
