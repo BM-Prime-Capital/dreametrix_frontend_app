@@ -12,31 +12,48 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const data = [
-  { name: "Jan", value: 84 },
-  { name: "Feb", value: 50 },
-  { name: "Mar", value: 77 },
-  { name: "Apr", value: 90 },
-  { name: "May", value: 92 },
-  { name: "Jun", value: 84 },
-];
+interface PerformanceTrend {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    borderColor: string;
+    backgroundColor: string;
+  }[];
+}
 
-const LineChartComponent: React.FC = () => {
+interface LineChartComponentProps {
+  data: PerformanceTrend;
+}
+
+const LineChartComponent: React.FC<LineChartComponentProps> = ({ data }) => {
+  // Transform the data format to match recharts expectations
+  const chartData = data.labels.map((label, index) => {
+    const dataPoint: { [key: string]: string | number } = { name: label };
+    data.datasets.forEach(dataset => {
+      dataPoint[dataset.label] = dataset.data[index] || 0;
+    });
+    return dataPoint;
+  });
   return (
-    <div className="w-full h-full p-4 bg-white shadow-md rounded-2xl">
+    <div className="w-full h-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data}>
+        <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
           <YAxis />
           <Tooltip />
           <Legend />
-          <Line
-            type="linear"
-            dataKey="value"
-            stroke="#8884d8"
-            activeDot={{ r: 8 }}
-          />
+          {data.datasets.map((dataset, index) => (
+            <Line
+              key={index}
+              type="linear"
+              dataKey={dataset.label}
+              stroke={dataset.borderColor}
+              strokeWidth={2}
+              activeDot={{ r: 6 }}
+            />
+          ))}
         </LineChart>
       </ResponsiveContainer>
     </div>
