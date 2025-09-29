@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { Assignment } from "@/types";
 import { getSubmissions } from "@/services/AssignmentService";
+import { saveVoiceRecording, updateStudentGrade } from "@/services/GradebooksService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 
 interface Student {
@@ -35,11 +36,12 @@ interface Student {
   submission?: {
     id: number;
     submitted_at: string;
-    file_url: string;
-    file_name: string;
+    file: string;
+    // file_name: string;
+    marked: boolean;
     grade?: number;
-    feedback?: string;
-    voice_note_url?: string;
+    // feedback?: string;
+    voice_note?: string;
   };
 }
 
@@ -85,16 +87,21 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
   const [feedback, setFeedback] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSavingGrade, setIsSavingGrade] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Load submissions data from API
-  useEffect(() => {
-    async function loadData() {
+  const loadData = useCallback(async (skipLoadingState = false) => {
       if (!tenantDomain || !accessToken || !refreshToken || !assignment) return;
       
-      setIsLoading(true);
+      if (!skipLoadingState) {
+        setIsLoading(true);
+      }
       setError(null);
       
       try {
@@ -150,11 +157,12 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
               submission: item.submission ? {
                 id: item.submission.id,
                 submitted_at: item.submission.submitted_at,
-                file_url: item.submission.file_url,
-                file_name: item.submission.file_name || 'Unknown file',
+                file: item.submission.file,
+                // file_name: item.submission.file_name || 'Unknown file',
+                marked: item.submission.marked,
                 grade: item.submission.grade,
-                feedback: item.submission.feedback,
-                voice_note_url: item.submission.voice_note_url
+                // feedback: item.submission.feedback,
+                voice_note: item.submission.voice_notes || item.submission.voice_note
               } : undefined
             };
           }).filter(Boolean); // Remove any null entries
@@ -169,12 +177,29 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
         console.error("Error loading data:", err);
         setError(err.message || "Failed to load assignment data");
       } finally {
-        setIsLoading(false);
+        if (!skipLoadingState) {
+          setIsLoading(false);
+        }
       }
-    }
-    
+    }, [tenantDomain, accessToken, refreshToken, assignment]);
+
+  useEffect(() => {
     loadData();
   }, [assignment, tenantDomain, accessToken, refreshToken]);
+
+  // Cleanup effect for audio URLs
+  useEffect(() => {
+    return () => {
+      // Cleanup audio URL when component unmounts or audioUrl changes
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
+      // Stop any playing audio
+      if (currentAudio) {
+        currentAudio.pause();
+      }
+    };
+  }, [audioUrl, currentAudio]);
 
   const filteredStudents = students.filter(student =>
     student.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -191,43 +216,278 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
         submission: student.submission
       });
       setGrade(student.submission.grade?.toString() || "");
-      setFeedback(student.submission.feedback || "");
+      // setFeedback(student.submission.feedback || "");
+      // Reset audio states when opening new submission
+      setAudioBlob(null);
+      setAudioUrl(null);
+      setIsPlaying(false);
+      if (currentAudio) {
+        currentAudio.pause();
+        setCurrentAudio(null);
+      }
       setIsGradingOpen(true);
     }
   };
 
   const startRecording = async () => {
     try {
+      // Stop any existing audio playback
+      if (currentAudio) {
+        currentAudio.pause();
+        setCurrentAudio(null);
+        setIsPlaying(false);
+      }
+      
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      const recorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
       const chunks: BlobPart[] = [];
 
-      recorder.ondataavailable = (e) => chunks.push(e.data);
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunks.push(e.data);
+        }
+      };
+      
       recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/wav' });
+        const blob = new Blob(chunks, { type: 'audio/webm;codecs=opus' });
         setAudioBlob(blob);
+        // Create URL for immediate playback
+        const url = URL.createObjectURL(blob);
+        setAudioUrl(url);
+        console.log('Recording stopped, blob size:', blob.size, 'bytes');
       };
 
-      recorder.start();
+      recorder.start(1000); // Capture data every second
       setMediaRecorder(recorder);
       setIsRecording(true);
+      console.log('Recording started');
     } catch (error) {
       console.error('Error starting recording:', error);
+      alert('Unable to access microphone. Please check your browser permissions.');
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorder) {
+    if (mediaRecorder && isRecording) {
       mediaRecorder.stop();
       mediaRecorder.stream.getTracks().forEach(track => track.stop());
       setIsRecording(false);
+      setMediaRecorder(null);
+      console.log('Recording stopped');
     }
   };
 
-  const handleSaveGrade = () => {
-    // Save grade and feedback logic here
-    console.log('Saving grade:', grade, 'feedback:', feedback);
-    setIsGradingOpen(false);
+  const playAudio = (audioSource: string | Blob) => {
+    try {
+      // Stop any existing audio
+      if (currentAudio) {
+        currentAudio.pause();
+        setCurrentAudio(null);
+      }
+      
+      let audioSrc: string;
+      if (audioSource instanceof Blob) {
+        audioSrc = URL.createObjectURL(audioSource);
+      } else {
+        audioSrc = audioSource;
+      }
+      
+      const audio = new Audio(audioSrc);
+      audio.onplay = () => setIsPlaying(true);
+      audio.onpause = () => setIsPlaying(false);
+      audio.onended = () => {
+        setIsPlaying(false);
+        setCurrentAudio(null);
+        if (audioSource instanceof Blob) {
+          URL.revokeObjectURL(audioSrc);
+        }
+      };
+      audio.onerror = (e) => {
+        console.error('Audio playback error:', e);
+        alert('Unable to play audio file');
+        setIsPlaying(false);
+        setCurrentAudio(null);
+      };
+      
+      setCurrentAudio(audio);
+      audio.play();
+    } catch (error) {
+      console.error('Error playing audio:', error);
+      alert('Unable to play audio');
+    }
+  };
+
+  const stopAudio = () => {
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      setIsPlaying(false);
+    }
+  };
+
+  const clearRecording = () => {
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+    }
+    setAudioBlob(null);
+    setAudioUrl(null);
+    if (currentAudio) {
+      currentAudio.pause();
+      setCurrentAudio(null);
+    }
+    setIsPlaying(false);
+  };
+
+  const exportGrades = () => {
+    try {
+      // Prepare CSV data
+      const csvHeaders = ['Student Name', 'Email', 'Submission Status', 'Submitted Date', 'Grade', 'Marked'];
+      
+      const csvData = students.map(student => [
+        student.full_name,
+        student.email,
+        student.submission ? 'Submitted' : 'Missing',
+        student.submission ? new Date(student.submission.submitted_at).toLocaleDateString() : '-',
+        student.submission?.grade ? `${student.submission.grade}%` : '-',
+        student.submission?.marked ? 'Yes' : 'No'
+      ]);
+
+      // Create CSV content
+      const csvContent = [
+        csvHeaders.join(','),
+        ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n');
+
+      // Create and download the file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${assignment.name}_grades_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      URL.revokeObjectURL(url);
+      
+      console.log('Grades exported successfully');
+    } catch (error) {
+      console.error('Error exporting grades:', error);
+      alert('Failed to export grades. Please try again.');
+    }
+  };
+
+  const handleSaveGrade = async () => {
+    if (!selectedSubmission || !tenantDomain || !accessToken || !refreshToken) {
+      alert('Missing required information to save grade');
+      return;
+    }
+
+    setIsSavingGrade(true);
+    
+    try {
+      console.log('Saving grade:', grade, 'feedback:', feedback);
+      
+      // If there's a new voice recording, save it first
+      if (audioBlob) {
+        try {
+          console.log('Saving voice note for submission:', selectedSubmission.submission.id);
+          
+          // Convert blob to base64
+          const reader = new FileReader();
+          const base64Promise = new Promise<string>((resolve, reject) => {
+            reader.onload = () => {
+              const result = reader.result as string;
+              resolve(result);
+            };
+            reader.onerror = reject;
+          });
+          
+          reader.readAsDataURL(audioBlob);
+          const base64Data = await base64Promise;
+          
+          // Save voice recording using the existing service
+          const voiceResult = await saveVoiceRecording(
+            tenantDomain,
+            accessToken,
+            selectedSubmission.submission.id,
+            assignment.kind, // assessment type
+            assignment.id, // assessment index
+            base64Data,
+            refreshToken
+          );
+          
+          console.log('Voice note saved successfully:', voiceResult);
+          
+          // Update the submission data with the new voice note URL
+          if (voiceResult.voice_notes_url) {
+            setSelectedSubmission((prev: any) => ({
+              ...prev,
+              submission: {
+                ...prev.submission,
+                voice_note: voiceResult.voice_notes_url
+              }
+            }));
+            
+            // Update the students list as well
+            setStudents(prev => prev.map(student => 
+              student.id === selectedSubmission.student.id
+                ? {
+                    ...student,
+                    submission: student.submission ? {
+                      ...student.submission,
+                      voice_note: voiceResult.voice_notes_url
+                    } : student.submission
+                  }
+                : student
+            ));
+          }
+          
+          // Clear the recorded audio after successful save
+          clearRecording();
+          
+        } catch (voiceError) {
+          console.error('Error saving voice note:', voiceError);
+          alert('Failed to save voice note: ' + (voiceError as Error).message);
+          setIsSavingGrade(false);
+          return; // Don't proceed with grade saving if voice note fails
+        }
+      }
+      
+      // Save grade and feedback
+      await updateStudentGrade(
+        tenantDomain,
+        accessToken,
+        selectedSubmission.submission.id,
+        Number(grade),
+        refreshToken
+      );
+      
+      // Reload data to get the latest information from the server
+      await loadData(true); // Skip loading state since we're already in saving state
+      
+      setIsGradingOpen(false);
+      
+    } catch (error) {
+      console.error('Error saving grade:', error);
+      alert('Failed to save grade: ' + (error as Error).message);
+    } finally {
+      setIsSavingGrade(false);
+    }
+  };
+  const handleDownloadFile = (file: string) => {
+    const link = document.createElement("a");
+    link.href = file;
+    link.download = file;
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -335,7 +595,10 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
               className="pl-10 h-10 rounded-lg border-gray-300"
             />
           </div>
-          <Button className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg">
+          <Button 
+            onClick={exportGrades}
+            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg"
+          >
             <Download className="h-4 w-4 mr-2" />
             Export Grades
           </Button>
@@ -446,8 +709,8 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
               <div className="border rounded-lg p-4 bg-gray-50 min-h-[400px] flex items-center justify-center">
                 <div className="text-center">
                   <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-2">{selectedSubmission?.submission.file_name}</p>
-                  <Button variant="outline" size="sm">
+                  {/* <p className="text-gray-600 mb-2">{selectedSubmission?.submission.file}</p> */}
+                  <Button variant="outline" size="sm" onClick={() => handleDownloadFile(selectedSubmission?.submission.file)}>
                     <Download className="h-4 w-4 mr-2" />
                     Download File
                   </Button>
@@ -492,29 +755,88 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Voice Note
                   </label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant={isRecording ? "destructive" : "outline"}
-                      size="sm"
-                      onClick={isRecording ? stopRecording : startRecording}
-                    >
-                      {isRecording ? (
-                        <>
-                          <MicOff className="h-4 w-4 mr-2" />
-                          Stop Recording
-                        </>
-                      ) : (
-                        <>
-                          <Mic className="h-4 w-4 mr-2" />
-                          Start Recording
-                        </>
-                      )}
-                    </Button>
-                    {audioBlob && (
-                      <Button variant="ghost" size="sm">
-                        <Play className="h-4 w-4 mr-2" />
-                        Play
+                  
+                  {/* Show existing voice note if available */}
+                  {selectedSubmission?.submission.voice_note && (
+                    <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-700 mb-2">Existing voice note:</p>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => playAudio(selectedSubmission.submission.voice_note)}
+                          disabled={isPlaying || isSavingGrade}
+                        >
+                          <Play className="h-4 w-4 mr-2" />
+                          {isPlaying ? 'Playing...' : 'Play Existing'}
+                        </Button>
+                        {isPlaying && (
+                          <Button variant="ghost" size="sm" onClick={stopAudio}>
+                            <MicOff className="h-4 w-4 mr-2" />
+                            Stop
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Recording controls */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant={isRecording ? "destructive" : "outline"}
+                        size="sm"
+                        onClick={isRecording ? stopRecording : startRecording}
+                        disabled={isPlaying || isSavingGrade}
+                      >
+                        {isRecording ? (
+                          <>
+                            <MicOff className="h-4 w-4 mr-2" />
+                            Stop Recording
+                          </>
+                        ) : (
+                          <>
+                            <Mic className="h-4 w-4 mr-2" />
+                            {audioBlob ? 'Record New' : 'Start Recording'}
+                          </>
+                        )}
                       </Button>
+                      
+                      {audioBlob && (
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => playAudio(audioBlob)}
+                            disabled={isPlaying || isSavingGrade}
+                          >
+                            <Play className="h-4 w-4 mr-2" />
+                            {isPlaying ? 'Playing...' : 'Play New'}
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={clearRecording}
+                            disabled={isRecording || isPlaying || isSavingGrade}
+                          >
+                            <XCircle className="h-4 w-4 mr-2" />
+                            Clear
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {isRecording && (
+                      <div className="flex items-center gap-2 text-red-600">
+                        <div className="w-2 h-2 bg-red-600 rounded-full animate-pulse"></div>
+                        <span className="text-sm">Recording in progress...</span>
+                      </div>
+                    )}
+                    
+                    {audioBlob && (
+                      <div className="text-sm text-green-600">
+                        ✓ New voice note ready to save
+                      </div>
                     )}
                   </div>
                 </div>
@@ -523,12 +845,29 @@ export default function AssignmentDetailView({ assignment, onBack }: AssignmentD
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsGradingOpen(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsGradingOpen(false)}
+              disabled={isSavingGrade}
+            >
               Cancel
             </Button>
-            <Button onClick={handleSaveGrade} className="bg-green-600 hover:bg-green-700">
-              <Save className="h-4 w-4 mr-2" />
-              Save Grade
+            <Button 
+              onClick={handleSaveGrade} 
+              className="bg-green-600 hover:bg-green-700"
+              disabled={isSavingGrade}
+            >
+              {isSavingGrade ? (
+                <>
+                  <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Grade
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

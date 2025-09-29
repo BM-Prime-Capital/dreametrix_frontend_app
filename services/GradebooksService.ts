@@ -72,8 +72,7 @@ export async function updateStudentGrade(
   tenantPrimaryDomain: string,
   accessToken: string,
   submissionId: number, // Changed from studentId to submissionId
-  assessmentType: string,
-  assessmentIndex: number,
+
   grade: number,
   refreshToken: string
 ) {
@@ -82,12 +81,12 @@ export async function updateStudentGrade(
   }
 
   try {
-    console.log("🔄 Updating grade for submission:", {
-      submissionId,
-      assessmentType,
-      assessmentIndex,
-      grade,
-    });
+    // console.log("🔄 Updating grade for submission:", {
+    //   submissionId,
+    //   assessmentType,
+    //   assessmentIndex,
+    //   grade,
+    // });
 
     const url = `${tenantPrimaryDomain}/submissions/${submissionId}/`;
 
