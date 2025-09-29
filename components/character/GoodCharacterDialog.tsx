@@ -9,6 +9,7 @@ import { extractTraitsFromEntries } from "@/utils/characterUtils";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { format } from "date-fns";
 import { Character } from "@/types";
+import { updateCharacter } from "@/services/CharacterService";
 
 const GoodCharacterDialog = React.memo(
   ({
@@ -32,8 +33,7 @@ const GoodCharacterDialog = React.memo(
       character_type: string;
       value_point: string;
     }[] = JSON.parse(localStorage.getItem(localStorageKey.CHARACTERS_LIST)!);
-    //const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
-    const { tenantDomain } = useRequestInfo();
+    const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
     console.log("tenantDomain", tenantDomain);
     const [comment, setComment] = useState<string>(character.teacher_comment);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -45,11 +45,11 @@ const GoodCharacterDialog = React.memo(
 
     // Get current entries grouped by trait
     const currentEntries = useMemo(() => {
-      if (!Array.isArray(character.good_characters)) return {};
+      if (!Array.isArray(character.good_characters)) return   [];
 
       const entriesMap: Record<string, number> = {};
       character.good_characters.forEach((entry) => {
-        if (typeof entry === "string") {
+        if (typeof entry === "string") {    
           const trait = entry;
           entriesMap[trait] = (entriesMap[trait] || 0) + 1;
         }
@@ -119,27 +119,27 @@ const GoodCharacterDialog = React.memo(
         });
 
         // Preserve existing entries and add new ones
-        // const existingEntries = Array.isArray(character.good_characters)
-        //   ? character.good_characters.filter(
-        //       (entry) =>
-        //         typeof entry === "string" &&
-        //         !Object.keys(checkedItems).includes(entry)
-        //     )
-        //   : [];
+        const existingEntries = Array.isArray(character.good_characters)
+          ? character.good_characters.filter(
+              (entry) =>
+                typeof entry === "string" &&
+                !Object.keys(checkedItems).includes(entry)
+            )
+          : [];
 
-        //const combinedEntries = [...existingEntries, ...newGoodEntries];
+        const combinedEntries = [...existingEntries, ...newGoodEntries];
 
-        // const data = {
-        //   character_id: character.character_id,
-        //   bad_statistics_character: character.bad_characters,
-        //   good_statistics_character: combinedEntries,
-        //   teacher_comment: comment,
-        //   observation_date: selectedDate
-        //     ? format(selectedDate, "yyyy-MM-dd")
-        //     : undefined,
-        // };
+        const data = {
+          character_id: character.character_id,
+          bad_statistics_character: character.bad_characters,
+          good_statistics_character: combinedEntries,
+          teacher_comment: comment,
+          observation_date: selectedDate
+            ? format(selectedDate, "yyyy-MM-dd")
+            : undefined,
+        };
 
-       // await updateCharacter(data, tenantDomain, accessToken, refreshToken);
+       await updateCharacter(data, tenantDomain, accessToken, refreshToken);
 
         setShouldRefreshData(true);
         setOpen(false);

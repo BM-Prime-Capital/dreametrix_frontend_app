@@ -359,7 +359,7 @@ export function AttendanceTable({
                           }
                         />
                       </TableCell>
-                      <TableCell>{attendance.student.user.username}</TableCell>
+                      <TableCell>{attendance.student.user.first_name} {attendance.student.user.last_name}</TableCell>
                       <TableCell>
                         <AttendanceItem
                           label={attendance.status}

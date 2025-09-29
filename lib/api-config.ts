@@ -34,7 +34,7 @@ export const buildApiUrl = (
 
   if (params) {
     const searchParams = new URLSearchParams(params);
-    url += `?${searchParams.toString()}`;
+    url += `${searchParams.toString().length > 0 ? `?${searchParams.toString()}` : ""}`;
   }
 
   return url;

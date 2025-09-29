@@ -32,18 +32,18 @@ export default function ParentCharactersPage() {
     setLoading(true)
     setError(null)
     
-    try {
-      const data = await getParentCharacterView(accessToken)
-      setCharactersData(data)
-      // Arrêter le chargement dès qu'on reçoit une réponse (succès)
-      stopLoading()
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Error loading characters data")
-      // Arrêter le chargement même en cas d'erreur
-      stopLoading()
-    } finally {
-      setLoading(false)
-    }
+    // try {
+    //   const data = await getParentCharacterView(accessToken)
+    //   setCharactersData(data)
+    //   // Arrêter le chargement dès qu'on reçoit une réponse (succès)
+    //   stopLoading()
+    // } catch (error) {
+    //   setError(error instanceof Error ? error.message : "Error loading characters data")
+    //   // Arrêter le chargement même en cas d'erreur
+    //   stopLoading()
+    // } finally {
+    //   setLoading(false)
+    // }
   }
 
   useEffect(() => {

@@ -12,14 +12,21 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ChevronDown, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 import { GradebookClassTable } from "./gradebook-class-table";
 
 import { Button } from "../ui/button";
 import Image from "next/image";
 import { generalImages } from "@/constants/images";
-import ClassSelect from "../ClassSelect";
 import { getGradeBookList } from "@/services/GradebooksService";
 import { localStorageKey } from "@/constants/global";
 import { ClassData } from "../types/gradebook";
@@ -32,6 +39,9 @@ interface GradebookTableProps {
 export default function Gradebook() {
   const [currentClass, setCurrentClass] = useState<ClassData | null>(null);
   const [gradebookData, setGradebookData] = useState<any[]>([]);
+  const [filteredData, setFilteredData] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedClassFilter, setSelectedClassFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [layoutMode, setLayoutMode] = useState<'table' | 'grid' | 'compact'>('table');
@@ -107,6 +117,7 @@ export default function Gradebook() {
         });
 
         setGradebookData(formatted);
+        setFilteredData(formatted); // Initialize filtered data
       } catch (err: any) {
         setError(err.message || "Erreur inconnue");
       } finally {
@@ -116,6 +127,27 @@ export default function Gradebook() {
 
     fetchData();
   }, []);
+
+  // Filter and search logic
+  useEffect(() => {
+    let filtered = [...gradebookData];
+
+    // Apply search filter
+    if (searchTerm.trim() !== "") {
+      filtered = filtered.filter((classItem) =>
+        classItem.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply class filter (if needed for specific selection)
+    if (selectedClassFilter !== "all") {
+      filtered = filtered.filter((classItem) => 
+        classItem.id.toString() === selectedClassFilter
+      );
+    }
+
+    setFilteredData(filtered);
+  }, [gradebookData, searchTerm, selectedClassFilter]);
 
   return (
     <section className="flex flex-col h-full w-full bg-gradient-to-br from-purple-50/30 to-pink-50/20">
@@ -134,11 +166,6 @@ export default function Gradebook() {
             </p>
           </div>
         </div>
-        {currentClass && (
-          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3 border border-white/30">
-            <ClassSelect />
-          </div>
-        )}
       </div>
 
       {/* Content Area */}
@@ -332,12 +359,58 @@ export default function Gradebook() {
                   <p className="text-gray-600">Select a class to view detailed grades and manage assessments</p>
                 </div>
 
+                {/* Search and Filter Bar */}
+                <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-gray-200">
+                  <div className="relative flex-1 w-full md:max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search classes..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 w-full h-10 rounded-lg border-gray-300 bg-white shadow-sm"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <Select
+                      value={selectedClassFilter}
+                      onValueChange={setSelectedClassFilter}
+                      disabled={loading || gradebookData.length === 0}
+                    >
+                      <SelectTrigger className="w-[200px] h-10 rounded-lg border-gray-300 bg-white shadow-sm">
+                        <SelectValue placeholder="Filter by class" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Classes</SelectItem>
+                        {gradebookData.map((classItem) => (
+                          <SelectItem key={classItem.id} value={classItem.id.toString()}>
+                            {classItem.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    {(searchTerm || selectedClassFilter !== "all") && (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setSearchTerm("");
+                          setSelectedClassFilter("all");
+                        }}
+                        className="h-10 rounded-lg border-gray-300 bg-white shadow-sm hover:bg-gray-50"
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
                 {/* Dynamic Classes Display */}
-                {gradebookData.length > 0 ? (
+                {filteredData.length > 0 ? (
                   overviewMode === 'cards' ? (
                     // Card View
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {gradebookData.map((classItem, index) => (
+                      {filteredData.map((classItem, index) => (
                         <div 
                           key={classItem.id} 
                           className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group"
@@ -413,19 +486,44 @@ export default function Gradebook() {
                         </div>
                       </div>
                       <div className="bg-gray-50/50 rounded-xl p-4 overflow-x-auto">
-                        <GradebookTable classes={gradebookData} onClassSelect={handleClassSelect} />
+                        <GradebookTable classes={filteredData} onClassSelect={handleClassSelect} />
                       </div>
                     </>
                   )
                 ) : (
                   <div className="text-center py-12">
                     <div className="mx-auto h-24 w-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                      <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                      </svg>
+                      {gradebookData.length === 0 ? (
+                        <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                      ) : (
+                        <Search className="h-8 w-8 text-gray-400" />
+                      )}
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No classes found</h3>
-                    <p className="text-gray-500">Your gradebook classes will appear here once they're set up</p>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      {gradebookData.length === 0 ? "No classes found" : "No classes match your search"}
+                    </h3>
+                    <p className="text-gray-500">
+                      {gradebookData.length === 0 
+                        ? "Your gradebook classes will appear here once they're set up"
+                        : searchTerm 
+                          ? `No classes found for "${searchTerm}"`
+                          : "Try adjusting your filters"
+                      }
+                    </p>
+                    {(searchTerm || selectedClassFilter !== "all") && (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setSearchTerm("");
+                          setSelectedClassFilter("all");
+                        }}
+                        className="mt-4"
+                      >
+                        Clear filters
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>

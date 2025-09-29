@@ -90,6 +90,10 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [courseFilter, setCourseFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [weightFilter, setWeightFilter] = useState<string>("all");
+  const [publishedFilter, setPublishedFilter] = useState<string>("all");
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [selectedAssignment, setSelectedAssignment] =
     useState<Assignment | null>(null);
@@ -142,21 +146,91 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
     return courses.sort((a, b) => a.name.localeCompare(b.name));
   }, [assignments]);
 
-  // Filter assignments by course
+  // Get unique types for the filter dropdown
+  const uniqueTypes = useMemo(() => {
+    if (!assignments || assignments.length === 0) {
+      return [];
+    }
+    const types = Array.from(new Set(assignments.map(a => a.kind).filter(Boolean)));
+    return types.sort();
+  }, [assignments]);
+
+  // Get weight ranges for the filter dropdown
+  const weightRanges = [
+    { value: "low", label: "Low (0-20%)" },
+    { value: "medium", label: "Medium (21-50%)" },
+    { value: "high", label: "High (51-100%)" }
+  ];
+
+  // Filter assignments by multiple criteria
   const filteredAssignments = useMemo(() => {
     if (!assignments || assignments.length === 0) {
       return [];
     }
-    if (courseFilter === "all") {
-      return assignments;
-    }
-    return assignments.filter(
-      (assignment: Assignment) =>
-        assignment.course &&
-        assignment.course.id &&
-        assignment.course.id.toString() === courseFilter
-    );
-  }, [assignments, courseFilter]);
+    
+    return assignments.filter((assignment: Assignment) => {
+      // Course filter
+      if (courseFilter !== "all") {
+        if (!assignment.course || !assignment.course.id || 
+            assignment.course.id.toString() !== courseFilter) {
+          return false;
+        }
+      }
+      
+      // Date filter (this week, this month, etc.)
+      if (dateFilter !== "all") {
+        const assignmentDate = new Date(assignment.due_date);
+        const now = new Date();
+        
+        switch (dateFilter) {
+          case "today":
+            if (assignmentDate.toDateString() !== now.toDateString()) return false;
+            break;
+          case "this_week":
+            const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
+            const weekEnd = new Date(now.setDate(now.getDate() - now.getDay() + 6));
+            if (assignmentDate < weekStart || assignmentDate > weekEnd) return false;
+            break;
+          case "this_month":
+            if (assignmentDate.getMonth() !== now.getMonth() || 
+                assignmentDate.getFullYear() !== now.getFullYear()) return false;
+            break;
+          case "overdue":
+            if (assignmentDate >= now) return false;
+            break;
+        }
+      }
+      
+      // Type filter
+      if (typeFilter !== "all") {
+        if (assignment.kind !== typeFilter) return false;
+      }
+      
+      // Weight filter
+      if (weightFilter !== "all") {
+        const weight = parseFloat(assignment.weight);
+        switch (weightFilter) {
+          case "low":
+            if (weight > 20) return false;
+            break;
+          case "medium":
+            if (weight <= 20 || weight > 50) return false;
+            break;
+          case "high":
+            if (weight <= 50) return false;
+            break;
+        }
+      }
+      
+      // Published filter
+      if (publishedFilter !== "all") {
+        if (publishedFilter === "published" && !assignment.published) return false;
+        if (publishedFilter === "draft" && assignment.published) return false;
+      }
+      
+      return true;
+    });
+  }, [assignments, courseFilter, dateFilter, typeFilter, weightFilter, publishedFilter]);
 
   const handleAssignmentClick = (assignment: Assignment) => {
     onViewAssignment(assignment);
@@ -375,9 +449,10 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
 
   return (
     <div className="w-full space-y-6 p-6">
-      {/* Enhanced Header */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto md:flex-1">
+      {/* Enhanced Header with Search and Filters */}
+      <div className="flex flex-col gap-4">
+        {/* Search Bar */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="relative w-full md:w-auto md:flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
@@ -387,15 +462,26 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
               className="pl-12 w-full md:w-[400px] h-12 rounded-xl border-gray-300 bg-white shadow-sm"
             />
           </div>
+          <Button
+            onClick={handleExport}
+            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl px-6 py-3 shadow-lg font-medium"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
+        </div>
 
-          <div className="w-full md:w-auto">
+        {/* Filters Row */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Course Filter */}
+          <div className="w-full sm:w-auto">
             <Select
               value={courseFilter}
               onValueChange={setCourseFilter}
               disabled={isLoading || assignments.length === 0}
             >
-              <SelectTrigger className="w-full md:w-[200px] h-12 rounded-xl border-gray-300 bg-white shadow-sm">
-                <SelectValue placeholder="Filter by course" />
+              <SelectTrigger className="w-full sm:w-[180px] h-10 rounded-lg border-gray-300 bg-white shadow-sm">
+                <SelectValue placeholder="All Classes" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Classes</SelectItem>
@@ -407,17 +493,108 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
               </SelectContent>
             </Select>
           </div>
-        </div>
 
-        <div className="flex items-center gap-3">
+          {/* Date Filter */}
+          <div className="w-full sm:w-auto">
+            <Select
+              value={dateFilter}
+              onValueChange={setDateFilter}
+              disabled={isLoading || assignments.length === 0}
+            >
+              <SelectTrigger className="w-full sm:w-[160px] h-10 rounded-lg border-gray-300 bg-white shadow-sm">
+                <SelectValue placeholder="All Dates" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Dates</SelectItem>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="this_week">This Week</SelectItem>
+                <SelectItem value="this_month">This Month</SelectItem>
+                <SelectItem value="overdue">Overdue</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Type Filter */}
+          <div className="w-full sm:w-auto">
+            <Select
+              value={typeFilter}
+              onValueChange={setTypeFilter}
+              disabled={isLoading || assignments.length === 0}
+            >
+              <SelectTrigger className="w-full sm:w-[140px] h-10 rounded-lg border-gray-300 bg-white shadow-sm">
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                {uniqueTypes.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Weight Filter */}
+          <div className="w-full sm:w-auto">
+            <Select
+              value={weightFilter}
+              onValueChange={setWeightFilter}
+              disabled={isLoading || assignments.length === 0}
+            >
+              <SelectTrigger className="w-full sm:w-[160px] h-10 rounded-lg border-gray-300 bg-white shadow-sm">
+                <SelectValue placeholder="All Weights" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Weights</SelectItem>
+                {weightRanges.map((range) => (
+                  <SelectItem key={range.value} value={range.value}>
+                    {range.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Published Filter */}
+          <div className="w-full sm:w-auto">
+            <Select
+              value={publishedFilter}
+              onValueChange={setPublishedFilter}
+              disabled={isLoading || assignments.length === 0}
+            >
+              <SelectTrigger className="w-full sm:w-[140px] h-10 rounded-lg border-gray-300 bg-white shadow-sm">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Clear Filters Button */}
           <Button
-            onClick={handleExport}
-            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl px-6 py-3 shadow-lg font-medium"
+            variant="outline"
+            onClick={() => {
+              setDateFilter("all");
+              setTypeFilter("all");
+              setWeightFilter("all");
+              setPublishedFilter("all");
+              setCourseFilter("all");
+              setGlobalFilter("");
+            }}
+            className="h-10 rounded-lg border-gray-300 bg-white shadow-sm hover:bg-gray-50"
           >
-            <Download className="h-4 w-4 mr-2" />
-            Export
+            Clear Filters
           </Button>
+        </div>
+      </div>
 
+      {/* Table Controls */}
+      {/* <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -443,7 +620,7 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </div>
+      </div> */}
 
       {/* Enhanced Assignments Display */}
       {table.getRowModel().rows?.length ? (
