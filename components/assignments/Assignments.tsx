@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { AssignmentsTable } from "./assignments-table";
-import AssignmentFiltersPopUp from "./AssignmentsFiltersPopUp";
 import { AddAssignmentDialog } from "./AddAssignmentDialog";
 import AssignmentDetailView from "./AssignmentDetailView";
 import ClassSelect from "../ClassSelect";
@@ -44,11 +43,6 @@ export default function Assignments() {
             <FileText className="h-6 w-6 text-white" />
           </div>
           <PageTitleH1 title="Assignments" className="text-white font-bold text-2xl" />
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2">
-            <AssignmentFiltersPopUp />
-          </div>
         </div>
       </div>
 
