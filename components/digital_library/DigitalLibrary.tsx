@@ -1873,11 +1873,11 @@ export default function DigitalLibrary() {
                 questionType: digitalLibrarySheet.questionType,
                 numberOfQuestions: digitalLibrarySheet.noOfQuestions,
                 teacherName: userData?.username,
-                assignmentName: assignmentContext.assignmentName,
-                dueDate: assignmentContext.dueDate,
-                isPublished: assignmentContext.published === "true",
-                courseId: assignmentContext.courseId,
-                courseName: assignmentContext.courseName,
+                assignmentName: assignmentContext?.assignmentName || undefined,
+                dueDate: assignmentContext?.dueDate || undefined,
+                isPublished: assignmentContext?.published === "true" || false,
+                courseId: assignmentContext?.courseId || undefined,
+                courseName: assignmentContext?.courseName || undefined,
               }}
             />
           </form>
