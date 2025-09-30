@@ -167,7 +167,8 @@ export function ClassRosterDialog({
         }
       };
 
-      const userId = updatedStudent.user?.id || updatedStudent.id;
+      const userId = updatedStudent.id;
+      console.log("updatedStudent", updatedStudent)
       await updateStudent(
         userId,
         studentData.user,
@@ -420,19 +421,12 @@ export function ClassRosterDialog({
                       <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Student</th>
                       <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Contact</th>
                       <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Grade</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Performance</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Attendance</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
                     {filteredClassStudents.length > 0 ? (
                       filteredClassStudents.map((student, index) => {
                         const initials = student.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                        const attendanceColor = (student.attendance || 0) >= 90 ? 'text-green-600' : (student.attendance || 0) >= 75 ? 'text-yellow-600' : 'text-red-600';
-                        const performanceScore = student.characterScore || Math.floor(Math.random() * 10) + 1;
-                        const performanceColor = performanceScore >= 8 ? 'text-green-600' : performanceScore >= 6 ? 'text-yellow-600' : 'text-red-600';
                         
                         return (
                           <tr key={student.id} className="hover:bg-blue-50/30 transition-colors">
@@ -456,77 +450,12 @@ export function ClassRosterDialog({
                                 Grade {student.grade || 'N/A'}
                               </span>
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-2">
-                                <div className="w-16 bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className={`h-2 rounded-full ${
-                                      performanceScore >= 8 ? 'bg-green-500' : 
-                                      performanceScore >= 6 ? 'bg-yellow-500' : 'bg-red-500'
-                                    }`}
-                                    style={{ width: `${performanceScore * 10}%` }}
-                                  ></div>
-                                </div>
-                                <span className={`text-sm font-medium ${performanceColor}`}>
-                                  {performanceScore}/10
-                                </span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-2">
-                                <div className="w-16 bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className={`h-2 rounded-full ${
-                                      (student.attendance || 0) >= 90 ? 'bg-green-500' : 
-                                      (student.attendance || 0) >= 75 ? 'bg-yellow-500' : 'bg-red-500'
-                                    }`}
-                                    style={{ width: `${student.attendance || 0}%` }}
-                                  ></div>
-                                </div>
-                                <span className={`text-sm font-medium ${attendanceColor}`}>
-                                  {student.attendance || 0}%
-                                </span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                (student.attendance || 0) >= 90 && performanceScore >= 7 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : (student.attendance || 0) >= 75 && performanceScore >= 5
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-red-100 text-red-800'
-                              }`}>
-                                {(student.attendance || 0) >= 90 && performanceScore >= 7 
-                                  ? 'Excellent' 
-                                  : (student.attendance || 0) >= 75 && performanceScore >= 5
-                                  ? 'Good'
-                                  : 'Needs Attention'}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex gap-2">
-                                <button 
-                                  className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
-                                  onClick={() => handleEditStudent(student)}
-                                  title="Edit student"
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </button>
-                                <button 
-                                  className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
-                                  onClick={() => handleDeleteStudent(student.id)}
-                                  title="Remove from class"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </td>
                           </tr>
                         );
                       })
                     ) : (
                       <tr>
-                        <td colSpan={7} className="px-6 py-12 text-center">
+                        <td colSpan={3} className="px-6 py-12 text-center">
                           <div className="flex flex-col items-center gap-3">
                             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
                               <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -642,49 +571,6 @@ export function ClassRosterDialog({
                     />
                   </div>
                 </div>
-
-                {/* <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900">Academic Information</h3>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="grade">Grade Level</Label>
-                      <Input
-                        id="grade"
-                        name="grade"
-                        type="number"
-                        value={editingStudent.grade || ''}
-                        disabled
-                        className="bg-gray-100"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="characterScore">Character Score</Label>
-                      <Input
-                        id="characterScore"
-                        name="characterScore"
-                        type="number"
-                        min="1"
-                        max="10"
-                        value={editingStudent.characterScore || ''}
-                        disabled
-                        className="bg-gray-100"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="attendance">Attendance (%)</Label>
-                      <Input
-                        id="attendance"
-                        name="attendance"
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={editingStudent.attendance || ''}
-                        disabled
-                        className="bg-gray-100"
-                      />
-                    </div>
-                  </div>
-                </div> */}
               </div>
 
               <DialogFooter className="mt-8">

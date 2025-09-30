@@ -55,8 +55,8 @@ async function createTeacher(
       const errorData = await response.json().catch(() => null);
       return {
         success: false,
-        message: errorData?.message || "Erreur lors de la création du compte.",
-        errors: errorData // Inclure les erreurs détaillées
+        message: errorData?.message || "Error creating account.",
+        errors: errorData 
       };
     }
 
@@ -66,10 +66,10 @@ async function createTeacher(
       data: data
     };
   } catch (error) {
-    console.error("Erreur réseau lors de la création du compte:", error);
+    console.error("Network error while creating account:", error);
     return {
       success: false,
-      message: "Erreur réseau lors de la création du compte."
+      message: "Network error while creating account."
     };
   }
 }
@@ -99,20 +99,20 @@ export default function ParentRegister() {
     confirmPassword: false,
     passwordStrength: [],
   });
-  const [apiError, setApiError] = useState<string | null>(null); // État pour l'erreur API
+  const [apiError, setApiError] = useState<string | null>(null); // State for API error
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     
-    // Réinitialiser l'erreur du champ modifié et l'erreur API
+    // Reset the error for the modified field and API error
     setErrors((prev) => ({ 
       ...prev, 
       [name]: false,
       ...(name === "password" || name === "confirmPassword" ? { confirmPassword: false } : {})
     }));
     
-    // Réinitialiser l'erreur API quand l'utilisateur modifie un champ
+    // Reset API error when user modifies a field
     if (apiError) {
       setApiError(null);
     }
@@ -123,9 +123,9 @@ export default function ParentRegister() {
     e.stopPropagation();
     setFormSubmitted(true);
     setIsLoading(true);
-    setApiError(null); // Réinitialiser l'erreur API à chaque soumission
+    setApiError(null); // Reset API error on each submission
 
-    // Valider les champs requis
+    // Validate required fields
     const hasEmptyFields = Object.entries(formData).some(
       ([, value]) => !value
     );
@@ -145,7 +145,7 @@ export default function ParentRegister() {
       return;
     }
 
-    // VALIDATION DU MOT DE PASSE UNIQUEMENT ICI (au clic sur Create Account)
+    // PASSWORD VALIDATION ONLY HERE (on Create Account click)
     const passwordValidation = validatePassword(formData.password);
     if (!passwordValidation.isValid) {
       setErrors((prev) => ({ 
@@ -156,7 +156,7 @@ export default function ParentRegister() {
       return;
     }
 
-    // Vérifier que les mots de passe correspondent
+    // Check that passwords match
     if (formData.password !== formData.confirmPassword) {
       setErrors((prev) => ({ ...prev, confirmPassword: true }));
       setIsLoading(false);
@@ -164,7 +164,7 @@ export default function ParentRegister() {
     }
 
     try {
-      // Préparer les données pour l'API
+      // Prepare data for API
       const teacherData = {
         email: formData.parentEmail,
         password: formData.password,
@@ -183,15 +183,15 @@ export default function ParentRegister() {
       if (result.success) {
         router.push(userPath.PARENT_LOGIN_PATH);
       } else {
-        // Gérer l'erreur API
+        // Handle API error
         console.error("Account creation error:", result.message);
         
-        // Extraire le message d'erreur de la réponse API
+        // Extract error message from API response
         let errorMessage = result.message || "An error occurred during account creation.";
         
-        // Si on a des erreurs détaillées comme {"email":["User with this email already exists"]}
+        // If we have detailed errors like {"email":["User with this email already exists"]}
         if (result.errors) {
-          // Concaténer toutes les erreurs en une seule chaîne
+          // Concatenate all errors into a single string
           const errorMessages = Object.values(result.errors).flat();
           errorMessage = errorMessages.join(" ");
         }
@@ -241,7 +241,7 @@ export default function ParentRegister() {
           </div>
         )}
 
-        {/* Affichage de l'erreur API */}
+        {/* API error display */}
         {apiError && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
             <div className="flex items-center">
@@ -252,7 +252,6 @@ export default function ParentRegister() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* ... le reste du formulaire reste inchangé ... */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* First Name */}
             <div className="relative">

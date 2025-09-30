@@ -88,7 +88,7 @@ export async function updateStudent(
     throw new Error("You are not logged in. Please log in again.");
   }
   
-  const url = `${tenantPrimaryDomain}/classes/users/${studentId}/`;
+  const url = `${tenantPrimaryDomain}/students/${studentId}/`;
 
   try {
     const response = await fetch(url, {
