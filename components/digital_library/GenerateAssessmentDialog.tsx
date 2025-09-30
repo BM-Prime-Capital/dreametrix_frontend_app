@@ -13,7 +13,6 @@ import { useRouter } from "next/navigation";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { createAssignment } from "@/services/AssignmentService";
 import { convertBlobToFile } from "@/utils/pdfUtils";
-import { localStorageKey } from "@/constants/global";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -33,6 +32,11 @@ interface GenerateAssessmentDialogProps {
     questionType?: string;
     numberOfQuestions?: string;
     teacherName?: string;
+    assignmentName?: string;
+    dueDate?: string;
+    isPublished?: boolean;
+    courseId?: string;
+    courseName?: string;
   };
 }
 
@@ -57,7 +61,7 @@ export default function GenerateAssessmentDialog({
   );
   const [dueDate, setDueDate] = useState<string>("");
   const [isPublished, setIsPublished] = useState<boolean>(false);
-  const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  const { tenantDomain, accessToken } = useRequestInfo();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -67,7 +71,7 @@ export default function GenerateAssessmentDialog({
     if (loadedClasses) {
       try {
         const allClasses = JSON.parse(loadedClasses);
-        const formattedClasses: ClassOption[] = allClasses.map((cls: any) => ({
+        const formattedClasses: ClassOption[] = allClasses.map((cls: { id?: number; name?: string }) => ({
           id: cls.id?.toString(),
           name: cls.name || `Class ${cls.id}`,
         }));
@@ -77,14 +81,34 @@ export default function GenerateAssessmentDialog({
       }
     }
 
-    // Set default assignment name when component opens
-    setAssignmentName(`[Digital Library] ${worksheetTitle}`);
+    // Set assignment name - use preselected data or default
+    if (preselectedData?.assignmentName) {
+      setAssignmentName(preselectedData.assignmentName);
+    } else {
+      setAssignmentName(`[Digital Library] ${worksheetTitle}`);
+    }
 
-    // Set default due date (7 days from now)
-    const defaultDueDate = new Date();
-    defaultDueDate.setDate(defaultDueDate.getDate() + 7);
-    setDueDate(defaultDueDate.toISOString().split("T")[0]);
-  }, [isOpen, worksheetTitle]);
+    // Set due date - use preselected data or default (7 days from now)
+    if (preselectedData?.dueDate) {
+      setDueDate(preselectedData.dueDate);
+    } else {
+      const defaultDueDate = new Date();
+      defaultDueDate.setDate(defaultDueDate.getDate() + 7);
+      setDueDate(defaultDueDate.toISOString().split("T")[0]);
+    }
+
+    // Set publish status - use preselected data or default to false
+    if (preselectedData?.isPublished !== undefined) {
+      setIsPublished(preselectedData.isPublished);
+    } else {
+      setIsPublished(false);
+    }
+
+    // Set selected class - use preselected data if available
+    if (preselectedData?.courseId) {
+      setSelectedClassId(preselectedData.courseId);
+    }
+  }, [isOpen, worksheetTitle, preselectedData]);
 
   const handleSendToClass = async () => {
     if (!selectedClassId) {
@@ -190,16 +214,16 @@ export default function GenerateAssessmentDialog({
   };
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px]">
-        <DialogHeader>
+      <DialogContent className="w-[95vw] max-w-[700px] max-h-[90vh] rounded-lg overflow-hidden flex flex-col mx-2 sm:mx-0">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-center">
             Generated Worksheet Preview
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto space-y-4 p-1">
           {/* PDF Preview */}
-          <div className="w-full h-[400px] border rounded-lg overflow-hidden">
+          <div className="w-full h-[300px] sm:h-[400px] border rounded-lg overflow-hidden">
             {fileStream ? (
               <embed
                 src={fileStream}
@@ -241,9 +265,16 @@ export default function GenerateAssessmentDialog({
 
           {/* Assignment Configuration */}
           <div className="space-y-4 bg-gray-50 p-4 rounded-lg border">
-            <h4 className="text-sm font-medium text-gray-800">
-              Assignment Configuration
-            </h4>
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-medium text-gray-800">
+                Assignment Configuration
+              </h4>
+              {preselectedData && (preselectedData.assignmentName || preselectedData.dueDate || preselectedData.courseId) && (
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                  Pre-filled from Digital Library
+                </span>
+              )}
+            </div>
 
             {/* Assignment Name */}
             <div className="space-y-2">
@@ -355,15 +386,21 @@ export default function GenerateAssessmentDialog({
                     {preselectedData.teacherName}
                   </div>
                 )}
+                {preselectedData.courseName && (
+                  <div>
+                    <span className="text-blue-600 font-medium">Course:</span>{" "}
+                    {preselectedData.courseName}
+                  </div>
+                )}
               </div>
             </div>
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Button
               onClick={handleDownload}
-              className="flex-1 bg-gray-600 hover:bg-gray-700 text-white flex items-center justify-center gap-2"
+              className="flex-1 bg-gray-600 hover:bg-gray-700 text-white flex items-center justify-center gap-2 order-2 sm:order-1"
               disabled={!fileStream || isLoading}
             >
               <Download className="w-4 h-4" />
@@ -372,7 +409,7 @@ export default function GenerateAssessmentDialog({
 
             <Button
               onClick={handleSendToClass}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2 order-1 sm:order-2"
               disabled={
                 !fileStream ||
                 !selectedClassId ||
