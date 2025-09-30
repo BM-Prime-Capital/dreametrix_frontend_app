@@ -136,17 +136,17 @@ export function PollsTable({ onViewRespondents, onViewResults, onViewGlobal, cla
                 </div>
 
                 <div className="flex items-center space-x-6">
-                  <div className="text-center min-w-[80px]">
+                  {/* <div className="text-center min-w-[80px]">
                     <p className="text-sm text-gray-500">Responses</p>
                     <p className="font-medium">{poll.responses}</p>
-                  </div>
+                  </div> */}
 
-                  <div className="text-center min-w-[100px]">
+                  {/* <div className="text-center min-w-[100px]">
                     <p className="text-sm text-gray-500">Status</p>
                     <Badge className={`${statusColors[poll.status]} rounded-full`}>
                       {poll.status === "done" ? "Completed" : poll.status === "pending" ? "Active" : "Draft"}
                     </Badge>
-                  </div>
+                  </div> */}
 
                   <div className="flex items-center space-x-2">
                     <Button
