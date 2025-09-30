@@ -246,7 +246,15 @@ export default function RewardsFocusedView({
               Score Trend
             </h3>
             <div className="h-48">
-              <LineChartComponent />
+              <LineChartComponent data={{
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                  label: 'Points',
+                  data: [65, 72, 78, studentData.totalPoints || 80],
+                  borderColor: '#f59e0b',
+                  backgroundColor: '#f59e0b'
+                }]
+              }} />
             </div>
           </div>
         </div>

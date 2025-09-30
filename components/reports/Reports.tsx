@@ -167,7 +167,15 @@ export default function Reports() {
               <div className="flex flex-col">
                 <label className="text-sm font-bold mb-4">Score History:</label>
                 <div className="flex justify-center items-center h-[300px] bg-white rounded-md">
-                  <LineChartComponent />
+                  <LineChartComponent data={{
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                      label: 'Character Score',
+                      data: [75, 82, 78, 84],
+                      borderColor: '#3e81d4',
+                      backgroundColor: '#3e81d4'
+                    }]
+                  }} />
                 </div>
               </div>
               <div className="flex flex-col gap-2">
@@ -220,7 +228,14 @@ export default function Reports() {
               <div className="flex flex-col">
                 <label className="text-sm font-bold mb-4">Score:</label>
                 <div className="flex justify-center items-center h-[200px] bg-white relative">
-                  <DoughnutChartComponent />
+                  <DoughnutChartComponent data={{
+                    labels: ['Excellent', 'Good', 'Needs Improvement'],
+                    datasets: [{
+                      data: [60, 30, 10],
+                      backgroundColor: ['#65be4d', '#fbe809', '#ff7675']
+                    }],
+                    average_score: 84
+                  }} />
                   <div className="text-2xl text-[#b9d63c] font-bold h-[60px] w-[60px] flex flex-col items-center justify-center border-[2px] border-[#b9d63c] rounded-full absolute">
                     84
                   </div>

@@ -48,7 +48,7 @@ export default function FeedbackSystem({
       id: Date.now().toString(),
       type: activeType,
       rating: activeType === 'rating' ? rating : undefined,
-      satisfaction: activeType === 'satisfaction' ? satisfaction : undefined,
+      satisfaction: activeType === 'satisfaction' ? satisfaction || undefined : undefined,
       comment: comment || undefined,
       ticketId,
       supportAgent,

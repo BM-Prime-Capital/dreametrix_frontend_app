@@ -51,16 +51,12 @@ export function Header() {
       <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/5"></div>
       
       <div className="relative container flex h-16 items-center justify-between gap-4 z-10">
-        {/* Logo and navigation */}
-        <div className="flex items-center gap-4 lg:gap-6">
+        {/* Left spacer */}
+        <div className="flex-1"></div>
+        
+        {/* Centered Logo */}
+        <div className="flex items-center">
           <DreaMetrixLogo height={28} />
-          
-          {/* <div className="hidden md:flex md:gap-6">
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Dashboard</Button>
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Classes</Button>
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Students</Button>
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">Resources</Button>
-          </div> */}
         </div>
 
         {/* Search and user actions */}
