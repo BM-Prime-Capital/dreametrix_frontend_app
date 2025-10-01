@@ -1,12 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Card } from "@/components/ui/card";
 import PageTitleH1 from "../ui/page-title-h1";
 import PageTitleH2 from "../ui/page-title-h2";
 import { useEffect, useState } from "react";
 import { localStorageKey } from "@/constants/global";
-import { useList } from "@/hooks/useList";
-import { getClasses } from "@/services/ClassService";
-import { getAssignments, getTeacherDashboardData } from "@/services/AssignmentService";
+import { getTeacherDashboardData } from "@/services/AssignmentService";
 import { useRouter } from "next/navigation";
 import { userPath } from "@/constants/userConstants";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
@@ -60,8 +59,6 @@ interface TeacherDashboardData {
 
 export default function TeacherDashboard() {
   const router = useRouter();
-  const { list: classes } = useList(getClasses);
-  const { list: assignments } = useList(getAssignments);
   const { tenantDomain: tenantPrimaryDomain, accessToken } = useRequestInfo();
   
   const [dashboardData, setDashboardData] = useState<TeacherDashboardData | null>(null);
@@ -77,25 +74,19 @@ export default function TeacherDashboard() {
   
     const fetchDashboardData = async () => {
       try {
-       //console.log('Starting API call...');
         const data = await getTeacherDashboardData(tenantPrimaryDomain, accessToken);
-        console.log("Teacher Dashboard Data-------:", data);
         
         if (data) {
           setDashboardData(data);
-          //console.warn('API returned undefined or null data');
           return;
         }
         
-        //setDashboardData(data);
       } catch (error) {
         console.error("Error fetching teacher dashboard data:", error);
       }
     };
   
     if (tenantPrimaryDomain && accessToken) {
-      console.log("tenantPrimaryDomain----------", tenantPrimaryDomain)
-      console.log("accessToken----------", accessToken)
       fetchDashboardData();
     } else {
       console.log('Skipping API call - missing credentials');

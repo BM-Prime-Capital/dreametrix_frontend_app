@@ -21,7 +21,7 @@ export async function getTeachers(
   accessToken: string,
 ) {
   if (!accessToken) {
-    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
+    throw new Error("You must be logged in to view teachers.");
   }
   const url = `${tenantPrimaryDomain}/teachers/`;
   const response = await fetch(url, {
@@ -33,10 +33,10 @@ export async function getTeachers(
   if (!response.ok) {
     if (response.status === 403) {
       throw new Error(
-        "Vous n'avez pas la permission d'accéder aux enseignants."
+        "You do not have permission to view teachers."
       );
     } else {
-      throw new Error("Erreur lors de la récupération des enseignants.");
+      throw new Error("Error fetching teachers.");
     }
   }
 
@@ -47,11 +47,11 @@ export async function getTeachers(
 
 
 export async function createTeacher(
-  tenantPrimaryDomain: string,
-  accessToken: string,
-  teacherData: CreateTeacherRequest
-): Promise<ApiResponse> {
-  // Désactiver la vérification SSL seulement en développement
+  // tenantPrimaryDomain: string,
+  // accessToken: string,
+  // teacherData: CreateTeacherRequest
+): Promise<ApiResponse | undefined> {
+
   if (process.env.NODE_ENV === 'development') {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
   }
@@ -79,27 +79,31 @@ export async function createTeacher(
     //   data: data
     // };
   } catch (error) {
-    console.error("Erreur réseau lors de la création du compte:", error);
+    console.error("Network Error", error);
     return {
       success: false,
-      message: "Erreur réseau lors de la création du compte."
+      message: "Network error occurred."
     };
   } finally {
-    // Toujours réactiver la vérification SSL
     if (process.env.NODE_ENV === 'development') {
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = '1';
     }
   }
+
+  return {
+    success: false,
+    message: "Unhandled error occurred."
+  };
 }
 
 // Helper to prevent JSON.parse crashes
-async function safeParseJSON(response: Response): Promise<any | null> {
-  try {
-    return await response.json();
-  } catch {
-    return null;
-  }
-}
+// async function safeParseJSON(response: Response): Promise<any | null> {
+//   try {
+//     return await response.json();
+//   } catch {
+//     return null;
+//   }
+// }
 
 export async function updateTeacher(
   teacher: any,

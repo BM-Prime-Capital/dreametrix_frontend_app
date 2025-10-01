@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Pencil, Trash2, Plus, Save, X } from "lucide-react";
+import { Plus, Save, X } from "lucide-react";
 import { useState, useCallback, useMemo, useEffect } from "react";
 import {
   Command,
@@ -147,15 +147,6 @@ export function ClassRosterDialog({
     setSearchTerm("");
     setHasChanges(true);
   }, [normalizedStudentList]);
-
-  const handleDeleteStudent = useCallback((id: number) => {
-    setStudents(prev => prev.filter(student => student.id !== id));
-    setHasChanges(true);
-  }, []);
-
-  const handleEditStudent = useCallback((student: Student) => {
-    setEditingStudent(student);
-  }, []);
 
   const handleSaveStudent = useCallback(async (updatedStudent: Student) => {
     setIsEditing(true); 
@@ -425,7 +416,7 @@ export function ClassRosterDialog({
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
                     {filteredClassStudents.length > 0 ? (
-                      filteredClassStudents.map((student, index) => {
+                      filteredClassStudents.map((student) => {
                         const initials = student.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
                         
                         return (

@@ -80,7 +80,16 @@ export default function StudentProfile() {
   const [isLoading, setIsLoading] = useState(true);
   const [studentData, setStudentData] = useState<StudentProfileResponse | null>(null);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
-  const [selectedParent, setSelectedParent] = useState(null);
+  const [selectedParent, setSelectedParent] = useState<{
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    relation: string;
+    status: string;
+    confirmedAt?: string;
+    requestedAt?: string;
+  } | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const { tenantDomain, accessToken } = useRequestInfo();
 
@@ -89,7 +98,6 @@ export default function StudentProfile() {
   const [school, setSchool] = useState("School1"); 
   const [grade, setGrade] = useState("Grade 10"); 
   const [studentId, setStudentId] = useState("");
-  const [birthDate, setBirthDate] = useState("");
   const [address, setAddress] = useState("");
 
   const url = `${tenantDomain}/parents/confirm-link/`;
@@ -163,9 +171,12 @@ export default function StudentProfile() {
   const confirmParent = async () => {
     setIsConfirming(true);
     try {
-      const result = await confirmParentLink(url, selectedParent?.id, accessToken);
+      if (!selectedParent) {
+        alert("No parent selected for confirmation.");
+        return;
+      }
+      const result = await confirmParentLink(url, selectedParent.id, accessToken);
       if (result.success) {
-        alert(`${selectedParent.name} has been confirmed as your ${selectedParent.relation.toLowerCase()}.`);
       } else {
         alert(`Error: ${result.message}`);
       }
@@ -549,12 +560,12 @@ export default function StudentProfile() {
                         {parent.status === 'confirmed' ? (
                           <div className="flex items-center text-green-600 text-sm mt-4">
                             <ShieldCheck className="h-4 w-4 mr-1" />
-                            Confirmed on {new Date(parent.confirmedAt).toLocaleDateString()}
+                            Confirmed on {parent.confirmedAt ? new Date(parent.confirmedAt).toLocaleDateString() : "N/A"}
                           </div>
                         ) : (
                           <div className="flex items-center text-yellow-600 text-sm mt-4">
                             <ShieldQuestion className="h-4 w-4 mr-1" />
-                            Requested on {new Date(parent?.requestedAt).toLocaleDateString()}
+                            Requested on {new Date(parent?.requestedAt || "").toLocaleDateString()}
                           </div>
                         )}
                       </div>
@@ -700,7 +711,6 @@ export default function StudentProfile() {
                         placeholder="Phone number"
                         className="bg-white h-12 border-gray-300 focus:border-blue-400 focus:ring-blue-400"
                         value={studentData.data.user.phone_number}
-                        onChange={(e) => {}}
                       />
                     </div>
                   )}
