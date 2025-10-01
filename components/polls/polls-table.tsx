@@ -50,6 +50,7 @@ const statusColors = {
 export function PollsTable({ onViewRespondents, onViewResults, onViewGlobal, className }: Props) {
   const [polls, setPolls] = useState<Poll[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { tenantDomain, accessToken } = useRequestInfo();
 
   useEffect(() => {
@@ -70,7 +71,11 @@ export function PollsTable({ onViewRespondents, onViewResults, onViewGlobal, cla
     };
 
     if (tenantDomain && accessToken) fetchPolls();
-  }, [tenantDomain, accessToken]);
+  }, [tenantDomain, accessToken, refreshTrigger]);
+
+  const handlePollCreated = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "N/A";
@@ -83,9 +88,9 @@ export function PollsTable({ onViewRespondents, onViewResults, onViewGlobal, cla
       <div className="flex justify-between items-center w-full">
         <h2 className="text-xl font-semibold text-gray-900">Your Polls</h2>
         <div className="flex gap-3">
-          <AddPollsDialog />
-          <Button 
-            onClick={onViewGlobal} 
+          <AddPollsDialog onPollCreated={handlePollCreated} />
+          <Button
+            onClick={onViewGlobal}
             variant="default"
             className="bg-blue-600 hover:bg-blue-700 shadow-sm"
           >
@@ -114,8 +119,8 @@ export function PollsTable({ onViewRespondents, onViewResults, onViewGlobal, cla
         <div className="space-y-3 w-full">
           {polls.length > 0 ? (
             polls.map((poll) => (
-              <div 
-                key={poll.id} 
+              <div
+                key={poll.id}
                 className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-100 hover:shadow-xs transition-all w-full"
               >
                 <div className="flex items-center space-x-4">
@@ -123,7 +128,7 @@ export function PollsTable({ onViewRespondents, onViewResults, onViewGlobal, cla
                     <BarChart2 className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">{poll.title}</h3>
+                    <h5 className="font-medium text-gray-900">{poll.title}</h5>
                     <p className="text-sm text-gray-500">
                       {formatDate(poll.start_date)} - {formatDate(poll.end_date)}
                     </p>
@@ -131,29 +136,29 @@ export function PollsTable({ onViewRespondents, onViewResults, onViewGlobal, cla
                 </div>
 
                 <div className="flex items-center space-x-6">
-                  <div className="text-center min-w-[80px]">
+                  {/* <div className="text-center min-w-[80px]">
                     <p className="text-sm text-gray-500">Responses</p>
                     <p className="font-medium">{poll.responses}</p>
-                  </div>
+                  </div> */}
 
-                  <div className="text-center min-w-[100px]">
+                  {/* <div className="text-center min-w-[100px]">
                     <p className="text-sm text-gray-500">Status</p>
                     <Badge className={`${statusColors[poll.status]} rounded-full`}>
                       {poll.status === "done" ? "Completed" : poll.status === "pending" ? "Active" : "Draft"}
                     </Badge>
-                  </div>
+                  </div> */}
 
                   <div className="flex items-center space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="text-blue-600 border-blue-200 hover:bg-blue-50"
                       onClick={() => onViewResults?.(poll.id)}
                     >
                       <BarChart2 className="h-4 w-4 mr-2" />
                       Results
                     </Button>
-                    
+
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" className="h-9 w-9 p-0">

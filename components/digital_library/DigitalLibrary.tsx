@@ -1156,7 +1156,7 @@ export default function DigitalLibrary() {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 pb-8 space-y-8 max-w-6xl mx-auto w-full">
+      <div className="flex-1 mx-6 my-4 pb-8 space-y-6">
         {/* Assignment Context Banner */}
         {assignmentContext && (
           <Card className="rounded-2xl shadow-lg p-6 bg-gradient-to-r from-blue-50/80 to-purple-50/80 border border-blue-200/50 backdrop-blur-sm">
@@ -1366,7 +1366,7 @@ export default function DigitalLibrary() {
                       <SelectItem
                         key={index}
                         value={subject}
-                        className="hover:bg-blue-50 focus:bg-blue-50"
+                        className="hover:bg-blue-50 focus:bg-blue-50 text-gray-800 hover:text-gray-900 focus:text-gray-900"
                       >
                         {subject}
                       </SelectItem>
@@ -1404,7 +1404,7 @@ export default function DigitalLibrary() {
                       <SelectItem
                         key={index}
                         value={grade}
-                        className="hover:bg-blue-50 focus:bg-blue-50"
+                        className="hover:bg-blue-50 focus:bg-blue-50 text-gray-800 hover:text-gray-900 focus:text-gray-900"
                       >
                         {grade}
                       </SelectItem>
@@ -1433,31 +1433,31 @@ export default function DigitalLibrary() {
                   <SelectContent className="bg-white border border-gray-200 shadow-lg">
                     <SelectItem
                       value="homework"
-                      className="hover:bg-orange-50 focus:bg-orange-50"
+                      className="hover:bg-orange-50 focus:bg-orange-50 text-gray-800 hover:text-gray-900 focus:text-gray-900"
                     >
                       Homework
                     </SelectItem>
                     <SelectItem
                       value="test"
-                      className="hover:bg-orange-50 focus:bg-orange-50"
+                      className="hover:bg-orange-50 focus:bg-orange-50 text-gray-800 hover:text-gray-900 focus:text-gray-900"
                     >
                       Test
                     </SelectItem>
                     <SelectItem
                       value="quiz"
-                      className="hover:bg-orange-50 focus:bg-orange-50"
+                      className="hover:bg-orange-50 focus:bg-orange-50 text-gray-800 hover:text-gray-900 focus:text-gray-900"
                     >
                       Quiz
                     </SelectItem>
                     <SelectItem
                       value="participation"
-                      className="hover:bg-orange-50 focus:bg-orange-50"
+                      className="hover:bg-orange-50 focus:bg-orange-50 text-gray-800 hover:text-gray-900 focus:text-gray-900"
                     >
                       Participation
                     </SelectItem>
                     <SelectItem
                       value="other"
-                      className="hover:bg-orange-50 focus:bg-orange-50"
+                      className="hover:bg-orange-50 focus:bg-orange-50 text-gray-800 hover:text-gray-900 focus:text-gray-900"
                     >
                       Other
                     </SelectItem>
@@ -1490,7 +1490,7 @@ export default function DigitalLibrary() {
                           <SelectItem
                             key={index}
                             value={standard}
-                            className="hover:bg-yellow-50 focus:bg-yellow-50"
+                            className="hover:bg-yellow-50 focus:bg-yellow-50 text-gray-800 hover:text-gray-900 focus:text-gray-900"
                           >
                             {standard}
                           </SelectItem>
@@ -1524,7 +1524,7 @@ export default function DigitalLibrary() {
                           <SelectItem
                             key={index}
                             value={strand}
-                            className="hover:bg-orange-50 focus:bg-orange-50"
+                            className="hover:bg-orange-50 focus:bg-orange-50 text-gray-800 hover:text-gray-900 focus:text-gray-900"
                           >
                             {strand}
                           </SelectItem>
@@ -1560,7 +1560,7 @@ export default function DigitalLibrary() {
                         <SelectItem
                           key={index}
                           value={domain}
-                          className="hover:bg-blue-50 focus:bg-blue-50"
+                          className="hover:bg-blue-50 focus:bg-blue-50 text-gray-800 hover:text-gray-900 focus:text-gray-900"
                         >
                           {domain}
                         </SelectItem>
@@ -1651,13 +1651,13 @@ export default function DigitalLibrary() {
                     <SelectContent className="bg-white border border-gray-200 shadow-lg">
                       <SelectItem
                         value="MC"
-                        className="hover:bg-blue-50 focus:bg-blue-50"
+                        className="hover:bg-blue-50 focus:bg-blue-50 text-gray-800 hover:text-gray-900 focus:text-gray-900"
                       >
                         Multiple Choice (MC)
                       </SelectItem>
                       <SelectItem
                         value="OR"
-                        className="hover:bg-blue-50 focus:bg-blue-50"
+                        className="hover:bg-blue-50 focus:bg-blue-50 text-gray-800 hover:text-gray-900 focus:text-gray-900"
                       >
                         Open Response (OR)
                       </SelectItem>
@@ -1873,6 +1873,11 @@ export default function DigitalLibrary() {
                 questionType: digitalLibrarySheet.questionType,
                 numberOfQuestions: digitalLibrarySheet.noOfQuestions,
                 teacherName: userData?.username,
+                assignmentName: assignmentContext?.assignmentName || undefined,
+                dueDate: assignmentContext?.dueDate || undefined,
+                isPublished: assignmentContext?.published === "true" || false,
+                courseId: assignmentContext?.courseId || undefined,
+                courseName: assignmentContext?.courseName || undefined,
               }}
             />
           </form>

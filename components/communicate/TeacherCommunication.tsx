@@ -14,19 +14,13 @@ import {
   Megaphone,
   Star,
   Filter,
-  //Image as ImageIcon,
-  //Smile,
   MoreHorizontal,
   Clock,
   CheckCheck,
 } from "lucide-react";
 import { useChatRooms, useChatMessages } from "@/hooks/useChat";
-//import { useTypingIndicator } from "@/hooks/useChatWebSocket";
 import { useChatNotifications } from "@/hooks/useChatNotifications";
 import { useCommunicationData } from "@/hooks/useCommunicationData";
-//import { EnhancedChatRoom, EnhancedChatMessage } from "@/types/chat";
-//import TypingIndicatorComponent from "@/components/chat/TypingIndicator";
-//import ConnectionStatus from "@/components/chat/ConnectionStatus";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,6 +60,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import PageTitleH1 from "@/components/ui/page-title-h1";
 import { cn } from "@/utils/tailwind";
 import DebugCommunicationData from "./DebugCommunicationData";
+import { useRequestInfo } from "@/hooks/useRequestInfo";
+import { useSelector } from "react-redux";
+import { localStorageKey } from "@/constants/global";
 
 // Types
 interface Message {
@@ -93,10 +90,12 @@ interface Conversation {
   }[];
   lastMessage: Message;
   unreadCount: number;
+  displayName: string;
 }
 
 export default function TeacherCommunication() {
-  //const [activeTab, setActiveTab] = useState("messages");
+  const { tenantDomain, accessToken } = useRequestInfo();
+  const { token, user } = useSelector((state: any) => state.auth);
   const [searchQuery, setSearchQuery] = useState("");
   const [newMessage, setNewMessage] = useState("");
   const [composeDialogOpen, setComposeDialogOpen] = useState(false);
@@ -108,10 +107,9 @@ export default function TeacherCommunication() {
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const [isCreatingAnnouncement, setIsCreatingAnnouncement] = useState(false);
 
-  // ID utilisateur actuel (à récupérer depuis le contexte d'auth)
-  const currentUserId = 1; // À remplacer par l'ID réel de l'utilisateur connecté
+    const storedUser = localStorage.getItem(localStorageKey.USER_DATA);
+  const currentUserId = storedUser ? JSON.parse(storedUser).id : null;
 
-  // Fetch real data instead of using mock data
   const {
     classes,
     students,
@@ -122,7 +120,6 @@ export default function TeacherCommunication() {
     refetch: refetchData,
   } = useCommunicationData();
 
-  // Debug: Log the data to see what we're getting
   useEffect(() => {
     console.log("🔍 DEBUG TeacherCommunication Data:", {
       dataLoading,
@@ -136,7 +133,8 @@ export default function TeacherCommunication() {
     });
   }, [dataLoading, dataError, students, classes, parents, teachers]);
 
-  // Hook pour les notifications
+
+
   const {
     notifyConversationCreated,
     notifyAnnouncementSent,
@@ -145,7 +143,6 @@ export default function TeacherCommunication() {
     notifyMessageError,
   } = useChatNotifications();
 
-  // Utilisation des hooks de chat avec API REST uniquement (WebSocket désactivé temporairement)
   const {
     rooms,
     selectedRoom,
@@ -153,36 +150,59 @@ export default function TeacherCommunication() {
     loading: roomsLoading,
     error: roomsError,
     createRoom,
-    // isConnected,
-    // reconnect,
-  } = useChatRooms(currentUserId);
+  } = useChatRooms(currentUserId, accessToken, tenantDomain);
 
   const {
     messages,
     loading: messagesLoading,
-   // error: messagesError,
     sendMessage,
-    // typing,
-    // userStatuses,
-  } = useChatMessages(selectedRoom?.id || null);
+    fetchMessages,
+  } = useChatMessages(selectedRoom?.id || null, accessToken, tenantDomain);
 
-  // Gestion de l'indicateur de frappe (désactivé temporairement)
-  // const { isTyping, setIsTyping } = useTypingIndicator(
-  //   selectedRoom?.id || null
-  // );
-
-  // Variables temporaires pour remplacer les fonctionnalités WebSocket
-//   const typing: any[] = [];
-//   const userStatuses = {};
-//   const isTyping = false;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const setIsTyping = (_value?: boolean) => {};
 
-  // Conversion des rooms en format de conversations pour l'interface existante
-  const conversations: Conversation[] = useMemo(() => {
-    return rooms.map((room) => ({
+
+const cleanRoomName = (name: string): string => {
+  if (!name) return "Unnamed Group";
+  let clean = name.trim();
+  clean = clean.replace(/^(Classe|Class)\s*/i, "");
+  return `Class ${clean}`;
+};
+
+const conversations: Conversation[] = useMemo(() => {
+  return rooms.map((room) => {
+    const isGroup = room.is_group;
+    let conversationType: "individual" | "class" | "announcement" | "parent" = "individual";
+    let displayName = "Conversation";
+
+   if (isGroup) {
+  if (room.room_type === "class") {
+    conversationType = "class";
+    displayName = `Group: ${room.name}`;
+  } else if (room.room_type === "announcement") {
+    conversationType = "announcement";
+    displayName = `Group Announcement: ${room.name}`;
+  } else if (room.room_type === "parent") {
+    conversationType = "parent";
+    displayName = `Parent Group: ${room.name}`;
+  } else {
+    conversationType = "class";
+    displayName = `Group: ${room.name}`;
+  }
+}
+ else {
+      conversationType = "individual";
+      displayName =
+        room.participants.find(
+          (p) => p.id.toString() !== currentUserId?.toString()
+        )?.name ||
+        room.participants[0]?.name ||
+        "Unknown User";
+    }
+
+    return {
       id: room.id.toString(),
-      type: room.is_group ? "class" : "individual",
+      type: conversationType,
       participants: room.participants.map((p) => ({
         id: p.id.toString(),
         name: p.name,
@@ -192,9 +212,10 @@ export default function TeacherCommunication() {
             ? "teacher"
             : (p.role as "teacher" | "student" | "parent"),
       })),
+      displayName,
       lastMessage: room.last_message
         ? {
-            id: room.last_message.id.toString(),
+            id: room.last_message.uuid.toString(),
             sender: {
               id: room.last_message.sender_info.id.toString(),
               name: room.last_message.sender_info.name,
@@ -220,32 +241,26 @@ export default function TeacherCommunication() {
           }
         : {
             id: "",
-            sender: {
-              id: "",
-              name: "",
-              avatar: "",
-              role: "student" as const,
-            },
+            sender: { id: "", name: "", avatar: "", role: "student" },
             content: "Aucun message",
             timestamp: "",
             read: true,
           },
       unreadCount: room.unread_count,
-    }));
-  }, [rooms]);
+    };
+  });
+}, [rooms, currentUserId]);
 
-  // Conversion des messages pour l'interface existante
+
+
   const chatMessages: Message[] = useMemo(() => {
     return messages.map((msg) => ({
-      id: msg.id.toString(),
+      id: msg.uuid.toString(),
       sender: {
         id: msg.sender_info.id.toString(),
         name: msg.sender_info.name,
         avatar: msg.sender_info.avatar || "/assets/images/general/student.png",
-        role:
-          msg.sender_info.role === "admin"
-            ? "teacher"
-            : (msg.sender_info.role as "teacher" | "student" | "parent"),
+        role: msg.sender_info.role === "admin" ? "teacher" : (msg.sender_info.role as "teacher" | "student" | "parent"),
       },
       content: msg.content,
       timestamp: new Date(msg.created_at).toLocaleTimeString("fr-FR", {
@@ -256,14 +271,12 @@ export default function TeacherCommunication() {
     }));
   }, [messages]);
 
-  // Conversation sélectionnée basée sur la room sélectionnée
   const selectedConversation = useMemo(() => {
     return selectedRoom
       ? conversations.find((c) => c.id === selectedRoom.id.toString()) || null
       : null;
   }, [selectedRoom, conversations]);
 
-  // Filter conversations based on search query
   const filteredConversations = useMemo(() => {
     return conversations.filter((conversation) => {
       const participantNames = conversation.participants.map((p) =>
@@ -275,26 +288,22 @@ export default function TeacherCommunication() {
     });
   }, [conversations, searchQuery]);
 
-  // Handle sending a new message
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedRoom) return;
 
     try {
       await sendMessage(newMessage.trim());
       setNewMessage("");
-      setIsTyping(false); // Arrêter l'indicateur de frappe
-      notifyMessageSent(); // Notification de succès
+      setIsTyping(false);
+      notifyMessageSent();
     } catch (error) {
       console.error("Erreur lors de l'envoi du message:", error);
-      notifyMessageError(); // Notification d'erreur
+      notifyMessageError();
     }
   };
 
-  // Gérer les changements dans le champ de message
   const handleMessageChange = (value: string) => {
     setNewMessage(value);
-
-    // Gérer l'indicateur de frappe
     if (value.trim()) {
       setIsTyping(true);
     } else {
@@ -302,7 +311,6 @@ export default function TeacherCommunication() {
     }
   };
 
-  // Handle selecting a conversation
   const handleSelectConversation = (conversation: Conversation) => {
     const room = rooms.find((r) => r.id.toString() === conversation.id);
     if (room) {
@@ -310,72 +318,84 @@ export default function TeacherCommunication() {
     }
   };
 
-  // Handle creating a new conversation
-  const handleCreateConversation = async () => {
-    if (selectedRecipients.length === 0 || isCreatingConversation) return;
+const handleCreateConversation = async () => {
+  if (selectedRecipients.length === 0 || isCreatingConversation) return;
 
-    setIsCreatingConversation(true);
+  setIsCreatingConversation(true);
 
-    try {
-      // Déterminer le nom de la conversation basé sur le type et les destinataires
-      let conversationName = "";
+  try {
+    let conversationName = "";
 
-      if (recipientType === "student") {
-        const selectedStudentNames = students
-          .filter((student) => selectedRecipients.includes(student.id))
-          .map((student) => student.name);
-        conversationName =
-          selectedStudentNames.length === 1
-            ? `Conversation avec ${selectedStudentNames[0]}`
-            : `Conversation avec ${selectedStudentNames.length} étudiants`;
-      } else if (recipientType === "class") {
-        const selectedClassNames = classes
-          .filter((cls) => selectedRecipients.includes(cls.id))
-          .map((cls) => cls.name);
-        conversationName =
-          selectedClassNames.length === 1
-            ? `Classe ${selectedClassNames[0]}`
-            : `${selectedClassNames.length} classes`;
-      } else if (recipientType === "parent") {
-        const selectedParentNames = parents
-          .filter((parent) => selectedRecipients.includes(parent.id))
-          .map((parent) => parent.name);
-        conversationName =
-          selectedParentNames.length === 1
-            ? `Conversation avec ${selectedParentNames[0]}`
-            : `Conversation avec ${selectedParentNames.length} parents`;
-      }
-
-      // Créer la nouvelle conversation via l'API
-      await createRoom(conversationName);
-
-      // Close the dialog and reset state
-      setComposeDialogOpen(false);
-      setSelectedRecipients([]);
-
-      // Notification de succès
-      notifyConversationCreated(conversationName);
-    } catch (error) {
-      console.error("Erreur lors de la création de la conversation:", error);
-      notifyCreationError("conversation");
-    } finally {
-      setIsCreatingConversation(false);
+    if (recipientType === "student") {
+      const selectedStudentNames = students
+        .filter((student) => selectedRecipients.includes(student.id))
+        .map((student) => student.name);
+      conversationName =
+        selectedStudentNames.length === 1
+          ? `Conversation avec ${selectedStudentNames[0]}`
+          : `Conversation avec ${selectedStudentNames.length} étudiants`;
+    } else if (recipientType === "class") {
+      const selectedClassNames = classes
+        .filter((cls) => selectedRecipients.includes(cls.id))
+        .map((cls) => cls.name);
+      conversationName =
+        selectedClassNames.length === 1
+          ? `Classe ${selectedClassNames[0]}`
+          : `${selectedClassNames.length} classes`;
+    } else if (recipientType === "parent") {
+      const selectedParentNames = parents
+        .filter((parent) => selectedRecipients.includes(parent.id))
+        .map((parent) => parent.name);
+      conversationName =
+        selectedParentNames.length === 1
+          ? `Conversation avec ${selectedParentNames[0]}`
+          : `Conversation avec ${selectedParentNames.length} parents`;
     }
-  };
 
-  // Handle creating a new announcement
+    // 🚀 Correction : on met isGroup=true si c’est une classe ou plusieurs participants
+    const isGroupChat =
+      recipientType === "class" || selectedRecipients.length > 1;
+
+    const newRoom = await createRoom(
+      conversationName,
+      selectedRecipients.map((id) => parseInt(id)),
+      isGroupChat, // ✅ true si c’est une classe
+      newMessage.trim() || undefined
+    );
+
+    if (newRoom) {
+      setSelectedRoom(newRoom);
+      await fetchMessages(); // recharge messages
+      setNewMessage("");
+      notifyConversationCreated(conversationName);
+    }
+
+    setComposeDialogOpen(false);
+    setSelectedRecipients([]);
+  } catch (error) {
+    console.error("Erreur lors de la création de la conversation:", error);
+    notifyCreationError("conversation");
+  } finally {
+    setIsCreatingConversation(false);
+  }
+};
+
+
+
+  useEffect(() => {
+  if (selectedRoom) {
+    console.log("🔄 Conversation sélectionnée, rechargement des messages...");
+    // Les messages se rechargent automatiquement via useChatMessages
+  }
+  }, [selectedRoom]);
+
   const handleCreateAnnouncement = async () => {
-    if (
-      !newMessage.trim() ||
-      selectedRecipients.length === 0 ||
-      isCreatingAnnouncement
-    )
+    if (!newMessage.trim() || selectedRecipients.length === 0 || isCreatingAnnouncement)
       return;
 
     setIsCreatingAnnouncement(true);
 
     try {
-      // Déterminer le nom de l'annonce basé sur les destinataires
       const selectedClassNames = classes
         .filter((cls) => selectedRecipients.includes(cls.id))
         .map((cls) => cls.name);
@@ -385,30 +405,22 @@ export default function TeacherCommunication() {
           ? `Annonce - ${selectedClassNames[0]}`
           : `Annonce - ${selectedClassNames.length} classes`;
 
-      // Créer une conversation de groupe pour l'annonce
       const newRoom = await createRoom(announcementName);
 
-      // Si la room est créée avec succès, envoyer le message d'annonce
       if (newRoom && selectedRoom) {
-        // Attendre un peu pour que la room soit sélectionnée
         setTimeout(async () => {
           try {
             await sendMessage(newMessage.trim());
+            setNewMessage("");
           } catch (error) {
-            console.error(
-              "Erreur lors de l'envoi du message d'annonce:",
-              error
-            );
+            console.error("Erreur lors de l'envoi du message d'annonce:", error);
           }
         }, 500);
       }
 
-      // Close the dialog and reset state
       setAnnounceDialogOpen(false);
       setSelectedRecipients([]);
       setNewMessage("");
-
-      // Notification de succès
       notifyAnnouncementSent(selectedRecipients.length);
     } catch (error) {
       console.error("Erreur lors de la création de l'annonce:", error);
@@ -418,7 +430,6 @@ export default function TeacherCommunication() {
     }
   };
 
-  // Show error state if data loading failed
   if (dataError) {
     return (
       <div className="flex flex-col gap-4 w-full">
@@ -1073,7 +1084,7 @@ export default function TeacherCommunication() {
                       >
                         <AvatarImage
                           src={conversation.participants[0].avatar}
-                          alt={conversation.participants[0].name}
+                          alt={conversation.displayName}
                           className="object-cover rounded-lg"
                         />
                         <AvatarFallback className="rounded-lg">
@@ -1091,7 +1102,7 @@ export default function TeacherCommunication() {
                                 : ""
                             )}
                           >
-                            {conversation.participants[0].name}
+                            {conversation.displayName}
                             {conversation.unreadCount > 0 && (
                               <span className="ml-2 inline-flex h-2 w-2 rounded-full bg-blue-500"></span>
                             )}
@@ -1168,16 +1179,16 @@ export default function TeacherCommunication() {
                     >
                       <AvatarImage
                         src={selectedConversation.participants[0].avatar}
-                        alt={selectedConversation.participants[0].name}
+                        alt={selectedConversation.displayName}
                         className="object-cover rounded-lg"
                       />
                       <AvatarFallback className="rounded-lg">
-                        {selectedConversation.participants[0].name.charAt(0)}
+                        {selectedConversation.displayName}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <h3 className="font-semibold text-lg">
-                        {selectedConversation.participants[0].name}
+                        {selectedConversation.displayName}
                       </h3>
                       <div className="flex items-center gap-2">
                         <Badge

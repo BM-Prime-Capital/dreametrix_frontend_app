@@ -2,11 +2,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { ChatMessageService, ChatRoomService } from "@/services/chat-service";
 import { useApiHeaders } from "@/lib/api-config";
 import {
-  useChatWebSocket,
-  useChatRoomRealtime,
-  useUserStatus,
-} from "@/hooks/useChatWebSocket";
-import {
   EnhancedChatRoom,
   EnhancedChatMessage,
   ChatRoom,
@@ -17,7 +12,9 @@ import {
 } from "@/types/chat";
 import { useCommunicationData } from "@/hooks/useCommunicationData";
 
-// Helper function to convert communication data to chat participants
+// -----------------------------
+// Helpers
+// -----------------------------
 const createParticipantsFromCommunicationData = (
   students: any[],
   teachers: any[],
@@ -25,56 +22,152 @@ const createParticipantsFromCommunicationData = (
 ): ChatParticipant[] => {
   const participants: ChatParticipant[] = [];
 
-  // Add students
   students.forEach((student) => {
-    participants.push({
-      id: parseInt(student.id),
-      name: student.name,
-      role: "student",
-      status: "offline",
-      avatar: student.avatar,
-    });
+    if (student && student.id && student.name) {
+      participants.push({
+        id: parseInt(student.id),
+        name: student.name,
+        role: "student",
+        status: "offline",
+        avatar: student.avatar || "/assets/images/general/student.png",
+      });
+    }
   });
 
-  // Add teachers
   teachers.forEach((teacher) => {
-    participants.push({
-      id: parseInt(teacher.id),
-      name: teacher.name,
-      role: "teacher",
-      status: "offline",
-      avatar: teacher.avatar,
-    });
+    if (teacher && teacher.id && teacher.name) {
+      participants.push({
+        id: parseInt(teacher.id),
+        name: teacher.name,
+        role: "teacher",
+        status: "offline",
+        avatar: teacher.avatar || "/assets/images/general/teacher.png",
+      });
+    }
   });
 
-  // Add parents
   parents.forEach((parent) => {
-    participants.push({
-      id: parseInt(parent.id),
-      name: parent.name,
-      role: "parent",
-      status: "offline",
-      avatar: parent.avatar,
-    });
+    if (parent && parent.id && parent.name) {
+      participants.push({
+        id: parseInt(parent.id),
+        name: parent.name,
+        role: "parent",
+        status: "offline",
+        avatar: parent.avatar || "/assets/images/general/parent.png",
+      });
+    }
   });
 
   return participants;
 };
 
-// Helper functions pour convertir les données API en types enhanced
+// Dans useChat.ts - remplacez la fonction cleanRoomName
+const cleanRoomName = (
+  room: any, 
+  currentUserId: string, 
+  roomType?: string
+): string => {
+  const { name, participants, is_group } = room;
+
+  // Conversations individuelles
+  if (!is_group) {
+    const otherParticipants = participants?.filter((p: any) => 
+      p.id.toString() !== currentUserId.toString()
+    ) || [];
+    
+    if (otherParticipants.length === 1) {
+      return otherParticipants[0].full_name || otherParticipants[0].username;
+    } else if (otherParticipants.length > 1) {
+      return `Group (${otherParticipants.length})`;
+    }
+  }
+
+  // Groupes - nettoie le nom existant
+  let cleanName = name?.trim() || '';
+
+  // Supprime tous les préfixes problématiques
+  cleanName = cleanName.replace(/^(Classe|Class|Conversation avec|Group:|Announcement:|Parent Group:|Classe Class|\d+ classes?)\s*/i, '');
+  
+  // Si vide après nettoyage, génère un nom logique
+  if (!cleanName || cleanName === 'Unnamed Group') {
+    return generateLogicalGroupName(room, currentUserId, roomType);
+  }
+
+  return cleanName;
+};
+
+const generateLogicalGroupName = (
+  room: any, 
+  currentUserId: string, 
+  roomType?: string
+): string => {
+  const { participants, is_group } = room;
+  
+  const otherParticipants = participants?.filter((p: any) => 
+    p.id.toString() !== currentUserId.toString()
+  ) || [];
+
+  const participantCount = otherParticipants.length;
+
+  switch (roomType) {
+    case 'class':
+      return participantCount > 0 ? 
+        `Class (${participantCount})` : 
+        'Class Group';
+    
+    case 'announcement':
+      return participantCount > 0 ?
+        `Announcement (${participantCount})` :
+        'Announcement';
+    
+    case 'parent':
+      return participantCount > 0 ?
+        `Parents (${participantCount})` :
+        'Parents';
+    
+    default:
+      if (participantCount === 0) return 'Group';
+      if (participantCount === 1) return otherParticipants[0].full_name;
+      return `Group (${participantCount})`;
+  }
+};
+
+
+
+
 const enhanceMessage = (
-  message: ChatMessage,
+  message: any, // Utiliser un type plus spécifique si possible
   participants: ChatParticipant[]
 ): EnhancedChatMessage => {
-  const sender = participants.find((p) => p.id === message.sender) || {
-    id: message.sender,
-    name: "Unknown User",
+  const sender = participants.find((p) => p.id === message.sender.id) || {
+    id: message.sender.id,
+    name: message.sender.full_name || "Unknown User",
     role: "student" as const,
     status: "offline" as const,
+    avatar: "/assets/images/general/student.png",
   };
 
   return {
-    ...message,
+    // Propriétés de base du message depuis l'API
+    uuid: message.uuid, // ← UUID récupéré directement de la réponse API
+    created_at: message.created_at,
+    last_update: message.last_update,
+    content: message.content,
+    message_type: message.message_type,
+    attachment_url: message.attachment_url,
+    voice_note_url: message.voice_note_url,
+    is_deleted: message.is_deleted,
+    extra_data: message.extra_data,
+    
+    // Expéditeur avec structure complète
+    sender: {
+      id: message.sender.id,
+      username: message.sender.username,
+      full_name: message.sender.full_name,
+      email: message.sender.email
+    },
+    
+    // Propriétés enrichies pour l'UI
     sender_info: sender,
     timestamp: new Date(message.created_at),
     status: "delivered" as const,
@@ -83,117 +176,237 @@ const enhanceMessage = (
 
 const enhanceRoom = (
   room: ChatRoom,
-  allParticipants: ChatParticipant[]
+  participants: ChatParticipant[]
 ): EnhancedChatRoom => {
+  // Utiliser les participants réels au lieu de tous les participants
+  const roomParticipants = participants.length > 0 
+    ? participants 
+    : [{
+        id: 1,
+        name: room.name || "Unknown",
+        role: "student" as const,
+        status: "offline" as const,
+        avatar: "/assets/images/general/student.png",
+      }];
+
   return {
     ...room,
-    participants: allParticipants,
+    participants: roomParticipants,
     last_message: null,
     unread_count: 0,
   };
 };
 
-export const useChatRooms = (userId: number = 1, token?: string) => {
+// ------------------------------------------------
+// HOOK useChatRooms
+// ------------------------------------------------
+export const useChatRooms = (
+  userId: number = 1,
+  token?: string,
+  tenantDomain?: string
+) => {
   const [rooms, setRooms] = useState<EnhancedChatRoom[]>([]);
-  const [selectedRoom, setSelectedRoom] = useState<EnhancedChatRoom | null>(
-    null
-  );
+  const [selectedRoom, setSelectedRoom] = useState<EnhancedChatRoom | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Headers API avec authentification
   const headers = useApiHeaders();
+  const tenantPrimaryDomain = tenantDomain || process.env.NEXT_PUBLIC_TENANT_DOMAIN || "";
+  const accessToken = token || (headers["Authorization"]?.replace("Bearer ", "") || "");
 
-  // Get real communication data
   const { students, teachers, parents } = useCommunicationData();
-
-  // Create participants from real data
   const allParticipants = createParticipantsFromCommunicationData(
     students,
     teachers,
     parents
   );
 
-  // Intégration WebSocket (DÉSACTIVÉ TEMPORAIREMENT)
-  // const {
-  //   isConnected,
-  //   error: wsError,
-  //   reconnect,
-  // } = useChatWebSocket(userId, token);
-  // const { updateStatus } = useUserStatus();
-
-  // Variables temporaires pour remplacer WebSocket
   const isConnected = false;
   const wsError = null;
   const reconnect = () => {};
-
-  // Utiliser useRef pour éviter les boucles infinies
   const hasInitialized = useRef(false);
 
-  const fetchRooms = useCallback(async () => {
+const fetchRooms = useCallback(async () => {
+  try {
+    setLoading(true);
+    setError(null);
+    console.log("[useChatRooms] Chargement des rooms...");
+
+    const response = await ChatRoomService.listRooms(
+      tenantPrimaryDomain,
+      accessToken
+    );
+
+    console.log("[useChatRooms] Rooms chargées:", response.results.length);
+
+    // Trier par date du dernier message
+    const sortedResults = [...response.results].sort((a, b) => {
+      const dateA = a.last_message ? new Date(a.last_message.created_at).getTime() : 0;
+      const dateB = b.last_message ? new Date(b.last_message.created_at).getTime() : 0;
+      return dateB - dateA;
+    });
+
+
+// Dans useChat.ts - remplacez l'appel à cleanRoomName
+const enhancedRooms: EnhancedChatRoom[] = sortedResults.map((room: any) => {
+  const rawParticipants = room.participants?.map((participant: any) => ({
+    id: participant.id,
+    name: participant.full_name || participant.username || "Unknown",
+    role: participant.role || "student",
+    status: "offline" as const,
+    avatar: participant.image_url || "/assets/images/general/student.png",
+  })) || [];
+
+  // Utilisez la nouvelle fonction avec l'objet room complet
+  const displayName = cleanRoomName(room, userId?.toString() || '', room.room_type);
+
+  let roomParticipants;
+  
+  if (room.is_group) {
+    roomParticipants = rawParticipants.length > 0
+      ? rawParticipants
+      : [{
+          id: room.id,
+          name: displayName,
+          role: "student" as const,
+          status: "offline" as const,
+          avatar: "/assets/images/general/student.png",
+        }];
+  } else {
+    const visibleParticipants = rawParticipants.filter(p => p.id.toString() !== userId?.toString());
+    roomParticipants = visibleParticipants.length > 0
+      ? visibleParticipants
+      : rawParticipants;
+  }
+
+  return {
+    ...room,
+    name: displayName,
+    room_type: room.room_type || (room.is_group ? "group" : "private"),
+    participants: roomParticipants,
+    last_message: room.last_message
+      ? enhanceMessage(room.last_message, rawParticipants)
+      : null,
+    unread_count: room.unread_count || 0,
+  };
+});
+
+
+    console.log("[useChatRooms] Rooms triées et enrichies:", enhancedRooms.length);
+    setRooms(enhancedRooms);
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Failed to fetch rooms";
+    setError(errorMessage);
+    console.error("[useChatRooms] Erreur chargement rooms:", err);
+  } finally {
+    setLoading(false);
+  }
+}, [tenantPrimaryDomain, accessToken, userId]);
+
+
+
+const createRoom = useCallback(
+  async (
+    name: string,
+    participantIds?: number[],
+    isGroup: boolean = false,
+    initialMessage?: string
+  ) => {
     try {
-      setLoading(true);
       setError(null);
-      const response = await ChatRoomService.listRooms(headers);
+      console.log("[useChatRooms] Création room:", { name, participantIds, isGroup, initialMessage });
 
-      console.log("🔍 DEBUG API Rooms Response:", response);
-      console.log("🔍 DEBUG All Participants:", allParticipants);
+      // ⚡ Nettoyer le nom ici
+      const normalizedName = cleanRoomName(name);
 
-      // Transformer les données de l'API en EnhancedChatRoom
-      const enhancedRooms: EnhancedChatRoom[] = response.results.map(
-        (room: any) => {
-          // Créer des participants par défaut pour chaque room
-          // En attendant une API qui retourne les vrais participants de la room
-          const roomParticipants =
-            allParticipants.length > 0
-              ? [
-                  allParticipants[
-                    Math.floor(Math.random() * allParticipants.length)
-                  ],
-                ]
-              : [
-                  {
-                    id: 1,
-                    name: room.name || "Unknown",
-                    role: "student" as const,
-                    status: "offline" as const,
-                    avatar: "/assets/images/general/student.png",
-                  },
-                ];
+      // Construire le payload avec le nom nettoyé
+      const roomData: any = { name: normalizedName };
 
-          return {
-            ...room,
-            participants: roomParticipants,
-            last_message: null,
-            unread_count: Math.floor(Math.random() * 3),
-          };
+      if (participantIds && participantIds.length > 0) {
+        roomData.participant_ids = participantIds;
+      }
+
+      if ((participantIds && participantIds.length > 1) || isGroup) {
+        roomData.is_group = true;
+        roomData.room_type = "group";
+      } else {
+        roomData.is_group = false;
+        roomData.room_type = "private";
+      }
+
+      // Création côté API
+      const newRoom = await ChatRoomService.createChatRoom(
+        tenantPrimaryDomain,
+        accessToken,
+        {
+          ...roomData,
+          initial_message: initialMessage?.trim() || undefined,
         }
       );
 
-      setRooms(enhancedRooms);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch rooms");
-      console.error("Error fetching rooms:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [headers]);
+      console.log("[useChatRooms] Room créée:", newRoom);
 
-  const createRoom = useCallback(
-    async (name: string) => {
-      if (!headers) return null;
+      // Participants API
+      const rawParticipants = newRoom.participants?.map((participant: any) => ({
+        id: participant.id,
+        name: participant.full_name || participant.username || "Unknown",
+        role: participant.role || "student",
+        status: "offline" as const,
+        avatar: participant.image_url || "/assets/images/general/student.png",
+      })) || [];
 
-      try {
-        const roomData = { name };
-        const newRoom = await ChatRoomService.createChatRoom(headers, roomData);
-        return newRoom;
-      } catch (error) {
-        console.error("Error creating room:", error);
-        throw error;
+      let roomParticipants;
+      if (newRoom.is_group) {
+        roomParticipants = rawParticipants.length > 0
+          ? rawParticipants
+          : [{
+              id: newRoom.id,
+              name: normalizedName, // ⚡ garder nom déjà nettoyé
+              role: "student" as const,
+              status: "offline" as const,
+              avatar: "/assets/images/general/student.png",
+            }];
+      } else {
+        const visibleParticipants = rawParticipants.filter(p => p.id !== userId);
+        roomParticipants = visibleParticipants.length > 0
+          ? visibleParticipants
+          : rawParticipants.length > 0
+            ? rawParticipants
+            : [{
+                id: newRoom.id,
+                name: "Unknown Conversation",
+                role: "student" as const,
+                status: "offline" as const,
+                avatar: "/assets/images/general/student.png",
+              }];
       }
-    },
-    [headers]
-  );
+
+      const enhancedNewRoom: EnhancedChatRoom = {
+        ...newRoom,
+        name: normalizedName, // ⚡ utiliser le nom corrigé
+        room_type: newRoom.room_type || (newRoom.is_group ? "group" : "private"),
+        participants: roomParticipants,
+        last_message: newRoom.last_message
+          ? enhanceMessage(newRoom.last_message, rawParticipants)
+          : null,
+        unread_count: 0,
+      };
+
+      setRooms(prev => [enhancedNewRoom, ...prev]);
+
+      return enhancedNewRoom;
+    } catch (error) {
+      console.error("[useChatRooms] Erreur création room:", error);
+      setError(error instanceof Error ? error.message : "Failed to create room");
+      throw error;
+    }
+  },
+  [tenantPrimaryDomain, accessToken, userId]
+);
+
+
+
+
 
   const updateRoom = useCallback(
     async (
@@ -203,28 +416,38 @@ export const useChatRooms = (userId: number = 1, token?: string) => {
         details?: string;
         is_group?: boolean;
         is_deleted?: boolean;
-        extra_data?: string;
+        extra_data?: string | Record<string, any>;
       }
     ) => {
       try {
         setError(null);
-        await ChatRoomService.partialUpdateRoom(headers, roomId, updates);
 
-        // Mettre à jour localement
+        const payload = {
+          ...updates,
+          extra_data: updates.extra_data
+            ? JSON.stringify(updates.extra_data)
+            : undefined,
+        };
+
+        await ChatRoomService.partialUpdateRoom(
+          tenantPrimaryDomain,
+          accessToken,
+          roomId,
+          payload
+        );
+
         setRooms((prev) =>
           prev.map((room) => {
             if (room.id === roomId) {
-              const baseRoom = { ...room };
-              if (updates.name !== undefined) baseRoom.name = updates.name;
-              if (updates.details !== undefined)
-                baseRoom.details = updates.details;
-              if (updates.is_group !== undefined)
-                baseRoom.is_group = updates.is_group;
-              if (updates.is_deleted !== undefined)
-                baseRoom.is_deleted = updates.is_deleted;
-
-              // Convertir le room de base en enhanced room
-              return enhanceRoom(baseRoom, allParticipants);
+              const merged: ChatRoom = {
+                ...room,
+                ...updates,
+                extra_data:
+                  typeof updates.extra_data === "string"
+                    ? JSON.parse(updates.extra_data)
+                    : updates.extra_data,
+              };
+              return enhanceRoom(merged, room.participants);
             }
             return room;
           })
@@ -233,34 +456,39 @@ export const useChatRooms = (userId: number = 1, token?: string) => {
         if (selectedRoom?.id === roomId) {
           setSelectedRoom((prev) => {
             if (!prev) return null;
-            const baseRoom = { ...prev };
-            if (updates.name !== undefined) baseRoom.name = updates.name;
-            if (updates.details !== undefined)
-              baseRoom.details = updates.details;
-            if (updates.is_group !== undefined)
-              baseRoom.is_group = updates.is_group;
-            if (updates.is_deleted !== undefined)
-              baseRoom.is_deleted = updates.is_deleted;
 
-            return enhanceRoom(baseRoom, allParticipants);
+            const merged: ChatRoom = {
+              ...prev,
+              ...updates,
+              extra_data:
+                typeof updates.extra_data === "string"
+                  ? JSON.parse(updates.extra_data)
+                  : updates.extra_data,
+            };
+
+            return enhanceRoom(merged, prev.participants);
           });
         }
+
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to update room");
         console.error("Error updating room:", err);
         throw err;
       }
     },
-    [headers, selectedRoom]
+    [tenantPrimaryDomain, accessToken, selectedRoom]
   );
 
   const deleteRoom = useCallback(
     async (roomId: number) => {
       try {
         setError(null);
-        await ChatRoomService.deleteRoom(headers, roomId);
+        await ChatRoomService.deleteRoom(
+          tenantPrimaryDomain,
+          accessToken,
+          roomId
+        );
 
-        // Supprimer localement
         setRooms((prev) => prev.filter((room) => room.id !== roomId));
 
         if (selectedRoom?.id === roomId) {
@@ -272,65 +500,27 @@ export const useChatRooms = (userId: number = 1, token?: string) => {
         throw err;
       }
     },
-    [headers, selectedRoom]
+    [tenantPrimaryDomain, accessToken, selectedRoom]
   );
 
   useEffect(() => {
-    // Attendre que l'auth soit disponible avant de faire la première requête
-    if (!hasInitialized.current && headers["Authorization"]) {
+    if (!hasInitialized.current && accessToken) {
       hasInitialized.current = true;
-
-      // Fonction inline pour éviter les dépendances infinies
-      const loadRooms = async () => {
-        try {
-          setLoading(true);
-          setError(null);
-          const response = await ChatRoomService.listRooms(headers);
-
-          // Transformer les données de l'API en EnhancedChatRoom
-          const enhancedRooms: EnhancedChatRoom[] = response.results.map(
-            (room: any) => {
-              // Créer des participants par défaut pour chaque room
-              const roomParticipants =
-                allParticipants.length > 0
-                  ? [
-                      allParticipants[
-                        Math.floor(Math.random() * allParticipants.length)
-                      ],
-                    ]
-                  : [
-                      {
-                        id: 1,
-                        name: room.name || "Unknown",
-                        role: "student" as const,
-                        status: "offline" as const,
-                        avatar: "/assets/images/general/student.png",
-                      },
-                    ];
-
-              return {
-                ...room,
-                participants: roomParticipants,
-                last_message: null,
-                unread_count: Math.floor(Math.random() * 3),
-              };
-            }
-          );
-
-          setRooms(enhancedRooms);
-        } catch (err) {
-          setError(
-            err instanceof Error ? err.message : "Failed to fetch rooms"
-          );
-          console.error("Error fetching rooms:", err);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      loadRooms();
+      fetchRooms();
     }
-  }, [headers]);
+  }, [accessToken, fetchRooms]);
+
+  // Debug effect
+  useEffect(() => {
+    console.log("useChatRooms] Rooms state:", {
+      count: rooms.length,
+      rooms: rooms.map(r => ({ id: r.id, name: r.name, participants: r.participants.length }))
+    });
+  }, [rooms]);
+
+  useEffect(() => {
+    console.log("[useChatRooms] Selected room:", selectedRoom);
+  }, [selectedRoom]);
 
   return {
     rooms,
@@ -342,189 +532,133 @@ export const useChatRooms = (userId: number = 1, token?: string) => {
     createRoom,
     updateRoom,
     deleteRoom,
-    // États WebSocket
     isConnected,
     reconnect,
   };
 };
 
-export const useChatMessages = (roomId: number | null) => {
+// ------------------------------------------------
+// HOOK useChatMessages
+// ------------------------------------------------
+export const useChatMessages = (
+  roomId: number | null,
+  roomUuid?: string,
+  token?: string,
+  tenantDomain?: string
+) => {
   const [messages, setMessages] = useState<EnhancedChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Headers API avec authentification
   const headers = useApiHeaders();
+  const tenantPrimaryDomain =
+    tenantDomain || process.env.NEXT_PUBLIC_TENANT_DOMAIN || "";
+  const accessToken =
+    token || headers["Authorization"]?.replace("Bearer ", "") || "";
 
-  // Get real communication data
   const { students, teachers, parents } = useCommunicationData();
-
-  // Create participants from real data
   const allParticipants = createParticipantsFromCommunicationData(
     students,
     teachers,
     parents
   );
 
-  // Utiliser useRef pour éviter les boucles infinies
   const lastRoomId = useRef<number | null>(null);
 
-  // Intégration WebSocket pour les messages en temps réel (DÉSACTIVÉ TEMPORAIREMENT)
-  // const {
-  //   messages: realtimeMessages,
-  //   typing,
-  //   userStatuses,
-  //   sendMessage: sendRealtimeMessage,
-  // } = useChatRoomRealtime(roomId);
-
-  // Variables temporaires pour remplacer WebSocket
-  const realtimeMessages: EnhancedChatMessage[] = [];
-  const typing: any[] = [];
-  const userStatuses = {};
-  const sendRealtimeMessage = (_content: string) => {};
-
-  // Charger les messages initiaux depuis l'API
+  // ---------------- FETCH MESSAGES ----------------
   const fetchMessages = useCallback(
     async (limit?: number, offset?: number) => {
-      if (!roomId) return;
-
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await ChatMessageService.listMessages(
-          headers,
-          limit,
-          offset
-        );
-
-        // Filtrer les messages pour ce salon et les transformer
-        const roomMessages = response.results.filter(
-          (msg) => msg.chat === roomId
-        );
-        const enhancedMessages: EnhancedChatMessage[] = roomMessages.map(
-          (msg) => ({
-            ...msg,
-            sender_info: allParticipants.find(
-              (p: ChatParticipant) => p.id === msg.sender
-            ) ||
-              allParticipants[0] || {
-                id: msg.sender,
-                name: "Unknown User",
-                role: "student",
-                status: "offline",
-              },
-            timestamp: new Date(msg.created_at),
-            status: "delivered",
-          })
-        );
-
-        setMessages(enhancedMessages);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch messages"
-        );
-        console.error("Error fetching messages:", err);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [headers, roomId]
-  );
-
-  // Fusionner les messages API avec les messages temps réel
-  useEffect(() => {
-    if (realtimeMessages.length > 0) {
-      setMessages((prev) => {
-        const allMessages = [...prev, ...realtimeMessages];
-        // Éliminer les doublons basés sur l'ID
-        const uniqueMessages = allMessages.filter(
-          (msg, index, arr) => arr.findIndex((m) => m.id === msg.id) === index
-        );
-        // Trier par timestamp
-        return uniqueMessages.sort(
-          (a, b) =>
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        );
-      });
-    }
-  }, [realtimeMessages]);
-
-  const sendMessage = useCallback(
-    async (content: string) => {
       if (!roomId) {
-        console.error("🚨 No roomId provided");
+        console.log("[useChatMessages] Aucun roomId, skip fetch");
         return;
       }
 
       try {
+        setLoading(true);
         setError(null);
+        console.log("[useChatMessages] Chargement messages pour room:", roomId);
 
-        // Envoyer via API REST uniquement (WebSocket désactivé temporairement)
-        const messageData: CreateChatMessage = {
-          chat_room_id: roomId,
-          content,
-        };
+        const response = await ChatMessageService.listMessages(
+          tenantPrimaryDomain,
+          accessToken,
+          limit,
+          offset
+        );
 
-        console.log("🔍 DEBUG Sending message:", {
-          roomId,
-          messageData,
-          headers,
-        });
+        const roomMessages = response.results.filter((msg) => msg.chat === roomId);
 
-        await ChatMessageService.createChatMessage(headers, messageData);
+        console.log("[useChatMessages] Messages chargés:", roomMessages.length);
 
-        // Recharger les messages pour obtenir le nouveau message
-        // (solution temporaire en attendant WebSocket)
-        setTimeout(() => {
-          const loadMessages = async () => {
-            try {
-              const response = await ChatMessageService.listMessages(headers);
-              const roomMessages = response.results.filter(
-                (msg) => msg.chat === roomId
-              );
-              const enhancedMessages: EnhancedChatMessage[] = roomMessages.map(
-                (msg) => ({
-                  ...msg,
-                  sender_info: allParticipants.find(
-                    (p: ChatParticipant) => p.id === msg.sender
-                  ) ||
-                    allParticipants[0] || {
-                      id: msg.sender,
-                      name: "Unknown User",
-                      role: "student",
-                      status: "offline",
-                    },
-                  timestamp: new Date(msg.created_at),
-                  status: "delivered",
-                })
-              );
-              setMessages(enhancedMessages);
-            } catch (error) {
-              console.error("Error reloading messages:", error);
-            }
-          };
-          loadMessages();
-        }, 500);
+        const enhancedMessages = roomMessages
+        .map((msg) => enhanceMessage(msg, allParticipants))
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()); // 👈 tri ASC
+
+
+        setMessages(enhancedMessages);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to send message");
-        console.error("Error sending message:", err);
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch messages";
+        setError(errorMessage);
+        console.error("[useChatMessages] Erreur chargement messages:", err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [tenantPrimaryDomain, accessToken, roomId, allParticipants]
+  );
+
+  // ---------------- SEND MESSAGE ----------------
+  const sendMessage = useCallback(
+    async (content: string) => {
+      if (!roomUuid) {
+        console.error("[useChatMessages] Impossible d'envoyer: aucun roomUuid");
+        throw new Error("Aucune conversation sélectionnée");
+      }
+
+      try {
+        setError(null);
+        console.log("[useChatMessages] Envoi message:", { roomUuid, content });
+
+        const formData = new FormData();
+        formData.append("chat_room_id", roomUuid); // ⚡ UUID obligatoire
+        formData.append("content", content);
+
+        const sentMessage = await ChatMessageService.createChatMessage(
+          tenantPrimaryDomain,
+          accessToken,
+          formData
+        );
+
+        console.log("[useChatMessages] Message envoyé:", sentMessage);
+
+        await fetchMessages();
+        return sentMessage;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to send message";
+        setError(errorMessage);
+        console.error("[useChatMessages] Erreur envoi message:", err);
         throw err;
       }
     },
-    [headers, roomId]
+    [tenantPrimaryDomain, accessToken, roomUuid, fetchMessages]
   );
 
+  // ---------------- UPDATE MESSAGE ----------------
   const updateMessage = useCallback(
     async (messageId: number, content: string) => {
       try {
         setError(null);
-        await ChatMessageService.partialUpdateMessage(headers, messageId, {
-          content,
-        });
-
-        // Mettre à jour localement
+        await ChatMessageService.partialUpdateMessage(
+          tenantPrimaryDomain,
+          accessToken,
+          messageId,
+          { content }
+        );
         setMessages((prev) =>
-          prev.map((msg) => (msg.id === messageId ? { ...msg, content } : msg))
+          prev.map((msg) =>
+            msg.id === messageId ? { ...msg, content } : msg
+          )
         );
       } catch (err) {
         setError(
@@ -534,16 +668,19 @@ export const useChatMessages = (roomId: number | null) => {
         throw err;
       }
     },
-    [headers]
+    [tenantPrimaryDomain, accessToken]
   );
 
+  // ---------------- DELETE MESSAGE ----------------
   const deleteMessage = useCallback(
     async (messageId: number) => {
       try {
         setError(null);
-        await ChatMessageService.deleteMessage(headers, messageId);
-
-        // Marquer comme supprimé localement
+        await ChatMessageService.deleteMessage(
+          tenantPrimaryDomain,
+          accessToken,
+          messageId
+        );
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === messageId ? { ...msg, is_deleted: true } : msg
@@ -557,61 +694,31 @@ export const useChatMessages = (roomId: number | null) => {
         throw err;
       }
     },
-    [headers]
+    [tenantPrimaryDomain, accessToken]
   );
 
+  // ---------------- EFFECTS ----------------
   useEffect(() => {
-    if (roomId && roomId !== lastRoomId.current && headers["Authorization"]) {
+    if (roomId && roomId !== lastRoomId.current && accessToken) {
+      console.log("[useChatMessages] Room changée:", roomId);
       lastRoomId.current = roomId;
-
-      // Fonction interne pour éviter les dépendances infinies
-      const loadMessages = async () => {
-        if (!roomId) return;
-
-        try {
-          setLoading(true);
-          setError(null);
-          const response = await ChatMessageService.listMessages(headers);
-
-          // Filtrer les messages pour ce salon et les transformer
-          const roomMessages = response.results.filter(
-            (msg) => msg.chat === roomId
-          );
-          const enhancedMessages: EnhancedChatMessage[] = roomMessages.map(
-            (msg) => ({
-              ...msg,
-              sender_info: allParticipants.find(
-                (p: ChatParticipant) => p.id === msg.sender
-              ) ||
-                allParticipants[0] || {
-                  id: msg.sender,
-                  name: "Unknown User",
-                  role: "student",
-                  status: "offline",
-                },
-              timestamp: new Date(msg.created_at),
-              status: "delivered",
-            })
-          );
-
-          setMessages(enhancedMessages);
-        } catch (err) {
-          setError(
-            err instanceof Error ? err.message : "Failed to fetch messages"
-          );
-          console.error("Error fetching messages:", err);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      loadMessages();
-    } else if (!roomId) {
+      fetchMessages();
+    } else if (!roomId && messages.length > 0) {
+      console.log("[useChatMessages] Clear messages (no room selected)");
       lastRoomId.current = null;
       setMessages([]);
     }
-  }, [roomId, headers]);
+  }, [roomId, accessToken, fetchMessages, messages.length]);
 
+  useEffect(() => {
+    console.log("[useChatMessages] Messages state:", {
+      count: messages.length,
+      roomId,
+      sample: messages.length > 0 ? messages[0] : null,
+    });
+  }, [messages, roomId]);
+
+  // ---------------- RETURN ----------------
   return {
     messages,
     loading,
@@ -620,8 +727,7 @@ export const useChatMessages = (roomId: number | null) => {
     sendMessage,
     updateMessage,
     deleteMessage,
-    // États temps réel
-    typing,
-    userStatuses,
+    typing: [],
+    userStatuses: {},
   };
 };

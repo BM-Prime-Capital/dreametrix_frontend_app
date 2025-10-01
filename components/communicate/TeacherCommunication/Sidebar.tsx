@@ -1,4 +1,4 @@
-import { Search, Filter, MessageSquare, Users, User, Megaphone } from "lucide-react";
+import { Search, Filter, MessageSquare, Users, User, Megaphone, Users2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -153,27 +153,47 @@ export function Sidebar({
                 )}
                 onClick={() => onSelectConversation(conversation)}
               >
-                <Avatar
-                  className={cn(
-                    "h-12 w-12 rounded-xl shadow-sm border-2",
-                    conversation.type === "announcement"
-                      ? "border-purple-200 bg-purple-50"
-                      : conversation.type === "class"
-                      ? "border-green-200 bg-green-50"
-                      : conversation.type === "parent"
-                      ? "border-amber-200 bg-amber-50"
-                      : "border-blue-200 bg-blue-50"
+                <div className="relative">
+                  <Avatar
+                    className={cn(
+                      "h-12 w-12 rounded-xl shadow-sm border-2",
+                      conversation.type === "announcement"
+                        ? "border-purple-200 bg-purple-50"
+                        : conversation.type === "class"
+                        ? "border-green-200 bg-green-50"
+                        : conversation.type === "parent"
+                        ? "border-amber-200 bg-amber-50"
+                        : "border-blue-200 bg-blue-50"
+                    )}
+                  >
+                    <AvatarImage
+                      src={conversation.participants[0]?.avatar}
+                      alt={conversation.displayName}
+                      className="object-cover rounded-lg"
+                    />
+                    <AvatarFallback className="rounded-lg">
+                      {/* Icône différente selon le type */}
+                      {conversation.type === "class" ? (
+                        <Users className="h-5 w-5 text-green-600" />
+                      ) : conversation.type === "announcement" ? (
+                        <Megaphone className="h-5 w-5 text-purple-600" />
+                      ) : conversation.type === "parent" ? (
+                        <User className="h-5 w-5 text-amber-600" />
+                      ) : conversation.participants.length > 2 ? (
+                        <Users2 className="h-5 w-5 text-blue-600" /> // Icône groupe pour conversations multiples
+                      ) : (
+                        conversation.displayName.charAt(0)
+                      )}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  {/* Badge en haut à droite pour les groupes */}
+                  {conversation.type !== "individual" && conversation.participants.length > 1 && (
+                    <div className="absolute -top-1 -right-1 bg-blue-500 rounded-full p-1 border-2 border-white">
+                      <Users2 className="h-3 w-3 text-white" />
+                    </div>
                   )}
-                >
-                  <AvatarImage
-                    src={conversation.participants[0].avatar}
-                    alt={conversation.participants[0].name}
-                    className="object-cover rounded-lg"
-                  />
-                  <AvatarFallback className="rounded-lg">
-                    {conversation.participants[0].name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
+                </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center">
@@ -185,7 +205,7 @@ export function Sidebar({
                           : ""
                       )}
                     >
-                      {conversation.participants[0].name}
+                      {conversation.displayName}
                       {conversation.unreadCount > 0 && (
                         <span className="ml-2 inline-flex h-2 w-2 rounded-full bg-blue-500"></span>
                       )}
@@ -221,6 +241,16 @@ export function Sidebar({
                       >
                         <User className="h-3 w-3 mr-1" />
                         Parent
+                      </Badge>
+                    )}
+                    {/* Badge pour groupes génériques */}
+                    {conversation.type === "individual" && conversation.participants.length > 2 && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs py-0 h-5 bg-blue-50 text-blue-700 border-blue-200"
+                      >
+                        <Users2 className="h-3 w-3 mr-1" />
+                        Group
                       </Badge>
                     )}
                     <p className="text-sm text-muted-foreground truncate">
