@@ -26,8 +26,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className = "" }) => {
     error: roomsError,
     fetchRooms,
     createRoom,
-    updateRoom,
-    deleteRoom,
+    // updateRoom,
+    // deleteRoom,
   } = useChatRooms();
 
   const {
@@ -36,8 +36,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className = "" }) => {
     error: messagesError,
     fetchMessages,
     sendMessage,
-    updateMessage,
-    deleteMessage,
+    // updateMessage,
+    // deleteMessage,
   } = useChatMessages(selectedRoom?.id || null);
 
   const handleSendMessage = async () => {
@@ -229,7 +229,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ className = "" }) => {
                 <div className="text-center text-gray-500">Aucun message</div>
               ) : (
                 messages.map((message) => (
-                  <div key={message.id} className="flex items-start gap-3">
+                  <div key={message.uuid} className="flex items-start gap-3">
                     <div className="flex-shrink-0">
                       {message.sender_info.avatar ? (
                         <img

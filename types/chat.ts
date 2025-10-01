@@ -100,27 +100,6 @@ export interface ChatParticipant {
 }
 
 // EnhancedChatMessage étend maintenant l'objet last_message de l'API
-// export interface EnhancedChatMessage {
-//   uuid: string;
-//   created_at: string;
-//   last_update: string;
-//   content: string;
-//   message_type: string;
-//   sender: {
-//     id: number;
-//     username: string;
-//     full_name: string;
-//     email: string;
-//   };
-//   attachment_url: string | null;
-//   voice_note_url: string | null;
-//   is_deleted: boolean;
-//   extra_data: any;
-//   // Propriétés enrichies pour l'UI
-//   sender_info: ChatParticipant;
-//   timestamp: Date;
-//   status: "sent" | "delivered" | "read";
-// }
 
 export interface EnhancedChatMessage {
   uuid: string;
@@ -143,6 +122,7 @@ export interface EnhancedChatMessage {
   sender_info: ChatParticipant;
   timestamp: Date;
   status: "sent" | "delivered" | "read";
+  chat?: number;
 }
 
 export interface EnhancedChatRoom extends Omit<ChatRoom, 'participants'> {
@@ -150,3 +130,4 @@ export interface EnhancedChatRoom extends Omit<ChatRoom, 'participants'> {
   last_message: EnhancedChatMessage | null;
   unread_count: number;
 }
+
