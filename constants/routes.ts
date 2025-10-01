@@ -114,14 +114,6 @@ export const SchoolAdminRoutes = [
     label: "Subjects",
   },
 
-  // Requests
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/requests`,
-    icon: menuImages.libraryBooks,
-    label: "Requests",
-  },
-
-
   // Timetable
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/timetable`,
@@ -317,16 +309,6 @@ export const ParentRoutes = [
     path: `${userPath.PARENT_BASE_PATH}/attendance`,
     icon: menuImages.attendance,
     label: "ATTENDANCE",
-  },
-  {
-    path: `${userPath.PARENT_BASE_PATH}/relationship`,
-    icon: `/assets/images/teacher/dashboard/relationship.svg`,
-    label: "RELATIONSHIP",
-  },
-  {
-    path: `${userPath.PARENT_BASE_PATH}/pending-relationship`,
-    icon: `/assets/images/teacher/dashboard/relationship.svg`,
-    label: "PENDING RELATIONSHIP",
   },
   {
     path: `${userPath.PARENT_BASE_PATH}/rewards`,

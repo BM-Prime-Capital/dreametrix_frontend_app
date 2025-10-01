@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-//"use server";
+"use server";
 
 export async function getStudents(
   tenantPrimaryDomain: string,
@@ -88,7 +88,7 @@ export async function updateStudent(
     throw new Error("You are not logged in. Please log in again.");
   }
   
-  const url = `${tenantPrimaryDomain}/students/${studentId}/`;
+  const url = `${tenantPrimaryDomain}/classes/users/${studentId}/`;
 
   try {
     const response = await fetch(url, {
@@ -116,50 +116,7 @@ export async function updateStudent(
 }
 
 
-export async function confirmParentLink(
-  url: string,
-  parentId: number,
-  accessToken: string
-) {
-  try {
-    
-    
-    
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-    };
-    
-    if (accessToken) {
-      headers["Authorization"] = `Bearer ${accessToken}`;
-    }
-    
-    const response = await fetch(url, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ parent_id: parentId }),
-    });
 
-    if (!response.ok) {
-      const errorData = await response.text();
-      return {
-        success: false,
-        message: errorData || "Error confirming parent link."
-      };
-    }
-
-    const data = await response.json();
-    return {
-      success: true,
-      data: data
-    };
-  } catch (error) {
-    console.error("Error", error);
-    return {
-      success: false,
-      message: "Network error while confirming parent link."
-    };
-  }
-}
 
 export async function enrollStudentsToClass(
   classId: number,

@@ -19,30 +19,8 @@ export async function getAssignments(
   }
 
   const data = await response.json();
-  console.error("Assignments data: ", data);
-  return data.results; 
-}
-
-export async function getTeacherDashboardData(
-  tenantPrimaryDomain: string,
-  accessToken: string
-) {
-  const url = `${tenantPrimaryDomain}/teachers/dashboard/`;
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    console.error("Backend error:", errorData);
-    throw new Error(errorData.detail || "Error fetching assignments");
-  }
-  const data = await response.json();
-  return data;
+  console.log("Assignments data: ", data);
+  return data.results; // Retourne directement le tableau des assignments
 }
 
 export async function createAssignment(
@@ -146,6 +124,7 @@ export async function submitAssignment(
   accessToken: string
 ) {
   const url = `${tenantPrimaryDomain}/assessments/classes/${courseId}/assessment_weights/`;
+  console.log("URL => ", url);
   try {
     const response = await fetch(url, {
       method: "GET",
