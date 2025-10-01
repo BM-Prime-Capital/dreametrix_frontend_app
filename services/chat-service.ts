@@ -218,46 +218,57 @@ export class ChatMessageService {
     }
   }
 
-  /**
-   * POST /chats/messages/create/ (payload FormData spécialisé – recommandé)
-   */
-  static async createChatMessage(
-    tenantPrimaryDomain: string | undefined,
-    accessToken: string | undefined,
-    messageData: CreateChatMessage
-  ): Promise<CreateChatMessage> {
-    try {
-      assertToken(accessToken);
+/**
+ * POST /chats/messages/create/
+ * Accepte soit FormData (recommandé), soit JSON fallback.
+ */
+static async createChatMessage(
+  tenantPrimaryDomain: string | undefined,
+  accessToken: string | undefined,
+  messageData: CreateChatMessage | FormData
+): Promise<ChatMessage> {
+  try {
+    assertToken(accessToken);
 
-      const base = resolveBaseURL(tenantPrimaryDomain);
-      const url = `${base}${CHAT_ENDPOINTS.MESSAGES_CREATE}`;
+    const base = resolveBaseURL(tenantPrimaryDomain);
+    const url = `${base}${CHAT_ENDPOINTS.MESSAGES_CREATE}`;
 
-      if (process.env.NODE_ENV === "development") {
-        console.log("📝 [ChatMessageService.createChatMessage] URL =>", url, "payload =>", messageData);
-      }
+    const isFormData = messageData instanceof FormData;
 
-      // JSON par défaut
-      const response = await fetch(url, {
-        method: "POST",
-        headers: buildAuthHeaders(accessToken, { "Content-Type": "application/json" }),
-        body: JSON.stringify(messageData),
-      });
-
-      if (!response.ok) {
-        return normalizeFetchError(response, accessToken);
-      }
-
-      return (await response.json()) as CreateChatMessage;
-    } catch (error) {
-      if (error instanceof ChatApiError) throw error;
-      throw new ChatApiError(
-        error instanceof Error ? error.message : "Unknown error occurred",
-        0,
-        error,
-        accessToken
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        "📝 [ChatMessageService.createChatMessage] URL =>", url,
+        "payload =>", messageData,
+        "isFormData =>", isFormData
       );
     }
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: buildAuthHeaders(
+        accessToken,
+        isFormData ? {} : { "Content-Type": "application/json" }
+      ),
+      body: isFormData ? messageData : JSON.stringify(messageData),
+    });
+
+    if (!response.ok) {
+      return normalizeFetchError(response, accessToken);
+    }
+
+    return (await response.json()) as ChatMessage;
+  } catch (error) {
+    if (error instanceof ChatApiError) throw error;
+    throw new ChatApiError(
+      error instanceof Error ? error.message : "Unknown error occurred",
+      0,
+      error,
+      accessToken
+    );
   }
+}
+
+
   /**
    * GET /chats/messages/:id/
    */
@@ -533,51 +544,67 @@ export class ChatRoomService {
     }
   }
 
-  /**
-   * POST /chats/rooms/create/ (endpoint spécialisé – FormData, CORRIGÉ)
-   */
-  static async createChatRoom(
-    tenantPrimaryDomain: string | undefined,
-    accessToken: string | undefined,
-    roomData: {
-      name?: string;
-      participant_ids?: number[]; // ⚡ aligné avec backend
-      is_group?: boolean;
-      initial_message?: string;
+/**
+ * POST /chats/rooms/create/ (endpoint spécialisé – FormData corrigé)
+ */
+static async createChatRoom(
+  tenantPrimaryDomain: string | undefined,
+  accessToken: string | undefined,
+  roomData: {
+    name?: string;
+    participant_ids?: number[];
+    is_group?: boolean;
+    initial_message?: string;
+  }
+): Promise<ChatRoom> {
+  try {
+    assertToken(accessToken);
+
+    const base = resolveBaseURL(tenantPrimaryDomain);
+    const url = `${base}${CHAT_ENDPOINTS.ROOMS_CREATE}`;
+
+    if (process.env.NODE_ENV === "development") {
+      console.log("📝 [ChatRoomService.createChatRoom] URL =>", url, "payload =>", roomData);
     }
-  ): Promise<ChatRoom> {
-    try {
-      assertToken(accessToken);
 
-      const base = resolveBaseURL(tenantPrimaryDomain);
-      const url = `${base}${CHAT_ENDPOINTS.ROOMS_CREATE}`;
-
-      if (process.env.NODE_ENV === "development") {
-        console.log("📝 [ChatRoomService.createChatRoom] URL =>", url, "payload =>", roomData);
-      }
-
-      const response = await fetch(url, {
-        method: "POST",
-        headers: buildAuthHeaders(accessToken, { "Content-Type": "application/json" }),
-        body: JSON.stringify(roomData),
-      });
-
-      if (!response.ok) {
-        return normalizeFetchError(response, accessToken);
-      }
-
-      return (await response.json()) as ChatRoom;
-    } catch (error) {
-      console.error("❌ [ChatRoomService.createChatRoom] Erreur:", error);
-      if (error instanceof ChatApiError) throw error;
-      throw new ChatApiError(
-        error instanceof Error ? error.message : "Unknown error occurred",
-        0,
-        error,
-        accessToken
+    // 🔑 Utilisation de FormData (plus de JSON.stringify)
+    const formData = new FormData();
+    if (roomData.name) formData.append("name", roomData.name);
+    if (roomData.is_group !== undefined) {
+      formData.append("is_group", String(roomData.is_group));
+    }
+    if (roomData.initial_message) {
+      formData.append("initial_message", roomData.initial_message);
+    }
+    if (roomData.participant_ids && Array.isArray(roomData.participant_ids)) {
+      roomData.participant_ids.forEach((id) =>
+        formData.append("participants", id.toString())
       );
     }
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: buildAuthHeaders(accessToken), // ⚡ pas de "Content-Type", c’est géré par FormData
+      body: formData,
+    });
+
+    if (!response.ok) {
+      return normalizeFetchError(response, accessToken);
+    }
+
+    return (await response.json()) as ChatRoom;
+  } catch (error) {
+    console.error("❌ [ChatRoomService.createChatRoom] Erreur:", error);
+    if (error instanceof ChatApiError) throw error;
+    throw new ChatApiError(
+      error instanceof Error ? error.message : "Unknown error occurred",
+      0,
+      error,
+      accessToken
+    );
   }
+}
+
   /**
    * GET /chats/rooms/:id/
    */

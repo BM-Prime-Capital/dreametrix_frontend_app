@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   MessageSquare,
   User,
@@ -35,6 +34,7 @@ interface ComposeDialogProps {
   dataLoading: boolean;
   dataError: string | null;
   onRetryData: () => void;
+  setSelectedRecipients: (ids: string[]) => void;
 }
 
 export function ComposeDialog({
@@ -54,6 +54,7 @@ export function ComposeDialog({
   dataLoading,
   dataError,
   onRetryData,
+  setSelectedRecipients,
 }: ComposeDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -66,6 +67,7 @@ export function ComposeDialog({
         </DialogHeader>
 
         <div className="py-4 space-y-4">
+          {/* Choix du type */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Send to:</label>
             <div className="flex gap-2">
@@ -96,114 +98,86 @@ export function ComposeDialog({
             </div>
           </div>
 
+          {/* Sélection des destinataires */}
           <div className="space-y-2">
+            {/* Students */}
             {recipientType === "student" && (
               <div>
                 <label className="text-sm font-medium">Select Students:</label>
                 <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                  {dataLoading ? (
-                    <div className="text-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Loading students...
-                      </p>
-                    </div>
-                  ) : dataError ? (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-red-500 mb-2">
-                        Error loading students: {dataError}
-                      </p>
-                      <Button
-                        onClick={onRetryData}
-                        size="sm"
-                        variant="outline"
+                  {students.map((student) => (
+                    <div key={student.id} className="flex items-center space-x-2 py-1">
+                      <Checkbox
+                        id={`student-${student.id}`}
+                        checked={selectedRecipients.includes(`student-${student.id}`)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedRecipients([...selectedRecipients, `student-${student.id}`]);
+                          } else {
+                            setSelectedRecipients(
+                              selectedRecipients.filter((id) => id !== `student-${student.id}`)
+                            );
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor={`student-${student.id}`}
+                        className="text-sm cursor-pointer flex-1"
                       >
-                        Retry
-                      </Button>
+                        {student.name}{" "}
+                        <span className="text-muted-foreground">({student.class})</span>
+                      </label>
                     </div>
-                  ) : students.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No students available
-                    </p>
-                  ) : (
-                    students
-                      .filter((student) => student && student.id && student.name)
-                      .map((student) => (
-                        <div
-                          key={student.id}
-                          className="flex items-center space-x-2 py-1"
-                        >
-                          <Checkbox
-                            id={student.id}
-                            checked={selectedRecipients.includes(student.id)}
-                            onCheckedChange={() => onRecipientToggle(student.id)}
-                          />
-                          <label
-                            htmlFor={student.id}
-                            className="text-sm cursor-pointer flex-1"
-                          >
-                            {student.name}{" "}
-                            <span className="text-muted-foreground">
-                              ({student.class})
-                            </span>
-                          </label>
-                        </div>
-                      ))
-                  )}
+                  ))}
                 </div>
               </div>
             )}
 
+            {/* Classes */}
             {recipientType === "class" && (
               <div>
                 <label className="text-sm font-medium">Select Classes:</label>
                 <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                  {dataLoading ? (
-                    <div className="text-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Loading classes...
-                      </p>
-                    </div>
-                  ) : dataError ? (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-red-500 mb-2">
-                        Error loading classes: {dataError}
-                      </p>
-                      <Button
-                        onClick={onRetryData}
-                        size="sm"
-                        variant="outline"
+                  {classes.map((cls) => (
+                    <div key={cls.id} className="flex items-center space-x-2 py-1">
+                      <Checkbox
+                        id={`class-${cls.id}`}
+                        checked={selectedRecipients.includes(`class-${cls.id}`)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            // Ajouter la classe
+                            const classId = `class-${cls.id}`;
+                            // Ajouter les étudiants de cette classe
+                            const classStudents = students
+                              .filter((s) => s.class === cls.name)
+                              .map((s) => `student-${s.id}`);
+
+                            setSelectedRecipients([
+                              ...new Set([...selectedRecipients, classId, ...classStudents]),
+                            ]);
+                          } else {
+                            // Retirer la classe + ses étudiants
+                            const classId = `class-${cls.id}`;
+                            const classStudents = students
+                              .filter((s) => s.class === cls.name)
+                              .map((s) => `student-${s.id}`);
+
+                            setSelectedRecipients(
+                              selectedRecipients.filter(
+                                (id) => id !== classId && !classStudents.includes(id)
+                              )
+                            );
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor={`class-${cls.id}`}
+                        className="text-sm cursor-pointer flex-1"
                       >
-                        Retry
-                      </Button>
+                        {cls.name}
+                      </label>
                     </div>
-                  ) : classes.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No classes available
-                    </p>
-                  ) : (
-                    classes
-                      .filter((cls) => cls && cls.id && cls.name)
-                      .map((cls) => (
-                        <div
-                          key={cls.id}
-                          className="flex items-center space-x-2 py-1"
-                        >
-                          <Checkbox
-                            id={cls.id}
-                            checked={selectedRecipients.includes(cls.id)}
-                            onCheckedChange={() => onRecipientToggle(cls.id)}
-                          />
-                          <label
-                            htmlFor={cls.id}
-                            className="text-sm cursor-pointer flex-1"
-                          >
-                            {cls.name}
-                          </label>
-                        </div>
-                      ))
-                  )}
+                  ))}
                 </div>
               </div>
             )}
@@ -212,47 +186,25 @@ export function ComposeDialog({
               <div>
                 <label className="text-sm font-medium">Select Parents:</label>
                 <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                  {dataLoading ? (
-                    <div className="text-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Loading parents...
-                      </p>
+                  {parents.map((parent) => (
+                    <div key={parent.id} className="flex items-center space-x-2 py-1">
+                      <Checkbox
+                        id={parent.id}
+                        checked={selectedRecipients.includes(parent.id)}
+                        onCheckedChange={() => onRecipientToggle(parent.id)}
+                      />
+                      <label htmlFor={parent.id} className="text-sm cursor-pointer flex-1">
+                        {parent.name}{" "}
+                        <span className="text-muted-foreground">(Parent of {parent.student})</span>
+                      </label>
                     </div>
-                  ) : parents.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No parents available
-                    </p>
-                  ) : (
-                    parents.map((parent) => (
-                      <div
-                        key={parent?.id || Math.random()}
-                        className="flex items-center space-x-2 py-1"
-                      >
-                        <Checkbox
-                          id={parent?.id || `parent-${Math.random()}`}
-                          checked={selectedRecipients.includes(parent?.id || "")}
-                          onCheckedChange={() =>
-                            parent?.id && onRecipientToggle(parent.id)
-                          }
-                        />
-                        <label
-                          htmlFor={parent?.id || `parent-${Math.random()}`}
-                          className="text-sm cursor-pointer flex-1"
-                        >
-                          {parent?.name || "Unknown Parent"}{" "}
-                          <span className="text-muted-foreground">
-                            (Parent of {parent?.student || "Unknown Student"})
-                          </span>
-                        </label>
-                      </div>
-                    ))
-                  )}
+                  ))}
                 </div>
               </div>
             )}
           </div>
 
+          {/* Zone Message */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Message:</label>
             <Textarea
@@ -263,6 +215,7 @@ export function ComposeDialog({
             />
           </div>
 
+          {/* Attach + Schedule */}
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm">
               <Paperclip className="h-4 w-4 mr-1" />
@@ -287,14 +240,7 @@ export function ComposeDialog({
             onClick={onCreateConversation}
             disabled={isCreating || selectedRecipients.length === 0}
           >
-            {isCreating ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Creating...
-              </>
-            ) : (
-              "Send Message"
-            )}
+            {isCreating ? "Creating..." : "Send Message"}
           </Button>
         </DialogFooter>
       </DialogContent>

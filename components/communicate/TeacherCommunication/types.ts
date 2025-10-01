@@ -15,6 +15,7 @@ export interface Message {
 
 export interface Conversation {
   id: string;
+  displayName: string;
   type: "individual" | "class" | "parent" | "announcement";
   participants: {
     id: string;
