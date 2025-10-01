@@ -88,7 +88,7 @@ export const useChatRoomRealtime = (roomId: number | null) => {
       if (message.chat === roomId) {
         setMessages((prev) => {
           // Éviter les doublons
-          if (prev.some((m) => m.id === message.id)) {
+          if (prev.some((m) => m.uuid === message.uuid)) {
             return prev;
           }
           return [...prev, message].sort(
