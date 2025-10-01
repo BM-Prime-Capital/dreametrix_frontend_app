@@ -1,10 +1,12 @@
 "use client";
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FiSearch, FiChevronRight, FiUser, FiMail, FiUsers } from 'react-icons/fi';
 import { Loader } from "@/components/ui/loader";
 import AddParentModal from './AddParentModal';
 import { SkeletonCard } from '@/components/ui/SkeletonCard';
+import { getParentList } from '@/services/parent-services';
+import { useRequestInfo } from '@/hooks/useRequestInfo';
 
 const avatarColors = [
   'bg-blue-100 text-blue-600',
@@ -25,138 +27,87 @@ const getAvatarColor = (name: string) => {
 interface Parent {
   id: number;
   user: {
+    id: number;
     first_name: string;
     last_name: string;
     email: string;
-    phone: string;
+    full_name: string;
+    role: string;
   };
   children: {
-    name: string;
-    grade: string;
-    class: string;
+    id: number;
+    user: {
+      id: number;
+      first_name: string;
+      last_name: string;
+      email: string;
+      full_name: string;
+      role: string;
+    };
+    grade: number;
+    school: {
+      name: string;
+      email: string;
+      phone_number: string;
+      code: string;
+      is_active: boolean;
+    };
+    uuid: string;
+    created_at: string;
+    last_update: string;
+    extra_data: any;
+    enrolled_courses: number[];
   }[];
-  status: 'active' | 'inactive';
-  last_contact: string;
+  uuid: string;
+  created_at: string;
+  last_update: string;
+  extra_data: any;
+  school: number;
+  status?: 'active' | 'inactive'; 
+  last_contact?: string; 
 }
 
 const ParentsListPage = () => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [parents, setParents] = useState<Parent[]>([]);
+  const { accessToken, tenantDomain } = useRequestInfo();
 
-  // Default data
-  const parents: Parent[] = [
-    {
-      id: 1,
-      user: {
-        first_name: "Michael",
-        last_name: "Johnson",
-        email: "michael.johnson@example.com",
-        phone: "+1555123456"
-      },
-      children: [
-        { name: "Emma Johnson", grade: "5", class: "B" },
-        { name: "Lucas Johnson", grade: "8", class: "A" }
-      ],
-      status: 'active',
-      last_contact: "2023-10-15"
-    },
-    {
-      id: 2,
-      user: {
-        first_name: "Sarah",
-        last_name: "Williams",
-        email: "sarah.williams@example.com",
-        phone: "+1555234567"
-      },
-      children: [
-        { name: "Olivia Williams", grade: "3", class: "C" }
-      ],
-      status: 'active',
-      last_contact: "2023-11-02"
-    },
-    {
-      id: 3,
-      user: {
-        first_name: "Robert",
-        last_name: "Brown",
-        email: "robert.brown@example.com",
-        phone: "+1555345678"
-      },
-      children: [
-        { name: "Noah Brown", grade: "10", class: "A" },
-        { name: "Sophia Brown", grade: "7", class: "B" }
-      ],
-      status: 'inactive',
-      last_contact: "2023-09-20"
-    },
-    {
-      id: 4,
-      user: {
-        first_name: "Jennifer",
-        last_name: "Davis",
-        email: "jennifer.davis@example.com",
-        phone: "+1555456789"
-      },
-      children: [
-        { name: "Liam Davis", grade: "2", class: "A" }
-      ],
-      status: 'active',
-      last_contact: "2023-11-10"
-    },
-    {
-      id: 5,
-      user: {
-        first_name: "David",
-        last_name: "Miller",
-        email: "david.miller@example.com",
-        phone: "+1555567890"
-      },
-      children: [
-        { name: "Ava Miller", grade: "6", class: "C" },
-        { name: "Mason Miller", grade: "4", class: "B" }
-      ],
-      status: 'active',
-      last_contact: "2023-10-28"
-    },
-    {
-      id: 6,
-      user: {
-        first_name: "Jessica",
-        last_name: "Wilson",
-        email: "jessica.wilson@example.com",
-        phone: "+1555678901"
-      },
-      children: [
-        { name: "Isabella Wilson", grade: "9", class: "A" }
-      ],
-      status: 'inactive',
-      last_contact: "2023-08-15"
-    }
-  ];
+  useEffect(() => {
+    const getVaParents = async () => {
+      setIsLoading(true);
+      try {
+        const result = await getParentList(accessToken, tenantDomain);
+        console.log("result", result);
+        
+        
+        const transformedParents: Parent[] = result.data.results.map((parent: any) => ({
+          ...parent,
+          status: 'active' as const,
+          last_contact: new Date(parent.last_update).toISOString().split('T')[0] 
+        }));
+        
+        setParents(transformedParents);
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    getVaParents();
+  }, [accessToken, tenantDomain]);
 
   const filteredParents = parents
     .filter(parent => 
-      `${parent.user.first_name} ${parent.user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase())
+      `${parent.user.first_name} ${parent.user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      parent.user.email.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter(parent => 
       activeFilter === 'all' || parent.status === activeFilter
     );
-
-  if (isLoading) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center w-full h-full bg-white bg-opacity-75 z-50">
-        <div className="flex flex-col items-center">
-          <Loader className="text-blue-600 w-12 h-12" />
-          <p className="mt-4 text-sm text-slate-500">
-            Loading parents...
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (
@@ -203,9 +154,7 @@ const ParentsListPage = () => {
           </p>
         </div>
         
-        
-          <AddParentModal />
-        
+        <AddParentModal />
       </div>
 
       {/* Control bar */}
@@ -216,7 +165,7 @@ const ParentsListPage = () => {
           </div>
           <input
             type="text"
-            placeholder="Search by name..."
+            placeholder="Search by name or email..."
             className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -251,7 +200,7 @@ const ParentsListPage = () => {
           {filteredParents.map((parent) => {
             const initials = `${parent.user.first_name[0]}${parent.user.last_name[0]}`;
             const avatarClass = getAvatarColor(parent.user.first_name + parent.user.last_name);
-            const lastContactDate = new Date(parent.last_contact).toLocaleDateString('en-US', {
+            const lastContactDate = new Date(parent.last_contact || parent.last_update).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'short',
               day: 'numeric'
@@ -295,7 +244,7 @@ const ParentsListPage = () => {
                     <div className="space-y-2">
                       {parent.children.slice(0, 2).map((child, index) => (
                         <div key={index} className="text-sm text-gray-600">
-                          {child.name} (Grade {child.grade} - Class {child.class})
+                          {child.user.first_name} {child.user.last_name} (Grade {child.grade})
                         </div>
                       ))}
                       {parent.children.length > 2 && (
@@ -307,7 +256,7 @@ const ParentsListPage = () => {
                     
                     <div className="mt-3 flex justify-between items-center">
                       <div className="text-xs text-gray-500">
-                        Last contact: {lastContactDate}
+                        Last update: {lastContactDate}
                       </div>
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${parent.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
                         {parent.status === 'active' ? 'Active' : 'Inactive'}

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { FiX, FiUser, FiMail, FiPhone, FiPlus, FiChevronDown, FiUsers } from 'react-icons/fi';
+import { FiX, FiUser, FiPlus, FiChevronDown, FiUsers } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
 
 const AddParentModal = () => {
@@ -78,11 +78,9 @@ const AddParentModal = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      // Submit logic would go here
       console.log('Form submitted:', formData);
-      // In a real app, you would call an API here
       setIsOpen(false);
-      router.refresh(); // Refresh the parent list
+      router.refresh(); 
     }
   };
 

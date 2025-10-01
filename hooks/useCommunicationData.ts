@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -86,7 +87,7 @@ export function useCommunicationData(): UseCommunicationDataReturn {
       const [classesData, studentsData, teachersData] = await Promise.all([
         getClasses(tenantDomain, accessToken, refreshToken),
         getStudents(tenantDomain, accessToken),
-        getTeachers(tenantDomain, accessToken, refreshToken),
+        getTeachers(tenantDomain, accessToken),
       ]);
 
       // Debug logging to understand the API responses
@@ -315,7 +316,7 @@ export function useCommunicationData(): UseCommunicationDataReturn {
       }
 
       // Transform teachers data
-      let transformedTeachers: CommunicationTeacher[] = Array.isArray(
+      const  transformedTeachers: CommunicationTeacher[] = Array.isArray(
         teachersData
       )
         ? teachersData.map((teacher: any) => {

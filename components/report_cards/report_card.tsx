@@ -8,10 +8,7 @@ import { generalImages, teacherImages } from "@/constants/images";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Label } from "../ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import ClassSelect from "../ClassSelect";
-//import { useSelector } from "react-redux";
 import LineChartComponent from "../ui/line-chart";
 import DoughnutChartComponent from "../ui/pie-chart";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
@@ -19,9 +16,7 @@ import {  useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getStudentReportCard } from "@/services/ReportCardService";
 import { Skeleton } from "@/components/ui/skeleton";
-///import Login from "../Home";
 
-// Helper function to get grade variant
 const getGradeVariant = (grade: string) => {
   switch (grade.toUpperCase()) {
     case 'A': return 'grade-a';
@@ -151,7 +146,6 @@ export default function ReportCard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<number>(1);
-  const [selectedTermId, setSelectedTermId] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false); 
 
@@ -398,65 +392,13 @@ export default function ReportCard() {
         <div className="flex justify-between items-center p-6">
           <div>
             <PageTitleH1 title="Academic Report Card" className="text-white mb-1" />
-            <p className="text-blue-100 text-sm font-medium">
+            {/* <p className="text-blue-100 text-sm font-medium">
               {student_info.current_term}
-            </p>
+            </p> */}
           </div>
-          <Badge variant="secondary" className="bg-white/20 text-white border-white/30 hover:bg-white/30">
+          {/* <Badge variant="secondary" className="bg-white/20 text-white border-white/30 hover:bg-white/30">
             {class_information?.available_terms?.find((t: any) => t.is_current)?.name?.split(' ')[1] || 'Current'}
-          </Badge>
-        </div>
-      </Card>
-
-      <Card className="bg-muted/50 border-muted">
-        <div className="flex flex-wrap justify-between items-center p-4 gap-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="class-select" className="text-xs font-medium text-muted-foreground">
-                Class
-              </Label>
-              <ClassSelect />
-            </div>
-            {class_information?.available_terms && (
-              <div className="space-y-1">
-                <Label htmlFor="term-select" className="text-xs font-medium text-muted-foreground">
-                  Term
-                </Label>
-                <Select value={selectedTermId} onValueChange={setSelectedTermId}>
-                  <SelectTrigger id="term-select" className="w-[200px]">
-                    <SelectValue placeholder="Select term..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {class_information.available_terms.map((term: any) => (
-                      <SelectItem key={term.id} value={term.id}>
-                        {term.name}
-                        {term.is_current && (
-                          <Badge variant="secondary" className="ml-2 text-xs">
-                            Current
-                          </Badge>
-                        )}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            <div className="space-y-1">
-              <Label htmlFor="subject-filter" className="text-xs font-medium text-muted-foreground">
-                Filter
-              </Label>
-              <Select defaultValue="all">
-                <SelectTrigger id="subject-filter" className="w-[150px]">
-                  <SelectValue placeholder="Filter subjects..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Subjects</SelectItem>
-                  <SelectItem value="core">Core Subjects</SelectItem>
-                  <SelectItem value="electives">Electives</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          </Badge> */}
         </div>
       </Card>
 

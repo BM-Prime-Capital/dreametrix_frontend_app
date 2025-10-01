@@ -3,7 +3,7 @@ import { getClasses } from "./services/ClassService";
 
 export async function middleware(request: NextRequest) {
   const currentPath = request.nextUrl.pathname;
-  let tokenExpired = false;
+  //let tokenExpired = false;
   let tenantDomain: string | undefined = undefined;
   if (
     currentPath.startsWith("/parent") ||
@@ -30,6 +30,7 @@ export async function middleware(request: NextRequest) {
         accessToken,
         ""
       );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.log("Middleware Error => ", error);
       const message = typeof error?.message === 'string' ? error.message : '';
