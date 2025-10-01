@@ -61,20 +61,113 @@ const createParticipantsFromCommunicationData = (
   return participants;
 };
 
+// Dans useChat.ts - remplacez la fonction cleanRoomName
+const cleanRoomName = (
+  room: any, 
+  currentUserId: string, 
+  roomType?: string
+): string => {
+  const { name, participants, is_group } = room;
+
+  // Conversations individuelles
+  if (!is_group) {
+    const otherParticipants = participants?.filter((p: any) => 
+      p.id.toString() !== currentUserId.toString()
+    ) || [];
+    
+    if (otherParticipants.length === 1) {
+      return otherParticipants[0].full_name || otherParticipants[0].username;
+    } else if (otherParticipants.length > 1) {
+      return `Group (${otherParticipants.length})`;
+    }
+  }
+
+  // Groupes - nettoie le nom existant
+  let cleanName = name?.trim() || '';
+
+  // Supprime tous les préfixes problématiques
+  cleanName = cleanName.replace(/^(Classe|Class|Conversation avec|Group:|Announcement:|Parent Group:|Classe Class|\d+ classes?)\s*/i, '');
+  
+  // Si vide après nettoyage, génère un nom logique
+  if (!cleanName || cleanName === 'Unnamed Group') {
+    return generateLogicalGroupName(room, currentUserId, roomType);
+  }
+
+  return cleanName;
+};
+
+const generateLogicalGroupName = (
+  room: any, 
+  currentUserId: string, 
+  roomType?: string
+): string => {
+  const { participants, is_group } = room;
+  
+  const otherParticipants = participants?.filter((p: any) => 
+    p.id.toString() !== currentUserId.toString()
+  ) || [];
+
+  const participantCount = otherParticipants.length;
+
+  switch (roomType) {
+    case 'class':
+      return participantCount > 0 ? 
+        `Class (${participantCount})` : 
+        'Class Group';
+    
+    case 'announcement':
+      return participantCount > 0 ?
+        `Announcement (${participantCount})` :
+        'Announcement';
+    
+    case 'parent':
+      return participantCount > 0 ?
+        `Parents (${participantCount})` :
+        'Parents';
+    
+    default:
+      if (participantCount === 0) return 'Group';
+      if (participantCount === 1) return otherParticipants[0].full_name;
+      return `Group (${participantCount})`;
+  }
+};
+
+
+
+
 const enhanceMessage = (
-  message: ChatMessage,
+  message: any, // Utiliser un type plus spécifique si possible
   participants: ChatParticipant[]
 ): EnhancedChatMessage => {
-  const sender = participants.find((p) => p.id === message.sender) || {
-    id: message.sender,
-    name: "Unknown User",
+  const sender = participants.find((p) => p.id === message.sender.id) || {
+    id: message.sender.id,
+    name: message.sender.full_name || "Unknown User",
     role: "student" as const,
     status: "offline" as const,
     avatar: "/assets/images/general/student.png",
   };
 
   return {
-    ...message,
+    // Propriétés de base du message depuis l'API
+    uuid: message.uuid, // ← UUID récupéré directement de la réponse API
+    created_at: message.created_at,
+    last_update: message.last_update,
+    content: message.content,
+    message_type: message.message_type,
+    attachment_url: message.attachment_url,
+    voice_note_url: message.voice_note_url,
+    is_deleted: message.is_deleted,
+    extra_data: message.extra_data,
+    
+    // Expéditeur avec structure complète
+    sender: {
+      id: message.sender.id,
+      username: message.sender.username,
+      full_name: message.sender.full_name,
+      email: message.sender.email
+    },
+    
+    // Propriétés enrichies pour l'UI
     sender_info: sender,
     timestamp: new Date(message.created_at),
     status: "delivered" as const,
@@ -133,127 +226,174 @@ export const useChatRooms = (
   const reconnect = () => {};
   const hasInitialized = useRef(false);
 
-  const fetchRooms = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      console.log("[useChatRooms] Chargement des rooms...");
-      
-      const response = await ChatRoomService.listRooms(
-        tenantPrimaryDomain,
-        accessToken
-      );
+const fetchRooms = useCallback(async () => {
+  try {
+    setLoading(true);
+    setError(null);
+    console.log("[useChatRooms] Chargement des rooms...");
 
-      console.log("[useChatRooms] Rooms chargées:", response.results.length);
+    const response = await ChatRoomService.listRooms(
+      tenantPrimaryDomain,
+      accessToken
+    );
 
-      const enhancedRooms: EnhancedChatRoom[] = response.results.map(
-        (room: any) => {
-          // Essayer de trouver les participants réels de la room
-          const roomParticipants = room.participants && room.participants.length > 0
-            ? room.participants.map((participant: any) => ({
-                id: participant.id,
-                name: participant.full_name || participant.username || "Unknown",
-                role: participant.role || "student",
-                status: "offline" as const,
-                avatar: participant.image_url || "/assets/images/general/student.png",
-              }))
-            : allParticipants.length > 0
-            ? [allParticipants[Math.floor(Math.random() * allParticipants.length)]]
-            : [{
-                id: 1,
-                name: room.name || "Unknown",
-                role: "student" as const,
-                status: "offline" as const,
-                avatar: "/assets/images/general/student.png",
-              }];
+    console.log("[useChatRooms] Rooms chargées:", response.results.length);
 
-          return {
-            ...room,
-            participants: roomParticipants,
-            last_message: room.last_message,
-            unread_count: room.unread_count || Math.floor(Math.random() * 3),
-          };
-        }
-      );
+    // Trier par date du dernier message
+    const sortedResults = [...response.results].sort((a, b) => {
+      const dateA = a.last_message ? new Date(a.last_message.created_at).getTime() : 0;
+      const dateB = b.last_message ? new Date(b.last_message.created_at).getTime() : 0;
+      return dateB - dateA;
+    });
 
-      setRooms(enhancedRooms);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to fetch rooms";
-      setError(errorMessage);
-      console.error("[useChatRooms] Erreur chargement rooms:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [tenantPrimaryDomain, accessToken, allParticipants]);
 
-  const createRoom = useCallback(
-  async (name: string, participantIds?: number[], isGroup: boolean = false, initialMessage?: string) => {
+// Dans useChat.ts - remplacez l'appel à cleanRoomName
+const enhancedRooms: EnhancedChatRoom[] = sortedResults.map((room: any) => {
+  const rawParticipants = room.participants?.map((participant: any) => ({
+    id: participant.id,
+    name: participant.full_name || participant.username || "Unknown",
+    role: participant.role || "student",
+    status: "offline" as const,
+    avatar: participant.image_url || "/assets/images/general/student.png",
+  })) || [];
+
+  // Utilisez la nouvelle fonction avec l'objet room complet
+  const displayName = cleanRoomName(room, userId?.toString() || '', room.room_type);
+
+  let roomParticipants;
+  
+  if (room.is_group) {
+    roomParticipants = rawParticipants.length > 0
+      ? rawParticipants
+      : [{
+          id: room.id,
+          name: displayName,
+          role: "student" as const,
+          status: "offline" as const,
+          avatar: "/assets/images/general/student.png",
+        }];
+  } else {
+    const visibleParticipants = rawParticipants.filter(p => p.id.toString() !== userId?.toString());
+    roomParticipants = visibleParticipants.length > 0
+      ? visibleParticipants
+      : rawParticipants;
+  }
+
+  return {
+    ...room,
+    name: displayName,
+    room_type: room.room_type || (room.is_group ? "group" : "private"),
+    participants: roomParticipants,
+    last_message: room.last_message
+      ? enhanceMessage(room.last_message, rawParticipants)
+      : null,
+    unread_count: room.unread_count || 0,
+  };
+});
+
+
+    console.log("[useChatRooms] Rooms triées et enrichies:", enhancedRooms.length);
+    setRooms(enhancedRooms);
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Failed to fetch rooms";
+    setError(errorMessage);
+    console.error("[useChatRooms] Erreur chargement rooms:", err);
+  } finally {
+    setLoading(false);
+  }
+}, [tenantPrimaryDomain, accessToken, userId]);
+
+
+
+const createRoom = useCallback(
+  async (
+    name: string,
+    participantIds?: number[],
+    isGroup: boolean = false,
+    initialMessage?: string
+  ) => {
     try {
       setError(null);
       console.log("[useChatRooms] Création room:", { name, participantIds, isGroup, initialMessage });
-      
-      const roomData: any = { 
-        name 
-      };
-      
+
+      // ⚡ Nettoyer le nom ici
+      const normalizedName = cleanRoomName(name);
+
+      // Construire le payload avec le nom nettoyé
+      const roomData: any = { name: normalizedName };
+
       if (participantIds && participantIds.length > 0) {
-        roomData.participants = participantIds;
-      }
-      
-      if (isGroup) {
-        roomData.is_group = true;
-        roomData.room_type = 'group';
+        roomData.participant_ids = participantIds;
       }
 
+      if ((participantIds && participantIds.length > 1) || isGroup) {
+        roomData.is_group = true;
+        roomData.room_type = "group";
+      } else {
+        roomData.is_group = false;
+        roomData.room_type = "private";
+      }
+
+      // Création côté API
       const newRoom = await ChatRoomService.createChatRoom(
         tenantPrimaryDomain,
         accessToken,
-        roomData
+        {
+          ...roomData,
+          initial_message: initialMessage?.trim() || undefined,
+        }
       );
 
       console.log("[useChatRooms] Room créée:", newRoom);
 
-      // Créer une room enrichie
-      const roomParticipants = participantIds && participantIds.length > 0 
-        ? allParticipants.filter(p => participantIds.includes(p.id))
-        : [{
-            id: userId,
-            name: "You",
-            role: "teacher" as const,
-            status: "online" as const,
-            avatar: "/assets/images/general/teacher.png",
-          }];
+      // Participants API
+      const rawParticipants = newRoom.participants?.map((participant: any) => ({
+        id: participant.id,
+        name: participant.full_name || participant.username || "Unknown",
+        role: participant.role || "student",
+        status: "offline" as const,
+        avatar: participant.image_url || "/assets/images/general/student.png",
+      })) || [];
+
+      let roomParticipants;
+      if (newRoom.is_group) {
+        roomParticipants = rawParticipants.length > 0
+          ? rawParticipants
+          : [{
+              id: newRoom.id,
+              name: normalizedName, // ⚡ garder nom déjà nettoyé
+              role: "student" as const,
+              status: "offline" as const,
+              avatar: "/assets/images/general/student.png",
+            }];
+      } else {
+        const visibleParticipants = rawParticipants.filter(p => p.id !== userId);
+        roomParticipants = visibleParticipants.length > 0
+          ? visibleParticipants
+          : rawParticipants.length > 0
+            ? rawParticipants
+            : [{
+                id: newRoom.id,
+                name: "Unknown Conversation",
+                role: "student" as const,
+                status: "offline" as const,
+                avatar: "/assets/images/general/student.png",
+              }];
+      }
 
       const enhancedNewRoom: EnhancedChatRoom = {
         ...newRoom,
+        name: normalizedName, // ⚡ utiliser le nom corrigé
+        room_type: newRoom.room_type || (newRoom.is_group ? "group" : "private"),
         participants: roomParticipants,
-        last_message: null,
+        last_message: newRoom.last_message
+          ? enhanceMessage(newRoom.last_message, rawParticipants)
+          : null,
         unread_count: 0,
       };
 
-      // Ajouter la nouvelle room à la liste
       setRooms(prev => [enhancedNewRoom, ...prev]);
-      
-      // ENVOYER LE MESSAGE INITIAL SI FOURNI
-      if (initialMessage && initialMessage.trim()) {
-        try {
-          console.log("Envoi du message initial:", initialMessage);
-          const messageData: CreateChatMessage = { 
-            chat_room_id: enhancedNewRoom.id, 
-            content: initialMessage 
-          };
-          
-          await ChatMessageService.createChatMessage(
-            tenantPrimaryDomain,
-            accessToken,
-            messageData
-          );
-          console.log("Message initial envoyé avec succès");
-        } catch (messageError) {
-          console.error("Erreur envoi message initial:", messageError);
-        }
-      }
-      
+
       return enhancedNewRoom;
     } catch (error) {
       console.error("[useChatRooms] Erreur création room:", error);
@@ -261,8 +401,12 @@ export const useChatRooms = (
       throw error;
     }
   },
-  [tenantPrimaryDomain, accessToken, allParticipants, userId]
+  [tenantPrimaryDomain, accessToken, userId]
 );
+
+
+
+
 
   const updateRoom = useCallback(
     async (
@@ -398,6 +542,7 @@ export const useChatRooms = (
 // ------------------------------------------------
 export const useChatMessages = (
   roomId: number | null,
+  roomUuid?: string,
   token?: string,
   tenantDomain?: string
 ) => {
@@ -406,8 +551,10 @@ export const useChatMessages = (
   const [error, setError] = useState<string | null>(null);
 
   const headers = useApiHeaders();
-  const tenantPrimaryDomain = tenantDomain || process.env.NEXT_PUBLIC_TENANT_DOMAIN || "";
-  const accessToken = token || (headers["Authorization"]?.replace("Bearer ", "") || "");
+  const tenantPrimaryDomain =
+    tenantDomain || process.env.NEXT_PUBLIC_TENANT_DOMAIN || "";
+  const accessToken =
+    token || headers["Authorization"]?.replace("Bearer ", "") || "";
 
   const { students, teachers, parents } = useCommunicationData();
   const allParticipants = createParticipantsFromCommunicationData(
@@ -418,13 +565,14 @@ export const useChatMessages = (
 
   const lastRoomId = useRef<number | null>(null);
 
+  // ---------------- FETCH MESSAGES ----------------
   const fetchMessages = useCallback(
     async (limit?: number, offset?: number) => {
       if (!roomId) {
         console.log("[useChatMessages] Aucun roomId, skip fetch");
         return;
       }
-      
+
       try {
         setLoading(true);
         setError(null);
@@ -437,19 +585,19 @@ export const useChatMessages = (
           offset
         );
 
-        const roomMessages = response.results.filter(
-          (msg) => msg.chat === roomId
-        );
-        
+        const roomMessages = response.results.filter((msg) => msg.chat === roomId);
+
         console.log("[useChatMessages] Messages chargés:", roomMessages.length);
 
-        const enhancedMessages = roomMessages.map((msg) =>
-          enhanceMessage(msg, allParticipants)
-        );
+        const enhancedMessages = roomMessages
+        .map((msg) => enhanceMessage(msg, allParticipants))
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()); // 👈 tri ASC
+
 
         setMessages(enhancedMessages);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to fetch messages";
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch messages";
         setError(errorMessage);
         console.error("[useChatMessages] Erreur chargement messages:", err);
       } finally {
@@ -459,45 +607,44 @@ export const useChatMessages = (
     [tenantPrimaryDomain, accessToken, roomId, allParticipants]
   );
 
+  // ---------------- SEND MESSAGE ----------------
   const sendMessage = useCallback(
     async (content: string) => {
-      if (!roomId) {
-        console.error("[useChatMessages] Impossible d'envoyer: aucun roomId");
+      if (!roomUuid) {
+        console.error("[useChatMessages] Impossible d'envoyer: aucun roomUuid");
         throw new Error("Aucune conversation sélectionnée");
       }
-      
+
       try {
         setError(null);
-        console.log("[useChatMessages] Envoi message:", { roomId, content });
-        
-        const messageData: CreateChatMessage = { 
-          chat_room_id: roomId, 
-          content 
-        };
-        
-        // Envoyer le message
+        console.log("[useChatMessages] Envoi message:", { roomUuid, content });
+
+        const formData = new FormData();
+        formData.append("chat_room_id", roomUuid); // ⚡ UUID obligatoire
+        formData.append("content", content);
+
         const sentMessage = await ChatMessageService.createChatMessage(
           tenantPrimaryDomain,
           accessToken,
-          messageData
+          formData
         );
-        
+
         console.log("[useChatMessages] Message envoyé:", sentMessage);
-        
-        // Recharger les messages immédiatement
+
         await fetchMessages();
-        
         return sentMessage;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to send message";
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to send message";
         setError(errorMessage);
         console.error("[useChatMessages] Erreur envoi message:", err);
         throw err;
       }
     },
-    [tenantPrimaryDomain, accessToken, roomId, fetchMessages]
+    [tenantPrimaryDomain, accessToken, roomUuid, fetchMessages]
   );
 
+  // ---------------- UPDATE MESSAGE ----------------
   const updateMessage = useCallback(
     async (messageId: number, content: string) => {
       try {
@@ -509,10 +656,14 @@ export const useChatMessages = (
           { content }
         );
         setMessages((prev) =>
-          prev.map((msg) => (msg.id === messageId ? { ...msg, content } : msg))
+          prev.map((msg) =>
+            msg.id === messageId ? { ...msg, content } : msg
+          )
         );
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to update message");
+        setError(
+          err instanceof Error ? err.message : "Failed to update message"
+        );
         console.error("Error updating message:", err);
         throw err;
       }
@@ -520,6 +671,7 @@ export const useChatMessages = (
     [tenantPrimaryDomain, accessToken]
   );
 
+  // ---------------- DELETE MESSAGE ----------------
   const deleteMessage = useCallback(
     async (messageId: number) => {
       try {
@@ -535,7 +687,9 @@ export const useChatMessages = (
           )
         );
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to delete message");
+        setError(
+          err instanceof Error ? err.message : "Failed to delete message"
+        );
         console.error("Error deleting message:", err);
         throw err;
       }
@@ -543,27 +697,28 @@ export const useChatMessages = (
     [tenantPrimaryDomain, accessToken]
   );
 
+  // ---------------- EFFECTS ----------------
   useEffect(() => {
     if (roomId && roomId !== lastRoomId.current && accessToken) {
       console.log("[useChatMessages] Room changée:", roomId);
       lastRoomId.current = roomId;
       fetchMessages();
     } else if (!roomId && messages.length > 0) {
-      console.log("useChatMessages] Clear messages (no room selected)");
+      console.log("[useChatMessages] Clear messages (no room selected)");
       lastRoomId.current = null;
       setMessages([]);
     }
   }, [roomId, accessToken, fetchMessages, messages.length]);
 
-  // Debug effect
   useEffect(() => {
     console.log("[useChatMessages] Messages state:", {
       count: messages.length,
       roomId,
-      sample: messages.length > 0 ? messages[0] : null
+      sample: messages.length > 0 ? messages[0] : null,
     });
   }, [messages, roomId]);
 
+  // ---------------- RETURN ----------------
   return {
     messages,
     loading,

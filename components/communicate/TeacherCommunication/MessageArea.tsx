@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Paperclip,
   Send,
@@ -11,6 +11,12 @@ import {
   Bell,
   MoreHorizontal,
   X,
+  Users2,
+  Users,
+  Phone,
+  Video,
+  Smile,
+  Mic,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -48,81 +54,159 @@ export function MessageArea({
   onOpenAnnounce,
 }: MessageAreaProps) {
   const [, setIsTyping] = useState(false);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+ 
+  const [isRecording, setIsRecording] = useState(false);
+ 
+
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]); // 👈 scroll à chaque nouveau message
 
   const handleMessageChange = (value: string) => {
     onMessageChange(value);
     setIsTyping(!!value.trim());
   };
 
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
+
+
+  const handleVoiceCall = () => {
+    // TODO: Implémenter l'appel vocal
+    console.log("Démarrage appel vocal avec:", selectedConversation?.displayName);
+  };
+
+  const handleVideoCall = () => {
+    // TODO: Implémenter l'appel vidéo
+    console.log("Démarrage appel vidéo avec:", selectedConversation?.displayName);
+  };
+
+  const handleVoiceMessage = () => {
+    setIsRecording(!isRecording);
+    // TODO: Implémenter l'enregistrement vocal
+  };
+
   return (
     <Card className="p-3 lg:col-span-2 h-[calc(100vh-190px)] flex flex-col bg-white/80 backdrop-blur-sm border-0 shadow-md rounded-xl overflow-hidden">
       {selectedConversation ? (
         <>
-          {/* Conversation Header */}
-          <div className="flex items-center justify-between pb-2 mb-1 border-b border-blue-100">
+          {/* En-tête de conversation amélioré */}
+          <div className="flex items-center justify-between pb-3 mb-2 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-white rounded-lg p-3">
             <div className="flex items-center gap-3">
-              <Avatar
-                className={cn(
-                  "h-12 w-12 rounded-xl shadow-sm border-2",
-                  selectedConversation.type === "announcement"
-                    ? "border-purple-200 bg-purple-50"
-                    : selectedConversation.type === "class"
-                    ? "border-green-200 bg-green-50"
-                    : selectedConversation.type === "parent"
-                    ? "border-amber-200 bg-amber-50"
-                    : "border-blue-200 bg-blue-50"
-                )}
-              >
-                <AvatarImage
-                  src={selectedConversation.participants[0].avatar}
-                  alt={selectedConversation.participants[0].name}
-                  className="object-cover rounded-lg"
-                />
-                <AvatarFallback className="rounded-lg">
-                  {selectedConversation.participants[0].name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar
+                  className={cn(
+                    "h-14 w-14 rounded-2xl shadow-lg border-2",
+                    selectedConversation.type === "announcement"
+                      ? "border-purple-300 bg-purple-100"
+                      : selectedConversation.type === "class"
+                      ? "border-green-300 bg-green-100"
+                      : selectedConversation.type === "parent"
+                      ? "border-amber-300 bg-amber-100"
+                      : "border-blue-300 bg-blue-100"
+                  )}
+                >
+                  <AvatarImage
+                    src={selectedConversation.participants[0]?.avatar || "/assets/images/general/student.png"}
+                    alt={selectedConversation.displayName}
+                    className="object-cover rounded-xl"
+                  />
+                  <AvatarFallback className="rounded-xl text-lg font-semibold">
+                    {selectedConversation.type === "class" ? (
+                      <Users className="h-6 w-6" />
+                    ) : selectedConversation.type === "announcement" ? (
+                      <Megaphone className="h-6 w-6" />
+                    ) : selectedConversation.participants.length > 2 ? (
+                      <Users2 className="h-6 w-6" />
+                    ) : (
+                      selectedConversation.displayName.charAt(0)
+                    )}
+                  </AvatarFallback>
+                </Avatar>
+                {/* Indicateur en ligne */}
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+              </div>
               <div>
-                <h3 className="font-semibold text-lg">
-                  {selectedConversation.participants[0].name}
+                <h3 className="font-bold text-xl text-gray-800">
+                  {selectedConversation.displayName}
                 </h3>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 mt-1">
                   <Badge
                     className={cn(
-                      "text-xs py-0.5 px-2",
+                      "text-xs py-1 px-3 font-semibold",
                       selectedConversation.type === "announcement"
-                        ? "bg-purple-50 text-purple-700 border-purple-200"
+                        ? "bg-purple-100 text-purple-800 border-purple-300"
                         : selectedConversation.type === "class"
-                        ? "bg-green-50 text-green-700 border-green-200"
+                        ? "bg-green-100 text-green-800 border-green-300"
                         : selectedConversation.type === "parent"
-                        ? "bg-amber-50 text-amber-700 border-amber-200"
-                        : "bg-blue-50 text-blue-700 border-blue-200"
+                        ? "bg-amber-100 text-amber-800 border-amber-300"
+                        : "bg-blue-100 text-blue-800 border-blue-300"
                     )}
                   >
                     {selectedConversation.type === "class"
-                      ? "Class"
+                      ? "Class Group"
                       : selectedConversation.type === "parent"
-                      ? "Parent"
+                      ? "Parent Group"
                       : selectedConversation.type === "announcement"
                       ? "Announcement"
-                      : "Student"}
+                      : `${selectedConversation.participants.length} members`}
                   </Badge>
-                  <span className="text-xs text-muted-foreground flex items-center">
+                  <span className="text-xs text-gray-500 flex items-center">
                     <Clock className="h-3 w-3 mr-1" />
-                    Last active: Today
+                    Active now
                   </span>
                 </div>
               </div>
             </div>
 
+            {/* Boutons d'appel et actions */}
             <div className="flex items-center gap-2">
               <TooltipProvider>
+                {/* Appel vocal */}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="outline"
                       size="icon"
-                      className="rounded-full border-blue-100 hover:bg-blue-50"
+                      onClick={handleVoiceCall}
+                      className="rounded-full border-green-200 bg-green-50 hover:bg-green-100 transition-all duration-200 hover:scale-110"
+                    >
+                      <Phone className="h-4 w-4 text-green-600" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Voice Call</TooltipContent>
+                </Tooltip>
+
+                {/* Appel vidéo */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleVideoCall}
+                      className="rounded-full border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all duration-200 hover:scale-110"
+                    >
+                      <Video className="h-4 w-4 text-blue-600" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Video Call</TooltipContent>
+                </Tooltip>
+
+                {/* Autres actions */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="rounded-full border-blue-100 hover:bg-blue-50 transition-all duration-200"
                     >
                       <Star className="h-4 w-4 text-amber-400" />
                     </Button>
@@ -135,7 +219,7 @@ export function MessageArea({
                     <Button
                       variant="outline"
                       size="icon"
-                      className="rounded-full border-blue-100 hover:bg-blue-50"
+                      className="rounded-full border-blue-100 hover:bg-blue-50 transition-all duration-200"
                     >
                       <Bell className="h-4 w-4 text-blue-500" />
                     </Button>
@@ -148,7 +232,7 @@ export function MessageArea({
                     <Button
                       variant="outline"
                       size="icon"
-                      className="rounded-full border-blue-100 hover:bg-blue-50"
+                      className="rounded-full border-blue-100 hover:bg-blue-50 transition-all duration-200"
                     >
                       <MoreHorizontal className="h-4 w-4 text-gray-500" />
                     </Button>
@@ -162,9 +246,9 @@ export function MessageArea({
                       variant="outline"
                       size="icon"
                       onClick={onDeselectConversation}
-                      className="rounded-full border-blue-100 hover:bg-blue-50 ml-2"
+                      className="rounded-full border-red-200 bg-red-50 hover:bg-red-100 transition-all duration-200 ml-2"
                     >
-                      <X className="h-4 w-4 text-gray-500" />
+                      <X className="h-4 w-4 text-red-500" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Close conversation</TooltipContent>
@@ -173,15 +257,22 @@ export function MessageArea({
             </div>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto py-1 space-y-4 px-2 mb-1">
+          {/* Zone des messages avec design amélioré */}
+          <div className="flex-1 overflow-y-auto py-3 space-y-4 px-3 mb-2 bg-gradient-to-b from-gray-50/50 to-white rounded-lg">
             {loading ? (
               <div className="flex justify-center items-center h-full">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <div className="flex flex-col items-center gap-3">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+                  <p className="text-gray-500">Loading messages...</p>
+                </div>
               </div>
             ) : messages.length === 0 ? (
-              <div className="flex justify-center items-center h-full text-gray-500">
-                <p>Aucun message dans cette conversation</p>
+              <div className="flex flex-col items-center justify-center h-full text-center py-12">
+                <MessageSquare className="h-16 w-16 text-gray-300 mb-4" />
+                <h4 className="text-lg font-semibold text-gray-500 mb-2">No messages yet</h4>
+                <p className="text-gray-400 max-w-sm">
+                  Start the conversation by sending the first message
+                </p>
               </div>
             ) : (
               <>
@@ -196,10 +287,10 @@ export function MessageArea({
                   >
                     <Avatar
                       className={cn(
-                        "h-9 w-9 mt-1 rounded-xl border-2 shadow-sm flex-shrink-0",
+                        "h-10 w-10 rounded-xl border-2 shadow-md flex-shrink-0 transition-all duration-200 hover:scale-105",
                         message.sender.role === "teacher"
-                          ? "border-blue-200 bg-blue-50"
-                          : "border-blue-100"
+                          ? "border-blue-300 bg-gradient-to-br from-blue-100 to-blue-200"
+                          : "border-gray-200 bg-gradient-to-br from-gray-100 to-gray-200"
                       )}
                     >
                       <AvatarImage
@@ -207,26 +298,26 @@ export function MessageArea({
                         alt={message.sender.name}
                         className="object-cover rounded-lg"
                       />
-                      <AvatarFallback className="rounded-lg">
+                      <AvatarFallback className="rounded-lg font-medium">
                         {message.sender?.name?.charAt(0) || "?"}
                       </AvatarFallback>
                     </Avatar>
 
                     <div
                       className={cn(
-                        "rounded-2xl p-3 shadow-sm",
+                        "rounded-2xl p-4 shadow-sm transition-all duration-200 hover:shadow-md",
                         message.sender.role === "teacher"
                           ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white mr-0"
-                          : "bg-gradient-to-br from-gray-50 to-blue-50 border border-blue-100"
+                          : "bg-white border border-gray-200 shadow-sm"
                       )}
                     >
-                      <div className="flex justify-between items-center mb-1">
+                      <div className="flex justify-between items-center mb-2">
                         <span
                           className={cn(
-                            "text-xs font-medium",
+                            "text-sm font-semibold",
                             message.sender.role === "teacher"
                               ? "text-blue-100"
-                              : "text-blue-700"
+                              : "text-gray-700"
                           )}
                         >
                           {message.sender.name}
@@ -235,11 +326,19 @@ export function MessageArea({
                           className={cn(
                             "text-xs flex items-center gap-1",
                             message.sender.role === "teacher"
-                              ? "text-blue-100"
-                              : "text-blue-400"
+                              ? "text-blue-200"
+                              : "text-gray-500"
                           )}
                         >
-                          {message.timestamp}
+                           {typeof message.timestamp === 'object' 
+                              ? message.timestamp.toLocaleTimeString("en-US", { 
+                                  hour: "2-digit", 
+                                  minute: "2-digit" 
+                                })
+                              : message.timestamp}
+                            {message.sender.role === "teacher" && (
+                              <CheckCheck className="h-3 w-3 ml-1" />
+                            )}
                           {message.sender.role === "teacher" && (
                             <CheckCheck className="h-3 w-3 ml-1" />
                           )}
@@ -259,32 +358,32 @@ export function MessageArea({
                       {message.attachments && message.attachments.length > 0 && (
                         <div
                           className={cn(
-                            "mt-3 pt-2",
+                            "mt-3 pt-3",
                             message.sender.role === "teacher"
-                              ? "border-t border-white/20"
-                              : "border-t border-blue-100"
+                              ? "border-t border-white/30"
+                              : "border-t border-gray-100"
                           )}
                         >
                           {message.attachments.map((attachment: any, i: string) => (
                             <div
                               key={i}
-                              className="flex items-center gap-1 text-xs mt-1"
+                              className="flex items-center gap-2 text-xs mt-2 p-2 bg-white/20 rounded-lg"
                             >
                               <Paperclip
                                 className={cn(
                                   "h-3 w-3",
                                   message.sender.role === "teacher"
-                                    ? "text-blue-100"
+                                    ? "text-blue-200"
                                     : "text-blue-500"
                                 )}
                               />
                               <a
                                 href={attachment.url}
                                 className={cn(
-                                  "underline",
+                                  "underline font-medium",
                                   message.sender.role === "teacher"
-                                    ? "text-blue-100"
-                                    : "text-blue-600"
+                                    ? "text-blue-200 hover:text-white"
+                                    : "text-blue-600 hover:text-blue-800"
                                 )}
                               >
                                 {attachment.name}
@@ -298,15 +397,69 @@ export function MessageArea({
                 ))}
               </>
             )}
+            <div ref={bottomRef} />
           </div>
 
-          {/* Message Input */}
-          <div className="pt-1 border-t border-blue-100 mt-auto">
-            <div className="bg-blue-50/50 rounded-xl p-1 shadow-sm border border-blue-100">
-              <div className="flex items-center gap-2">
+          {/* Zone de saisie améliorée avec plus de fonctionnalités */}
+          <div className="pt-2 border-t border-gray-200 mt-auto">
+            <div className="bg-white rounded-2xl p-3 shadow-lg border border-gray-200">
+              <div className="flex items-end gap-3">
+                {/* Boutons d'actions */}
+                <div className="flex gap-1">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="rounded-full border-gray-200 bg-gray-50 hover:bg-gray-100 h-10 w-10 transition-all duration-200"
+                        >
+                          <Smile className="h-5 w-5 text-gray-600" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Emoji</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="rounded-full border-gray-200 bg-gray-50 hover:bg-gray-100 h-10 w-10 transition-all duration-200"
+                        >
+                          <Paperclip className="h-5 w-5 text-gray-600" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Attach file</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={handleVoiceMessage}
+                          className={cn(
+                            "rounded-full h-10 w-10 transition-all duration-200",
+                            isRecording
+                              ? "bg-red-50 border-red-200 hover:bg-red-100"
+                              : "border-gray-200 bg-gray-50 hover:bg-gray-100"
+                          )}
+                        >
+                          <Mic className={cn("h-5 w-5", isRecording ? "text-red-500" : "text-gray-600")} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {isRecording ? "Stop recording" : "Voice message"}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+
+                {/* Zone de texte */}
                 <Textarea
                   placeholder="Type your message..."
-                  className="min-h-[40px] h-[40px] resize-none bg-white border-blue-100 focus-visible:ring-blue-200 rounded-xl"
+                  className="min-h-[50px] max-h-[120px] resize-none bg-gray-50 border-gray-200 focus-visible:ring-blue-200 rounded-xl flex-1 transition-all duration-200"
                   value={newMessage}
                   onChange={(e) => handleMessageChange(e.target.value)}
                   onKeyDown={(e) => {
@@ -316,41 +469,49 @@ export function MessageArea({
                     }
                   }}
                 />
-                <div className="flex gap-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="rounded-full border-blue-200 bg-white hover:bg-blue-50 h-9 w-9 flex-shrink-0"
-                        >
-                          <Paperclip className="h-4 w-4 text-blue-500" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Attach file</TooltipContent>
-                    </Tooltip>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          size="icon"
-                          className="rounded-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md h-9 w-9 flex-shrink-0"
-                          onClick={onSendMessage}
-                          disabled={loading || !newMessage.trim()}
-                        >
-                          {loading ? (
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          ) : (
-                            <Send className="h-4 w-4 text-white" />
-                          )}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Send message</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
+                {/* Bouton d'envoi */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon"
+                        className={cn(
+                          "rounded-full shadow-lg h-11 w-11 flex-shrink-0 transition-all duration-200 hover:scale-105",
+                          newMessage.trim()
+                            ? "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                            : "bg-gray-300 cursor-not-allowed"
+                        )}
+                        onClick={onSendMessage}
+                        disabled={loading || !newMessage.trim()}
+                      >
+                        {loading ? (
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        ) : (
+                          <Send className="h-5 w-5 text-white" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Send message</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
+
+              {/* Indicateur d'enregistrement */}
+              {isRecording && (
+                <div className="flex items-center gap-2 mt-3 p-2 bg-red-50 rounded-lg border border-red-200">
+                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-red-700 font-medium">Recording...</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-auto text-xs h-7 px-2"
+                    onClick={handleVoiceMessage}
+                  >
+                    Stop
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </>

@@ -61,6 +61,8 @@ import PageTitleH1 from "@/components/ui/page-title-h1";
 import { cn } from "@/utils/tailwind";
 import DebugCommunicationData from "./DebugCommunicationData";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
+import { useSelector } from "react-redux";
+import { localStorageKey } from "@/constants/global";
 
 // Types
 interface Message {
@@ -88,10 +90,12 @@ interface Conversation {
   }[];
   lastMessage: Message;
   unreadCount: number;
+  displayName: string;
 }
 
 export default function TeacherCommunication() {
   const { tenantDomain, accessToken } = useRequestInfo();
+  const { token, user } = useSelector((state: any) => state.auth);
   const [searchQuery, setSearchQuery] = useState("");
   const [newMessage, setNewMessage] = useState("");
   const [composeDialogOpen, setComposeDialogOpen] = useState(false);
@@ -103,7 +107,8 @@ export default function TeacherCommunication() {
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const [isCreatingAnnouncement, setIsCreatingAnnouncement] = useState(false);
 
-  const currentUserId = 1;
+    const storedUser = localStorage.getItem(localStorageKey.USER_DATA);
+  const currentUserId = storedUser ? JSON.parse(storedUser).id : null;
 
   const {
     classes,
@@ -156,27 +161,79 @@ export default function TeacherCommunication() {
 
   const setIsTyping = (_value?: boolean) => {};
 
-  const conversations: Conversation[] = useMemo(() => {
-    return rooms.map((room) => ({
+
+const cleanRoomName = (name: string): string => {
+  if (!name) return "Unnamed Group";
+  let clean = name.trim();
+  clean = clean.replace(/^(Classe|Class)\s*/i, "");
+  return `Class ${clean}`;
+};
+
+const conversations: Conversation[] = useMemo(() => {
+  return rooms.map((room) => {
+    const isGroup = room.is_group;
+    let conversationType: "individual" | "class" | "announcement" | "parent" = "individual";
+    let displayName = "Conversation";
+
+   if (isGroup) {
+  if (room.room_type === "class") {
+    conversationType = "class";
+    displayName = `Group: ${room.name}`;
+  } else if (room.room_type === "announcement") {
+    conversationType = "announcement";
+    displayName = `Group Announcement: ${room.name}`;
+  } else if (room.room_type === "parent") {
+    conversationType = "parent";
+    displayName = `Parent Group: ${room.name}`;
+  } else {
+    conversationType = "class";
+    displayName = `Group: ${room.name}`;
+  }
+}
+ else {
+      conversationType = "individual";
+      displayName =
+        room.participants.find(
+          (p) => p.id.toString() !== currentUserId?.toString()
+        )?.name ||
+        room.participants[0]?.name ||
+        "Unknown User";
+    }
+
+    return {
       id: room.id.toString(),
-      type: room.is_group ? "class" : "individual",
+      type: conversationType,
       participants: room.participants.map((p) => ({
         id: p.id.toString(),
         name: p.name,
         avatar: p.avatar || "/assets/images/general/student.png",
-        role: p.role === "admin" ? "teacher" : (p.role as "teacher" | "student" | "parent"),
+        role:
+          p.role === "admin"
+            ? "teacher"
+            : (p.role as "teacher" | "student" | "parent"),
       })),
+      displayName,
       lastMessage: room.last_message
         ? {
-            id: room.last_message.id.toString(),
+            id: room.last_message.uuid.toString(),
             sender: {
               id: room.last_message.sender_info.id.toString(),
               name: room.last_message.sender_info.name,
-              avatar: room.last_message.sender_info.avatar || "/assets/images/general/student.png",
-              role: room.last_message.sender_info.role === "admin" ? "teacher" : (room.last_message.sender_info.role as "teacher" | "student" | "parent"),
+              avatar:
+                room.last_message.sender_info.avatar ||
+                "/assets/images/general/student.png",
+              role:
+                room.last_message.sender_info.role === "admin"
+                  ? "teacher"
+                  : (room.last_message.sender_info.role as
+                      | "teacher"
+                      | "student"
+                      | "parent"),
             },
             content: room.last_message.content,
-            timestamp: new Date(room.last_message.created_at).toLocaleTimeString("fr-FR", {
+            timestamp: new Date(
+              room.last_message.created_at
+            ).toLocaleTimeString("fr-FR", {
               hour: "2-digit",
               minute: "2-digit",
             }),
@@ -190,12 +247,15 @@ export default function TeacherCommunication() {
             read: true,
           },
       unreadCount: room.unread_count,
-    }));
-  }, [rooms]);
+    };
+  });
+}, [rooms, currentUserId]);
+
+
 
   const chatMessages: Message[] = useMemo(() => {
     return messages.map((msg) => ({
-      id: msg.id.toString(),
+      id: msg.uuid.toString(),
       sender: {
         id: msg.sender_info.id.toString(),
         name: msg.sender_info.name,
@@ -258,7 +318,7 @@ export default function TeacherCommunication() {
     }
   };
 
-  const handleCreateConversation = async () => {
+const handleCreateConversation = async () => {
   if (selectedRecipients.length === 0 || isCreatingConversation) return;
 
   setIsCreatingConversation(true);
@@ -292,21 +352,21 @@ export default function TeacherCommunication() {
           : `Conversation avec ${selectedParentNames.length} parents`;
     }
 
-    // passer les participants + message initial
+    // 🚀 Correction : on met isGroup=true si c’est une classe ou plusieurs participants
+    const isGroupChat =
+      recipientType === "class" || selectedRecipients.length > 1;
+
     const newRoom = await createRoom(
       conversationName,
-      selectedRecipients.map((id) => parseInt(id)), // participants
-      false,                                       // pas un group chat
-      newMessage.trim() || undefined               // message initial
+      selectedRecipients.map((id) => parseInt(id)),
+      isGroupChat, // ✅ true si c’est une classe
+      newMessage.trim() || undefined
     );
 
     if (newRoom) {
       setSelectedRoom(newRoom);
-
-      // recharger les messages (important sinon hook retourne vide)
-      await fetchMessages();
-
-      setNewMessage(""); // vider le textarea
+      await fetchMessages(); // recharge messages
+      setNewMessage("");
       notifyConversationCreated(conversationName);
     }
 
@@ -318,7 +378,8 @@ export default function TeacherCommunication() {
   } finally {
     setIsCreatingConversation(false);
   }
-  };
+};
+
 
 
   useEffect(() => {
@@ -1023,7 +1084,7 @@ export default function TeacherCommunication() {
                       >
                         <AvatarImage
                           src={conversation.participants[0].avatar}
-                          alt={conversation.participants[0].name}
+                          alt={conversation.displayName}
                           className="object-cover rounded-lg"
                         />
                         <AvatarFallback className="rounded-lg">
@@ -1041,7 +1102,7 @@ export default function TeacherCommunication() {
                                 : ""
                             )}
                           >
-                            {conversation.participants[0].name}
+                            {conversation.displayName}
                             {conversation.unreadCount > 0 && (
                               <span className="ml-2 inline-flex h-2 w-2 rounded-full bg-blue-500"></span>
                             )}
@@ -1118,16 +1179,16 @@ export default function TeacherCommunication() {
                     >
                       <AvatarImage
                         src={selectedConversation.participants[0].avatar}
-                        alt={selectedConversation.participants[0].name}
+                        alt={selectedConversation.displayName}
                         className="object-cover rounded-lg"
                       />
                       <AvatarFallback className="rounded-lg">
-                        {selectedConversation.participants[0].name.charAt(0)}
+                        {selectedConversation.displayName}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <h3 className="font-semibold text-lg">
-                        {selectedConversation.participants[0].name}
+                        {selectedConversation.displayName}
                       </h3>
                       <div className="flex items-center gap-2">
                         <Badge
