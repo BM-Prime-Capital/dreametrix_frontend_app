@@ -273,7 +273,12 @@ const enhancedRooms: EnhancedChatRoom[] = sortedResults.map((room: any) => {
           avatar: "/assets/images/general/student.png",
         }];
   } else {
-    const visibleParticipants = rawParticipants.filter(p => p.id.toString() !== userId?.toString());
+    // const visibleParticipants = rawParticipants.filter(p => p.id.toString() !== userId?.toString());
+    const visibleParticipants = rawParticipants.filter((p: { id: number }) =>
+  p.id.toString() !== userId?.toString()
+);
+
+    
     roomParticipants = visibleParticipants.length > 0
       ? visibleParticipants
       : rawParticipants;
@@ -317,7 +322,12 @@ const createRoom = useCallback(
       console.log("[useChatRooms] Création room:", { name, participantIds, isGroup, initialMessage });
 
       // ⚡ Nettoyer le nom ici
-      const normalizedName = cleanRoomName(name);
+      // const normalizedName = cleanRoomName(name);
+      const normalizedName = cleanRoomName(
+  { name },                // ← objet room minimal
+  userId.toString(),       // ← currentUserId
+  isGroup ? "group" : "private" // ← roomType optionnel
+);
 
       // Construire le payload avec le nom nettoyé
       const roomData: any = { name: normalizedName };
@@ -408,100 +418,100 @@ const createRoom = useCallback(
 
 
 
-  const updateRoom = useCallback(
-    async (
-      roomId: number,
-      updates: {
-        name?: string;
-        details?: string;
-        is_group?: boolean;
-        is_deleted?: boolean;
-        extra_data?: string | Record<string, any>;
-      }
-    ) => {
-      try {
-        setError(null);
+  // const updateRoom = useCallback(
+  //   async (
+  //     roomId: number,
+  //     updates: {
+  //       name?: string;
+  //       details?: string;
+  //       is_group?: boolean;
+  //       is_deleted?: boolean;
+  //       extra_data?: string | Record<string, any>;
+  //     }
+  //   ) => {
+  //     try {
+  //       setError(null);
 
-        const payload = {
-          ...updates,
-          extra_data: updates.extra_data
-            ? JSON.stringify(updates.extra_data)
-            : undefined,
-        };
+  //       const payload = {
+  //         ...updates,
+  //         extra_data: updates.extra_data
+  //           ? JSON.stringify(updates.extra_data)
+  //           : undefined,
+  //       };
 
-        await ChatRoomService.partialUpdateRoom(
-          tenantPrimaryDomain,
-          accessToken,
-          roomId,
-          payload
-        );
+  //       await ChatRoomService.partialUpdateRoom(
+  //         tenantPrimaryDomain,
+  //         accessToken,
+  //         roomId,
+  //         payload
+  //       );
 
-        setRooms((prev) =>
-          prev.map((room) => {
-            if (room.id === roomId) {
-              const merged: ChatRoom = {
-                ...room,
-                ...updates,
-                extra_data:
-                  typeof updates.extra_data === "string"
-                    ? JSON.parse(updates.extra_data)
-                    : updates.extra_data,
-              };
-              return enhanceRoom(merged, room.participants);
-            }
-            return room;
-          })
-        );
+  //       setRooms((prev) =>
+  //         prev.map((room) => {
+  //           if (room.id === roomId) {
+  //             const merged: ChatRoom = {
+  //               ...room,
+  //               ...updates,
+  //               extra_data:
+  //                 typeof updates.extra_data === "string"
+  //                   ? JSON.parse(updates.extra_data)
+  //                   : updates.extra_data,
+  //             };
+  //             return enhanceRoom(merged, room.participants);
+  //           }
+  //           return room;
+  //         })
+  //       );
 
-        if (selectedRoom?.id === roomId) {
-          setSelectedRoom((prev) => {
-            if (!prev) return null;
+  //       if (selectedRoom?.id === roomId) {
+  //         setSelectedRoom((prev) => {
+  //           if (!prev) return null;
 
-            const merged: ChatRoom = {
-              ...prev,
-              ...updates,
-              extra_data:
-                typeof updates.extra_data === "string"
-                  ? JSON.parse(updates.extra_data)
-                  : updates.extra_data,
-            };
+  //           const merged: ChatRoom = {
+  //             ...prev,
+  //             ...updates,
+  //             extra_data:
+  //               typeof updates.extra_data === "string"
+  //                 ? JSON.parse(updates.extra_data)
+  //                 : updates.extra_data,
+  //           };
 
-            return enhanceRoom(merged, prev.participants);
-          });
-        }
+  //           return enhanceRoom(merged, prev.participants);
+  //         });
+  //       }
 
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to update room");
-        console.error("Error updating room:", err);
-        throw err;
-      }
-    },
-    [tenantPrimaryDomain, accessToken, selectedRoom]
-  );
+  //     } catch (err) {
+  //       setError(err instanceof Error ? err.message : "Failed to update room");
+  //       console.error("Error updating room:", err);
+  //       throw err;
+  //     }
+  //   },
+  //   [tenantPrimaryDomain, accessToken, selectedRoom]
+  // );
 
-  const deleteRoom = useCallback(
-    async (roomId: number) => {
-      try {
-        setError(null);
-        await ChatRoomService.deleteRoom(
-          tenantPrimaryDomain,
-          accessToken,
-          roomId
-        );
+  // const deleteRoom = useCallback(
+  //   async (roomId: number) => {
+  //     try {
+  //       setError(null);
+  //       await ChatRoomService.deleteRoom(
+  //         tenantPrimaryDomain,
+  //         accessToken,
+  //         roomId
+  //       );
 
-        setRooms((prev) => prev.filter((room) => room.id !== roomId));
+  //       setRooms((prev) => prev.filter((room) => room.id !== roomId));
 
-        if (selectedRoom?.id === roomId) {
-          setSelectedRoom(null);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to delete room");
-        console.error("Error deleting room:", err);
-        throw err;
-      }
-    },
-    [tenantPrimaryDomain, accessToken, selectedRoom]
-  );
+  //       if (selectedRoom?.id === roomId) {
+  //         setSelectedRoom(null);
+  //       }
+  //     } catch (err) {
+  //       setError(err instanceof Error ? err.message : "Failed to delete room");
+  //       console.error("Error deleting room:", err);
+  //       throw err;
+  //     }
+  //   },
+  //   [tenantPrimaryDomain, accessToken, selectedRoom]
+  // );
 
   useEffect(() => {
     if (!hasInitialized.current && accessToken) {
@@ -530,8 +540,8 @@ const createRoom = useCallback(
     error: error || wsError,
     fetchRooms,
     createRoom,
-    updateRoom,
-    deleteRoom,
+    // updateRoom,
+    // deleteRoom,
     isConnected,
     reconnect,
   };
@@ -645,57 +655,57 @@ export const useChatMessages = (
   );
 
   // ---------------- UPDATE MESSAGE ----------------
-  const updateMessage = useCallback(
-    async (messageId: number, content: string) => {
-      try {
-        setError(null);
-        await ChatMessageService.partialUpdateMessage(
-          tenantPrimaryDomain,
-          accessToken,
-          messageId,
-          { content }
-        );
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === messageId ? { ...msg, content } : msg
-          )
-        );
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to update message"
-        );
-        console.error("Error updating message:", err);
-        throw err;
-      }
-    },
-    [tenantPrimaryDomain, accessToken]
-  );
+  // const updateMessage = useCallback(
+  //   async (messageId: number, content: string) => {
+  //     try {
+  //       setError(null);
+  //       await ChatMessageService.partialUpdateMessage(
+  //         tenantPrimaryDomain,
+  //         accessToken,
+  //         messageId,
+  //         { content }
+  //       );
+  //       setMessages((prev) =>
+  //         prev.map((msg) =>
+  //           msg.uuid === messageId ? { ...msg, content } : msg
+  //         )
+  //       );
+  //     } catch (err) {
+  //       setError(
+  //         err instanceof Error ? err.message : "Failed to update message"
+  //       );
+  //       console.error("Error updating message:", err);
+  //       throw err;
+  //     }
+  //   },
+  //   [tenantPrimaryDomain, accessToken]
+  // );
 
   // ---------------- DELETE MESSAGE ----------------
-  const deleteMessage = useCallback(
-    async (messageId: number) => {
-      try {
-        setError(null);
-        await ChatMessageService.deleteMessage(
-          tenantPrimaryDomain,
-          accessToken,
-          messageId
-        );
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === messageId ? { ...msg, is_deleted: true } : msg
-          )
-        );
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to delete message"
-        );
-        console.error("Error deleting message:", err);
-        throw err;
-      }
-    },
-    [tenantPrimaryDomain, accessToken]
-  );
+  // const deleteMessage = useCallback(
+  //   async (messageId: number) => {
+  //     try {
+  //       setError(null);
+  //       await ChatMessageService.deleteMessage(
+  //         tenantPrimaryDomain,
+  //         accessToken,
+  //         messageId
+  //       );
+  //       setMessages((prev) =>
+  //         prev.map((msg) =>
+  //           msg.id === messageId ? { ...msg, is_deleted: true } : msg
+  //         )
+  //       );
+  //     } catch (err) {
+  //       setError(
+  //         err instanceof Error ? err.message : "Failed to delete message"
+  //       );
+  //       console.error("Error deleting message:", err);
+  //       throw err;
+  //     }
+  //   },
+  //   [tenantPrimaryDomain, accessToken]
+  // );
 
   // ---------------- EFFECTS ----------------
   useEffect(() => {
@@ -725,8 +735,8 @@ export const useChatMessages = (
     error,
     fetchMessages,
     sendMessage,
-    updateMessage,
-    deleteMessage,
+    // updateMessage,
+    // deleteMessage,
     typing: [],
     userStatuses: {},
   };
