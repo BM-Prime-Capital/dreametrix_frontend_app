@@ -89,6 +89,7 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
   const [loadingCities, setLoadingCities] = useState(false);
   const [openCityPopover, setOpenCityPopover] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState<number>(10);
 
   // Select school from search results
   const handleSchoolSelect = (school: SchoolDisplay) => {
@@ -157,8 +158,21 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
     loadCities();
   }, [formData.state, currentStep]);
 
+  // Auto-redirect to login after successful registration
+  useEffect(() => {
+    if (successMessage && successMessage.includes("successfully")) {
+      if (countdown > 0) {
+        const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+        return () => clearTimeout(timer);
+      } else {
+        router.push(userPath.LOGIN);
+      }
+    }
+  }, [successMessage, countdown, router]);
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     try {
       const result = await handleSubmit();
       console.log("Registration result:", result);
@@ -346,6 +360,7 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
                   if (selectedSchool.phone) {
                     handleInputChange("phone", selectedSchool.phone);
                   }
+                  handleInputChange("country", selectedSchool.country??"USA");
                   // Set region based on state for now
                   handleInputChange("region", selectedSchool.state);
                   setCurrentStep(RegistrationStep.MANUAL_FORM);
@@ -508,7 +523,8 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
                   <input
                     type="text"
                     name="country"
-                    value="United States"
+                    value={formData.country}
+                    
                     className="flex-1 bg-transparent focus:outline-none"
                     onChange={(e) =>
                       handleInputChange("country", e.target.value)
@@ -691,13 +707,55 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
 
         {successMessage && (
           <div
-            className={`p-4 mb-4 mt-4 text-sm rounded-lg ${
+            className={`p-6 mb-4 mt-4 rounded-lg ${
               successMessage.includes("successfully")
-                ? "text-green-700 bg-green-100"
-                : "text-red-700 bg-red-100"
+                ? "text-green-700 bg-green-100 border border-green-300"
+                : "text-red-700 bg-red-100 border border-red-300"
             }`}
           >
-            {successMessage}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="relative w-12 h-12 flex items-center justify-center">
+                  <svg className="w-12 h-12 transform -rotate-90">
+                    <circle
+                      cx="24"
+                      cy="24"
+                      r="20"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                      className="text-green-200"
+                    />
+                    <circle
+                      cx="24"
+                      cy="24"
+                      r="20"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                      strokeDasharray={`${2 * Math.PI * 20}`}
+                      strokeDashoffset={`${2 * Math.PI * 20 * (1 - countdown / 10)}`}
+                      className="text-green-600 transition-all duration-1000"
+                    />
+                  </svg>
+                  <span className="absolute text-sm font-bold text-green-700">
+                    {countdown}
+                  </span>
+                </div>
+                <div>
+                  <p className="font-semibold text-base">{successMessage}</p>
+                  <p className="text-sm text-green-600 mt-1">
+                    Redirecting to login in {countdown} seconds...
+                  </p>
+                </div>
+              </div>
+            </div>
+            <Button
+              onClick={() => router.push(userPath.LOGIN)}
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+            >
+              Go to Login Now
+            </Button>
           </div>
         )}
       </div>
