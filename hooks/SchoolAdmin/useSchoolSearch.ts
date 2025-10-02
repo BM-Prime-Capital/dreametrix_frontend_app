@@ -17,13 +17,11 @@ export const useSchoolSearch = () => {
 
     const timeoutId = setTimeout(async () => {
       setIsSearching(true);
-      setHasSearched(true);
       try {
-        // Use mock data in development, real API in production
-        console.log("Searching for schools with query:", searchQuery);
-        //check if we are in development or production
-        console.log(`Environment: ${process.env.NODE_ENV}`);
+       
         const results = await searchSchools(searchQuery);
+      setHasSearched(true);
+
         console.log("Search results:", results);
         setSearchResults(results);
       } catch (error) {

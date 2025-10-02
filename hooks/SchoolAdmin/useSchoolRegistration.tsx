@@ -254,7 +254,7 @@ export const useSchoolRegistration = () => {
     const newErrors = { ...errors }
     
     let isValid = true
-
+    console.log("formData", formData)
     // Required fields validation
     if (!formData.name) {
       newErrors.name = "School name is required"
@@ -310,7 +310,8 @@ export const useSchoolRegistration = () => {
       newErrors.region = "Region must be less than 255 characters"
       isValid = false
     }
-
+    console.log("newErrors", newErrors)
+    console.log("isValid", isValid)
     setErrors(newErrors)
     return isValid
   }

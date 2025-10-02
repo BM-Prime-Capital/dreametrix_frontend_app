@@ -85,6 +85,7 @@ export interface SchoolDisplay {
   zip_code?: string;
   phone?: string;
   district?: string;
+  country?: string;
 }
 
 // Helper function to properly capitalize strings
