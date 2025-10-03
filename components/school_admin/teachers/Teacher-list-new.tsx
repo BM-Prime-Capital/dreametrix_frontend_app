@@ -23,75 +23,6 @@ const getAvatarColor = (name: string) => {
   return avatarColors[charCode % avatarColors.length];
 };
 
-// Default teacher data
-const defaultTeachers = [
-  {
-    id: '1',
-    user: {
-      first_name: 'John',
-      last_name: 'Smith',
-      email: 'john.smith@school.com'
-    },
-    subjects: ['Mathematics', 'Physics'],
-    grade_levels: ['10', '11'],
-    status: 'active',
-    years_experience: 8,
-    photo: ''
-  },
-  {
-    id: '2',
-    user: {
-      first_name: 'Emily',
-      last_name: 'Johnson',
-      email: 'emily.johnson@school.com'
-    },
-    subjects: ['English', 'Literature'],
-    grade_levels: ['9', '10', '11'],
-    status: 'active',
-    years_experience: 12,
-    photo: ''
-  },
-  {
-    id: '3',
-    user: {
-      first_name: 'Michael',
-      last_name: 'Brown',
-      email: 'michael.brown@school.com'
-    },
-    subjects: ['History', 'Geography'],
-    grade_levels: ['8', '9', '10'],
-    status: 'active',
-    years_experience: 5,
-    photo: ''
-  },
-  {
-    id: '4',
-    user: {
-      first_name: 'Sarah',
-      last_name: 'Davis',
-      email: 'sarah.davis@school.com'
-    },
-    subjects: ['Biology', 'Chemistry'],
-    grade_levels: ['10', '11', '12'],
-    status: 'inactive',
-    years_experience: 3,
-    photo: ''
-  },
-  {
-    id: '5',
-    user: {
-      first_name: 'David',
-      last_name: 'Wilson',
-      email: 'david.wilson@school.com'
-    },
-    subjects: ['Spanish', 'French'],
-    grade_levels: ['7', '8', '9'],
-    status: 'active',
-    years_experience: 7,
-    photo: ''
-  }
-];
-
 const TeachersList = () => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
@@ -102,7 +33,7 @@ const TeachersList = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const enhancedTeachers = teachers.map(teacher => ({
+  const enhancedTeachers = (teachers || []).map(teacher => ({
     ...teacher,
     photo: '',
     status: 'active',
@@ -184,54 +115,49 @@ const TeachersList = () => {
       activeFilter === 'all' || teacher.status === activeFilter
     );
 
-    if (isLoading) {
-      return (
-        <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 py-6 bg-gray-50 min-h-screen">
-          {/* Header skeleton */}
-          <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-            <div className="space-y-2">
-              <div className="h-8 w-64 bg-gray-200 rounded animate-pulse" />
-              <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
-            </div>
-            <div className="h-10 w-36 bg-gray-200 rounded-lg animate-pulse" />
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 py-6 bg-gray-50 min-h-screen">
+        <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div className="space-y-2">
+            <div className="h-8 w-64 bg-gray-200 rounded animate-pulse" />
+            <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
           </div>
-  
-          {/* Filter bar skeleton */}
-          <div className="w-full bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-col md:flex-row gap-4">
-            <div className="flex-1 h-10 bg-gray-200 rounded-lg animate-pulse" />
-            <div className="flex gap-2">
-              <div className="h-10 w-20 bg-gray-200 rounded-lg animate-pulse" />
-              <div className="h-10 w-20 bg-gray-200 rounded-lg animate-pulse" />
-              <div className="h-10 w-20 bg-gray-200 rounded-lg animate-pulse" />
-            </div>
-          </div>
-  
-          {/* Students grid skeleton */}
-          <div className="w-full">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {[...Array(8)].map((_, index) => (
-                <SkeletonCard key={index} />
-              ))}
-            </div>
+          <div className="h-10 w-36 bg-gray-200 rounded-lg animate-pulse" />
+        </div>
+        <div className="w-full bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-col md:flex-row gap-4">
+          <div className="flex-1 h-10 bg-gray-200 rounded-lg animate-pulse" />
+          <div className="flex gap-2">
+            <div className="h-10 w-20 bg-gray-200 rounded-lg animate-pulse" />
+            <div className="h-10 w-20 bg-gray-200 rounded-lg animate-pulse" />
+            <div className="h-10 w-20 bg-gray-200 rounded-lg animate-pulse" />
           </div>
         </div>
-      );
-    }
+        <div className="w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {[...Array(8)].map((_, index) => (
+              <SkeletonCard key={index} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
       <div className="fixed inset-0 flex items-center justify-center w-full h-full bg-white z-50">
         <div className="flex flex-col items-center text-red-500">
           <FiAlertCircle className="text-3xl mb-2" />
-          <p className="text-lg font-medium">Data loading error</p>
+          <p className="text-lg font-medium">Loading error</p>
           <p className="text-sm text-gray-500 mt-2">
-            {error.message || "Failed to load teachers information"}
+            {error || "Failed to load teacher data"}
           </p>
           <button 
             onClick={() => window.location.reload()}
             className="mt-4 text-blue-600 hover:text-blue-800 font-medium"
           >
-            Try again
+            Retry
           </button>
         </div>
       </div>
@@ -240,10 +166,10 @@ const TeachersList = () => {
 
   return (
     <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 py-6 bg-gray-50 min-h-screen">
-      {/* Header section */}
+      {/* Header with actions */}
       <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Teachers Directory</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Teacher Management</h1>
           <p className="text-gray-600 mt-1">
             {filteredTeachers.length} {filteredTeachers.length === 1 ? 'teacher' : 'teachers'} found
           </p>
@@ -305,7 +231,7 @@ const TeachersList = () => {
         </div>
       )}
 
-      {/* Filter and search bar */}
+      {/* Control bar */}
       <div className="w-full bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -313,19 +239,19 @@ const TeachersList = () => {
           </div>
           <input
             type="text"
-            placeholder="Search by teacher name..."
+            placeholder="Search by name..."
             className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
+
         <div className="flex gap-2">
           <button
             onClick={() => setActiveFilter('all')}
             className={`px-4 py-2 rounded-lg border transition-all ${activeFilter === 'all' ? 'bg-indigo-100 border-indigo-300 text-indigo-700' : 'border-gray-200 hover:bg-gray-50'}`}
           >
-            All Teachers
+            All
           </button>
           <button
             onClick={() => setActiveFilter('active')}
@@ -358,31 +284,10 @@ const TeachersList = () => {
                 <div className="p-5">
                   <div className="flex items-start gap-4">
                     <div className="relative">
-                      {teacher.photo ? (
-                        <img 
-                          src={teacher.photo} 
-                          alt={`${teacher.user.first_name} ${teacher.user.last_name}`}
-                          className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                            const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
-                            if (fallback) fallback.style.display = 'flex';
-                          }}
-                        />
-                      ) : (
-                        <div className={`w-14 h-14 rounded-full flex items-center justify-center font-medium text-lg ${avatarClass}`}>
-                          {initials}
-                        </div>
-                      )}
-                      <div 
-                        className={`hidden w-14 h-14 rounded-full items-center justify-center font-medium text-lg ${avatarClass}`}
-                        style={{ display: 'none' }}
-                      >
+                      <div className={`w-14 h-14 rounded-full flex items-center justify-center font-medium text-lg ${avatarClass}`}>
                         {initials}
                       </div>
-                      {teacher.status === 'active' && (
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                      )}
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                     </div>
                     
                     <div className="flex-1 min-w-0">
@@ -407,15 +312,15 @@ const TeachersList = () => {
                       <div>
                         <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
                           <FiClock className="text-gray-400" />
-                          Teaching Experience
+                          Experience
                         </p>
                         <p className="text-sm font-medium">
                           {teacher.years_experience} years
                         </p>
                       </div>
                       
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${teacher.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
-                        {teacher.status === 'active' ? 'Active' : 'Inactive'}
+                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                        Active
                       </span>
                     </div>
                     <div className="mt-2 text-xs text-gray-500">
