@@ -93,9 +93,9 @@ interface Conversation {
   displayName: string;
 }
 
-export default function TeacherCommunication() {
+export default function StudentCommunication() {
   const { tenantDomain, accessToken } = useRequestInfo();
-  const { token, user } = useSelector((state: any) => state.auth);
+  // const { token, user } = useSelector((state: any) => state.auth);
   const [searchQuery, setSearchQuery] = useState("");
   const [newMessage, setNewMessage] = useState("");
   const [composeDialogOpen, setComposeDialogOpen] = useState(false);
@@ -121,7 +121,7 @@ export default function TeacherCommunication() {
   } = useCommunicationData();
 
   useEffect(() => {
-    console.log("🔍 DEBUG TeacherCommunication Data:", {
+    console.log("🔍 DEBUG StudentCommunication Data:", {
       dataLoading,
       dataError,
       studentsCount: students?.length || 0,
@@ -261,25 +261,65 @@ useEffect(() => {
   });
 }, [students, parents, teachers, selectedRecipients]);
 
+const chatMessages: Message[] = useMemo(() => {
+  // 🔎 filtrer uniquement les messages qui mentionnent l'étudiant
+  const filtered = messages.filter((msg) => {
+    // Cas 1: l'API fournit une clé "mentions"
+    if (msg.extra_data?.mentions) {
+      return msg.extra_data.mentions.includes(currentUserId);
+    }
+
+    // Cas 2: détection dans le texte du contenu
+    const lowerContent = msg.content.toLowerCase();
+    const student = students.find((s) => s.id.toString() === currentUserId?.toString());
+    if (student) {
+      return (
+        lowerContent.includes(`@${student.name.toLowerCase()}`) ||
+        lowerContent.includes(student.name.toLowerCase())
+      );
+    }
+
+    return false;
+  });
+
+  return filtered.map((msg) => ({
+    id: msg.uuid.toString(),
+    sender: {
+      id: msg.sender_info.id.toString(),
+      name: msg.sender_info.name,
+      avatar: msg.sender_info.avatar || "/assets/images/general/student.png",
+      role:
+        msg.sender_info.role === "admin"
+          ? "teacher"
+          : (msg.sender_info.role as "teacher" | "student" | "parent"),
+    },
+    content: msg.content,
+    timestamp: new Date(msg.created_at).toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    read: msg.status !== "sent",
+  }));
+}, [messages, currentUserId, students]);
 
 
-  const chatMessages: Message[] = useMemo(() => {
-    return messages.map((msg) => ({
-      id: msg.uuid.toString(),
-      sender: {
-        id: msg.sender_info.id.toString(),
-        name: msg.sender_info.name,
-        avatar: msg.sender_info.avatar || "/assets/images/general/student.png",
-        role: msg.sender_info.role === "admin" ? "teacher" : (msg.sender_info.role as "teacher" | "student" | "parent"),
-      },
-      content: msg.content,
-      timestamp: new Date(msg.created_at).toLocaleTimeString("fr-FR", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      read: msg.status !== "sent",
-    }));
-  }, [messages]);
+  // const chatMessages: Message[] = useMemo(() => {
+  //   return messages.map((msg) => ({
+  //     id: msg.uuid.toString(),
+  //     sender: {
+  //       id: msg.sender_info.id.toString(),
+  //       name: msg.sender_info.name,
+  //       avatar: msg.sender_info.avatar || "/assets/images/general/student.png",
+  //       role: msg.sender_info.role === "admin" ? "teacher" : (msg.sender_info.role as "teacher" | "student" | "parent"),
+  //     },
+  //     content: msg.content,
+  //     timestamp: new Date(msg.created_at).toLocaleTimeString("fr-FR", {
+  //       hour: "2-digit",
+  //       minute: "2-digit",
+  //     }),
+  //     read: msg.status !== "sent",
+  //   }));
+  // }, [messages]);
 
   const selectedConversation = useMemo(() => {
     return selectedRoom
@@ -407,7 +447,7 @@ const handleCreateConversation = async () => {
   }, [selectedRoom]);
 
 
-  // Dans TeacherCommunication.tsx
+  // Dans StudentCommunication.tsx
 const debugFindUserMappings = async () => {
   console.log("🔍 DÉBUT - Recherche des mappings utilisateurs...");
 
