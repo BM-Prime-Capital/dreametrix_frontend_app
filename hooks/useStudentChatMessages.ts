@@ -2,7 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { ChatMessageService } from "@/services/chat-service";
-import type { EnhancedChatMessage } from "@/types/chat";
+import type {
+  EnhancedChatMessage,
+  ChatMessagesResponse,
+  ChatParticipant,
+} from "@/types/chatStudent";
+
+import { enhanceMessage } from "@/types/chatStudent";
 
 interface UseStudentChatMessagesReturn {
   messages: EnhancedChatMessage[];
@@ -18,41 +24,43 @@ interface UseStudentChatMessagesReturn {
 }
 
 export function useStudentChatMessages(
-  roomUuid: string | null, // ⚡ UUID string obligatoire
+  roomUuid: string | null,
   accessToken: string,
-  tenantDomain: string
+  tenantDomain: string,
+  participants: ChatParticipant[] = [] // 👈 inject participants here
 ): UseStudentChatMessagesReturn {
   const [messages, setMessages] = useState<EnhancedChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Fetch messages of the given room
-   */
-  const fetchMessages = useCallback(async () => {
-    if (!roomUuid) return;
-    try {
-      setLoading(true);
-      setError(null);
+const fetchMessages = useCallback(async () => {
+  if (!roomUuid) return;
+  try {
+    setLoading(true);
+    setError(null);
 
-      const data = await ChatMessageService.getChatMessages(
-        tenantDomain,
-        accessToken,
-        roomUuid // ✅ on passe le UUID et non un ID numérique
-      );
+    // ✅ Correct type: getChatMessages returns ChatRoomDetail
+    const data = await ChatMessageService.getChatMessages(
+      tenantDomain,
+      accessToken,
+      roomUuid
+    );
 
-      setMessages(data.results || []);
-    } catch (err: any) {
-      console.error("[useStudentChatMessages] fetch error:", err);
-      setError(err.message || "Erreur lors du chargement des messages");
-    } finally {
-      setLoading(false);
-    }
-  }, [tenantDomain, accessToken, roomUuid]);
+    // ✅ Use .mmessages (not .results)
+    const enhanced = (data.mmessages || []).map((m) =>
+      enhanceMessage(m, participants)
+    );
 
-  /**
-   * Send a new message
-   */
+    setMessages(enhanced);
+  } catch (err: any) {
+    console.error("[useStudentChatMessages] fetch error:", err);
+    setError(err.message || "Erreur lors du chargement des messages");
+  } finally {
+    setLoading(false);
+  }
+}, [tenantDomain, accessToken, roomUuid, participants]);
+
+
   const sendMessage = useCallback(
     async (
       content?: string,
@@ -64,27 +72,30 @@ export function useStudentChatMessages(
 
       try {
         const formData = new FormData();
-        formData.append("chat_room_id", roomUuid); // ✅ UUID obligatoire
+        formData.append("chat_room_id", roomUuid);
 
         if (content) formData.append("content", content);
         if (emoji) formData.append("emoji", emoji);
         if (file) formData.append("attachment", file);
         if (voiceNote) formData.append("voice_note", voiceNote);
 
-        const sentMessage = await ChatMessageService.createChatMessage(
+        const sent = await ChatMessageService.createChatMessage(
           tenantDomain,
           accessToken,
           formData
         );
 
-        await fetchMessages();
-        return sentMessage;
+        // ✅ also wrap sent message
+        const enhanced = enhanceMessage(sent, participants);
+
+        setMessages((prev) => [...prev, enhanced]);
+        return enhanced;
       } catch (err) {
         console.error("[useStudentChatMessages] send error:", err);
         throw err;
       }
     },
-    [tenantDomain, accessToken, roomUuid, fetchMessages]
+    [tenantDomain, accessToken, roomUuid, participants]
   );
 
   useEffect(() => {
