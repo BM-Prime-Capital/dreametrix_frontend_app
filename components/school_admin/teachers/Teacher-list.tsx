@@ -225,7 +225,7 @@ const TeachersList = () => {
           <FiAlertCircle className="text-3xl mb-2" />
           <p className="text-lg font-medium">Data loading error</p>
           <p className="text-sm text-gray-500 mt-2">
-            {error.message || "Failed to load teachers information"}
+            {error || "Failed to load teachers information"}
           </p>
           <button 
             onClick={() => window.location.reload()}
