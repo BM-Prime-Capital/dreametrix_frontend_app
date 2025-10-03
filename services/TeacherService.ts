@@ -45,6 +45,36 @@ export async function getTeachers(
   return data.results;
 }
 
+export async function getChildStudyData(
+  tenantPrimaryDomain: string,
+  accessToken: string,
+  studentId: string
+) {
+  if (!accessToken) {
+    throw new Error("You must be logged in to view teachers.");
+  }
+  const url = `${tenantPrimaryDomain}/students/${studentId}/comprehensive-details`;
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 403) {
+      throw new Error(
+        "You do not have permission to view teachers."
+      );
+    } else {
+      throw new Error("Error fetching teachers.");
+    }
+  }
+
+  const data = await response.json();
+
+  return data.data;
+}
+
 
 export async function createTeacher(
   // tenantPrimaryDomain: string,

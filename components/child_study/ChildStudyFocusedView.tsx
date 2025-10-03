@@ -14,6 +14,7 @@ import { getRewardsFocusView } from "@/services/RewardsService";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { views } from "@/constants/global";
+import { getChildStudyData } from "@/services/TeacherService";
 
 export default function ChildStudyFocusedView({
   student,
@@ -23,8 +24,6 @@ export default function ChildStudyFocusedView({
   changeView: (viewName: string) => void;
 }) {
   const [studentData, setStudentData] = useState<any>(null);
-
-  // const [studentData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const { tenantDomain: tenantPrimaryDomain, accessToken, refreshToken } = useRequestInfo();
   const [isLoading, setIsLoading] = useState(false);
@@ -42,9 +41,17 @@ export default function ChildStudyFocusedView({
           throw new Error("Missing student ID");
         }
 
-        // TODO: need to use api data. not yet available
+        // Récupérer les données réelles de l'API
+        const childStudyData = await getChildStudyData(
+          tenantPrimaryDomain,
+          accessToken,
+          student.student.id
+        );
 
-        const data = await getRewardsFocusView(
+        console.log("Child Study Data:", childStudyData);
+
+        // Récupérer les données de récompenses si nécessaire
+        const rewardsData = await getRewardsFocusView(
           tenantPrimaryDomain,
           accessToken,
           refreshToken,
@@ -53,68 +60,76 @@ export default function ChildStudyFocusedView({
           student.student.id
         );
 
+        // Transformer les données avec les informations réelles de l'API
         const transformedData = {
-          ...data,
+          ...childStudyData,
           personalInfo: {
-            fullName: `${data.studentName || "N/A"}`,
-            birthDate: "2005-03-15",
-            age: calculateAge("2005-03-15"),
-            gender: "Male",
-            address: "123 School St, Boston, MA",
-            phone: "(123) 456-7890",
-            email: "student@example.com",
-            nationality: "US Citizen",
-            photoUrl: (data as any).photoUrl || generalImages.student
+            fullName: childStudyData.studentName || "N/A",
+            firstName: childStudyData.personalInfo?.firstName || "",
+            lastName: childStudyData.personalInfo?.lastName || "",
+            birthDate: childStudyData.personalInfo?.birthDate || "N/A",
+            age: childStudyData.personalInfo?.age || calculateAge(childStudyData.personalInfo?.birthDate),
+            gender: childStudyData.personalInfo?.gender !== "undefined" ? childStudyData.personalInfo.gender : "Not specified",
+            address: childStudyData.personalInfo?.address || "Not specified",
+            phone: childStudyData.personalInfo?.phone || "Not specified",
+            email: childStudyData.personalInfo?.email || "Not specified",
+            nationality: childStudyData.personalInfo?.nationality || "Not specified",
+            photoUrl: childStudyData.photoUrl || generalImages.student
           },
           academicInfo: {
-            school: "Boston High School",
-            grade: (data as any).className ? extractGrade((data as any).className) : "N/A",
-            homeroomTeacher: "Mr. Johnson",
-            gpa: "3.2",
-            schedule: [
-              { time: "8:00-9:00", subject: "Math", teacher: "Mr. Smith" },
-              { time: "9:00-10:00", subject: "English", teacher: "Ms. Davis" },
-              { time: "10:00-11:00", subject: "Science", teacher: "Dr. Brown" },
-              { time: "11:00-12:00", subject: "History", teacher: "Mrs. Wilson" }
-            ],
-            reportCards: [
-              { term: "Fall 2023", link: "#" },
-              { term: "Winter 2023", link: "#" }
-            ]
+            school: childStudyData.academicInfo?.school || "Not specified",
+            schoolId: childStudyData.academicInfo?.schoolId,
+            grade: childStudyData.academicInfo?.grade || extractGrade(childStudyData.className),
+            class: childStudyData.academicInfo?.class || "Not specified",
+            homeroomTeacher: childStudyData.academicInfo?.homeroomTeacher || "Not specified",
+            teacherId: childStudyData.academicInfo?.teacherId,
+            gpa: childStudyData.academicInfo?.gpa || "N/A",
+            currentTerm: childStudyData.academicInfo?.currentTerm || "Not specified",
+            schedule: childStudyData.academicInfo?.schedule || [],
+            reportCards: childStudyData.academicInfo?.reportCards || [],
+            currentCourses: childStudyData.academicInfo?.currentCourses || []
           },
           medicalInfo: {
-            allergies: "Peanuts",
-            conditions: "None",
-            iepStatus: data.totalPoints < 50 ? "Active" : "None",
-            accommodations: "Extended test time, Preferential seating"
+            allergies: childStudyData.medicalInfo?.allergies?.length > 0 
+              ? childStudyData.medicalInfo.allergies.join(", ") 
+              : "None",
+            conditions: childStudyData.medicalInfo?.medicalConditions?.length > 0
+              ? childStudyData.medicalInfo.medicalConditions.join(", ")
+              : "None",
+            medications: childStudyData.medicalInfo?.medications || [],
+            iepStatus: childStudyData.medicalInfo?.iepStatus || "None",
+            iepExpiryDate: childStudyData.medicalInfo?.iepExpiryDate,
+            accommodations: childStudyData.medicalInfo?.accommodations?.length > 0
+              ? childStudyData.medicalInfo.accommodations.join(", ")
+              : "None",
+            doctor: childStudyData.medicalInfo?.doctor || {}
           },
           behaviorInfo: {
-            absences: 3,
-            tardies: 2,
-            incidents: [
-              { date: "2023-09-15", description: "Late to class", resolution: "Warning" },
-              { date: "2023-10-02", description: "Disruptive behavior", resolution: "Detention" }
-            ],
-            awards: [
-              { date: "2023-11-01", description: "Student of the Month" },
-              { date: "2023-09-20", description: "Perfect Attendance" }
-            ]
+            attendance: childStudyData.behaviorInfo?.attendance || {
+              absences: 0,
+              tardies: 0,
+              excusedAbsences: 0,
+              unexcusedAbsences: 0
+            },
+            incidents: childStudyData.behaviorInfo?.incidents || [],
+            awards: childStudyData.behaviorInfo?.awards || [],
+            points: childStudyData.behaviorInfo?.points || {
+              totalPoints: 0,
+              academicPoints: 0,
+              behaviorPoints: 0,
+              participationPoints: 0,
+              currentRank: 0
+            }
           },
-          emergencyContacts: [
-            { name: "Jane Doe", relation: "Mother", phone: "(123) 456-7890", email: "parent@example.com" },
-            { name: "John Doe", relation: "Father", phone: "(987) 654-3210", email: "parent2@example.com" }
-          ],
-          extracurriculars: [
-            { activity: "Basketball", schedule: "Mon/Wed 3-5pm" },
-            { activity: "Debate Club", schedule: "Tue/Thu 4-6pm" }
-          ],
-          teacherComments: [
-            { teacher: "Mr. Smith", subject: "Math", comment: "Shows great potential but needs to complete homework regularly" },
-            { teacher: "Ms. Davis", subject: "English", comment: "Excellent participation in class discussions" }
-          ]
+          emergencyContacts: childStudyData.emergencyContacts || [],
+          extracurriculars: childStudyData.extracurriculars || [],
+          teacherComments: childStudyData.teacherComments || [],
+          documents: childStudyData.documents || [],
+          permissions: childStudyData.permissions || {},
+          metadata: childStudyData.metadata || {}
         };
 
-       setStudentData(transformedData);
+        setStudentData(transformedData);
       } catch (err) {
         console.error("Failed to load student details:", err);
         setError(err instanceof Error ? err.message : "Failed to load student details");
@@ -127,11 +142,13 @@ export default function ChildStudyFocusedView({
   }, [tenantPrimaryDomain, accessToken, refreshToken, student?.student?.id]);
 
   const extractGrade = (className: string) => {
+    if (!className) return "Not specified";
     const match = className.match(/(\d+)(th|rd|nd|st)?\s?Grade/i);
     return match ? `${match[1]}${match[2] || 'th'} Grade` : className;
   };
 
   function calculateAge(birthDate: string): number {
+    if (!birthDate) return 0;
     const today = new Date();
     const birthDateObj = new Date(birthDate);
     let age = today.getFullYear() - birthDateObj.getFullYear();
@@ -143,6 +160,11 @@ export default function ChildStudyFocusedView({
     
     return age;
   }
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString();
+  };
 
   if (isLoading) {
     return (
@@ -220,447 +242,501 @@ export default function ChildStudyFocusedView({
           <TabsContent value="overview" className="space-y-6">
             {/* Personal Information Section */}
             <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
-            <h2 className="text-xl font-bold mb-6">Personal Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col items-center gap-4">
-                <Avatar className="h-32 w-32 border-4 border-blue-100">
-                  <AvatarImage src={studentData.personalInfo.photoUrl} alt={studentData.personalInfo.fullName} />
-                  <AvatarFallback>
-                    {studentData.personalInfo.fullName.split(' ').map((n: string) => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="text-center">
-                  <h3 className="text-lg font-bold">{studentData.personalInfo.fullName}</h3>
-                  <p className="text-gray-600">{studentData.personalInfo.gender}, {studentData.personalInfo.age} years</p>
+              <h2 className="text-xl font-bold mb-6">Personal Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex flex-col items-center gap-4">
+                  <Avatar className="h-32 w-32 border-4 border-blue-100">
+                    <AvatarImage src={studentData.personalInfo.photoUrl} alt={studentData.personalInfo.fullName} />
+                    <AvatarFallback>
+                      {studentData.personalInfo.fullName.split(' ').map((n: string) => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-center">
+                    <h3 className="text-lg font-bold">{studentData.personalInfo.fullName}</h3>
+                    <p className="text-gray-600">{studentData.personalInfo.gender}, {studentData.personalInfo.age} years</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Date of Birth</p>
+                      <p>{formatDate(studentData.personalInfo.birthDate)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Nationality</p>
+                      <p>{studentData.personalInfo.nationality}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Address</p>
+                    <p>{studentData.personalInfo.address}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Phone</p>
+                      <p>{studentData.personalInfo.phone}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Email</p>
+                      <p>{studentData.personalInfo.email}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Date of Birth</p>
-                    <p>{studentData.personalInfo.birthDate}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Nationality</p>
-                    <p>{studentData.personalInfo.nationality}</p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Address</p>
-                  <p>{studentData.personalInfo.address}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Phone</p>
-                    <p>{studentData.personalInfo.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p>{studentData.personalInfo.email}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
+            </Card>
 
             {/* Academic Information Section */}
             <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
-            <h2 className="text-xl font-bold mb-6">Academic Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-500">School</p>
-                  <p className="font-medium">{studentData.academicInfo.school}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+              <h2 className="text-xl font-bold mb-6">Academic Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
                   <div>
-                    <p className="text-sm text-gray-500">Grade</p>
-                    <p>{studentData.academicInfo.grade}</p>
+                    <p className="text-sm text-gray-500">School</p>
+                    <p className="font-medium">{studentData.academicInfo.school}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Homeroom Teacher</p>
-                    <p>{studentData.academicInfo.homeroomTeacher}</p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">GPA</p>
-                  <p>{studentData.academicInfo.gpa}</p>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-2">Class Schedule</p>
-                <div className="border rounded-lg overflow-hidden">
-                  {studentData.academicInfo.schedule.map((classItem: any, index: number) => (
-                    <div key={index} className={`p-3 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
-                      <div className="flex justify-between">
-                        <span className="font-medium">{classItem.subject}</span>
-                        <span className="text-gray-600">{classItem.time}</span>
-                      </div>
-                      <div className="text-sm text-gray-500">Teacher: {classItem.teacher}</div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Grade</p>
+                      <p>{studentData.academicInfo.grade}</p>
                     </div>
-                  ))}
+                    <div>
+                      <p className="text-sm text-gray-500">Homeroom Teacher</p>
+                      <p>{studentData.academicInfo.homeroomTeacher}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">GPA</p>
+                    <p>{studentData.academicInfo.gpa}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Current Term</p>
+                    <p>{studentData.academicInfo.currentTerm}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Class Schedule</p>
+                  <div className="border rounded-lg overflow-hidden">
+                    {studentData.academicInfo.schedule.map((classItem: any, index: number) => (
+                      <div key={index} className={`p-3 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
+                        <div className="flex justify-between">
+                          <span className="font-medium">{classItem.subject}</span>
+                          <span className="text-gray-600">{classItem.time}</span>
+                        </div>
+                        <div className="text-sm text-gray-500">Teacher: {classItem.teacher}</div>
+                        {classItem.room && (
+                          <div className="text-sm text-gray-500">Room: {classItem.room}</div>
+                        )}
+                      </div>
+                    ))}
+                    {studentData.academicInfo.schedule.length === 0 && (
+                      <div className="p-4 text-center text-gray-500">
+                        No schedule available
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
+            </Card>
 
             {/* Medical Information Section */}
             <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
-            <h2 className="text-xl font-bold mb-6">Medical Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-500">Allergies</p>
-                  <p>{studentData.medicalInfo.allergies}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Medical Conditions</p>
-                  <p>{studentData.medicalInfo.conditions}</p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-500">IEP Status</p>
-                  <p>{studentData.medicalInfo.iepStatus}</p>
-                </div>
-                {studentData.medicalInfo.iepStatus === "Active" && (
+              <h2 className="text-xl font-bold mb-6">Medical Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
                   <div>
-                    <p className="text-sm text-gray-500">Accommodations</p>
-                    <p>{studentData.medicalInfo.accommodations}</p>
+                    <p className="text-sm text-gray-500">Allergies</p>
+                    <p>{studentData.medicalInfo.allergies}</p>
                   </div>
-                )}
+                  <div>
+                    <p className="text-sm text-gray-500">Medical Conditions</p>
+                    <p>{studentData.medicalInfo.conditions}</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-500">IEP Status</p>
+                    <p>{studentData.medicalInfo.iepStatus}</p>
+                  </div>
+                  {studentData.medicalInfo.accommodations !== "None" && (
+                    <div>
+                      <p className="text-sm text-gray-500">Accommodations</p>
+                      <p>{studentData.medicalInfo.accommodations}</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
 
             {/* Behavior Information Section */}
             <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
-            <h2 className="text-xl font-bold mb-6">Behavior Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Absences</p>
-                    <p>{studentData.behaviorInfo.absences}</p>
+              <h2 className="text-xl font-bold mb-6">Behavior Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Absences</p>
+                      <p>{studentData.behaviorInfo.attendance.absences}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Tardies</p>
+                      <p>{studentData.behaviorInfo.attendance.tardies}</p>
+                    </div>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Tardies</p>
-                    <p>{studentData.behaviorInfo.tardies}</p>
+                    <p className="text-sm text-gray-500 mb-2">Disciplinary Incidents</p>
+                    <div className="space-y-3">
+                      {studentData.behaviorInfo.incidents.map((incident: any, index: number) => (
+                        <div key={index} className="border-l-4 border-red-500 pl-4 py-2">
+                          <div className="flex justify-between text-sm text-gray-500 mb-1">
+                            <span>{formatDate(incident.date)}</span>
+                          </div>
+                          <p className="font-medium">{incident.description}</p>
+                          <p className="text-sm text-gray-600">Resolution: {incident.resolution}</p>
+                        </div>
+                      ))}
+                      {studentData.behaviorInfo.incidents.length === 0 && (
+                        <p className="text-gray-500">No disciplinary incidents</p>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-2">Disciplinary Incidents</p>
-                  <div className="space-y-3">
-                    {studentData.behaviorInfo.incidents.map((incident: any, index: number) => (
-                      <div key={index} className="border-l-4 border-red-500 pl-4 py-2">
-                        <div className="flex justify-between text-sm text-gray-500 mb-1">
-                          <span>{incident.date}</span>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-2">Awards & Recognition</p>
+                    <div className="space-y-3">
+                      {studentData.behaviorInfo.awards.map((award: any, index: number) => (
+                        <div key={index} className="border-l-4 border-green-500 pl-4 py-2">
+                          <div className="flex justify-between text-sm text-gray-500 mb-1">
+                            <span>{formatDate(award.date)}</span>
+                          </div>
+                          <p className="font-medium">{award.description}</p>
                         </div>
-                        <p className="font-medium">{incident.description}</p>
-                        <p className="text-sm text-gray-600">Resolution: {incident.resolution}</p>
-                      </div>
-                    ))}
+                      ))}
+                      {studentData.behaviorInfo.awards.length === 0 && (
+                        <p className="text-gray-500">No awards yet</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Total Points</p>
+                    <p className="font-bold text-lg">{studentData.behaviorInfo.points.totalPoints}</p>
                   </div>
                 </div>
               </div>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-500 mb-2">Awards & Recognition</p>
-                  <div className="space-y-3">
-                    {studentData.behaviorInfo.awards.map((award: any, index: number) => (
-                      <div key={index} className="border-l-4 border-green-500 pl-4 py-2">
-                        <div className="flex justify-between text-sm text-gray-500 mb-1">
-                          <span>{award.date}</span>
-                        </div>
-                        <p className="font-medium">{award.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-2">Teacher Comments</p>
-                  <div className="space-y-3">
-                    {studentData.teacherComments.map((comment: any, index: number) => (
-                      <div key={index} className="border-l-4 border-blue-500 pl-4 py-2">
-                        <div className="flex justify-between">
-                          <span className="font-medium">{comment.teacher}</span>
-                          <span className="text-sm text-gray-500">{comment.subject}</span>
-                        </div>
-                        <p className="mt-1">{comment.comment}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
+            </Card>
 
             {/* Emergency Contacts Section */}
             <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
-            <h2 className="text-xl font-bold mb-6">Emergency Contacts</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {studentData.emergencyContacts.map((contact: any, index: number) => (
-                <Card key={index} className="p-4">
-                  <h3 className="font-medium mb-2">{contact.name} ({contact.relation})</h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500">Phone:</span>
-                      <span>{contact.phone}</span>
+              <h2 className="text-xl font-bold mb-6">Emergency Contacts</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {studentData.emergencyContacts.map((contact: any, index: number) => (
+                  <Card key={index} className="p-4">
+                    <h3 className="font-medium mb-2">{contact.name} ({contact.relation})</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500">Phone:</span>
+                        <span>{contact.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500">Email:</span>
+                        <span>{contact.email}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500">Email:</span>
-                      <span>{contact.email}</span>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </Card>
+                  </Card>
+                ))}
+                {studentData.emergencyContacts.length === 0 && (
+                  <p className="text-gray-500 col-span-2 text-center">No emergency contacts available</p>
+                )}
+              </div>
+            </Card>
 
             {/* Extracurricular Activities Section */}
             <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
-            <h2 className="text-xl font-bold mb-6">Extracurricular Activities</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {studentData.extracurriculars.map((activity: any, index: number) => (
-                <Card key={index} className="p-4">
-                  <h3 className="font-medium mb-1">{activity.activity}</h3>
-                  <p className="text-sm text-gray-600">Schedule: {activity.schedule}</p>
-                </Card>
-              ))}
-            </div>
-          </Card>
-        </TabsContent>
+              <h2 className="text-xl font-bold mb-6">Extracurricular Activities</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {studentData.extracurriculars.map((activity: any, index: number) => (
+                  <Card key={index} className="p-4">
+                    <h3 className="font-medium mb-1">{activity.activity}</h3>
+                    <p className="text-sm text-gray-600">Schedule: {activity.schedule}</p>
+                  </Card>
+                ))}
+                {studentData.extracurriculars.length === 0 && (
+                  <p className="text-gray-500 col-span-2 text-center">No extracurricular activities</p>
+                )}
+              </div>
+            </Card>
+          </TabsContent>
 
-        {/* Individual Tabs (unchanged from original) */}
+          {/* Individual Tabs */}
           <TabsContent value="personal">
             <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
-            <h2 className="text-xl font-bold mb-6">A. Personal Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col items-center gap-4">
-                <Avatar className="h-32 w-32 border-4 border-blue-100">
-                  <AvatarImage src={studentData.personalInfo.photoUrl} alt={studentData.personalInfo.fullName} />
-                  <AvatarFallback>
-                    {studentData.personalInfo.fullName.split(' ').map((n: string) => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="text-center">
-                  <h3 className="text-lg font-bold">{studentData.personalInfo.fullName}</h3>
-                  <p className="text-gray-600">{studentData.personalInfo.gender}, {studentData.personalInfo.age} years</p>
+              <h2 className="text-xl font-bold mb-6">A. Personal Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex flex-col items-center gap-4">
+                  <Avatar className="h-32 w-32 border-4 border-blue-100">
+                    <AvatarImage src={studentData.personalInfo.photoUrl} alt={studentData.personalInfo.fullName} />
+                    <AvatarFallback>
+                      {studentData.personalInfo.fullName.split(' ').map((n: string) => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-center">
+                    <h3 className="text-lg font-bold">{studentData.personalInfo.fullName}</h3>
+                    <p className="text-gray-600">{studentData.personalInfo.gender}, {studentData.personalInfo.age} years</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Date of Birth</p>
+                      <p>{formatDate(studentData.personalInfo.birthDate)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Nationality</p>
+                      <p>{studentData.personalInfo.nationality}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Address</p>
+                    <p>{studentData.personalInfo.address}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Phone</p>
+                      <p>{studentData.personalInfo.phone}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Email</p>
+                      <p>{studentData.personalInfo.email}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Date of Birth</p>
-                    <p>{studentData.personalInfo.birthDate}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Nationality</p>
-                    <p>{studentData.personalInfo.nationality}</p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Address</p>
-                  <p>{studentData.personalInfo.address}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Phone</p>
-                    <p>{studentData.personalInfo.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p>{studentData.personalInfo.email}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </TabsContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="academic">
             <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
-            <h2 className="text-xl font-bold mb-6">B. Academic Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-500">School</p>
-                  <p className="font-medium">{studentData.academicInfo.school}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+              <h2 className="text-xl font-bold mb-6">B. Academic Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
                   <div>
-                    <p className="text-sm text-gray-500">Grade</p>
-                    <p>{studentData.academicInfo.grade}</p>
+                    <p className="text-sm text-gray-500">School</p>
+                    <p className="font-medium">{studentData.academicInfo.school}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Homeroom Teacher</p>
-                    <p>{studentData.academicInfo.homeroomTeacher}</p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">GPA</p>
-                  <p>{studentData.academicInfo.gpa}</p>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-2">Class Schedule</p>
-                <div className="border rounded-lg overflow-hidden">
-                  {studentData.academicInfo.schedule.map((classItem: any, index: number) => (
-                    <div key={index} className={`p-3 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
-                      <div className="flex justify-between">
-                        <span className="font-medium">{classItem.subject}</span>
-                        <span className="text-gray-600">{classItem.time}</span>
-                      </div>
-                      <div className="text-sm text-gray-500">Teacher: {classItem.teacher}</div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Grade</p>
+                      <p>{studentData.academicInfo.grade}</p>
                     </div>
-                  ))}
+                    <div>
+                      <p className="text-sm text-gray-500">Homeroom Teacher</p>
+                      <p>{studentData.academicInfo.homeroomTeacher}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">GPA</p>
+                    <p>{studentData.academicInfo.gpa}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Current Term</p>
+                    <p>{studentData.academicInfo.currentTerm}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Class Schedule</p>
+                  <div className="border rounded-lg overflow-hidden">
+                    {studentData.academicInfo.schedule.map((classItem: any, index: number) => (
+                      <div key={index} className={`p-3 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
+                        <div className="flex justify-between">
+                          <span className="font-medium">{classItem.subject}</span>
+                          <span className="text-gray-600">{classItem.time}</span>
+                        </div>
+                        <div className="text-sm text-gray-500">Teacher: {classItem.teacher}</div>
+                        {classItem.room && (
+                          <div className="text-sm text-gray-500">Room: {classItem.room}</div>
+                        )}
+                      </div>
+                    ))}
+                    {studentData.academicInfo.schedule.length === 0 && (
+                      <div className="p-4 text-center text-gray-500">
+                        No schedule available
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="border-t pt-6 mt-6">
-              <h3 className="text-lg font-bold mb-3 text-gray-800">Report Card</h3>
-              <div>
-                <Button variant="default" onClick={() => changeView(views.GENERAL_VIEW)} className="p-2">
-                  View Report Card
-                </Button>
-              </div>
-            </div> 
-          </Card>
-        </TabsContent>
+              
+              {/* Current Courses */}
+              {studentData.academicInfo.currentCourses.length > 0 && (
+                <div className="border-t pt-6 mt-6">
+                  <h3 className="text-lg font-bold mb-3 text-gray-800">Current Courses</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {studentData.academicInfo.currentCourses.map((course: any, index: number) => (
+                      <Card key={index} className="p-4">
+                        <h4 className="font-medium">{course.name}</h4>
+                        <p className="text-sm text-gray-600">Code: {course.code}</p>
+                        <p className="text-sm text-gray-600">Credits: {course.credits}</p>
+                        <p className="text-sm text-gray-600">Current Grade: {course.currentGrade}</p>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </Card>
+          </TabsContent>
 
           <TabsContent value="medical">
             <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
-            <h2 className="text-xl font-bold mb-6">C. Medical & Special Needs</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-500">Allergies</p>
-                  <p>{studentData.medicalInfo.allergies}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Medical Conditions</p>
-                  <p>{studentData.medicalInfo.conditions}</p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                {studentData.medicalInfo.iepStatus === "Active" && (
+              <h2 className="text-xl font-bold mb-6">C. Medical & Special Needs</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
                   <div>
-                    <p className="text-sm text-gray-500">Accommodations</p>
-                    <p>{studentData.medicalInfo.accommodations}</p>
+                    <p className="text-sm text-gray-500">Allergies</p>
+                    <p>{studentData.medicalInfo.allergies}</p>
                   </div>
-                )}
+                  <div>
+                    <p className="text-sm text-gray-500">Medical Conditions</p>
+                    <p>{studentData.medicalInfo.conditions}</p>
+                  </div>
+                  {studentData.medicalInfo.medications.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-500">Medications</p>
+                      <p>{studentData.medicalInfo.medications.join(", ")}</p>
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-500">IEP Status</p>
+                    <p>{studentData.medicalInfo.iepStatus}</p>
+                  </div>
+                  {studentData.medicalInfo.iepExpiryDate && (
+                    <div>
+                      <p className="text-sm text-gray-500">IEP Expiry Date</p>
+                      <p>{formatDate(studentData.medicalInfo.iepExpiryDate)}</p>
+                    </div>
+                  )}
+                  {studentData.medicalInfo.accommodations !== "None" && (
+                    <div>
+                      <p className="text-sm text-gray-500">Accommodations</p>
+                      <p>{studentData.medicalInfo.accommodations}</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </Card>
-        </TabsContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="behavior">
             <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
-            <h2 className="text-xl font-bold mb-6">D. Behavior & Discipline</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Absences</p>
-                    <p>{studentData.behaviorInfo.absences}</p>
+              <h2 className="text-xl font-bold mb-6">D. Behavior & Discipline</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Absences</p>
+                      <p>{studentData.behaviorInfo.attendance.absences}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Tardies</p>
+                      <p>{studentData.behaviorInfo.attendance.tardies}</p>
+                    </div>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Tardies</p>
-                    <p>{studentData.behaviorInfo.tardies}</p>
+                    <p className="text-sm text-gray-500 mb-2">Disciplinary Incidents</p>
+                    <div className="space-y-3">
+                      {studentData.behaviorInfo.incidents.map((incident: any, index: number) => (
+                        <div key={index} className="border-l-4 border-red-500 pl-4 py-2">
+                          <div className="flex justify-between text-sm text-gray-500 mb-1">
+                            <span>{formatDate(incident.date)}</span>
+                          </div>
+                          <p className="font-medium">{incident.description}</p>
+                          <p className="text-sm text-gray-600">Resolution: {incident.resolution}</p>
+                        </div>
+                      ))}
+                      {studentData.behaviorInfo.incidents.length === 0 && (
+                        <p className="text-gray-500">No disciplinary incidents</p>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-2">Disciplinary Incidents</p>
-                  <div className="space-y-3">
-                    {studentData.behaviorInfo.incidents.map((incident: any, index: number) => (
-                      <div key={index} className="border-l-4 border-red-500 pl-4 py-2">
-                        <div className="flex justify-between text-sm text-gray-500 mb-1">
-                          <span>{incident.date}</span>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-2">Awards & Recognition</p>
+                    <div className="space-y-3">
+                      {studentData.behaviorInfo.awards.map((award: any, index: number) => (
+                        <div key={index} className="border-l-4 border-green-500 pl-4 py-2">
+                          <div className="flex justify-between text-sm text-gray-500 mb-1">
+                            <span>{formatDate(award.date)}</span>
+                          </div>
+                          <p className="font-medium">{award.description}</p>
                         </div>
-                        <p className="font-medium">{incident.description}</p>
-                        <p className="text-sm text-gray-600">Resolution: {incident.resolution}</p>
+                      ))}
+                      {studentData.behaviorInfo.awards.length === 0 && (
+                        <p className="text-gray-500">No awards yet</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-500">Points Summary</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <p className="text-xs text-gray-500">Total Points</p>
+                        <p className="font-bold">{studentData.behaviorInfo.points.totalPoints}</p>
                       </div>
-                    ))}
+                      <div>
+                        <p className="text-xs text-gray-500">Current Rank</p>
+                        <p className="font-bold">#{studentData.behaviorInfo.points.currentRank}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-500 mb-2">Awards & Recognition</p>
-                  <div className="space-y-3">
-                    {studentData.behaviorInfo.awards.map((award: any, index: number) => (
-                      <div key={index} className="border-l-4 border-green-500 pl-4 py-2">
-                        <div className="flex justify-between text-sm text-gray-500 mb-1">
-                          <span>{award.date}</span>
-                        </div>
-                        <p className="font-medium">{award.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-2">Teacher Comments</p>
-                  <div className="space-y-3">
-                    {studentData.teacherComments.map((comment: any, index: number) => (
-                      <div key={index} className="border-l-4 border-blue-500 pl-4 py-2">
-                        <div className="flex justify-between">
-                          <span className="font-medium">{comment.teacher}</span>
-                          <span className="text-sm text-gray-500">{comment.subject}</span>
-                        </div>
-                        <p className="mt-1">{comment.comment}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </TabsContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="contacts">
             <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
-            <h2 className="text-xl font-bold mb-6">E. Emergency Contacts</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {studentData.emergencyContacts.map((contact: any, index: number) => (
-                <Card key={index} className="p-4">
-                  <h3 className="font-medium mb-2">{contact.name} ({contact.relation})</h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500">Phone:</span>
-                      <span>{contact.phone}</span>
+              <h2 className="text-xl font-bold mb-6">E. Emergency Contacts</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {studentData.emergencyContacts.map((contact: any, index: number) => (
+                  <Card key={index} className="p-4">
+                    <h3 className="font-medium mb-2">{contact.name} ({contact.relation})</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500">Phone:</span>
+                        <span>{contact.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500">Email:</span>
+                        <span>{contact.email}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500">Email:</span>
-                      <span>{contact.email}</span>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-            <div className="mt-6">
-              <h3 className="font-medium mb-2">Authorized Pickup</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="p-3 text-center">Jane Doe (Mother)</Card>
-                <Card className="p-3 text-center">John Doe (Father)</Card>
-                <Card className="p-3 text-center">Mary Smith (Aunt)</Card>
+                  </Card>
+                ))}
+                {studentData.emergencyContacts.length === 0 && (
+                  <p className="text-gray-500 col-span-2 text-center">No emergency contacts available</p>
+                )}
               </div>
-            </div>
-          </Card>
-        </TabsContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="activities">
             <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 rounded-2xl">
-            <h2 className="text-xl font-bold mb-6">F. Extracurricular Activities</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {studentData.extracurriculars.map((activity: any, index: number) => (
-                <Card key={index} className="p-4">
-                  <h3 className="font-medium mb-1">{activity.activity}</h3>
-                  <p className="text-sm text-gray-600">Schedule: {activity.schedule}</p>
-                </Card>
-              ))}
-            </div>
-          </Card>
-        </TabsContent>
+              <h2 className="text-xl font-bold mb-6">F. Extracurricular Activities</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {studentData.extracurriculars.map((activity: any, index: number) => (
+                  <Card key={index} className="p-4">
+                    <h3 className="font-medium mb-1">{activity.activity}</h3>
+                    <p className="text-sm text-gray-600">Schedule: {activity.schedule}</p>
+                  </Card>
+                ))}
+                {studentData.extracurriculars.length === 0 && (
+                  <p className="text-gray-500 col-span-2 text-center">No extracurricular activities</p>
+                )}
+              </div>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </section>
