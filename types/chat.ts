@@ -55,10 +55,11 @@ export interface ChatRoom {
   extra_data: any;
   room_type: string;
   participant_ids_cache: string | null;
+  
 }
 
 export interface ChatRoomDetail extends ChatRoom {
-  messages: string;
+  mmessages: ChatMessage[];
 }
 
 export interface CreateChatMessage {
@@ -129,5 +130,44 @@ export interface EnhancedChatRoom extends Omit<ChatRoom, 'participants'> {
   participants: ChatParticipant[];
   last_message: EnhancedChatMessage | null;
   unread_count: number;
+}
+
+
+export function enhanceMessage(
+  raw: ChatMessage,
+  participants: ChatParticipant[]
+): EnhancedChatMessage {
+  // Trouver le sender dans les participants enrichis
+  const senderInfo =
+    participants.find((p) => p.id === raw.sender) ||
+    ({
+      id: raw.sender,
+      name: "Unknown",
+      avatar: "/assets/images/general/student.png",
+      role: "student",
+      status: "offline",
+    } as ChatParticipant);
+
+  return {
+    uuid: raw.uuid,
+    created_at: raw.created_at,
+    last_update: raw.last_update,
+    content: raw.content,
+    message_type: "text", // ⚡ fallback
+    sender: {
+      id: senderInfo.id,
+      username: senderInfo.name,
+      full_name: senderInfo.name,
+      email: "",
+    },
+    attachment_url: null,
+    voice_note_url: null,
+    is_deleted: raw.is_deleted,
+    extra_data: raw.extra_data,
+    sender_info: senderInfo,
+    timestamp: new Date(raw.created_at),
+    status: "sent",
+    chat: raw.chat,
+  };
 }
 

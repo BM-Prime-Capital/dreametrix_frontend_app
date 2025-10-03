@@ -65,13 +65,13 @@ Le module chat est intégré dans l'interface de communication des enseignants v
 
 ### Fonctionnalités du chat
 
-- ✅ Liste des salons de conversation
-- ✅ Création de nouveaux salons
-- ✅ Envoi et réception de messages
-- ✅ Affichage des participants
-- ✅ Statut de connexion des utilisateurs
-- ✅ Interface responsive et intuitive
-- ✅ Intégration avec l'API existante
+- Liste des salons de conversation
+- Création de nouveaux salons
+- Envoi et réception de messages
+- Affichage des participants
+- Statut de connexion des utilisateurs
+- Interface responsive et intuitive
+- Intégration avec l'API existante
 
 ## Configuration
 

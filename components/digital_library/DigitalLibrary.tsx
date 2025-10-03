@@ -292,7 +292,7 @@ export default function DigitalLibrary() {
       // Check if the extracted grade exists in the loaded grades (direct match first)
       let matchedGrade = extractedGrade;
       if (grades.includes(extractedGrade)) {
-        console.log("✅ Direct grade match found:", extractedGrade);
+        console.log("Direct grade match found:", extractedGrade);
       } else {
         // Try to find a fuzzy match
         const gradeNumber = extractedGrade;
@@ -311,7 +311,7 @@ export default function DigitalLibrary() {
 
         if (possibleMatches.length > 0) {
           matchedGrade = possibleMatches[0];
-          console.log("✅ Fuzzy grade match found:", matchedGrade);
+          console.log("Fuzzy grade match found:", matchedGrade);
         } else {
           console.log("❌ No grade match found for:", extractedGrade);
           // Clear pending auto-population and flag
@@ -357,7 +357,7 @@ export default function DigitalLibrary() {
         setPendingAutoPopulation(null);
         setIsAutoPopulating(false);
         setAutoPopulationProgress(null);
-        console.log("✅ Auto-population completed successfully!");
+        console.log("Auto-population completed successfully!");
       }, 2000);
     }
   }, [
@@ -430,7 +430,7 @@ export default function DigitalLibrary() {
         assignmentType: prev.assignmentType,
       };
 
-      console.log("✅ New state in handleSubjectSelection:", {
+      console.log("New state in handleSubjectSelection:", {
         assignmentType: newState.assignmentType,
         subject: newState.subject,
       });
@@ -570,7 +570,7 @@ export default function DigitalLibrary() {
         assignmentType: prev.assignmentType,
       };
 
-      console.log("✅ New state in handleGradeSelectionWithSubject:", {
+      console.log("New state in handleGradeSelectionWithSubject:", {
         assignmentType: newState.assignmentType,
         grade: newState.grade,
       });
@@ -706,7 +706,7 @@ export default function DigitalLibrary() {
 
     // Additional verification for auto-population
     if (isAutoPopulating) {
-      console.log("✅ Auto-population classes filtering completed:", {
+      console.log("Auto-population classes filtering completed:", {
         totalClasses: filteredClassesForGrade.length,
         classNames: filteredClassesForGrade.map((cl: any) => cl.name),
       });

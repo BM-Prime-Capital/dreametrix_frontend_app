@@ -391,7 +391,7 @@ export function SubmissionsPopup({
           //     firstSubmission.submission.voice_notes = mockAudioUrl;
 
           //     console.log(
-          //       "✅ Added default positive feedback URL to first submission"
+          //       "Added default positive feedback URL to first submission"
           //     );
           //   }
 
