@@ -118,7 +118,7 @@ export async function updateStudentGrade(
 
     const data = await response.json();
 
-    console.log("✅ Grade updated successfully:", data);
+    console.log("Grade updated successfully:", data);
 
     return {
       success: true,
@@ -196,7 +196,7 @@ export async function saveVoiceRecording(
 
     const data = await response.json();
 
-    console.log("✅ Voice recording saved successfully:", data);
+    console.log("Voice recording saved successfully:", data);
 
     return {
       success: true,

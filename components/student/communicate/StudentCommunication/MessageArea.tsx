@@ -26,9 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/utils/tailwind";
-import { Conversation,
-   //Message 
-  } from "./types";
+import { Conversation } from "./types";
 
 interface MessageAreaProps {
   selectedConversation: Conversation | null;
@@ -41,6 +39,7 @@ interface MessageAreaProps {
   onOpenCompose: () => void;
   onOpenAnnounce: () => void;
   currentUserId: string | number | null;
+  isStudent?: boolean;
 }
 
 export function MessageArea({
@@ -54,25 +53,11 @@ export function MessageArea({
   onOpenCompose,
   onOpenAnnounce,
   currentUserId,
-  
+  isStudent = false,
 }: MessageAreaProps) {
   const [, setIsTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-
- 
   const [isRecording, setIsRecording] = useState(false);
- 
-
-  useEffect(() => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]); // 👈 scroll à chaque nouveau message
-
-  const handleMessageChange = (value: string) => {
-    onMessageChange(value);
-    setIsTyping(!!value.trim());
-  };
 
   useEffect(() => {
     if (bottomRef.current) {
@@ -80,22 +65,21 @@ export function MessageArea({
     }
   }, [messages]);
 
-  
-
+  const handleMessageChange = (value: string) => {
+    onMessageChange(value);
+    setIsTyping(!!value.trim());
+  };
 
   const handleVoiceCall = () => {
-    // TODO: Implémenter l'appel vocal
     console.log("Démarrage appel vocal avec:", selectedConversation?.displayName);
   };
 
   const handleVideoCall = () => {
-    // TODO: Implémenter l'appel vidéo
     console.log("Démarrage appel vidéo avec:", selectedConversation?.displayName);
   };
 
   const handleVoiceMessage = () => {
     setIsRecording(!isRecording);
-    // TODO: Implémenter l'enregistrement vocal
   };
 
   return (
@@ -135,7 +119,6 @@ export function MessageArea({
                     )}
                   </AvatarFallback>
                 </Avatar>
-                {/* Indicateur en ligne */}
                 <div
                   className={cn(
                     "absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white",
@@ -148,8 +131,6 @@ export function MessageArea({
                       : "bg-gray-400"
                   )}
                 ></div>
-
-
               </div>
               <div>
                 <h3 className="font-bold text-xl text-gray-800">
@@ -176,7 +157,6 @@ export function MessageArea({
                       ? "Announcement"
                       : `${selectedConversation.participants.length} members`}
                   </Badge>
-                  {/* Statut texte */}
                   <span className="text-xs text-gray-500 flex items-center">
                     <Clock className="h-3 w-3 mr-1" />
                     {selectedConversation.participants[0]?.status === "online"
@@ -187,7 +167,6 @@ export function MessageArea({
                       ? "Away"
                       : "Offline"}
                   </span>
-
                 </div>
               </div>
             </div>
@@ -195,35 +174,38 @@ export function MessageArea({
             {/* Boutons d'appel et actions */}
             <div className="flex items-center gap-2">
               <TooltipProvider>
-                {/* Appel vocal */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handleVoiceCall}
-                      className="rounded-full border-green-200 bg-green-50 hover:bg-green-100 transition-all duration-200 hover:scale-110"
-                    >
-                      <Phone className="h-4 w-4 text-green-600" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Voice Call</TooltipContent>
-                </Tooltip>
+                {/* Masquer les boutons d'appel pour les students si nécessaire */}
+                {!isStudent && (
+                  <>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={handleVoiceCall}
+                          className="rounded-full border-green-200 bg-green-50 hover:bg-green-100 transition-all duration-200 hover:scale-110"
+                        >
+                          <Phone className="h-4 w-4 text-green-600" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Voice Call</TooltipContent>
+                    </Tooltip>
 
-                {/* Appel vidéo */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handleVideoCall}
-                      className="rounded-full border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all duration-200 hover:scale-110"
-                    >
-                      <Video className="h-4 w-4 text-blue-600" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Video Call</TooltipContent>
-                </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={handleVideoCall}
+                          className="rounded-full border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all duration-200 hover:scale-110"
+                        >
+                          <Video className="h-4 w-4 text-blue-600" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Video Call</TooltipContent>
+                    </Tooltip>
+                  </>
+                )}
 
                 {/* Autres actions */}
                 <Tooltip>
@@ -302,12 +284,24 @@ export function MessageArea({
             ) : (
               <>
                 {messages.map((message: any) => {
-                  const isCurrentUser = message.sender.id.toString() === currentUserId?.toString();
-                  const messageKey = message.id || message.uuid || `msg-${message.timestamp}-${Math.random()}`;
+                  // CORRECTION: Vérifier si c'est l'utilisateur courant qui a envoyé le message
+                  const isCurrentUser = 
+                    message.sender_info?.id?.toString() === currentUserId?.toString() ||
+                    message.sender?.id?.toString() === currentUserId?.toString();
 
+                  console.log("Message debug:", {
+    messageId: message.id,
+    senderId: message.sender_info?.id,
+    senderRole: message.sender_info?.role,
+    currentUserId,
+    isCurrentUser
+  });
+
+                  // CORRECTION: Pour les étudiants, leurs propres messages doivent être à DROITE
+                  // Les messages des autres (teachers, autres étudiants) doivent être à GAUCHE
                   return (
                     <div
-                      key={messageKey}
+                      key={message.uuid || message.id}
                       className={`flex gap-3 max-w-[85%] animate-fade-in ${
                         isCurrentUser ? "ml-auto flex-row-reverse" : ""
                       }`}
@@ -317,16 +311,16 @@ export function MessageArea({
                           "h-10 w-10 rounded-xl border-2 shadow-md flex-shrink-0 transition-all duration-200 hover:scale-105",
                           isCurrentUser
                             ? "border-blue-300 bg-gradient-to-br from-blue-100 to-blue-200"
-                            : "border-gray-200 bg-gradient-to-br from-gray-100 to-gray-200"
+                            : "border-green-300 bg-gradient-to-br from-green-100 to-green-200"
                         )}
                       >
                         <AvatarImage
-                          src={message.sender_info.avatar}
-                          alt={message.sender_info.name}
+                          src={message.sender_info?.avatar || message.sender?.avatar}
+                          alt={message.sender_info?.name || message.sender?.name}
                           className="object-cover rounded-lg"
                         />
                         <AvatarFallback className="rounded-lg font-medium">
-                          {message.sender_info?.name?.charAt(0) || "?"}
+                          {(message.sender_info?.name?.charAt(0) || message.sender?.name?.charAt(0) || "?")}
                         </AvatarFallback>
                       </Avatar>
 
@@ -335,7 +329,7 @@ export function MessageArea({
                           "rounded-2xl p-4 shadow-sm transition-all duration-200 hover:shadow-md",
                           isCurrentUser
                             ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white mr-0"
-                            : "bg-white border border-gray-200 shadow-sm"
+                            : "bg-gradient-to-br from-gray-100 to-white border border-gray-200 text-gray-800"
                         )}
                       >
                         <div className="flex justify-between items-center mb-2">
@@ -345,7 +339,12 @@ export function MessageArea({
                               isCurrentUser ? "text-blue-100" : "text-gray-700"
                             )}
                           >
-                            {message.sender.name}
+                            {message.sender_info?.name || message.sender?.name}
+                            {!isCurrentUser && message.sender_info?.role === "teacher" && (
+                              <span className="ml-2 text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                                Teacher
+                              </span>
+                            )}
                           </span>
                           <span
                             className={cn(
@@ -377,18 +376,23 @@ export function MessageArea({
                               "mt-3 pt-3",
                               isCurrentUser
                                 ? "border-t border-white/30"
-                                : "border-t border-gray-100"
+                                : "border-t border-gray-200"
                             )}
                           >
-                            {message.attachments.map((attachment: any, i: string) => (
+                            {message.attachments.map((attachment: any, i: number) => (
                               <div
                                 key={i}
-                                className="flex items-center gap-2 text-xs mt-2 p-2 bg-white/20 rounded-lg"
+                                className={cn(
+                                  "flex items-center gap-2 text-xs mt-2 p-2 rounded-lg",
+                                  isCurrentUser 
+                                    ? "bg-white/20" 
+                                    : "bg-gray-100"
+                                )}
                               >
                                 <Paperclip
                                   className={cn(
                                     "h-3 w-3",
-                                    isCurrentUser ? "text-blue-200" : "text-blue-500"
+                                    isCurrentUser ? "text-blue-200" : "text-gray-600"
                                   )}
                                 />
                                 <a
@@ -410,7 +414,6 @@ export function MessageArea({
                     </div>
                   );
                 })}
-
               </>
             )}
             <div ref={bottomRef} />
@@ -543,26 +546,31 @@ export function MessageArea({
             No Conversation Selected
           </h3>
           <p className="text-muted-foreground mb-6 max-w-md">
-            Select a conversation from the sidebar or start a new one to
-            begin messaging with students, parents, or entire classes.
+            {isStudent 
+              ? "Select a conversation to view messages from your teachers and classmates."
+              : "Select a conversation from the sidebar or start a new one to begin messaging with students, parents, or entire classes."
+            }
           </p>
-          <div className="flex gap-3">
-            <Button
-              onClick={onOpenCompose}
-              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md px-6"
-            >
-              <MessageSquare className="h-4 w-4 mr-2" />
-              New Message
-            </Button>
-            <Button
-              variant="outline"
-              onClick={onOpenAnnounce}
-              className="border-blue-200 hover:bg-blue-50 shadow-sm px-6"
-            >
-              <Megaphone className="h-4 w-4 mr-2 text-blue-500" />
-              Create Announcement
-            </Button>
-          </div>
+          {/* Masquer les boutons de création pour les students */}
+          {!isStudent && (
+            <div className="flex gap-3">
+              <Button
+                onClick={onOpenCompose}
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md px-6"
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                New Message
+              </Button>
+              <Button
+                variant="outline"
+                onClick={onOpenAnnounce}
+                className="border-blue-200 hover:bg-blue-50 shadow-sm px-6"
+              >
+                <Megaphone className="h-4 w-4 mr-2 text-blue-500" />
+                Create Announcement
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </Card>

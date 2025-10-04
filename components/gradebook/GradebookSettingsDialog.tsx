@@ -112,7 +112,7 @@ export function GradebookSettingsDialog({
        // refreshToken
       );
 
-      console.log("✅ Assessment weights saved successfully");
+      console.log("Assessment weights saved successfully");
       setOpen(false);
     } catch (err) {
       console.error("❌ Error saving assessment weights:", err);

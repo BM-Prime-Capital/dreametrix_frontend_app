@@ -14,7 +14,7 @@ import { AnnounceDialog } from "./AnnounceDialog";
 import { Conversation, RecipientType } from "./types";
 import { localStorageKey } from "@/constants/global";
 
-export default function TeacherCommunication() {
+export default function StudentCommunication() {
   const [searchQuery, setSearchQuery] = useState("");
   // const [newMessage, setNewMessage] = useState("");
   const [composeMessage, setComposeMessage] = useState("");
@@ -164,6 +164,13 @@ const conversations: Conversation[] = useMemo(() => {
 // -----------------------
 // index.tsx
 const handleCreateConversation = async () => {
+      console.log("🎯 Creating conversation with recipients DANS INDE.TS:", {
+    selectedRecipients,
+    recipientType,
+    students: students.filter(s => selectedRecipients.includes(s.id)),
+    classes: classes.filter(c => selectedRecipients.includes(c.id)),
+    parents: parents.filter(p => selectedRecipients.includes(p.id))
+  });
   if (selectedRecipients.length === 0 || isCreatingConversation) return;
 
   setIsCreatingConversation(true);
@@ -188,7 +195,7 @@ const handleCreateConversation = async () => {
       conversationName =
         selectedStudentNames.length === 1
           ? `Conversation avec ${selectedStudentNames[0]}`
-          : `Conversation avec ${selectedStudentNames.length} étudiants`;
+          : `Conversation avec ${selectedStudentNames.length} students`;
     } else if (recipientType === "class") {
       const selectedClassNames = classes
         .filter((cls) => selectedRecipients.includes(`class-${cls.id}`))
@@ -207,7 +214,7 @@ const handleCreateConversation = async () => {
           : `Conversation avec ${selectedParentNames.length} parents`;
     }
 
-    // ✅ Envoi correct avec IDs numériques
+    // Envoi correct avec IDs numériques
     const newRoom = await createRoom(
       conversationName,
       participantIds,
@@ -343,12 +350,13 @@ return (
           selectedConversation={selectedConversation}
           messages={messages}
           loading={messagesLoading}
-          newMessage={chatMessage}                 // ✅ message du chat
-          onMessageChange={setChatMessage}         // ✅ maj state du chat
+          newMessage={chatMessage}                 // message du chat
+          onMessageChange={setChatMessage}         // maj state du chat
           onSendMessage={handleSendMessage}
           onDeselectConversation={() => setSelectedRoom(null)}
           onOpenCompose={() => setComposeDialogOpen(true)}
           onOpenAnnounce={() => setAnnounceDialogOpen(true)}
+          currentUserId={currentUserId}
         />
       </div>
     </section>
@@ -361,8 +369,8 @@ return (
       selectedRecipients={selectedRecipients}
       setSelectedRecipients={setSelectedRecipients} 
       onRecipientToggle={toggleRecipient}
-      newMessage={composeMessage}                 // ✅ message du modal "New Message"
-      onMessageChange={setComposeMessage}         // ✅ maj state compose
+      newMessage={composeMessage}                 // message du modal "New Message"
+      onMessageChange={setComposeMessage}         // maj state compose
       onCreateConversation={handleCreateConversation}
       isCreating={isCreatingConversation}
       students={students}
@@ -378,8 +386,8 @@ return (
       onOpenChange={setAnnounceDialogOpen}
       selectedRecipients={selectedRecipients}
       onRecipientToggle={toggleRecipient}
-      newMessage={announcementMessage}            // ✅ message du modal "Announcement"
-      onMessageChange={setAnnouncementMessage}    // ✅ maj state announcement
+      newMessage={announcementMessage}            // message du modal "Announcement"
+      onMessageChange={setAnnouncementMessage}    // maj state announcement
       onCreateAnnouncement={handleCreateAnnouncement}
       isCreating={isCreatingAnnouncement}
       classes={classes}

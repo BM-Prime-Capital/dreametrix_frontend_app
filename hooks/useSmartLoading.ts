@@ -12,14 +12,14 @@ export function useSmartLoading() {
     setShowSpinner(false)
     setIsLoading(true)
     setShowSpinner(true)
-    console.log('✅ Spinner forced to show')
+    console.log('Spinner forced to show')
   }
 
   const stopLoading = () => {
     console.log('🛑 stopLoading called')
     setIsLoading(false)
     setShowSpinner(false)
-    console.log('✅ Spinner hidden immediately')
+    console.log('Spinner hidden immediately')
   }
 
   return {

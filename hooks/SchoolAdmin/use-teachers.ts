@@ -46,6 +46,7 @@ export function useTeachers() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { baseUrl, error: baseUrlError } = useBaseUrl();
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     if (baseUrlError) {
@@ -103,7 +104,11 @@ export function useTeachers() {
     };
 
     fetchTeachers();
-  }, [baseUrl, baseUrlError]);
+  }, [baseUrl, baseUrlError, refreshTrigger]);
 
-  return { teachers, isLoading, error };
+  const refetch = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+
+  return { teachers, isLoading, error, refetch };
 }
