@@ -9,6 +9,8 @@ export interface MenuRoute {
   icon: React.ReactNode;
   label: string;
   exact?: boolean;
+  badge?: string | number; 
+  isSecondary?: boolean; 
 }
 export interface MiniCourse {
   id: number;

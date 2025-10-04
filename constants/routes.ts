@@ -2,6 +2,7 @@ import { generalImages, menuImages } from "./images";
 import { userPath } from "./userConstants";
 
 export const StudentRoutes = [
+  // Routes principales
   {
     path: `${userPath.STUDENT_BASE_PATH}`,
     icon: generalImages.home,
@@ -9,47 +10,45 @@ export const StudentRoutes = [
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/classes`,
-    icon: generalImages.assignments,
+    icon: menuImages.classes,
     label: "CLASSES",
   },
+
   {
     path: `${userPath.STUDENT_BASE_PATH}/assignments`,
     icon: menuImages.assignments,
     label: "ASSIGNMENTS",
+    badge: 3, // Exemple de badge
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/gradebook`,
-    icon: generalImages.gradebook,
+    icon: menuImages.gradebook,
     label: "GRADEBOOK",
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/attendance`,
-    icon: generalImages.attendance,
+    icon: menuImages.attendance,
     label: "ATTENDANCE",
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/character`,
-    icon: generalImages.character,
+    icon: menuImages.character,
     label: "CHARACTER",
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/communicate`,
-    icon: generalImages.communicate,
+    icon: menuImages.communicate,
     label: "COMMUNICATE",
+    badge: 5, // Exemple de badge
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/polls`,
-    icon: generalImages.polls,
+    icon: menuImages.polls,
     label: "POLLS",
   },
-  // {
-  //   path: `${userPath.STUDENT_BASE_PATH}/library`,
-  //   icon: generalImages.library,
-  //   label: "LIBRARY",
-  // },
   {
     path: `${userPath.STUDENT_BASE_PATH}/rewards`,
-    icon: generalImages.rewards,
+    icon: menuImages.rewards,
     label: "REWARDS",
   },
   {
@@ -57,22 +56,34 @@ export const StudentRoutes = [
     icon: generalImages.tutor,
     label: "TUTOR",
   },
- 
   {
     path: `${userPath.STUDENT_BASE_PATH}/relationship`,
     icon: `/assets/images/teacher/dashboard/relationship.svg`,
     label: "RELATIONSHIP",
   },
+  
+  // Routes secondaires (affichées en bas du sidebar)
   {
     path: `${userPath.STUDENT_BASE_PATH}/profile`,
     icon: `/assets/images/teacher/dashboard/profile.svg`,
     label: "STUDENT PROFILE",
+    isSecondary: true,
+  },
+  {
+    path: `${userPath.STUDENT_BASE_PATH}/help`,
+    icon: menuImages.support,
+    label: "NEED HELP?",
+    isSecondary: true,
+  },
+  {
+    path: `${userPath.STUDENT_BASE_PATH}/settings`,
+    icon: menuImages.settings,
+    label: "SETTINGS",
+    isSecondary: true,
   },
 ];
 
 export const SchoolAdminRoutes = [
-
-  
   // Dashboard
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}`,
@@ -142,8 +153,6 @@ export const SchoolAdminRoutes = [
     label: "Communication",
   },
 
- 
-
   // Finance 
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/finance`,
@@ -177,6 +186,7 @@ export const SchoolAdminRoutes = [
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/settings`,
     icon: menuImages.settings,
     label: "Settings",
+    isSecondary: true,
   },
 ];
 
@@ -227,11 +237,6 @@ export const TeacherRoutes = [
     icon: menuImages.communicate,
     label: "COMMUNICATE",
   },
-  // {
-  //   path: `${userPath.TEACHER_BASE_PATH}/reports`,
-  //   icon: menuImages.reports,
-  //   label: "REPORTS",
-  // },
   {
     path: `${userPath.TEACHER_BASE_PATH}/rewards`,
     icon: menuImages.rewards,
@@ -279,8 +284,9 @@ export const TeacherRoutes = [
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/support`,
-    icon: menuImages.support, // ajouté
+    icon: menuImages.support,
     label: "SUPPORT",
+    isSecondary: true,
   },
 ];
 
@@ -335,6 +341,12 @@ export const ParentRoutes = [
     icon: menuImages.report_card,
     label: "LIBRARY",
   },
+  {
+    path: `${userPath.PARENT_BASE_PATH}/help`,
+    icon: menuImages.support,
+    label: "NEED HELP?",
+    isSecondary: true,
+  },
 ];
 
 export const SuperAdminRoutes = [
@@ -366,15 +378,12 @@ export const SuperAdminRoutes = [
     label: "Users",
   },
   
-  
   // Templates
   {
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/templates`,
     icon: menuImages.templates,
     label: "Templates",
   },
-  
-  
   
   // Audit Logs
   {
@@ -395,6 +404,7 @@ export const SuperAdminRoutes = [
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/support`,
     icon: menuImages.support,
     label: "Support",
+    isSecondary: true,
   },
   
   // API Management
@@ -429,5 +439,6 @@ export const SuperAdminRoutes = [
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/system-settings`,
     icon: menuImages.settings,
     label: "System Settings",
+    isSecondary: true,
   },
 ];
