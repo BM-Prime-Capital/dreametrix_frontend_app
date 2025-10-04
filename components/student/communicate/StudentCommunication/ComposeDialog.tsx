@@ -36,6 +36,7 @@ interface ComposeDialogProps {
   dataError: string | null;
   onRetryData: () => void;
   setSelectedRecipients: (ids: string[]) => void;
+  isStudent?: boolean;
 }
 
 export function ComposeDialog({
@@ -56,6 +57,7 @@ export function ComposeDialog({
   dataError,
   onRetryData,
   setSelectedRecipients,
+  isStudent = false,
 }: ComposeDialogProps) {
 
   // 🔍 DEBUG AJOUTÉ - Mapping des étudiants
@@ -109,222 +111,234 @@ export function ComposeDialog({
         <DialogHeader className="pb-2 border-b">
           <DialogTitle className="text-xl font-semibold text-blue-700 flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
-            New Message
+            {isStudent ? "View Conversations" : "New Message"}
           </DialogTitle>
         </DialogHeader>
 
         <div className="py-4 space-y-4">
-          {/* Choix du type */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Send to:</label>
-            <div className="flex gap-2">
-              <Button
-                variant={recipientType === "student" ? "default" : "outline"}
-                size="sm"
-                onClick={() => onRecipientTypeChange("student")}
-              >
-                <User className="h-4 w-4 mr-1" />
-                Student
-              </Button>
-              <Button
-                variant={recipientType === "class" ? "default" : "outline"}
-                size="sm"
-                onClick={() => onRecipientTypeChange("class")}
-              >
-                <Users className="h-4 w-4 mr-1" />
-                Class
-              </Button>
-              <Button
-                variant={recipientType === "parent" ? "default" : "outline"}
-                size="sm"
-                onClick={() => onRecipientTypeChange("parent")}
-              >
-                <User className="h-4 w-4 mr-1" />
-                Parent
-              </Button>
+          {/* Afficher un message différent pour les students */}
+          {isStudent ? (
+            <div className="text-center py-8">
+              <MessageSquare className="h-12 w-12 text-blue-300 mx-auto mb-4" />
+              <p className="text-muted-foreground">
+                Students can only join existing conversations created by teachers.
+              </p>
             </div>
-          </div>
-
-          {/* Sélection des destinataires */}
-          <div className="space-y-2">
-            {/* Students */}
-            {recipientType === "student" && (
-              <div>
-                <label className="text-sm font-medium">Select Students:</label>
-                <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                  {dataLoading ? (
-                    <div className="text-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Loading students...
-                      </p>
-                    </div>
-                  ) : dataError ? (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-red-500 mb-2">
-                        Error loading students: {dataError}
-                      </p>
-                      <Button
-                        onClick={onRetryData}
-                        size="sm"
-                        variant="outline"
-                      >
-                        Retry
-                      </Button>
-                    </div>
-                  ) : students.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No students available
-                    </p>
-                  ) : (
-                    students.map((student) => (
-                      <div key={student.id} className="flex items-center space-x-2 py-1">
-                        <Checkbox
-                          id={`student-${student.id}`}
-                          checked={selectedRecipients.includes(`student-${student.id}`)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedRecipients([...selectedRecipients, `student-${student.id}`]);
-                            } else {
-                              setSelectedRecipients(
-                                selectedRecipients.filter((id) => id !== `student-${student.id}`)
-                              );
-                            }
-                          }}
-                        />
-                        <label
-                          htmlFor={`student-${student.id}`}
-                          className="text-sm cursor-pointer flex-1"
-                        >
-                          {student.name}{" "}
-                          <span className="text-muted-foreground">({student.class})</span>
-                        </label>
-                      </div>
-                    ))
-                  )}
+          ) : (
+            <>
+              {/* Contenu normal pour les teachers */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Send to:</label>
+                <div className="flex gap-2">
+                  <Button
+                    variant={recipientType === "student" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => onRecipientTypeChange("student")}
+                  >
+                    <User className="h-4 w-4 mr-1" />
+                    Student
+                  </Button>
+                  <Button
+                    variant={recipientType === "class" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => onRecipientTypeChange("class")}
+                  >
+                    <Users className="h-4 w-4 mr-1" />
+                    Class
+                  </Button>
+                  <Button
+                    variant={recipientType === "parent" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => onRecipientTypeChange("parent")}
+                  >
+                    <User className="h-4 w-4 mr-1" />
+                    Parent
+                  </Button>
                 </div>
               </div>
-            )}
 
-            {/* Classes */}
-            {recipientType === "class" && (
-              <div>
-                <label className="text-sm font-medium">Select Classes:</label>
-                <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                  {dataLoading ? (
-                    <div className="text-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Loading classes...
-                      </p>
+              {/* Sélection des destinataires */}
+              <div className="space-y-2">
+                {/* Students */}
+                {recipientType === "student" && (
+                  <div>
+                    <label className="text-sm font-medium">Select Students:</label>
+                    <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
+                      {dataLoading ? (
+                        <div className="text-center py-4">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
+                          <p className="text-sm text-muted-foreground mt-2">
+                            Loading students...
+                          </p>
+                        </div>
+                      ) : dataError ? (
+                        <div className="text-center py-4">
+                          <p className="text-sm text-red-500 mb-2">
+                            Error loading students: {dataError}
+                          </p>
+                          <Button
+                            onClick={onRetryData}
+                            size="sm"
+                            variant="outline"
+                          >
+                            Retry
+                          </Button>
+                        </div>
+                      ) : students.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          No students available
+                        </p>
+                      ) : (
+                        students.map((student) => (
+                          <div key={student.id} className="flex items-center space-x-2 py-1">
+                            <Checkbox
+                              id={`student-${student.id}`}
+                              checked={selectedRecipients.includes(`student-${student.id}`)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedRecipients([...selectedRecipients, `student-${student.id}`]);
+                                } else {
+                                  setSelectedRecipients(
+                                    selectedRecipients.filter((id) => id !== `student-${student.id}`)
+                                  );
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={`student-${student.id}`}
+                              className="text-sm cursor-pointer flex-1"
+                            >
+                              {student.name}{" "}
+                              <span className="text-muted-foreground">({student.class})</span>
+                            </label>
+                          </div>
+                        ))
+                      )}
                     </div>
-                  ) : dataError ? (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-red-500 mb-2">
-                        Error loading classes: {dataError}
-                      </p>
-                      <Button
-                        onClick={onRetryData}
-                        size="sm"
-                        variant="outline"
-                      >
-                        Retry
-                      </Button>
+                  </div>
+                )}
+
+                {/* Classes */}
+                {recipientType === "class" && (
+                  <div>
+                    <label className="text-sm font-medium">Select Classes:</label>
+                    <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
+                      {dataLoading ? (
+                        <div className="text-center py-4">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
+                          <p className="text-sm text-muted-foreground mt-2">
+                            Loading classes...
+                          </p>
+                        </div>
+                      ) : dataError ? (
+                        <div className="text-center py-4">
+                          <p className="text-sm text-red-500 mb-2">
+                            Error loading classes: {dataError}
+                          </p>
+                          <Button
+                            onClick={onRetryData}
+                            size="sm"
+                            variant="outline"
+                          >
+                            Retry
+                          </Button>
+                        </div>
+                      ) : classes.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          No classes available
+                        </p>
+                      ) : (
+                        classes.map((cls) => (
+                          <div key={cls.id} className="flex items-center space-x-2 py-1">
+                            <Checkbox
+                              id={`class-${cls.id}`}
+                              checked={selectedRecipients.includes(`class-${cls.id}`)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  // Ajouter la classe
+                                  const classId = `class-${cls.id}`;
+                                  // Ajouter les étudiants de cette classe
+                                  const classStudents = students
+                                    .filter((s) => s.class === cls.name)
+                                    .map((s) => `student-${s.id}`);
+
+                                  setSelectedRecipients([
+                                    ...new Set([...selectedRecipients, classId, ...classStudents]),
+                                  ]);
+                                } else {
+                                  // Retirer la classe + ses étudiants
+                                  const classId = `class-${cls.id}`;
+                                  const classStudents = students
+                                    .filter((s) => s.class === cls.name)
+                                    .map((s) => `student-${s.id}`);
+
+                                  setSelectedRecipients(
+                                    selectedRecipients.filter(
+                                      (id) => id !== classId && !classStudents.includes(id)
+                                    )
+                                  );
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={`class-${cls.id}`}
+                              className="text-sm cursor-pointer flex-1"
+                            >
+                              {cls.name}
+                            </label>
+                          </div>
+                        ))
+                      )}
                     </div>
-                  ) : classes.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No classes available
-                    </p>
-                  ) : (
-                    classes.map((cls) => (
-                      <div key={cls.id} className="flex items-center space-x-2 py-1">
-                        <Checkbox
-                          id={`class-${cls.id}`}
-                          checked={selectedRecipients.includes(`class-${cls.id}`)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              // Ajouter la classe
-                              const classId = `class-${cls.id}`;
-                              // Ajouter les étudiants de cette classe
-                              const classStudents = students
-                                .filter((s) => s.class === cls.name)
-                                .map((s) => `student-${s.id}`);
+                  </div>
+                )}
 
-                              setSelectedRecipients([
-                                ...new Set([...selectedRecipients, classId, ...classStudents]),
-                              ]);
-                            } else {
-                              // Retirer la classe + ses étudiants
-                              const classId = `class-${cls.id}`;
-                              const classStudents = students
-                                .filter((s) => s.class === cls.name)
-                                .map((s) => `student-${s.id}`);
-
-                              setSelectedRecipients(
-                                selectedRecipients.filter(
-                                  (id) => id !== classId && !classStudents.includes(id)
-                                )
-                              );
-                            }
-                          }}
-                        />
-                        <label
-                          htmlFor={`class-${cls.id}`}
-                          className="text-sm cursor-pointer flex-1"
-                        >
-                          {cls.name}
-                        </label>
-                      </div>
-                    ))
-                  )}
-                </div>
+                {recipientType === "parent" && (
+                  <div>
+                    <label className="text-sm font-medium">Select Parents:</label>
+                    <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
+                      {parents.map((parent) => (
+                        <div key={parent.id} className="flex items-center space-x-2 py-1">
+                          <Checkbox
+                            id={parent.id}
+                            checked={selectedRecipients.includes(parent.id)}
+                            onCheckedChange={() => onRecipientToggle(parent.id)}
+                          />
+                          <label htmlFor={parent.id} className="text-sm cursor-pointer flex-1">
+                            {parent.name}{" "}
+                            {/* <span className="text-muted-foreground">(Parent of {parent.student})</span> */}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
 
-            {recipientType === "parent" && (
-              <div>
-                <label className="text-sm font-medium">Select Parents:</label>
-                <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                  {parents.map((parent) => (
-                    <div key={parent.id} className="flex items-center space-x-2 py-1">
-                      <Checkbox
-                        id={parent.id}
-                        checked={selectedRecipients.includes(parent.id)}
-                        onCheckedChange={() => onRecipientToggle(parent.id)}
-                      />
-                      <label htmlFor={parent.id} className="text-sm cursor-pointer flex-1">
-                        {parent.name}{" "}
-                        {/* <span className="text-muted-foreground">(Parent of {parent.student})</span> */}
-                      </label>
-                    </div>
-                  ))}
-                </div>
+              {/* Zone Message */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Message:</label>
+                <Textarea
+                  placeholder="Type your message here..."
+                  value={newMessage}
+                  onChange={(e) => onMessageChange(e.target.value)}
+                  className="min-h-[100px]"
+                />
               </div>
-            )}
-          </div>
 
-          {/* Zone Message */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Message:</label>
-            <Textarea
-              placeholder="Type your message here..."
-              value={newMessage}
-              onChange={(e) => onMessageChange(e.target.value)}
-              className="min-h-[100px]"
-            />
-          </div>
-
-          {/* Attach + Schedule */}
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
-              <Paperclip className="h-4 w-4 mr-1" />
-              Attach File
-            </Button>
-            <Button variant="outline" size="sm">
-              <Calendar className="h-4 w-4 mr-1" />
-              Schedule
-            </Button>
-          </div>
+              {/* Attach + Schedule */}
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm">
+                  <Paperclip className="h-4 w-4 mr-1" />
+                  Attach File
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  Schedule
+                </Button>
+              </div>
+             </>
+          )}
         </div>
 
         <DialogFooter>
@@ -333,14 +347,17 @@ export function ComposeDialog({
             onClick={() => onOpenChange(false)}
             disabled={isCreating}
           >
-            Cancel
+            {isStudent ? "Close" : "Cancel"}
           </Button>
-          <Button
-            onClick={onCreateConversation}
-            disabled={isCreating || selectedRecipients.length === 0}
-          >
-            {isCreating ? "Creating..." : "Send Message"}
-          </Button>
+          {/* Masquer le bouton d'envoi pour les students */}
+          {!isStudent && (
+            <Button
+              onClick={onCreateConversation}
+              disabled={isCreating || selectedRecipients.length === 0}
+            >
+              {isCreating ? "Creating..." : "Send Message"}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

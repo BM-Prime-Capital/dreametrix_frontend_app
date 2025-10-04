@@ -141,7 +141,8 @@ export class ChatMessageService {
     tenantPrimaryDomain: string | undefined,
     accessToken: string | undefined,
     limit?: number,
-    offset?: number
+    offset?: number,
+    chatRoomId?: number
   ): Promise<ChatMessagesResponse> {
     try {
       assertToken(accessToken);
@@ -150,6 +151,7 @@ export class ChatMessageService {
       const params: Record<string, string> = {};
       if (limit !== undefined) params.limit = String(limit);
       if (offset !== undefined) params.offset = String(offset);
+      if (chatRoomId) params.chat = chatRoomId.toString();
 
       const url = buildUrlWithParams(base, CHAT_ENDPOINTS.MESSAGES, params);
 
@@ -477,6 +479,46 @@ static async createChatMessage(
 // ChatRoomService - CORRIGÉ POUR SUPPORTER LES PARTICIPANTS
 // -----------------------------------------------------------------------------------------
 export class ChatRoomService {
+
+
+  /**
+   * POST /chats/rooms/{id}/mark_as_read/ - Marquer une conversation comme lue
+   */
+  static async markAsRead(
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
+    roomId: number
+  ): Promise<{ success: boolean }> {
+    try {
+      assertToken(accessToken);
+
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}/chats/rooms/${roomId}/mark_as_read/`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("📖 [ChatRoomService.markAsRead] URL =>", url);
+      }
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: buildAuthHeaders(accessToken),
+      });
+
+      if (!response.ok) {
+        return normalizeFetchError(response, accessToken);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
+    }
+  }
 
 
   /**

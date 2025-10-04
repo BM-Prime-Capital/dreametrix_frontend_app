@@ -30,6 +30,7 @@ interface AnnounceDialogProps {
   isCreating: boolean;
   classes: Array<{ id: string; name: string }>;
   dataLoading: boolean;
+  isStudent?: boolean;
 }
 
 export function AnnounceDialog({
@@ -43,6 +44,7 @@ export function AnnounceDialog({
   isCreating,
   classes,
   dataLoading,
+  isStudent = false,
 }: AnnounceDialogProps) {
   const [audience, setAudience] = useState("all_classes");
 
@@ -52,89 +54,102 @@ export function AnnounceDialog({
         <DialogHeader className="pb-2 border-b">
           <DialogTitle className="text-xl font-semibold text-purple-700 flex items-center gap-2">
             <Megaphone className="h-5 w-5" />
-            Create Announcement
+            {isStudent ? "View Announcements" : "Create Announcement"}
           </DialogTitle>
         </DialogHeader>
 
         <div className="py-4 space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Announce to:</label>
-            <Select value={audience} onValueChange={setAudience}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select audience" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all_classes">All My Classes</SelectItem>
-                <SelectItem value="all_parents">All Parents</SelectItem>
-                <SelectItem value="specific">Specific Classes</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Select Classes:</label>
-            <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
-              {dataLoading ? (
-                <div className="text-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Loading classes...
-                  </p>
-                </div>
-              ) : classes.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  No classes available
-                </p>
-              ) : (
-                classes.map((cls) => (
-                  <div
-                    key={cls?.id || Math.random()}
-                    className="flex items-center space-x-2 py-1"
-                  >
-                    <Checkbox
-                      id={`announce-${cls?.id || Math.random()}`}
-                      checked={selectedRecipients.includes(cls?.id || "")}
-                      onCheckedChange={() =>
-                        cls?.id && onRecipientToggle(cls.id)
-                      }
-                    />
-                    <label
-                      htmlFor={`announce-${cls?.id || Math.random()}`}
-                      className="text-sm cursor-pointer flex-1"
-                    >
-                      {cls?.name || "Unknown Class"}
-                    </label>
-                  </div>
-                ))
-              )}
+          {/* Afficher un message différent pour les students */}
+          {isStudent ? (
+            <div className="text-center py-8">
+              <Megaphone className="h-12 w-12 text-purple-300 mx-auto mb-4" />
+              <p className="text-muted-foreground">
+                Students can only view announcements created by teachers.
+              </p>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Contenu normal pour les teachers */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Announce to:</label>
+                <Select value={audience} onValueChange={setAudience}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select audience" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all_classes">All My Classes</SelectItem>
+                    <SelectItem value="all_parents">All Parents</SelectItem>
+                    <SelectItem value="specific">Specific Classes</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Announcement Title:</label>
-            <Input placeholder="Enter a title for your announcement" />
-          </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Select Classes:</label>
+                <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
+                  {dataLoading ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Loading classes...
+                      </p>
+                    </div>
+                  ) : classes.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No classes available
+                    </p>
+                  ) : (
+                    classes.map((cls) => (
+                      <div
+                        key={cls?.id || Math.random()}
+                        className="flex items-center space-x-2 py-1"
+                      >
+                        <Checkbox
+                          id={`announce-${cls?.id || Math.random()}`}
+                          checked={selectedRecipients.includes(cls?.id || "")}
+                          onCheckedChange={() =>
+                            cls?.id && onRecipientToggle(cls.id)
+                          }
+                        />
+                        <label
+                          htmlFor={`announce-${cls?.id || Math.random()}`}
+                          className="text-sm cursor-pointer flex-1"
+                        >
+                          {cls?.name || "Unknown Class"}
+                        </label>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Announcement Content:</label>
-            <Textarea
-              placeholder="Type your announcement here..."
-              value={newMessage}
-              onChange={(e) => onMessageChange(e.target.value)}
-              className="min-h-[100px]"
-            />
-          </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Announcement Title:</label>
+                <Input placeholder="Enter a title for your announcement" />
+              </div>
 
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
-              <Paperclip className="h-4 w-4 mr-1" />
-              Attach File
-            </Button>
-            <Button variant="outline" size="sm">
-              <Calendar className="h-4 w-4 mr-1" />
-              Schedule
-            </Button>
-          </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Announcement Content:</label>
+                <Textarea
+                  placeholder="Type your announcement here..."
+                  value={newMessage}
+                  onChange={(e) => onMessageChange(e.target.value)}
+                  className="min-h-[100px]"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm">
+                  <Paperclip className="h-4 w-4 mr-1" />
+                  Attach File
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  Schedule
+                </Button>
+              </div>
+             </>
+          )}
         </div>
 
         <DialogFooter>
