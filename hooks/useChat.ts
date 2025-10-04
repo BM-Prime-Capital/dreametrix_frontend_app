@@ -584,78 +584,47 @@ export const useChatMessages = (
   const lastRoomId = useRef<number | null>(null);
 
   // ---------------- FETCH MESSAGES ----------------
-  // const fetchMessages = useCallback(
-  //   async (limit?: number, offset?: number) => {
-  //     if (!roomId) {
-  //       console.log("[useChatMessages] Aucun roomId, skip fetch");
-  //       return;
-  //     }
+  const fetchMessages = useCallback(
+    async (limit?: number, offset?: number) => {
+      if (!roomId) {
+        console.log("[useChatMessages] Aucun roomId, skip fetch");
+        return;
+      }
 
-  //     try {
-  //       setLoading(true);
-  //       setError(null);
-  //       console.log("[useChatMessages] Chargement messages pour room:", roomId);
+      try {
+        setLoading(true);
+        setError(null);
+        console.log("[useChatMessages] Chargement messages pour room:", roomId);
 
-  //       const response = await ChatMessageService.listMessages(
-  //         tenantPrimaryDomain,
-  //         accessToken,
-  //         limit,
-  //         offset
-  //       );
+        const response = await ChatMessageService.listMessages(
+          tenantPrimaryDomain,
+          accessToken,
+          limit,
+          offset,
+          roomId
+        );
 
-  //       const roomMessages = response.results.filter((msg) => msg.chat === roomId);
+        const roomMessages = response.results.filter((msg) => msg.chat === roomId);
 
-  //       console.log("[useChatMessages] Messages chargés:", roomMessages.length);
+        console.log("[useChatMessages] Messages chargés:", roomMessages.length);
 
-  //       const enhancedMessages = roomMessages
-  //       .map((msg) => enhanceMessage(msg, allParticipants))
-  //       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()); // 👈 tri ASC
+        const enhancedMessages = roomMessages
+        .map((msg) => enhanceMessage(msg, allParticipants))
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()); // 👈 tri ASC
 
 
-  //       setMessages(enhancedMessages);
-  //     } catch (err) {
-  //       const errorMessage =
-  //         err instanceof Error ? err.message : "Failed to fetch messages";
-  //       setError(errorMessage);
-  //       console.error("[useChatMessages] Erreur chargement messages:", err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   },
-  //   [tenantPrimaryDomain, accessToken, roomId, allParticipants]
-  // );
-
-  const fetchMessages = useCallback(async () => {
-  if (!roomUuid) {
-    console.log("[useChatMessages] Aucun roomUuid, skip fetch");
-    return;
-  }
-
-  try {
-    setLoading(true);
-    setError(null);
-    console.log("[useChatMessages] Chargement messages pour room:", roomUuid);
-
-    const response = await ChatMessageService.getChatMessages(
-      tenantPrimaryDomain,
-      accessToken,
-      roomUuid
-    );
-
-    const enhancedMessages = (response.mmessages || [])
-      .map((msg) => enhanceMessage(msg, allParticipants))
-      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-
-    setMessages(enhancedMessages);
-  } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : "Failed to fetch messages";
-    setError(errorMessage);
-    console.error("[useChatMessages] Erreur chargement messages:", err);
-  } finally {
-    setLoading(false);
-  }
-}, [tenantPrimaryDomain, accessToken, roomUuid, allParticipants]);
-
+        setMessages(enhancedMessages);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch messages";
+        setError(errorMessage);
+        console.error("[useChatMessages] Erreur chargement messages:", err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [tenantPrimaryDomain, accessToken, roomId, allParticipants]
+  );
 
   // ---------------- SEND MESSAGE ----------------
 

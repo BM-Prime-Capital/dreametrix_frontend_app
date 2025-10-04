@@ -39,14 +39,14 @@ const fetchMessages = useCallback(async () => {
     setLoading(true);
     setError(null);
 
-    // ✅ Correct type: getChatMessages returns ChatRoomDetail
+    // Correct type: getChatMessages returns ChatRoomDetail
     const data = await ChatMessageService.getChatMessages(
       tenantDomain,
       accessToken,
       roomUuid
     );
 
-    // ✅ Use .mmessages (not .results)
+    // Use .mmessages (not .results)
     const enhanced = (data.mmessages || []).map((m) =>
       enhanceMessage(m, participants)
     );
@@ -85,7 +85,7 @@ const fetchMessages = useCallback(async () => {
           formData
         );
 
-        // ✅ also wrap sent message
+        // also wrap sent message
         const enhanced = enhanceMessage(sent, participants);
 
         setMessages((prev) => [...prev, enhanced]);

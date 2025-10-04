@@ -302,12 +302,12 @@ export function MessageArea({
             ) : (
               <>
                 {messages.map((message: any) => {
-                  const isCurrentUser =
-                    message.sender.id.toString() === currentUserId?.toString();
+                  const isCurrentUser = message.sender.id.toString() === currentUserId?.toString();
+                  const messageKey = message.id || message.uuid || `msg-${message.timestamp}-${Math.random()}`;
 
                   return (
                     <div
-                      key={message.id}
+                      key={messageKey}
                       className={`flex gap-3 max-w-[85%] animate-fade-in ${
                         isCurrentUser ? "ml-auto flex-row-reverse" : ""
                       }`}

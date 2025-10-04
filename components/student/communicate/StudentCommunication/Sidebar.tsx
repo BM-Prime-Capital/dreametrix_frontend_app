@@ -24,6 +24,7 @@ interface SidebarProps {
   onOpenCompose: () => void;
   loading: boolean;
   error: string | null;
+  isStudent?: boolean;
 }
 
 export function Sidebar({
@@ -35,6 +36,7 @@ export function Sidebar({
   onOpenCompose,
   loading,
   error,
+  isStudent = false,
 }: SidebarProps) {
   return (
     <Card className="p-3 lg:col-span-1 h-[calc(100vh-190px)] flex flex-col bg-white/80 backdrop-blur-sm border-0 shadow-md rounded-xl overflow-hidden">
@@ -71,10 +73,10 @@ export function Sidebar({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer">
-              Students
+              Teachers
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer">
-              Parents
+              Classmates
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer">
               Classes
@@ -95,10 +97,10 @@ export function Sidebar({
             All
           </TabsTrigger>
           <TabsTrigger
-            value="students"
+            value="teachers"
             className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm"
           >
-            Students
+            Teachers
           </TabsTrigger>
           <TabsTrigger
             value="classes"
@@ -107,10 +109,10 @@ export function Sidebar({
             Classes
           </TabsTrigger>
           <TabsTrigger
-            value="parents"
+            value="classmates"
             className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm"
           >
-            Parents
+            Classmates
           </TabsTrigger>
         </TabsList>
       </Tabs>
@@ -120,25 +122,30 @@ export function Sidebar({
           <div className="flex flex-col items-center justify-center h-full text-center p-4">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
             <p className="text-muted-foreground">
-              Chargement des conversations...
+              Loading conversations...
             </p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-4">
             <MessageSquare className="h-12 w-12 text-red-300 mb-2" />
-            <p className="text-red-500 text-sm">Erreur: {error}</p>
+            <p className="text-red-500 text-sm">Error: {error}</p>
           </div>
         ) : conversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-4">
             <MessageSquare className="h-12 w-12 text-muted-foreground mb-2 opacity-20" />
-            <p className="text-muted-foreground">No conversations found</p>
-            <Button
-              variant="link"
-              className="mt-2"
-              onClick={onOpenCompose}
-            >
-              Start a new conversation
-            </Button>
+            <p className="text-muted-foreground">
+              {isStudent ? "No conversations yet" : "No conversations found"}
+            </p>
+            {/* Masquer le bouton pour les students */}
+            {!isStudent && (
+              <Button
+                variant="link"
+                className="mt-2"
+                onClick={onOpenCompose}
+              >
+                Start a new conversation
+              </Button>
+            )}
           </div>
         ) : (
           <div className="space-y-1">

@@ -18,7 +18,7 @@ import {
   Clock,
   CheckCheck,
 } from "lucide-react";
-import { useChatRooms, useChatMessages } from "@/hooks/useChat";
+import { useStudentChat } from "@/hooks/useStudentChat";
 import { useChatNotifications } from "@/hooks/useChatNotifications";
 import { useCommunicationData } from "@/hooks/useCommunicationData";
 import { Card } from "@/components/ui/card";
@@ -59,9 +59,7 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip";
 import PageTitleH1 from "@/components/ui/page-title-h1";
 import { cn } from "@/utils/tailwind";
-import DebugCommunicationData from "./DebugCommunicationData";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
-import { useSelector } from "react-redux";
 import { localStorageKey } from "@/constants/global";
 
 // Types
@@ -95,7 +93,6 @@ interface Conversation {
 
 export default function StudentCommunication() {
   const { tenantDomain, accessToken } = useRequestInfo();
-  // const { token, user } = useSelector((state: any) => state.auth);
   const [searchQuery, setSearchQuery] = useState("");
   const [newMessage, setNewMessage] = useState("");
   const [composeDialogOpen, setComposeDialogOpen] = useState(false);
@@ -120,6 +117,8 @@ export default function StudentCommunication() {
     refetch: refetchData,
   } = useCommunicationData();
 
+  console.log("[DEBUG-StudentCommunication.tsx] Composant monté");
+
   useEffect(() => {
     console.log("🔍 DEBUG StudentCommunication Data:", {
       dataLoading,
@@ -133,8 +132,6 @@ export default function StudentCommunication() {
     });
   }, [dataLoading, dataError, students, classes, parents, teachers]);
 
-
-
   const {
     notifyConversationCreated,
     notifyAnnouncementSent,
@@ -143,165 +140,107 @@ export default function StudentCommunication() {
     notifyMessageError,
   } = useChatNotifications();
 
+  // CORRIGÉ: Utilisation du hook useStudentChat
   const {
     rooms,
     selectedRoom,
     setSelectedRoom,
+    deselectRoom,
+    messages,
     loading: roomsLoading,
     error: roomsError,
-    createRoom,
-  } = useChatRooms(currentUserId, accessToken, tenantDomain);
-
-  const {
-    messages,
-    loading: messagesLoading,
     sendMessage,
-    fetchMessages,
-  } = useChatMessages(selectedRoom?.id || null, accessToken, tenantDomain);
+  } = useStudentChat(currentUserId, accessToken, tenantDomain);
 
   const setIsTyping = (_value?: boolean) => {};
 
+  const cleanRoomName = (name: string): string => {
+    if (!name) return "Unnamed Group";
+    let clean = name.trim();
+    clean = clean.replace(/^(Classe|Class)\s*/i, "");
+    return `Class ${clean}`;
+  };
 
-const cleanRoomName = (name: string): string => {
-  if (!name) return "Unnamed Group";
-  let clean = name.trim();
-  clean = clean.replace(/^(Classe|Class)\s*/i, "");
-  return `Class ${clean}`;
-};
+  const conversations: Conversation[] = useMemo(() => {
+    return rooms.map((room) => {
+      const isGroup = room.is_group;
+      let conversationType: "individual" | "class" | "announcement" | "parent" = "individual";
+      let displayName = "Conversation";
 
-const conversations: Conversation[] = useMemo(() => {
-  return rooms.map((room) => {
-    const isGroup = room.is_group;
-    let conversationType: "individual" | "class" | "announcement" | "parent" = "individual";
-    let displayName = "Conversation";
+      if (isGroup) {
+        if (room.room_type === "class") {
+          conversationType = "class";
+          displayName = `Group: ${room.name}`;
+        } else if (room.room_type === "announcement") {
+          conversationType = "announcement";
+          displayName = `Group Announcement: ${room.name}`;
+        } else if (room.room_type === "parent") {
+          conversationType = "parent";
+          displayName = `Parent Group: ${room.name}`;
+        } else {
+          conversationType = "class";
+          displayName = `Group: ${room.name}`;
+        }
+      } else {
+        conversationType = "individual";
+        displayName =
+          room.participants.find(
+            (p) => p.id.toString() !== currentUserId?.toString()
+          )?.name ||
+          room.participants[0]?.name ||
+          "Unknown User";
+      }
 
-   if (isGroup) {
-  if (room.room_type === "class") {
-    conversationType = "class";
-    displayName = `Group: ${room.name}`;
-  } else if (room.room_type === "announcement") {
-    conversationType = "announcement";
-    displayName = `Group Announcement: ${room.name}`;
-  } else if (room.room_type === "parent") {
-    conversationType = "parent";
-    displayName = `Parent Group: ${room.name}`;
-  } else {
-    conversationType = "class";
-    displayName = `Group: ${room.name}`;
-  }
-}
- else {
-      conversationType = "individual";
-      displayName =
-        room.participants.find(
-          (p) => p.id.toString() !== currentUserId?.toString()
-        )?.name ||
-        room.participants[0]?.name ||
-        "Unknown User";
-    }
-
-    return {
-      id: room.id.toString(),
-      type: conversationType,
-      participants: room.participants.map((p) => ({
-        id: p.id.toString(),
-        name: p.name,
-        avatar: p.avatar || "/assets/images/general/student.png",
-        role:
-          p.role === "admin"
-            ? "teacher"
-            : (p.role as "teacher" | "student" | "parent"),
-      })),
-      displayName,
-      lastMessage: room.last_message
-        ? {
-            id: room.last_message.uuid.toString(),
-            sender: {
-              id: room.last_message.sender_info.id.toString(),
-              name: room.last_message.sender_info.name,
-              avatar:
-                room.last_message.sender_info.avatar ||
-                "/assets/images/general/student.png",
-              role:
-                room.last_message.sender_info.role === "admin"
-                  ? "teacher"
-                  : (room.last_message.sender_info.role as
-                      | "teacher"
-                      | "student"
-                      | "parent"),
+      return {
+        id: room.id.toString(),
+        type: conversationType,
+        participants: room.participants.map((p) => ({
+          id: p.id.toString(),
+          name: p.name,
+          avatar: p.avatar || "/assets/images/general/student.png",
+          role:
+            p.role === "admin"
+              ? "teacher"
+              : (p.role as "teacher" | "student" | "parent"),
+        })),
+        displayName,
+        lastMessage: room.last_message
+          ? {
+              id: room.last_message.uuid.toString(),
+              sender: {
+                id: room.last_message.sender_info.id.toString(),
+                name: room.last_message.sender_info.name,
+                avatar:
+                  room.last_message.sender_info.avatar ||
+                  "/assets/images/general/student.png",
+                role:
+                  room.last_message.sender_info.role === "admin"
+                    ? "teacher"
+                    : (room.last_message.sender_info.role as
+                        | "teacher"
+                        | "student"
+                        | "parent"),
+              },
+              content: room.last_message.content,
+              timestamp: new Date(
+                room.last_message.created_at
+              ).toLocaleTimeString("fr-FR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              read: room.last_message.status !== "sent",
+            }
+          : {
+              id: "",
+              sender: { id: "", name: "", avatar: "", role: "student" },
+              content: "Aucun message",
+              timestamp: "",
+              read: true,
             },
-            content: room.last_message.content,
-            timestamp: new Date(
-              room.last_message.created_at
-            ).toLocaleTimeString("fr-FR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            read: room.last_message.status !== "sent",
-          }
-        : {
-            id: "",
-            sender: { id: "", name: "", avatar: "", role: "student" },
-            content: "Aucun message",
-            timestamp: "",
-            read: true,
-          },
-      unreadCount: room.unread_count,
-    };
-  });
-}, [rooms, currentUserId]);
-
-
-useEffect(() => {
-  console.log("🔍 DEBUG Communication Data:", {
-    students: students?.map(s => ({ id: s.id, name: s.name })),
-    parents: parents?.map(p => ({ id: p.id, name: p.name })),
-    teachers: teachers?.map(t => ({ id: t.id, name: t.name })),
-    selectedRecipients
-  });
-}, [students, parents, teachers, selectedRecipients]);
-
-const chatMessages: Message[] = useMemo(() => {
-  // 🔎 filtrer uniquement les messages qui mentionnent l'étudiant
-  const filtered = messages.filter((msg) => {
-    // Cas 1: l'API fournit une clé "mentions"
-    if (msg.extra_data?.mentions) {
-      return msg.extra_data.mentions.includes(currentUserId);
-    }
-
-    // Cas 2: détection dans le texte du contenu
-    const lowerContent = msg.content.toLowerCase();
-    const student = students.find((s) => s.id.toString() === currentUserId?.toString());
-    if (student) {
-      return (
-        lowerContent.includes(`@${student.name.toLowerCase()}`) ||
-        lowerContent.includes(student.name.toLowerCase())
-      );
-    }
-
-    return false;
-  });
-
-  return filtered.map((msg) => ({
-    id: msg.uuid.toString(),
-    sender: {
-      id: msg.sender_info.id.toString(),
-      name: msg.sender_info.name,
-      avatar: msg.sender_info.avatar || "/assets/images/general/student.png",
-      role:
-        msg.sender_info.role === "admin"
-          ? "teacher"
-          : (msg.sender_info.role as "teacher" | "student" | "parent"),
-    },
-    content: msg.content,
-    timestamp: new Date(msg.created_at).toLocaleTimeString("fr-FR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-    read: msg.status !== "sent",
-  }));
-}, [messages, currentUserId, students]);
-
+        unreadCount: room.unread_count,
+      };
+    });
+  }, [rooms, currentUserId]);
 
   // const chatMessages: Message[] = useMemo(() => {
   //   return messages.map((msg) => ({
@@ -310,7 +249,10 @@ const chatMessages: Message[] = useMemo(() => {
   //       id: msg.sender_info.id.toString(),
   //       name: msg.sender_info.name,
   //       avatar: msg.sender_info.avatar || "/assets/images/general/student.png",
-  //       role: msg.sender_info.role === "admin" ? "teacher" : (msg.sender_info.role as "teacher" | "student" | "parent"),
+  //       role:
+  //         msg.sender_info.role === "admin"
+  //           ? "teacher"
+  //           : (msg.sender_info.role as "teacher" | "student" | "parent"),
   //     },
   //     content: msg.content,
   //     timestamp: new Date(msg.created_at).toLocaleTimeString("fr-FR", {
@@ -320,7 +262,41 @@ const chatMessages: Message[] = useMemo(() => {
   //     read: msg.status !== "sent",
   //   }));
   // }, [messages]);
-
+const chatMessages: Message[] = useMemo(() => {
+  console.log("🔍 DEBUG messages raw:", messages);
+  
+  const formattedMessages = messages.map((msg) => {
+    const formatted = {
+      id: msg.uuid.toString(),
+      sender: {
+        id: msg.sender_info.id.toString(),
+        name: msg.sender_info.name,
+        avatar: msg.sender_info.avatar || "/assets/images/general/student.png",
+        role:
+          msg.sender_info.role === "admin"
+            ? "teacher"
+            : (msg.sender_info.role as "teacher" | "student" | "parent"),
+      },
+      content: msg.content,
+      timestamp: new Date(msg.created_at).toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      read: msg.status !== "sent",
+    };
+    
+    console.log("🔍 DEBUG message mapping:", {
+      raw: msg,
+      formatted: formatted,
+      currentUserId,
+      isCurrentUser: formatted.sender.id === currentUserId?.toString()
+    });
+    
+    return formatted;
+  });
+  
+  return formattedMessages;
+}, [messages, currentUserId]);
   const selectedConversation = useMemo(() => {
     return selectedRoom
       ? conversations.find((c) => c.id === selectedRoom.id.toString()) || null
@@ -368,175 +344,18 @@ const chatMessages: Message[] = useMemo(() => {
     }
   };
 
-const handleCreateConversation = async () => {
-    console.log("🎯 Creating conversation with recipients:", {
-    selectedRecipients,
-    recipientType,
-    students: students.filter(s => selectedRecipients.includes(s.id)),
-    classes: classes.filter(c => selectedRecipients.includes(c.id)),
-    parents: parents.filter(p => selectedRecipients.includes(p.id))
-  });
-  if (selectedRecipients.length === 0 || isCreatingConversation) return;
-
-  setIsCreatingConversation(true);
-
-  try {
-    let conversationName = "";
-
-    if (recipientType === "student") {
-      const selectedStudentNames = students
-        .filter((student) => selectedRecipients.includes(student.id))
-        .map((student) => student.name);
-      conversationName =
-        selectedStudentNames.length === 1
-          ? `Conversation avec ${selectedStudentNames[0]}`
-          : `Conversation avec ${selectedStudentNames.length} students`;
-    } else if (recipientType === "class") {
-      const selectedClassNames = classes
-        .filter((cls) => selectedRecipients.includes(cls.id))
-        .map((cls) => cls.name);
-      conversationName =
-        selectedClassNames.length === 1
-          ? `Classe ${selectedClassNames[0]}`
-          : `${selectedClassNames.length} classes`;
-    } else if (recipientType === "parent") {
-      const selectedParentNames = parents
-        .filter((parent) => selectedRecipients.includes(parent.id))
-        .map((parent) => parent.name);
-      conversationName =
-        selectedParentNames.length === 1
-          ? `Conversation avec ${selectedParentNames[0]}`
-          : `Conversation avec ${selectedParentNames.length} parents`;
-    }
-
-    // 🚀 Correction : on met isGroup=true si c’est une classe ou plusieurs participants
-    const isGroupChat =
-      recipientType === "class" || selectedRecipients.length > 1;
-
-    const newRoom = await createRoom(
-      conversationName,
-      selectedRecipients.map((id) => parseInt(id)),
-      isGroupChat, // true si c’est une classe
-      newMessage.trim() || undefined
-    );
-
-    if (newRoom) {
-      setSelectedRoom(newRoom);
-      await fetchMessages(); // recharge messages
-      setNewMessage("");
-      notifyConversationCreated(conversationName);
-    }
-
+  // CORRIGÉ: Désactiver la création de conversation pour les étudiants
+  const handleCreateConversation = async () => {
+    notifyCreationError("conversation");
     setComposeDialogOpen(false);
     setSelectedRecipients([]);
-  } catch (error) {
-    console.error("Erreur lors de la création de la conversation:", error);
-    notifyCreationError("conversation");
-  } finally {
-    setIsCreatingConversation(false);
-  }
-};
+  };
 
-
-
-  useEffect(() => {
-  if (selectedRoom) {
-    console.log("🔄 Conversation sélectionnée, rechargement des messages...");
-    // Les messages se rechargent automatiquement via useChatMessages
-  }
-  }, [selectedRoom]);
-
-
-  // Dans StudentCommunication.tsx
-const debugFindUserMappings = async () => {
-  console.log("🔍 DÉBUT - Recherche des mappings utilisateurs...");
-
-  // 1. Afficher tous les utilisateurs de useCommunicationData
-  console.log("📊 Utilisateurs de useCommunicationData:", 
-    students.map(s => ({ id: s.id, name: s.name }))
-  );
-
-  // 2. Analyser les rooms existantes pour trouver les vrais IDs Chat
-  console.log("🏠 Rooms existantes et leurs participants:");
-  rooms.forEach(room => {
-    console.log(`Room: ${room.name} (ID: ${room.id})`);
-    room.participants.forEach(participant => {
-      console.log(`  - ${participant.name} (Chat ID: ${participant.id})`);
-    });
-  });
-
-  // 3. Essayer de trouver Angella dans les rooms existantes
-  const angellaInRooms = rooms.flatMap(room => 
-    room.participants.filter(p => 
-      p.name.toLowerCase().includes('angella') || 
-      p.name.toLowerCase().includes('mbumba')
-    )
-  );
-  
-  console.log("🎯 Angella trouvée dans les rooms:", angellaInRooms);
-
-  // 4. Proposer un mapping basé sur l'analyse
-  console.log("💡 MAPPING PROPOSÉ:");
-  students.forEach(student => {
-    const foundInRooms = rooms.flatMap(room => 
-      room.participants.filter(p => 
-        p.name.toLowerCase().includes(student.name.toLowerCase().split(' ')[0]) ||
-        student.name.toLowerCase().includes(p.name.toLowerCase().split(' ')[0])
-      )
-    );
-    
-    if (foundInRooms.length > 0) {
-      console.log(`  ${student.name} (Comm ID: ${student.id}) → ${foundInRooms[0].name} (Chat ID: ${foundInRooms[0].id})`);
-    }
-  });
-};
-
-// Appelez cette fonction dans un useEffect
-useEffect(() => {
-  if (students.length > 0 && rooms.length > 0) {
-    debugFindUserMappings();
-  }
-}, [students, rooms]);
-
+  // CORRIGÉ: Désactiver la création d'annonces pour les étudiants
   const handleCreateAnnouncement = async () => {
-    if (!newMessage.trim() || selectedRecipients.length === 0 || isCreatingAnnouncement)
-      return;
-
-    setIsCreatingAnnouncement(true);
-
-    try {
-      const selectedClassNames = classes
-        .filter((cls) => selectedRecipients.includes(cls.id))
-        .map((cls) => cls.name);
-
-      const announcementName =
-        selectedClassNames.length === 1
-          ? `Annonce - ${selectedClassNames[0]}`
-          : `Annonce - ${selectedClassNames.length} classes`;
-
-      const newRoom = await createRoom(announcementName);
-
-      if (newRoom && selectedRoom) {
-        setTimeout(async () => {
-          try {
-            await sendMessage(newMessage.trim());
-            setNewMessage("");
-          } catch (error) {
-            console.error("Erreur lors de l'envoi du message d'annonce:", error);
-          }
-        }, 500);
-      }
-
-      setAnnounceDialogOpen(false);
-      setSelectedRecipients([]);
-      setNewMessage("");
-      notifyAnnouncementSent(selectedRecipients.length);
-    } catch (error) {
-      console.error("Erreur lors de la création de l'annonce:", error);
-      notifyCreationError("announcement");
-    } finally {
-      setIsCreatingAnnouncement(false);
-    }
+    notifyCreationError("announcement");
+    setAnnounceDialogOpen(false);
+    setSelectedRecipients([]);
   };
 
   if (dataError) {
@@ -565,7 +384,7 @@ useEffect(() => {
   return (
     <div>
       <section className="flex flex-col gap-4 w-full">
-        {/* Header */}
+        {/* Header - Masquer les boutons pour les étudiants */}
         <div className="flex justify-between items-center bg-gradient-to-r from-blue-600 via-purple-500 to-pink-500 px-6 py-5 rounded-xl shadow-lg overflow-hidden relative animate-fade-in">
           <div className="absolute inset-0 bg-[url('/assets/images/bg.png')] bg-cover bg-center opacity-10"></div>
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 via-purple-500/80 to-pink-500/80"></div>
@@ -576,486 +395,16 @@ useEffect(() => {
             </div>
             <div>
               <PageTitleH1
-                title="Communication Center"
+                title="Student Communication"
                 className="text-white font-bold"
               />
               <p className="text-blue-100 text-sm mt-1">
-                Connect with students, parents & colleagues
+                Connect with teachers and classmates
               </p>
             </div>
           </div>
 
-          <div className="flex gap-3 relative z-10">
-            <Dialog
-              open={composeDialogOpen}
-              onOpenChange={setComposeDialogOpen}
-            >
-              <DialogTrigger asChild>
-                <Button className="bg-white text-blue-600 hover:bg-blue-50 shadow-md border border-white/30 font-medium">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  New Message
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px] border-0 shadow-2xl bg-gradient-to-b from-white to-blue-50/50">
-                <DialogHeader className="pb-2 border-b">
-                  <DialogTitle className="text-xl font-semibold text-blue-700 flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5" />
-                    New Message
-                  </DialogTitle>
-                </DialogHeader>
-
-                <div className="py-4 space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Send to:</label>
-                    <div className="flex gap-2">
-                      <Button
-                        variant={
-                          recipientType === "student" ? "default" : "outline"
-                        }
-                        size="sm"
-                        onClick={() => setRecipientType("student")}
-                      >
-                        <User className="h-4 w-4 mr-1" />
-                        Student
-                      </Button>
-                      <Button
-                        variant={
-                          recipientType === "class" ? "default" : "outline"
-                        }
-                        size="sm"
-                        onClick={() => setRecipientType("class")}
-                      >
-                        <Users className="h-4 w-4 mr-1" />
-                        Class
-                      </Button>
-                      <Button
-                        variant={
-                          recipientType === "parent" ? "default" : "outline"
-                        }
-                        size="sm"
-                        onClick={() => setRecipientType("parent")}
-                      >
-                        <User className="h-4 w-4 mr-1" />
-                        Parent
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    {recipientType === "student" && (
-                      <div>
-                        <label className="text-sm font-medium">
-                          Select Students:
-                        </label>
-                        <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                          {dataLoading ? (
-                            <div className="text-center py-4">
-                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
-                              <p className="text-sm text-muted-foreground mt-2">
-                                Loading students...
-                              </p>
-                            </div>
-                          ) : dataError ? (
-                            <div className="text-center py-4">
-                              <p className="text-sm text-red-500 mb-2">
-                                Error loading students: {dataError}
-                              </p>
-                              <Button
-                                onClick={refetchData}
-                                size="sm"
-                                variant="outline"
-                              >
-                                Retry
-                              </Button>
-                            </div>
-                          ) : students.length === 0 ? (
-                            <p className="text-sm text-muted-foreground text-center py-4">
-                              No students available
-                            </p>
-                          ) : (
-                            students
-                              .filter(
-                                (student) =>
-                                  student && student.id && student.name
-                              ) // Filter out invalid students
-                              .map((student) => (
-                                <div
-                                  key={student.id}
-                                  className="flex items-center space-x-2 py-1"
-                                >
-                                  <Checkbox
-                                    id={student.id}
-                                    checked={selectedRecipients.includes(
-                                      student.id
-                                    )}
-                                    onCheckedChange={(checked) => {
-                                      if (checked) {
-                                        setSelectedRecipients([
-                                          ...selectedRecipients,
-                                          student.id,
-                                        ]);
-                                      } else {
-                                        setSelectedRecipients(
-                                          selectedRecipients.filter(
-                                            (id) => id !== student.id
-                                          )
-                                        );
-                                      }
-                                    }}
-                                  />
-                                  <label
-                                    htmlFor={student.id}
-                                    className="text-sm cursor-pointer flex-1"
-                                  >
-                                    {student.name}{" "}
-                                    <span className="text-muted-foreground">
-                                      ({student.class})
-                                    </span>
-                                  </label>
-                                </div>
-                              ))
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {recipientType === "class" && (
-                      <div>
-                        <label className="text-sm font-medium">
-                          Select Classes:
-                        </label>
-                        <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                          {dataLoading ? (
-                            <div className="text-center py-4">
-                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
-                              <p className="text-sm text-muted-foreground mt-2">
-                                Loading classes...
-                              </p>
-                            </div>
-                          ) : dataError ? (
-                            <div className="text-center py-4">
-                              <p className="text-sm text-red-500 mb-2">
-                                Error loading classes: {dataError}
-                              </p>
-                              <Button
-                                onClick={refetchData}
-                                size="sm"
-                                variant="outline"
-                              >
-                                Retry
-                              </Button>
-                            </div>
-                          ) : classes.length === 0 ? (
-                            <p className="text-sm text-muted-foreground text-center py-4">
-                              No classes available
-                            </p>
-                          ) : (
-                            classes
-                              .filter((cls) => cls && cls.id && cls.name) // Filter out invalid classes
-                              .map((cls) => (
-                                <div
-                                  key={cls.id}
-                                  className="flex items-center space-x-2 py-1"
-                                >
-                                  <Checkbox
-                                    id={cls.id}
-                                    checked={selectedRecipients.includes(
-                                      cls.id
-                                    )}
-                                    onCheckedChange={(checked) => {
-                                      if (checked) {
-                                        setSelectedRecipients([
-                                          ...selectedRecipients,
-                                          cls.id,
-                                        ]);
-                                      } else {
-                                        setSelectedRecipients(
-                                          selectedRecipients.filter(
-                                            (id) => id !== cls.id
-                                          )
-                                        );
-                                      }
-                                    }}
-                                  />
-                                  <label
-                                    htmlFor={cls.id}
-                                    className="text-sm cursor-pointer flex-1"
-                                  >
-                                    {cls.name}
-                                  </label>
-                                </div>
-                              ))
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {recipientType === "parent" && (
-                      <div>
-                        <label className="text-sm font-medium">
-                          Select Parents:
-                        </label>
-                        <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                          {dataLoading ? (
-                            <div className="text-center py-4">
-                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
-                              <p className="text-sm text-muted-foreground mt-2">
-                                Loading parents...
-                              </p>
-                            </div>
-                          ) : parents.length === 0 ? (
-                            <p className="text-sm text-muted-foreground text-center py-4">
-                              No parents available
-                            </p>
-                          ) : (
-                            parents.map((parent) => (
-                              <div
-                                key={parent?.id || Math.random()}
-                                className="flex items-center space-x-2 py-1"
-                              >
-                                <Checkbox
-                                  id={parent?.id || `parent-${Math.random()}`}
-                                  checked={selectedRecipients.includes(
-                                    parent?.id || ""
-                                  )}
-                                  onCheckedChange={(checked) => {
-                                    if (checked && parent?.id) {
-                                      setSelectedRecipients([
-                                        ...selectedRecipients,
-                                        parent.id,
-                                      ]);
-                                    } else if (parent?.id) {
-                                      setSelectedRecipients(
-                                        selectedRecipients.filter(
-                                          (id) => id !== parent.id
-                                        )
-                                      );
-                                    }
-                                  }}
-                                />
-                                <label
-                                  htmlFor={
-                                    parent?.id || `parent-${Math.random()}`
-                                  }
-                                  className="text-sm cursor-pointer flex-1"
-                                >
-                                  {parent?.name || "Unknown Parent"}{" "}
-                                  <span className="text-muted-foreground">
-                                    (Parent of{" "}
-                                    {parent?.student || "Unknown Student"})
-                                  </span>
-                                </label>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Message:</label>
-                    <Textarea
-                      placeholder="Type your message here..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      className="min-h-[100px]"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm">
-                      <Paperclip className="h-4 w-4 mr-1" />
-                      Attach File
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      Schedule
-                    </Button>
-                  </div>
-                </div>
-
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => setComposeDialogOpen(false)}
-                    disabled={isCreatingConversation}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleCreateConversation}
-                    disabled={
-                      isCreatingConversation || selectedRecipients.length === 0
-                    }
-                  >
-                    {isCreatingConversation ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Creating...
-                      </>
-                    ) : (
-                      "Send Message"
-                    )}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog
-              open={announceDialogOpen}
-              onOpenChange={setAnnounceDialogOpen}
-            >
-              <DialogTrigger asChild>
-                <Button
-                  variant="secondary"
-                  className="bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30 shadow-md font-medium"
-                >
-                  <Megaphone className="h-4 w-4 mr-2" />
-                  Announcement
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px] border-0 shadow-2xl bg-gradient-to-b from-white to-purple-50/50">
-                <DialogHeader className="pb-2 border-b">
-                  <DialogTitle className="text-xl font-semibold text-purple-700 flex items-center gap-2">
-                    <Megaphone className="h-5 w-5" />
-                    Create Announcement
-                  </DialogTitle>
-                </DialogHeader>
-
-                <div className="py-4 space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Announce to:</label>
-                    <Select defaultValue="all_classes">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select audience" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all_classes">
-                          All My Classes
-                        </SelectItem>
-                        <SelectItem value="all_parents">All Parents</SelectItem>
-                        <SelectItem value="specific">
-                          Specific Classes
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      Select Classes:
-                    </label>
-                    <div className="mt-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                      {dataLoading ? (
-                        <div className="text-center py-4">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
-                          <p className="text-sm text-muted-foreground mt-2">
-                            Loading classes...
-                          </p>
-                        </div>
-                      ) : classes.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-4">
-                          No classes available
-                        </p>
-                      ) : (
-                        classes.map((cls) => (
-                          <div
-                            key={cls?.id || Math.random()}
-                            className="flex items-center space-x-2 py-1"
-                          >
-                            <Checkbox
-                              id={`announce-${cls?.id || Math.random()}`}
-                              checked={selectedRecipients.includes(
-                                cls?.id || ""
-                              )}
-                              onCheckedChange={(checked) => {
-                                if (checked && cls?.id) {
-                                  setSelectedRecipients([
-                                    ...selectedRecipients,
-                                    cls.id,
-                                  ]);
-                                } else if (cls?.id) {
-                                  setSelectedRecipients(
-                                    selectedRecipients.filter(
-                                      (id) => id !== cls.id
-                                    )
-                                  );
-                                }
-                              }}
-                            />
-                            <label
-                              htmlFor={`announce-${cls?.id || Math.random()}`}
-                              className="text-sm cursor-pointer flex-1"
-                            >
-                              {cls?.name || "Unknown Class"}
-                            </label>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      Announcement Title:
-                    </label>
-                    <Input placeholder="Enter a title for your announcement" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      Announcement Content:
-                    </label>
-                    <Textarea
-                      placeholder="Type your announcement here..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      className="min-h-[100px]"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm">
-                      <Paperclip className="h-4 w-4 mr-1" />
-                      Attach File
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      Schedule
-                    </Button>
-                  </div>
-                </div>
-
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => setAnnounceDialogOpen(false)}
-                    disabled={isCreatingAnnouncement}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleCreateAnnouncement}
-                    disabled={
-                      isCreatingAnnouncement ||
-                      !newMessage.trim() ||
-                      selectedRecipients.length === 0
-                    }
-                  >
-                    {isCreatingAnnouncement ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Posting...
-                      </>
-                    ) : (
-                      "Post Announcement"
-                    )}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
+          {/* MASQUER les boutons New Message et Announcement pour les étudiants */}
         </div>
 
         {/* Main Content */}
@@ -1095,10 +444,10 @@ useEffect(() => {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="cursor-pointer">
-                    Students
+                    Teachers
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer">
-                    Parents
+                    Classmates
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer">
                     Classes
@@ -1110,6 +459,7 @@ useEffect(() => {
               </DropdownMenu>
             </div>
 
+            {/* TABS adaptés pour les étudiants */}
             <Tabs defaultValue="all" className="mb-4">
               <TabsList className="grid grid-cols-4 bg-blue-50/50 p-1 rounded-xl">
                 <TabsTrigger
@@ -1119,10 +469,10 @@ useEffect(() => {
                   All
                 </TabsTrigger>
                 <TabsTrigger
-                  value="students"
+                  value="teachers"
                   className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm"
                 >
-                  Students
+                  Teachers
                 </TabsTrigger>
                 <TabsTrigger
                   value="classes"
@@ -1131,10 +481,10 @@ useEffect(() => {
                   Classes
                 </TabsTrigger>
                 <TabsTrigger
-                  value="parents"
+                  value="classmates"
                   className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm"
                 >
-                  Parents
+                  Classmates
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -1144,27 +494,20 @@ useEffect(() => {
                 <div className="flex flex-col items-center justify-center h-full text-center p-4">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
                   <p className="text-muted-foreground">
-                    Chargement des conversations...
+                    Loading conversations...
                   </p>
                 </div>
               ) : roomsError ? (
                 <div className="flex flex-col items-center justify-center h-full text-center p-4">
                   <MessageSquare className="h-12 w-12 text-red-300 mb-2" />
-                  <p className="text-red-500 text-sm">Erreur: {roomsError}</p>
+                  <p className="text-red-500 text-sm">Error: {roomsError}</p>
                 </div>
               ) : filteredConversations.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center p-4">
                   <MessageSquare className="h-12 w-12 text-muted-foreground mb-2 opacity-20" />
                   <p className="text-muted-foreground">
-                    No conversations found
+                    No conversations yet
                   </p>
-                  <Button
-                    variant="link"
-                    className="mt-2"
-                    onClick={() => setComposeDialogOpen(true)}
-                  >
-                    Start a new conversation
-                  </Button>
                 </div>
               ) : (
                 <div className="space-y-1">
@@ -1374,7 +717,7 @@ useEffect(() => {
                           <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => setSelectedRoom(null)}
+                            onClick={() => deselectRoom()}
                             className="rounded-full border-blue-100 hover:bg-blue-50 ml-2"
                           >
                             <X className="h-4 w-4 text-gray-500" />
@@ -1388,134 +731,143 @@ useEffect(() => {
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto py-1 space-y-4 px-2 mb-1">
-                  {messagesLoading ? (
+                  {roomsLoading ? (
                     <div className="flex justify-center items-center h-full">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                     </div>
                   ) : chatMessages.length === 0 ? (
                     <div className="flex justify-center items-center h-full text-gray-500">
-                      <p>Aucun message dans cette conversation</p>
+                      <p>No messages in this conversation</p>
                     </div>
                   ) : (
                     <>
-                      {chatMessages.map((message) => (
-                        <div
-                          key={message.id}
-                          className={`flex gap-3 max-w-[85%] animate-fade-in ${
-                            message.sender.role === "teacher"
-                              ? "ml-auto flex-row-reverse"
-                              : ""
-                          }`}
-                        >
-                          <Avatar
-                            className={cn(
-                              "h-9 w-9 mt-1 rounded-xl border-2 shadow-sm flex-shrink-0",
-                              message.sender.role === "teacher"
-                                ? "border-blue-200 bg-blue-50"
-                                : "border-blue-100"
-                            )}
-                          >
-                            <AvatarImage
-                              src={message.sender.avatar}
-                              alt={message.sender.name}
-                              className="object-cover rounded-lg"
-                            />
-                            <AvatarFallback className="rounded-lg">
-                              {message.sender.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-
+                      {chatMessages.map((message) => {
+                        // CORRECTION : Vérifier si c'est l'utilisateur courant
+                        const isCurrentUser = message.sender.id.toString() === currentUserId?.toString();
+                        
+                        return (
                           <div
-                            className={cn(
-                              "rounded-2xl p-3 shadow-sm",
-                              message.sender.role === "teacher"
-                                ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white mr-0"
-                                : "bg-gradient-to-br from-gray-50 to-blue-50 border border-blue-100"
-                            )}
+                            key={message.id}
+                            className={`flex gap-3 max-w-[85%] animate-fade-in ${
+                              isCurrentUser || message.sender.role === "teacher"
+                                ? "ml-auto flex-row-reverse"  // Student courant + teachers à droite
+                                : ""
+                            }`}
                           >
-                            <div className="flex justify-between items-center mb-1">
-                              <span
-                                className={cn(
-                                  "text-xs font-medium",
-                                  message.sender.role === "teacher"
-                                    ? "text-blue-100"
-                                    : "text-blue-700"
-                                )}
-                              >
-                                {message.sender.name}
-                              </span>
-                              <span
-                                className={cn(
-                                  "text-xs flex items-center gap-1",
-                                  message.sender.role === "teacher"
-                                    ? "text-blue-100"
-                                    : "text-blue-400"
-                                )}
-                              >
-                                {message.timestamp}
-                                {message.sender.role === "teacher" && (
-                                  <CheckCheck className="h-3 w-3 ml-1" />
-                                )}
-                              </span>
-                            </div>
-                            <p
+                            <Avatar
                               className={cn(
-                                "text-sm leading-relaxed",
-                                message.sender.role === "teacher"
-                                  ? "text-white"
-                                  : "text-gray-800"
+                                "h-9 w-9 mt-1 rounded-xl border-2 shadow-sm flex-shrink-0",
+                                isCurrentUser || message.sender.role === "teacher"
+                                  ? "border-blue-200 bg-blue-50"    // Style pour messages à droite
+                                  : "border-blue-100"               // Style pour messages à gauche
                               )}
                             >
-                              {message.content}
-                            </p>
+                              <AvatarImage
+                                src={message.sender.avatar}
+                                alt={message.sender.name}
+                                className="object-cover rounded-lg"
+                              />
+                              <AvatarFallback className="rounded-lg">
+                                {message.sender.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
 
-                            {message.attachments &&
-                              message.attachments.length > 0 && (
-                                <div
+                            <div
+                              className={cn(
+                                "rounded-2xl p-3 shadow-sm",
+                                isCurrentUser || message.sender.role === "teacher"
+                                  ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white mr-0"  // Bubble bleue
+                                  : "bg-gradient-to-br from-gray-50 to-blue-50 border border-blue-100 text-gray-800"  // Bubble grise
+                              )}
+                            >
+                              <div className="flex justify-between items-center mb-1">
+                                <span
                                   className={cn(
-                                    "mt-3 pt-2",
-                                    message.sender.role === "teacher"
-                                      ? "border-t border-white/20"
-                                      : "border-t border-blue-100"
+                                    "text-xs font-medium",
+                                    isCurrentUser || message.sender.role === "teacher"
+                                      ? "text-blue-100"
+                                      : "text-blue-700"
                                   )}
                                 >
-                                  {message.attachments.map((attachment, i) => (
-                                    <div
-                                      key={i}
-                                      className="flex items-center gap-1 text-xs mt-1"
-                                    >
-                                      <Paperclip
-                                        className={cn(
-                                          "h-3 w-3",
-                                          message.sender.role === "teacher"
-                                            ? "text-blue-100"
-                                            : "text-blue-500"
-                                        )}
-                                      />
-                                      <a
-                                        href={attachment.url}
-                                        className={cn(
-                                          "underline",
-                                          message.sender.role === "teacher"
-                                            ? "text-blue-100"
-                                            : "text-blue-600"
-                                        )}
-                                      >
-                                        {attachment.name}
-                                      </a>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                          </div>
-                        </div>
-                      ))}
+                                  {message.sender.name}
+                                  {message.sender.role === "teacher" && (
+                                    <span className="ml-2 text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                                      Teacher
+                                    </span>
+                                  )}
+                                  {isCurrentUser && (
+                                    <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                                      You
+                                    </span>
+                                  )}
+                                </span>
+                                <span
+                                  className={cn(
+                                    "text-xs flex items-center gap-1",
+                                    isCurrentUser || message.sender.role === "teacher"
+                                      ? "text-blue-100"
+                                      : "text-blue-400"
+                                  )}
+                                >
+                                  {message.timestamp}
+                                  {(isCurrentUser || message.sender.role === "teacher") && (
+                                    <CheckCheck className="h-3 w-3 ml-1" />
+                                  )}
+                                </span>
+                              </div>
+                              <p
+                                className={cn(
+                                  "text-sm leading-relaxed",
+                                  isCurrentUser || message.sender.role === "teacher"
+                                    ? "text-white"
+                                    : "text-gray-800"
+                                )}
+                              >
+                                {message.content}
+                              </p>
 
-                      {/* Indicateur de frappe (désactivé temporairement) */}
-                      {/* <TypingIndicatorComponent
-                        typing={typing}
-                        className="px-3 pb-2"
-                      /> */}
+                              {message.attachments &&
+                                message.attachments.length > 0 && (
+                                  <div
+                                    className={cn(
+                                      "mt-3 pt-2",
+                                      isCurrentUser || message.sender.role === "teacher"
+                                        ? "border-t border-white/20"
+                                        : "border-t border-blue-100"
+                                    )}
+                                  >
+                                    {message.attachments.map((attachment, i) => (
+                                      <div
+                                        key={i}
+                                        className="flex items-center gap-1 text-xs mt-1"
+                                      >
+                                        <Paperclip
+                                          className={cn(
+                                            "h-3 w-3",
+                                            isCurrentUser || message.sender.role === "teacher"
+                                              ? "text-blue-100"
+                                              : "text-blue-500"
+                                          )}
+                                        />
+                                        <a
+                                          href={attachment.url}
+                                          className={cn(
+                                            "underline",
+                                            isCurrentUser || message.sender.role === "teacher"
+                                              ? "text-blue-100 hover:text-white"
+                                              : "text-blue-600 hover:text-blue-800"
+                                          )}
+                                        >
+                                          {attachment.name}
+                                        </a>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </>
                   )}
                 </div>
@@ -1557,9 +909,9 @@ useEffect(() => {
                                 size="icon"
                                 className="rounded-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md h-9 w-9 flex-shrink-0"
                                 onClick={handleSendMessage}
-                                disabled={messagesLoading || !newMessage.trim()}
+                                disabled={roomsLoading || !newMessage.trim()}
                               >
-                                {messagesLoading ? (
+                                {roomsLoading ? (
                                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                                 ) : (
                                   <Send className="h-4 w-4 text-white" />
@@ -1586,34 +938,64 @@ useEffect(() => {
                   No Conversation Selected
                 </h3>
                 <p className="text-muted-foreground mb-6 max-w-md">
-                  Select a conversation from the sidebar or start a new one to
-                  begin messaging with students, parents, or entire classes.
+                  Select a conversation to view messages from your teachers and classmates.
                 </p>
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => setComposeDialogOpen(true)}
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md px-6"
-                  >
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    New Message
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setAnnounceDialogOpen(true)}
-                    className="border-blue-200 hover:bg-blue-50 shadow-sm px-6"
-                  >
-                    <Megaphone className="h-4 w-4 mr-2 text-blue-500" />
-                    Create Announcement
-                  </Button>
-                </div>
               </div>
             )}
           </Card>
         </div>
       </section>
 
-      {/* Debug Component - only shows in development */}
-      <DebugCommunicationData />
+      {/* Dialogs masqués ou adaptés pour les étudiants */}
+      <Dialog open={composeDialogOpen} onOpenChange={setComposeDialogOpen}>
+        <DialogContent className="sm:max-w-[500px] border-0 shadow-2xl bg-gradient-to-b from-white to-blue-50/50">
+          <DialogHeader className="pb-2 border-b">
+            <DialogTitle className="text-xl font-semibold text-blue-700 flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              View Conversations
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-8 text-center">
+            <MessageSquare className="h-12 w-12 text-blue-300 mx-auto mb-4" />
+            <p className="text-muted-foreground">
+              Students can only join existing conversations created by teachers.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setComposeDialogOpen(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={announceDialogOpen} onOpenChange={setAnnounceDialogOpen}>
+        <DialogContent className="sm:max-w-[500px] border-0 shadow-2xl bg-gradient-to-b from-white to-purple-50/50">
+          <DialogHeader className="pb-2 border-b">
+            <DialogTitle className="text-xl font-semibold text-purple-700 flex items-center gap-2">
+              <Megaphone className="h-5 w-5" />
+              View Announcements
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-8 text-center">
+            <Megaphone className="h-12 w-12 text-purple-300 mx-auto mb-4" />
+            <p className="text-muted-foreground">
+              Students can only view announcements created by teachers.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setAnnounceDialogOpen(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
