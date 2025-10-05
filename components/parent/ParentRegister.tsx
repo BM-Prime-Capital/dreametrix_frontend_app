@@ -4,7 +4,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Phone, User, Lock, Hash, AlertTriangle, Eye, EyeOff } from "lucide-react";
+import { Mail, Phone, User, Lock, Hash, AlertTriangle, Eye, EyeOff, Info } from "lucide-react";
 import DreaMetrixLogo from "../ui/dreametrix-logo";
 import { userPath } from "@/constants/userConstants";
 import { Input } from "../ui/input";
@@ -292,190 +292,208 @@ export default function ParentRegister() {
             </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* First Name */}
-              <div className="relative">
-                <div className={`relative overflow-hidden border ${formSubmitted && errors.firstName ? "border-red-500" : "border-gray-200"} rounded-lg`}>
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    <User size={20} />
-                  </div>
-                  <Input
-                    type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    placeholder="First Name"
-                    className="h-12 pl-10 rounded-lg"
-                    disabled={isLoading}
-                  />
+          <>
+            {/* Information Alert */}
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start">
+                <Info className="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+                <div>
+                  <p className="text-blue-800 text-sm font-medium">
+                    Before creating a parent account
+                  </p>
+                  <p className="text-blue-700 text-sm mt-1">
+                    You need the UUID of at least one student you are a parent of. 
+                    This UUID can be found in the student's profile menu.
+                  </p>
                 </div>
-                {formSubmitted && errors.firstName && renderErrorMessage("First name is required")}
-              </div>
-
-              {/* Last Name */}
-              <div className="relative">
-                <div className={`relative overflow-hidden border ${formSubmitted && errors.lastName ? "border-red-500" : "border-gray-200"} rounded-lg`}>
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    <User size={20} />
-                  </div>
-                  <Input
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    placeholder="Last Name"
-                    className="h-12 pl-10 rounded-lg"
-                    disabled={isLoading}
-                  />
-                </div>
-                {formSubmitted && errors.lastName && renderErrorMessage("Last name is required")}
-              </div>
-
-              {/* Email */}
-              <div className="relative">
-                <div className={`relative overflow-hidden border ${formSubmitted && errors.parentEmail ? "border-red-500" : "border-gray-200"} rounded-lg`}>
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    <Mail size={20} />
-                  </div>
-                  <Input
-                    type="email"
-                    name="parentEmail"
-                    value={formData.parentEmail}
-                    onChange={handleInputChange}
-                    placeholder="Email"
-                    className="h-12 pl-10 rounded-lg"
-                    disabled={isLoading}
-                  />
-                </div>
-                {formSubmitted && errors.parentEmail && renderErrorMessage("Email is required")}
-              </div>
-
-              {/* Phone */}
-              <div className="relative">
-                <div className={`relative overflow-hidden border ${formSubmitted && errors.phone ? "border-red-500" : "border-gray-200"} rounded-lg`}>
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    <Phone size={20} />
-                  </div>
-                  <Input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    placeholder="Phone Number"
-                    className="h-12 pl-10 rounded-lg"
-                    disabled={isLoading}
-                  />
-                </div>
-                {formSubmitted && errors.phone && renderErrorMessage("Phone number is required")}
-              </div>
-
-              {/* Student Code */}
-              <div className="relative md:col-span-2">
-                <div className={`relative overflow-hidden border ${formSubmitted && errors.studentCode ? "border-red-500" : "border-gray-200"} rounded-lg`}>
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    <Hash size={20} />
-                  </div>
-                  <Input
-                    type="text"
-                    name="studentCode"
-                    value={formData.studentCode}
-                    onChange={handleInputChange}
-                    placeholder="Student Code"
-                    className="h-12 pl-10 rounded-lg"
-                    disabled={isLoading}
-                  />
-                </div>
-                {formSubmitted && errors.studentCode && renderErrorMessage("Student code is required")}
-              </div>
-
-              {/* Password */}
-              <div className="relative">
-                <div className={`relative overflow-hidden border ${formSubmitted && errors.password ? "border-red-500" : "border-gray-200"} rounded-lg`}>
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    <Lock size={20} />
-                  </div>
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    placeholder="Password"
-                    className="h-12 pl-10 pr-10 rounded-lg"
-                    disabled={isLoading}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isLoading}
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-                {formSubmitted && errors.password && renderErrorMessage("Password is required")}
-                {formSubmitted && errors.passwordStrength && errors.passwordStrength.length > 0 && (
-                  <div className="mt-1 text-xs text-red-500">
-                    {errors.passwordStrength.map((error, index) => (
-                      <div key={index} className="flex items-center">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
-                        {error}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Confirm Password */}
-              <div className="relative">
-                <div className={`relative overflow-hidden border ${formSubmitted && errors.confirmPassword ? "border-red-500" : "border-gray-200"} rounded-lg`}>
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    <Lock size={20} />
-                  </div>
-                  <Input
-                    type={showConfirmPassword ? "text" : "password"}
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    placeholder="Confirm Password"
-                    className="h-12 pl-10 pr-10 rounded-lg"
-                    disabled={isLoading}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isLoading}
-                  >
-                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-                {formSubmitted && errors.confirmPassword && renderErrorMessage("Passwords do not match")}
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-3 rounded-lg
-                       transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1]
-                       focus:ring-offset-2 disabled:opacity-50 text-base font-semibold mt-6"
-            >
-              {isLoading ? "Creating Account..." : "Create Account"}
-            </button>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* First Name */}
+                <div className="relative">
+                  <div className={`relative overflow-hidden border ${formSubmitted && errors.firstName ? "border-red-500" : "border-gray-200"} rounded-lg`}>
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                      <User size={20} />
+                    </div>
+                    <Input
+                      type="text"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      placeholder="First Name"
+                      className="h-12 pl-10 rounded-lg"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {formSubmitted && errors.firstName && renderErrorMessage("First name is required")}
+                </div>
 
-            <div className="text-center mt-4">
-              <p className="text-gray-600">
-                Already have an account?{" "}
-                <Link
-                  href={userPath.LOGIN}
-                  className="text-[#1A73E8] hover:text-[#1453B8] font-medium"
-                >
-                  Login instead
-                </Link>
-              </p>
-            </div>
-          </form>
+                {/* Last Name */}
+                <div className="relative">
+                  <div className={`relative overflow-hidden border ${formSubmitted && errors.lastName ? "border-red-500" : "border-gray-200"} rounded-lg`}>
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                      <User size={20} />
+                    </div>
+                    <Input
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      placeholder="Last Name"
+                      className="h-12 pl-10 rounded-lg"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {formSubmitted && errors.lastName && renderErrorMessage("Last name is required")}
+                </div>
+
+                {/* Email */}
+                <div className="relative">
+                  <div className={`relative overflow-hidden border ${formSubmitted && errors.parentEmail ? "border-red-500" : "border-gray-200"} rounded-lg`}>
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                      <Mail size={20} />
+                    </div>
+                    <Input
+                      type="email"
+                      name="parentEmail"
+                      value={formData.parentEmail}
+                      onChange={handleInputChange}
+                      placeholder="Email"
+                      className="h-12 pl-10 rounded-lg"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {formSubmitted && errors.parentEmail && renderErrorMessage("Email is required")}
+                </div>
+
+                {/* Phone */}
+                <div className="relative">
+                  <div className={`relative overflow-hidden border ${formSubmitted && errors.phone ? "border-red-500" : "border-gray-200"} rounded-lg`}>
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                      <Phone size={20} />
+                    </div>
+                    <Input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="Phone Number"
+                      className="h-12 pl-10 rounded-lg"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {formSubmitted && errors.phone && renderErrorMessage("Phone number is required")}
+                </div>
+
+                {/* Student Code */}
+                <div className="relative md:col-span-2">
+                  <div className={`relative overflow-hidden border ${formSubmitted && errors.studentCode ? "border-red-500" : "border-gray-200"} rounded-lg`}>
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                      <Hash size={20} />
+                    </div>
+                    <Input
+                      type="text"
+                      name="studentCode"
+                      value={formData.studentCode}
+                      onChange={handleInputChange}
+                      placeholder="Student Code"
+                      className="h-12 pl-10 rounded-lg"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {formSubmitted && errors.studentCode && renderErrorMessage("Student code is required")}
+                </div>
+
+                {/* Password */}
+                <div className="relative">
+                  <div className={`relative overflow-hidden border ${formSubmitted && errors.password ? "border-red-500" : "border-gray-200"} rounded-lg`}>
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                      <Lock size={20} />
+                    </div>
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      placeholder="Password"
+                      className="h-12 pl-10 pr-10 rounded-lg"
+                      disabled={isLoading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={isLoading}
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                  {formSubmitted && errors.password && renderErrorMessage("Password is required")}
+                  {formSubmitted && errors.passwordStrength && errors.passwordStrength.length > 0 && (
+                    <div className="mt-1 text-xs text-red-500">
+                      {errors.passwordStrength.map((error, index) => (
+                        <div key={index} className="flex items-center">
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                          {error}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Confirm Password */}
+                <div className="relative">
+                  <div className={`relative overflow-hidden border ${formSubmitted && errors.confirmPassword ? "border-red-500" : "border-gray-200"} rounded-lg`}>
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                      <Lock size={20} />
+                    </div>
+                    <Input
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      placeholder="Confirm Password"
+                      className="h-12 pl-10 pr-10 rounded-lg"
+                      disabled={isLoading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={isLoading}
+                    >
+                      {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                  {formSubmitted && errors.confirmPassword && renderErrorMessage("Passwords do not match")}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-3 rounded-lg
+                         transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1]
+                         focus:ring-offset-2 disabled:opacity-50 text-base font-semibold mt-6"
+              >
+                {isLoading ? "Creating Account..." : "Create Account"}
+              </button>
+
+              <div className="text-center mt-4">
+                <p className="text-gray-600">
+                  Already have an account?{" "}
+                  <Link
+                    href={userPath.LOGIN}
+                    className="text-[#1A73E8] hover:text-[#1453B8] font-medium"
+                  >
+                    Login instead
+                  </Link>
+                </p>
+              </div>
+            </form>
+          </>
         )}
       </div>
     </div>
