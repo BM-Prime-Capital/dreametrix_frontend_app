@@ -24,6 +24,8 @@ import {
 import { getSeatingArrangements, updateSeatingArrangement, deactivateArrangementEvent } from "@/services/SeatingService";
 import { ClassSelector } from "../ui/class-selector";
 import { SeatingCondition } from "@/types";
+import { FaTrash, FaArchive } from "react-icons/fa";
+import { FaChevronDown, FaChevronRight } from "react-icons/fa";
 
 const DEFAULT_SEAT_COUNT = 64;
 
@@ -698,8 +700,8 @@ export default function Seating({
             onClick={() => setIsSeatingArrangementAuto(false)}
             className={`flex gap-3 items-center text-lg rounded-xl px-6 py-3 shadow-lg transition-all duration-300 ${
               !isSeatingArrangementAuto 
-                ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 shadow-purple-200"
-                : "bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 hover:from-purple-100 hover:to-purple-200 border border-purple-200"
+                ? "bg-gradient-to-r from-red-700 to-pink-800 text-white hover:from-red-800 hover:to-pink-900 shadow-pink-200"
+                : "bg-gradient-to-r from-red-100 to-pink-200 text-red-800 hover:from-red-200 hover:to-pink-300 border border-red-300"
             }`}
           >
             <Image
@@ -795,18 +797,14 @@ export default function Seating({
               <div className="flex gap-6">
                 <div className="w-[20%] flex flex-col gap-4 pr-6">
                   <button
-                    title="Toggle Students List"
+                    title={displayStudentsList ? "Collapse Students List" : "Expand Students List"}
                     className="flex justify-center items-center h-10 w-10 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 cursor-pointer"
                     onClick={() => setDisplayStudentsList(!displayStudentsList)}
                   >
                     {displayStudentsList ? (
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-                      </svg>
+                      <FaChevronDown className="w-5 h-5" />
                     ) : (
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-                      </svg>
+                      <FaChevronRight className="w-5 h-5" />
                     )}
                   </button>
 
@@ -829,30 +827,18 @@ export default function Seating({
                     <>
                       <Button
                         onClick={handleCleanAllSeats}
-                        className="flex mt-6 gap-3 items-center text-lg bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 rounded-xl px-6 py-3 shadow-lg transition-all duration-300 border border-red-200 font-medium"
+                        className="flex mt-6 gap-2 items-center text-sm bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 hover:from-orange-100 hover:to-orange-200 rounded-xl px-4 py-2 shadow-lg transition-all duration-300 border border-orange-200 font-medium"
                       >
-                        <Image
-                          src={teacherImages.delete}
-                          alt="clean"
-                          width={20}
-                          height={20}
-                          className="w-5 h-5"
-                        />
+                        <FaTrash className="w-4 h-4" />
                         <span>Clear All</span>
                       </Button>
 
                       <Button
-                        className="flex gap-3 items-center text-lg bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl px-6 py-3 shadow-lg transition-all duration-300 mt-4 font-medium"
+                        className="flex gap-2 items-center text-sm bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl px-4 py-2 shadow-lg transition-all duration-300 mt-4 font-medium"
                         onClick={() => handleDeactivateEvent(parseInt(currentArrangement.id))}
                         isLoading={isDeactivating}
                       >
-                        <Image
-                          src={teacherImages.delete}
-                          alt="delete"
-                          width={20}
-                          height={20}
-                          className="w-5 h-5"
-                        />
+                        <FaArchive className="w-4 h-4" />
                         <span>Deactivate</span>
                       </Button>
                     </>

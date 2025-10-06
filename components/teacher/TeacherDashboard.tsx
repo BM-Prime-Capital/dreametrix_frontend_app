@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+// import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import PageTitleH1 from "../ui/page-title-h1";
 import PageTitleH2 from "../ui/page-title-h2";
@@ -13,10 +13,12 @@ import { useList } from "@/hooks/useList";
 import { getClasses } from "@/services/ClassService";
 import { getAssignments } from "@/services/AssignmentService";
 import { MinusIcon, PlusIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function TeacherDashboard() {
   const [feedbackDuration, setFeedbackDuration] = useState<number>(2);
   const [newSubject, setNewSubject] = useState("");
+  const router = useRouter();
 
   const { list: classes } = useList(getClasses);
   const { list: assignments } = useList(getAssignments);
@@ -60,6 +62,30 @@ export default function TeacherDashboard() {
       setSubjects([...subjects, subject]);
       setNewSubject("");
     }
+  };
+
+  const handleCreateAssignment = () => {
+    router.push('/teacher/assignments?openModal=true');
+  };
+
+  const handleViewReports = () => {
+    router.push('/teacher/report_card');
+  };
+
+  const handleSendMessage = () => {
+    router.push('/teacher/communicate');
+  };
+
+  const handleScheduleEvent = () => {
+    router.push('/teacher/plan');
+  };
+
+  const handleTestPrep = () => {
+    router.push('/teacher/test_prep');
+  };
+
+  const handleGiveRewards = () => {
+    router.push('/teacher/rewards');
   };
 
   useEffect(() => {
@@ -221,14 +247,18 @@ export default function TeacherDashboard() {
             
             <div className="grid grid-cols-2 gap-4">
               {[
-                { icon: "📝", title: "Create Assignment", desc: "New homework or task" },
-                { icon: "📊", title: "View Reports", desc: "Student progress" },
-                { icon: "💬", title: "Send Message", desc: "Contact parents" },
-                { icon: "📅", title: "Schedule Event", desc: "Plan activities" },
-                { icon: "🎯", title: "Test Prep", desc: "Practice questions" },
-                { icon: "⭐", title: "Give Rewards", desc: "Student recognition" }
+                { icon: "📝", title: "Create Assignment", desc: "New homework or task", onClick: handleCreateAssignment },
+                { icon: "📊", title: "View Reports", desc: "Student progress", onClick: handleViewReports },
+                { icon: "💬", title: "Send Message", desc: "Contact parents", onClick: handleSendMessage },
+                { icon: "📅", title: "Schedule Event", desc: "Plan activities", onClick: handleScheduleEvent },
+                { icon: "🎯", title: "Test Prep", desc: "Practice questions", onClick: handleTestPrep },
+                { icon: "⭐", title: "Give Rewards", desc: "Student recognition", onClick: handleGiveRewards }
               ].map((action, index) => (
-                <button key={index} className="p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors text-left">
+                <button 
+                  key={index} 
+                  onClick={action.onClick}
+                  className="p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors text-left cursor-pointer"
+                >
                   <div className="text-2xl mb-2">{action.icon}</div>
                   <p className="font-medium text-gray-800 text-sm">{action.title}</p>
                   <p className="text-xs text-gray-600">{action.desc}</p>
@@ -239,7 +269,7 @@ export default function TeacherDashboard() {
         </div>
 
         {/* Settings - Simplified */}
-        <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-lg border-0">
+        {/* <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-lg border-0">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-gray-100 rounded-lg">
               <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -303,7 +333,7 @@ export default function TeacherDashboard() {
               </div>
             </div>
           </div>
-        </Card>
+        </Card> */}
       </div>
     </section>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { AssignmentsTable } from "./assignments-table";
 import { AddAssignmentDialog } from "./AddAssignmentDialog";
@@ -11,10 +11,24 @@ import PageTitleH1 from "../ui/page-title-h1";
 import { FileText, Clock, Target, Filter } from "lucide-react";
 import { Assignment } from "@/types";
 import {NotebookText} from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 export default function Assignments() {
   const [currentView, setCurrentView] = useState<'list' | 'detail'>('list');
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  const [shouldOpenModal, setShouldOpenModal] = useState(false);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const openModal = searchParams.get('openModal');
+    if (openModal === 'true') {
+      setShouldOpenModal(true);
+      // Clean up the URL parameter
+      const url = new URL(window.location.href);
+      url.searchParams.delete('openModal');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams]);
 
   const handleViewAssignment = (assignment: Assignment) => {
     setSelectedAssignment(assignment);
@@ -24,6 +38,10 @@ export default function Assignments() {
   const handleBackToList = () => {
     setCurrentView('list');
     setSelectedAssignment(null);
+  };
+
+  const handleModalClose = () => {
+    setShouldOpenModal(false);
   };
 
   if (currentView === 'detail' && selectedAssignment) {
@@ -50,7 +68,9 @@ export default function Assignments() {
       <div className="flex-1 mx-6 pb-8 space-y-6">
         {/* Action Bar */}
         <div className="flex justify-between items-center mt-2">
-          <AddAssignmentDialog />
+          <AddAssignmentDialog 
+            {...(shouldOpenModal && { open: shouldOpenModal, onOpenChange: handleModalClose })}
+          />
           <div className="flex items-center gap-4 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4" />
