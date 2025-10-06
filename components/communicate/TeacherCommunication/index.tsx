@@ -14,7 +14,7 @@ import { AnnounceDialog } from "./AnnounceDialog";
 import { Conversation, RecipientType } from "./types";
 import { localStorageKey } from "@/constants/global";
 
-export default function StudentCommunication() {
+export default function TeacherCommunication() {
   const [searchQuery, setSearchQuery] = useState("");
   // const [newMessage, setNewMessage] = useState("");
   const [composeMessage, setComposeMessage] = useState("");

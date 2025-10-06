@@ -20,18 +20,20 @@ import {
   Bell,
   Sparkles,
   TrendingUp,
-  Settings,
-  MessageCircle
+  ArrowLeft,
+  MoreVertical
 } from "lucide-react"
 import { useParents } from "@/hooks/useParents"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
 import { useState } from "react"
 import { confirmParentLink, rejectParentLink, requestUnlinkParent, unlinkParent } from "@/services/parent-service"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 export default function RelationshipPage() {
   const { accessToken, tenantDomain, isLoading: tokenLoading } = useRequestInfo();
   const [loadingActions, setLoadingActions] = useState<{ [key: string]: boolean }>({});
+  const router = useRouter();
   
   // Pagination state for linked parents
   const [currentPageLinked, setCurrentPageLinked] = useState(1);
@@ -256,343 +258,354 @@ export default function RelationshipPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      <section className="flex flex-col gap-6 w-full">
-        {/* Modern Header Section */}
-        <div className="bg-gradient-to-r from-[#25AAE1] via-[#25AAE1] to-[#1D8CB3] p-8 rounded-2xl shadow-xl">
-          <div className="flex flex-col md:flex-row items-center justify-between text-white">
-            <div className="flex items-center gap-6 mb-6 md:mb-0">
-              <div className="relative">
-                <Avatar className="h-20 w-20 border-4 border-white/30 shadow-xl">
-                  <AvatarFallback className="bg-white/20 text-white text-2xl font-bold">
-                    <Heart className="h-10 w-10" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#4CAF50] rounded-full flex items-center justify-center border-2 border-white">
-                  <Users className="h-4 w-4 text-white" />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold mb-2">Parent Relationships</h1>
-                <p className="text-white/90 text-lg">
-                  Manage your parent connections and requests
-                </p>
-                <div className="flex items-center gap-4 mt-3">
-                  <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
-                    <Users className="h-4 w-4" />
-                    <span className="text-sm">{linkedParents?.length || 0} Linked</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-sm">{pendingLinks?.length || 0} Pending</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-12 w-12 bg-white/10 hover:bg-white/20 text-white border-white/20 relative rounded-xl transition-all duration-300 hover:scale-110"
-              >
-                <Bell className="h-6 w-6" />
-                {pendingLinks?.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-[#FF5252] text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold">
-                    {pendingLinks.length}
-                  </span>
-                )}
-              </Button>
-              <Button
-                onClick={refetch}
-                disabled={loading}
-                variant="ghost"
-                size="icon"
-                className="h-12 w-12 bg-white/10 hover:bg-white/20 text-white border-white/20 rounded-xl transition-all duration-300 hover:scale-110"
-              >
-                <RefreshCw className={`h-6 w-6 ${loading ? 'animate-spin' : ''}`} />
-              </Button>
-            
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Header avec le même style que le dashboard */}
+      <div className="rounded-2xl p-8 mx-4 mt-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-2xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/20 p-3 rounded-full transition-all duration-200 backdrop-blur-sm"
+              onClick={() => router.back()}
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </Button>
+            <div>
+              <h1 className="text-4xl font-extrabold tracking-tight mb-2">
+                PARENT RELATIONSHIPS
+              </h1>
+              <p className="text-blue-100 text-lg opacity-90">
+                Manage your parent connections and requests
+              </p>
             </div>
           </div>
-        </div>
-
-        {/* Quick Stats Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="p-6 bg-gradient-to-br from-[#4CAF50] to-[#45A049] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/20 rounded-xl">
-                <Users className="h-8 w-8" />
-              </div>
-              <div>
-                <p className="text-white/90 text-sm font-medium">Linked Parents</p>
-                <p className="text-3xl font-bold">{linkedParents?.length || 0}</p>
-                <p className="text-white/70 text-xs">Active connections</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-gradient-to-br from-[#FF9800] to-[#F57C00] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/20 rounded-xl">
-                <Clock className="h-8 w-8" />
-              </div>
-              <div>
-                <p className="text-white/90 text-sm font-medium">Pending Requests</p>
-                <p className="text-3xl font-bold">{pendingLinks?.length || 0}</p>
-                <p className="text-white/70 text-xs">Awaiting approval</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-gradient-to-br from-[#25AAE1] to-[#1D8CB3] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/20 rounded-xl">
-                <Heart className="h-8 w-8" />
-              </div>
-              <div>
-                <p className="text-white/90 text-sm font-medium">Total Relationships</p>
-                <p className="text-3xl font-bold">{(linkedParents?.length || 0) + (pendingLinks?.length || 0)}</p>
-                <p className="text-white/70 text-xs">All connections</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-gradient-to-br from-[#9C27B0] to-[#7B1FA2] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/20 rounded-xl">
-                <TrendingUp className="h-8 w-8" />
-              </div>
-              <div>
-                <p className="text-white/90 text-sm font-medium">Status</p>
-                <p className="text-3xl font-bold">Active</p>
-                <p className="text-white/70 text-xs">Account verified</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Error Alert */}
-        {error && (
-          <Alert className="border-red-200 bg-red-50 rounded-2xl shadow-lg">
-            <AlertCircle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800">
-              {error}
-              <Button 
-                onClick={clearError} 
-                variant="ghost" 
-                size="sm" 
-                className="ml-2 text-red-600 hover:text-red-800"
-              >
-                Dismiss
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
-          {/* Linked Parents */}
-          <div className="space-y-6">
-            <Card className="p-8 shadow-xl border-0 bg-white rounded-2xl">
-              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] rounded-xl">
-                  <Users className="h-6 w-6 text-white" />
-                </div>
-                Linked Parents
-              </h2>
-              <p className="text-gray-600 mb-6">Parents who are connected to your account</p>
-
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
-                  <span className="ml-2 text-gray-600">Loading parents...</span>
-                </div>
-              ) : linkedParents?.length ? (
-                <>
-                  <div className="space-y-4">
-                    {paginateLinkedParents().map((parent) => (
-                      <Card key={parent.parent_id} className="p-6 border-0 bg-gradient-to-r from-green-50 to-blue-50 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] rounded-2xl">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 bg-gradient-to-br from-[#4CAF50] to-[#45A049] rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                              {parent.parent_full_name.split(' ').map(name => name.charAt(0)).join('').slice(0, 2)}
-                            </div>
-                            <div>
-                              <h3 className="text-xl font-bold text-gray-800 mb-1">{parent.parent_full_name}</h3>
-                              <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                                <User className="h-4 w-4" />
-                                Parent ID: {parent.parent_id}
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-gray-500">
-                                <CheckCircle className="h-4 w-4" />
-                                Relationship ID: {parent.relation_id}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <Badge className="bg-gradient-to-r from-[#4CAF50] to-[#45A049] text-white border-0 px-3 py-1 rounded-full shadow-lg">
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              Linked
-                            </Badge>
-                            <Button
-                              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
-                              size="sm"
-                              onClick={() => handleRequestUnlinkParent(parent.parent_id)}
-                              disabled={loadingActions[`unlink-${parent.parent_id}`]}
-                            >
-                              {loadingActions[`unlink-${parent.parent_id}`] ? (
-                                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                              ) : (
-                                <UserMinus className="h-4 w-4 mr-2" />
-                              )}
-                              Request Unlink
-                            </Button>
-                          </div>
-                        </div>
-                        
-                      </Card>
-                    ))}
-                  </div>
-                  
-                  <PaginationControls
-                    currentPage={currentPageLinked}
-                    totalPages={getTotalPagesLinked()}
-                    onPageChange={handleLinkedPageChange}
-                    totalItems={linkedParents.length}
-                    itemsPerPage={itemsPerPageLinked}
-                    itemName="linked parents"
-                  />
-                </>
-              
-              ) : (
-                <div className="text-center py-8">
-                  <User className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">No Parents Linked</h3>
-                  <p className="text-gray-500">You don't have any parents connected to your account yet.</p>
-                </div>
-              )}
-            </Card>
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16 border-4 border-white/30 shadow-2xl">
+              <AvatarFallback className="bg-white/20 text-xl font-bold text-white">
+                <Heart className="h-8 w-8" />
+              </AvatarFallback>
+            </Avatar>
           </div>
+        </div>
+      </div>
 
-          {/* Pending Requests */}
-          <div className="space-y-6">
-            <Card className="p-8 shadow-xl border-0 bg-white rounded-2xl">
-              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-r from-[#FF9800] to-[#F57C00] rounded-xl">
-                  <Bell className="h-6 w-6 text-white" />
+      <div className="p-4">
+        <div className="max-w-7xl mx-auto">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="p-6 rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-md">
+                  <Users className="h-6 w-6" />
                 </div>
-                Pending Requests
-              </h2>
-              <p className="text-gray-600 mb-6">Parents requesting to link with your account</p>
-
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <RefreshCw className="h-6 w-6 animate-spin text-orange-600" />
-                  <span className="ml-2 text-gray-600">Loading requests...</span>
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">{linkedParents?.length || 0}</p>
+                  <p className="text-sm text-gray-600 font-medium">Linked Parents</p>
                 </div>
-              ) : pendingLinks?.length ? (
-                <>
-                  <div className="space-y-4">
-                    {paginatePendingLinks().map((parent) => (
-                      <Card key={parent.parent_id} className="p-6 border-0 bg-gradient-to-r from-orange-50 to-yellow-50 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] rounded-2xl">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 bg-gradient-to-br from-[#FF9800] to-[#F57C00] rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                              {parent.parent_full_name.split(' ').map(name => name.charAt(0)).join('').slice(0, 2)}
-                            </div>
-                            <div>
-                              <h3 className="text-xl font-bold text-gray-800 mb-1">{parent.parent_full_name}</h3>
-                              <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                                <User className="h-4 w-4" />
-                                Parent ID: {parent.parent_id}
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-gray-500">
-                                <Clock className="h-4 w-4" />
-                                Pending link request
-                              </div>
-                            </div>
-                          </div>
-                          <Badge className="bg-gradient-to-r from-[#FF9800] to-[#F57C00] text-white border-0 px-3 py-1 rounded-full shadow-lg">
-                            <Clock className="h-4 w-4 mr-1" />
-                            Pending
-                          </Badge>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-3">
-                          <Button
-                            className="bg-gradient-to-r from-[#4CAF50] to-[#45A049] hover:from-[#45A049] hover:to-[#4CAF50] text-white border-0 rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
-                            onClick={() => handleConfirmLink(parent.parent_id)}
-                            disabled={loadingActions[`confirm-${parent.parent_id}`]}
-                          >
-                            {loadingActions[`confirm-${parent.parent_id}`] ? (
-                              <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                            ) : (
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                            )}
-                            Approve
-                          </Button>
-                          <Button
-                            className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
-                            onClick={() => handleRejectLink(parent.parent_id)}
-                            disabled={loadingActions[`reject-${parent.parent_id}`]}
-                          >
-                            {loadingActions[`reject-${parent.parent_id}`] ? (
-                              <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                            ) : (
-                              <XCircle className="h-4 w-4 mr-2" />
-                            )}
-                            Reject
-                          </Button>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                  
-                  <PaginationControls
-                    currentPage={currentPagePending}
-                    totalPages={getTotalPagesPending()}
-                    onPageChange={handlePendingPageChange}
-                    totalItems={pendingLinks.length}
-                    itemsPerPage={itemsPerPagePending}
-                    itemName="pending requests"
-                  />
-                </>
-              
-              ) : (
-                <div className="text-center py-8">
-                  <Bell className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">No Pending Requests</h3>
-                  <p className="text-gray-500">You don't have any pending parent link requests.</p>
-                </div>
-              )}
+              </div>
             </Card>
 
-            {/* Summary Card */}
-            <Card className="p-8 shadow-xl border-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-2xl">
-              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-r from-[#9C27B0] to-[#7B1FA2] rounded-xl">
-                  <Sparkles className="h-6 w-6 text-white" />
+            <Card className="p-6 rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-md">
+                  <Clock className="h-6 w-6" />
                 </div>
-                Relationship Summary
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-6 bg-white bg-opacity-70 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  <div className="text-3xl font-bold text-blue-600 mb-2">
-                    {linkedParents?.length || 0}
-                  </div>
-                  <div className="text-sm text-gray-600 font-medium">Linked Parents</div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">{pendingLinks?.length || 0}</p>
+                  <p className="text-sm text-gray-600 font-medium">Pending Requests</p>
                 </div>
-                <div className="text-center p-6 bg-white bg-opacity-70 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  <div className="text-3xl font-bold text-orange-600 mb-2">
-                    {pendingLinks?.length || 0}
-                  </div>
-                  <div className="text-sm text-gray-600 font-medium">Pending Requests</div>
+              </div>
+            </Card>
+
+            <Card className="p-6 rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 text-white shadow-md">
+                  <Heart className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">{(linkedParents?.length || 0) + (pendingLinks?.length || 0)}</p>
+                  <p className="text-sm text-gray-600 font-medium">Total Relationships</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-md">
+                  <TrendingUp className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">Active</p>
+                  <p className="text-sm text-gray-600 font-medium">Account Status</p>
                 </div>
               </div>
             </Card>
           </div>
+
+          {/* Error Alert */}
+          {error && (
+            <Alert className="border-red-200 bg-red-50 rounded-2xl shadow-lg mb-6">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                {error}
+                <Button 
+                  onClick={clearError} 
+                  variant="ghost" 
+                  size="sm" 
+                  className="ml-2 text-red-600 hover:text-red-800"
+                >
+                  Dismiss
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            
+            {/* Linked Parents Section */}
+            <div className="space-y-6">
+              <Card className="rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                        <Users className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-white">Linked Parents</h2>
+                        <p className="text-blue-100">Parents connected to your account</p>
+                      </div>
+                    </div>
+                    
+                    <Button
+                      onClick={refetch}
+                      disabled={loading}
+                      variant="ghost"
+                      className="text-white hover:bg-white/20 border-0 rounded-xl transition-all duration-300"
+                    >
+                      <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                      Refresh
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  {loading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
+                      <span className="ml-2 text-gray-600">Loading parents...</span>
+                    </div>
+                  ) : linkedParents?.length ? (
+                    <>
+                      <div className="space-y-4">
+                        {paginateLinkedParents().map((parent) => (
+                          <Card key={parent.parent_id} className="p-5 border border-gray-200 bg-white hover:shadow-lg transition-all duration-300 hover:border-blue-200 rounded-xl group">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className="relative">
+                                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                    {parent.parent_full_name.split(' ').map(name => name.charAt(0)).join('').slice(0, 2)}
+                                  </div>
+                                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                                    <CheckCircle className="h-3 w-3 text-white" />
+                                  </div>
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="text-lg font-semibold text-gray-900 truncate mb-1">{parent.parent_full_name}</h3>
+                                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                                    <span className="flex items-center gap-1">
+                                      <User className="h-3 w-3" />
+                                      ID: {parent.parent_id}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <CheckCircle className="h-3 w-3" />
+                                      Relation ID: {parent.relation_id}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <Button
+                                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 rounded-lg shadow-md transition-all duration-300 hover:scale-105 text-sm px-4 py-2"
+                                  onClick={() => handleRequestUnlinkParent(parent.parent_id)}
+                                  disabled={loadingActions[`unlink-${parent.parent_id}`]}
+                                >
+                                  {loadingActions[`unlink-${parent.parent_id}`] ? (
+                                    <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                                  ) : (
+                                    <UserMinus className="h-4 w-4 mr-2" />
+                                  )}
+                                  Unlink
+                                </Button>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                      
+                      <PaginationControls
+                        currentPage={currentPageLinked}
+                        totalPages={getTotalPagesLinked()}
+                        onPageChange={handleLinkedPageChange}
+                        totalItems={linkedParents.length}
+                        itemsPerPage={itemsPerPageLinked}
+                        itemName="linked parents"
+                      />
+                    </>
+                  
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <User className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-700 mb-2">No Parents Linked</h3>
+                      <p className="text-gray-500">You don't have any parents connected to your account yet.</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </div>
+
+            {/* Pending Requests Section */}
+            <div className="space-y-6">
+              <Card className="rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
+                <div className="bg-gradient-to-r from-orange-500 to-amber-600 p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                        <Bell className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-white">Pending Requests</h2>
+                        <p className="text-orange-100">Parents requesting to link with your account</p>
+                      </div>
+                    </div>
+                    
+                    {pendingLinks?.length > 0 && (
+                      <Badge className="bg-white text-orange-600 border-0 px-3 py-1 rounded-full shadow-lg font-semibold">
+                        {pendingLinks.length} Pending
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  {loading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <RefreshCw className="h-6 w-6 animate-spin text-orange-600" />
+                      <span className="ml-2 text-gray-600">Loading requests...</span>
+                    </div>
+                  ) : pendingLinks?.length ? (
+                    <>
+                      <div className="space-y-4">
+                        {paginatePendingLinks().map((parent) => (
+                          <Card key={parent.parent_id} className="p-5 border border-gray-200 bg-white hover:shadow-lg transition-all duration-300 hover:border-orange-200 rounded-xl group">
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center gap-4">
+                                <div className="relative">
+                                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                    {parent.parent_full_name.split(' ').map(name => name.charAt(0)).join('').slice(0, 2)}
+                                  </div>
+                                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-500 rounded-full border-2 border-white flex items-center justify-center">
+                                    <Clock className="h-3 w-3 text-white" />
+                                  </div>
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="text-lg font-semibold text-gray-900 truncate mb-1">{parent.parent_full_name}</h3>
+                                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                                    <User className="h-3 w-3" />
+                                    Parent ID: {parent.parent_id}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-3">
+                              <Button
+                                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-0 rounded-lg shadow-md transition-all duration-300 hover:scale-105"
+                                onClick={() => handleConfirmLink(parent.parent_id)}
+                                disabled={loadingActions[`confirm-${parent.parent_id}`]}
+                              >
+                                {loadingActions[`confirm-${parent.parent_id}`] ? (
+                                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                                ) : (
+                                  <CheckCircle className="h-4 w-4 mr-2" />
+                                )}
+                                Approve
+                              </Button>
+                              <Button
+                                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 rounded-lg shadow-md transition-all duration-300 hover:scale-105"
+                                onClick={() => handleRejectLink(parent.parent_id)}
+                                disabled={loadingActions[`reject-${parent.parent_id}`]}
+                              >
+                                {loadingActions[`reject-${parent.parent_id}`] ? (
+                                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                                ) : (
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                )}
+                                Reject
+                              </Button>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                      
+                      <PaginationControls
+                        currentPage={currentPagePending}
+                        totalPages={getTotalPagesPending()}
+                        onPageChange={handlePendingPageChange}
+                        totalItems={pendingLinks.length}
+                        itemsPerPage={itemsPerPagePending}
+                        itemName="pending requests"
+                      />
+                    </>
+                  
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Bell className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-700 mb-2">No Pending Requests</h3>
+                      <p className="text-gray-500">You don't have any pending parent link requests.</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+
+              {/* Quick Stats Card */}
+              <Card className="rounded-2xl border-0 bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-xl">
+                <div className="p-6">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                      <Sparkles className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-white">Quick Overview</h3>
+                      <p className="text-blue-100">Your relationship status at a glance</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-4 bg-white/10 rounded-xl backdrop-blur-sm hover:bg-white/20 transition-all duration-300">
+                      <div className="text-2xl font-bold text-white mb-1">
+                        {linkedParents?.length || 0}
+                      </div>
+                      <div className="text-sm text-blue-100 font-medium">Active Links</div>
+                    </div>
+                    <div className="text-center p-4 bg-white/10 rounded-xl backdrop-blur-sm hover:bg-white/20 transition-all duration-300">
+                      <div className="text-2xl font-bold text-white mb-1">
+                        {pendingLinks?.length || 0}
+                      </div>
+                      <div className="text-sm text-blue-100 font-medium">Awaiting Review</div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

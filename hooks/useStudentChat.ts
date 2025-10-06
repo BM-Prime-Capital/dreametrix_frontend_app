@@ -1,5 +1,5 @@
 // hooks/useStudentChat.ts
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { ChatMessageService, ChatRoomService } from "@/services/chat-service";
 import { useApiHeaders } from "@/lib/api-config";
 import {
@@ -17,14 +17,13 @@ const enhanceMessageForStudent = (
   message: any,
   currentUserId: string
 ): EnhancedChatMessage => {
-  // CORRECTION : Utiliser le vrai rôle depuis l'API
   const rawRole = message.sender?.role || "student";
   const isCurrentUser = message.sender.id.toString() === currentUserId;
   
   const sender = {
     id: message.sender.id,
     name: message.sender.full_name || message.sender.username || "Unknown User",
-    role: isCurrentUser ? "student" : (rawRole === "admin" ? "teacher" : rawRole), // Rôle correct
+    role: isCurrentUser ? "student" : (rawRole === "admin" ? "teacher" : rawRole),
     status: "offline" as const,
     avatar: (isCurrentUser ? "student" : (rawRole === "admin" ? "teacher" : rawRole)) === "teacher" 
       ? "/assets/images/general/teacher.png"
@@ -59,18 +58,15 @@ const enhanceRoomForStudent = (
   room: ChatRoom,
   currentUserId: string
 ): EnhancedChatRoom => {
-  // Pour les students, on veut afficher le nom du teacher ou du groupe
   let displayName = room.name;
   
   if (!room.is_group) {
-    // Trouver le teacher dans les participants
     const teacherParticipant = room.participants?.find(
       (p: any) => p.id !== parseInt(currentUserId) && p.role === "teacher"
     );
     if (teacherParticipant) {
       displayName = teacherParticipant.full_name || teacherParticipant.username;
     } else {
-      // Si pas de teacher, prendre le premier participant différent de l'utilisateur courant
       const otherParticipant = room.participants?.find(
         (p: any) => p.id !== parseInt(currentUserId)
       );
@@ -108,15 +104,45 @@ const enhanceRoomForStudent = (
   };
 };
 
+// Fonction pour séparer les rooms APRÈS l'enrichissement
+const filterAndSeparateEnhancedRooms = (rooms: EnhancedChatRoom[], currentUserId: string) => {
+  const individualRooms: EnhancedChatRoom[] = [];
+  const groupRooms: EnhancedChatRoom[] = [];
+
+  rooms.forEach((room) => {
+    if (room.is_group) {
+      // C'est une conversation de groupe
+      groupRooms.push(room);
+    } else {
+      // C'est une conversation individuelle
+      // Vérifier que c'est bien une conversation 1-to-1
+      const otherParticipants = room.participants?.filter(
+        (p: any) => p.id.toString() !== currentUserId
+      ) || [];
+      
+      if (otherParticipants.length === 1) {
+        // Conversation 1-to-1 valide
+        individualRooms.push(room);
+      } else {
+        // Conversation de groupe mal marquée, la traiter comme groupe
+        groupRooms.push(room);
+      }
+    }
+  });
+
+  return { individualRooms, groupRooms };
+};
+
 // ------------------------------------------------
-// HOOK useStudentChatRooms
+// HOOK useStudentChatRooms (MODIFIÉ)
 // ------------------------------------------------
 export const useStudentChatRooms = (
   userId: number = 1,
   token?: string,
   tenantDomain?: string
 ) => {
-  const [rooms, setRooms] = useState<EnhancedChatRoom[]>([]);
+  const [rawRooms, setRawRooms] = useState<ChatRoom[]>([]);
+  const [enhancedRooms, setEnhancedRooms] = useState<EnhancedChatRoom[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<EnhancedChatRoom | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -147,6 +173,10 @@ export const useStudentChatRooms = (
         return dateB - dateA;
       });
 
+      // Stocker les rooms brutes
+      setRawRooms(sortedResults);
+
+      // Enrichir les rooms
       const enhancedRooms: EnhancedChatRoom[] = sortedResults.map((room: ChatRoom) => 
         enhanceRoomForStudent(room, userId.toString())
       );
@@ -160,7 +190,7 @@ export const useStudentChatRooms = (
         );
       });
       
-      setRooms(enhancedRooms);
+      setEnhancedRooms(enhancedRooms);
     } 
     catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch rooms";
@@ -182,7 +212,7 @@ export const useStudentChatRooms = (
       );
       
       // Mettre à jour le compteur local
-      setRooms(prev => prev.map(room => 
+      setEnhancedRooms(prev => prev.map(room => 
         room.id === roomId 
           ? { ...room, unread_count: 0 }
           : room
@@ -202,18 +232,19 @@ export const useStudentChatRooms = (
   // Debug effect
   useEffect(() => {
     console.log("[useStudentChatRooms] Rooms state:", {
-      count: rooms.length,
-      rooms: rooms.map(r => ({ 
+      count: enhancedRooms.length,
+      rooms: enhancedRooms.map(r => ({ 
         id: r.id, 
         name: r.name, 
         is_group: r.is_group,
         participants: r.participants.map(p => ({ id: p.id, name: p.name, role: p.role }))
       }))
     });
-  }, [rooms]);
+  }, [enhancedRooms]);
 
   return {
-    rooms,
+    rawRooms,        // Rooms brutes (ChatRoom[])
+    rooms: enhancedRooms, // Rooms enrichies (EnhancedChatRoom[])
     selectedRoom,
     setSelectedRoom,
     loading,
@@ -243,58 +274,119 @@ export const useStudentChatMessages = (
   const lastRoomId = useRef<number | null>(null);
 
   // ---------------- FETCH MESSAGES ----------------
-  const fetchMessages = useCallback(
-    async (limit?: number, offset?: number) => {
-      if (!roomId) {
-        console.log("[useStudentChatMessages] Aucun roomId, skip fetch");
-        return;
-      }
+//   const fetchMessages = useCallback(
+//     async (limit?: number, offset?: number) => {
+//       if (!roomId) {
+//         console.log("[useStudentChatMessages] Aucun roomId, skip fetch");
+//         return;
+//       }
 
-      try {
-        setLoading(true);
-        setError(null);
-        console.log("[useStudentChatMessages] Chargement messages étudiant pour room:", roomId);
+//       try {
+//         setLoading(true);
+//         setError(null);
+//         console.log("[useStudentChatMessages] Chargement messages étudiant pour room:", roomId);
 
-        const response = await ChatMessageService.listMessages(
-          tenantPrimaryDomain,
-          accessToken,
-          limit,
-          offset,
-          roomId
-        );
+//         const response = await ChatMessageService.listMessages(
+//           tenantPrimaryDomain,
+//           accessToken,
+//           limit,
+//           offset,
+//           roomId
+//         );
 
-        console.log("[useStudentChatMessages] Messages chargés:", response.results.length);
+//         console.log("[useStudentChatMessages] Messages chargés:", response.results.length);
 
-        // CORRECTION : Passer le vrai currentUserId au lieu de "student"
-        const storedUser = localStorage.getItem("user_data");
-        const currentUserId = storedUser ? JSON.parse(storedUser).id : null;
+//         const storedUser = localStorage.getItem("user_data");
+//         const currentUserId = storedUser ? JSON.parse(storedUser).id : null;
         
-        const enhancedMessages = response.results
-          .map((msg) => enhanceMessageForStudent(msg, currentUserId?.toString() || ""))
-          .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+//         const enhancedMessages = response.results
+//           .map((msg) => enhanceMessageForStudent(msg, currentUserId?.toString() || ""))
+//           .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
-        // DEBUG : Afficher les rôles des messages
-        enhancedMessages.forEach(msg => {
-          console.log(`[useStudentChatMessages] Message ${msg.uuid}:`, {
-            senderId: msg.sender_info.id,
-            senderName: msg.sender_info.name,
-            role: msg.sender_info.role,
-            isCurrentUser: msg.sender_info.id.toString() === currentUserId?.toString()
-          });
+//         // DEBUG : Afficher les rôles des messages
+//         enhancedMessages.forEach(msg => {
+//           console.log(`[useStudentChatMessages] Message ${msg.uuid}:`, {
+//             senderId: msg.sender_info.id,
+//             senderName: msg.sender_info.name,
+//             role: msg.sender_info.role,
+//             isCurrentUser: msg.sender_info.id.toString() === currentUserId?.toString()
+//           });
+//         });
+
+//         setMessages(enhancedMessages);
+//       } catch (err) {
+//         const errorMessage = err instanceof Error ? err.message : "Failed to fetch messages";
+//         setError(errorMessage);
+//         console.error("[useStudentChatMessages] Erreur chargement messages:", err);
+//       } finally {
+//         setLoading(false);
+//       }
+//     },
+//     [tenantPrimaryDomain, accessToken, roomId]
+//   );
+// hooks/useStudentChatMessages.ts - CORRECTION
+const fetchMessages = useCallback(
+  async (limit?: number, offset?: number) => {
+    if (!roomId) {
+      console.log("[useStudentChatMessages] Aucun roomId, skip fetch");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      console.log("[useStudentChatMessages] Chargement messages étudiant pour room:", roomId);
+
+      const response = await ChatMessageService.listMessages(
+        tenantPrimaryDomain,
+        accessToken,
+        limit,
+        offset,
+        roomId // Ce paramètre devrait filtrer par chat_room_id
+      );
+
+      console.log("[useStudentChatMessages] Messages chargés:", response.results.length);
+
+      // CORRECTION CRITIQUE : Filtrer les messages par roomId
+      const filteredMessages = response.results.filter(msg => {
+        const belongsToRoom = msg.chat === roomId;
+        if (!belongsToRoom) {
+          console.warn(`Message ${msg.id} du chat ${msg.chat} filtré (attendu: ${roomId})`);
+        }
+        return belongsToRoom;
+      });
+
+      console.log("[useStudentChatMessages] Messages filtrés:", filteredMessages.length);
+
+      const storedUser = localStorage.getItem("user_data");
+      const currentUserId = storedUser ? JSON.parse(storedUser).id : null;
+      
+      const enhancedMessages = filteredMessages
+        .map((msg) => enhanceMessageForStudent(msg, currentUserId?.toString() || ""))
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+      // DEBUG : Afficher les rôles des messages
+      enhancedMessages.forEach(msg => {
+        console.log(`[useStudentChatMessages] Message ${msg.uuid}:`, {
+          senderId: msg.sender_info.id,
+          senderName: msg.sender_info.name,
+          role: msg.sender_info.role,
+          isCurrentUser: msg.sender_info.id.toString() === currentUserId?.toString(),
+          chatRoomId: msg.chat
         });
+      });
 
-        setMessages(enhancedMessages);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to fetch messages";
-        setError(errorMessage);
-        console.error("[useStudentChatMessages] Erreur chargement messages:", err);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [tenantPrimaryDomain, accessToken, roomId]
-  );
-
+      setMessages(enhancedMessages);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to fetch messages";
+      setError(errorMessage);
+      console.error("[useStudentChatMessages] Erreur chargement messages:", err);
+    } finally {
+      setLoading(false);
+    }
+  },
+  [tenantPrimaryDomain, accessToken, roomId]
+);
   // ---------------- SEND MESSAGE ----------------
   const sendMessage = useCallback(
     async (content?: string, file?: File, voiceNote?: File) => {
@@ -362,7 +454,7 @@ export const useStudentChatMessages = (
 };
 
 // ------------------------------------------------
-// HOOK PRINCIPAL useStudentChat
+// HOOK PRINCIPAL useStudentChat (CORRIGÉ)
 // ------------------------------------------------
 export const useStudentChat = (
   userId: number = 1,
@@ -370,7 +462,8 @@ export const useStudentChat = (
   tenantDomain?: string
 ) => {
   const {
-    rooms,
+    rawRooms,
+    rooms: allEnhancedRooms,
     selectedRoom,
     setSelectedRoom,
     loading: roomsLoading,
@@ -378,6 +471,11 @@ export const useStudentChat = (
     fetchRooms,
     markAsRead,
   } = useStudentChatRooms(userId, token, tenantDomain);
+
+  // Séparer les rooms ENRICHIES en individuelles et de groupe
+  const { individualRooms, groupRooms } = useMemo(() => {
+    return filterAndSeparateEnhancedRooms(allEnhancedRooms, userId.toString());
+  }, [allEnhancedRooms, userId]);
 
   const {
     messages,
@@ -416,8 +514,10 @@ export const useStudentChat = (
   }, [selectedRoom, sendMessage]);
 
   return {
-    // Rooms
-    rooms,
+    // Rooms séparées
+    individualRooms,
+    groupRooms,
+    allRooms: allEnhancedRooms,
     selectedRoom,
     setSelectedRoom: handleSelectRoom,
     deselectRoom: handleDeselectRoom,
@@ -436,7 +536,9 @@ export const useStudentChat = (
     markAsRead,
     
     // Utilitaires
-    hasRooms: rooms.length > 0,
+    hasIndividualRooms: individualRooms.length > 0,
+    hasGroupRooms: groupRooms.length > 0,
+    hasRooms: allEnhancedRooms.length > 0,
     hasMessages: messages.length > 0,
   };
 };
