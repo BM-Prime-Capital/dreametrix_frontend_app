@@ -13,9 +13,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     <>
       <StudentSidebar routes={StudentRoutes} />
       <div
-        className={`transition-all duration-500 ${
-          isCollapsed ? "ml-16" : "ml-64"
-        }`}
+        className={`transition-all duration-500 ${isCollapsed ? "ml-16" : "ml-64"} w-full`}
       >
         {children}
       </div>
