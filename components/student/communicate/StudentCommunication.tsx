@@ -142,7 +142,7 @@ export default function StudentCommunication() {
 
   // CORRIGÉ: Utilisation du hook useStudentChat
   const {
-    rooms,
+    allRooms,
     selectedRoom,
     setSelectedRoom,
     deselectRoom,
@@ -161,86 +161,86 @@ export default function StudentCommunication() {
     return `Class ${clean}`;
   };
 
-  const conversations: Conversation[] = useMemo(() => {
-    return rooms.map((room) => {
-      const isGroup = room.is_group;
-      let conversationType: "individual" | "class" | "announcement" | "parent" = "individual";
-      let displayName = "Conversation";
+  // const conversations: Conversation[] = useMemo(() => {
+  //   return rooms.map((room) => {
+  //     const isGroup = room.is_group;
+  //     let conversationType: "individual" | "class" | "announcement" | "parent" = "individual";
+  //     let displayName = "Conversation";
 
-      if (isGroup) {
-        if (room.room_type === "class") {
-          conversationType = "class";
-          displayName = `Group: ${room.name}`;
-        } else if (room.room_type === "announcement") {
-          conversationType = "announcement";
-          displayName = `Group Announcement: ${room.name}`;
-        } else if (room.room_type === "parent") {
-          conversationType = "parent";
-          displayName = `Parent Group: ${room.name}`;
-        } else {
-          conversationType = "class";
-          displayName = `Group: ${room.name}`;
-        }
-      } else {
-        conversationType = "individual";
-        displayName =
-          room.participants.find(
-            (p) => p.id.toString() !== currentUserId?.toString()
-          )?.name ||
-          room.participants[0]?.name ||
-          "Unknown User";
-      }
+  //     if (isGroup) {
+  //       if (room.room_type === "class") {
+  //         conversationType = "class";
+  //         displayName = `Group: ${room.name}`;
+  //       } else if (room.room_type === "announcement") {
+  //         conversationType = "announcement";
+  //         displayName = `Group Announcement: ${room.name}`;
+  //       } else if (room.room_type === "parent") {
+  //         conversationType = "parent";
+  //         displayName = `Parent Group: ${room.name}`;
+  //       } else {
+  //         conversationType = "class";
+  //         displayName = `Group: ${room.name}`;
+  //       }
+  //     } else {
+  //       conversationType = "individual";
+  //       displayName =
+  //         room.participants.find(
+  //           (p) => p.id.toString() !== currentUserId?.toString()
+  //         )?.name ||
+  //         room.participants[0]?.name ||
+  //         "Unknown User";
+  //     }
 
-      return {
-        id: room.id.toString(),
-        type: conversationType,
-        participants: room.participants.map((p) => ({
-          id: p.id.toString(),
-          name: p.name,
-          avatar: p.avatar || "/assets/images/general/student.png",
-          role:
-            p.role === "admin"
-              ? "teacher"
-              : (p.role as "teacher" | "student" | "parent"),
-        })),
-        displayName,
-        lastMessage: room.last_message
-          ? {
-              id: room.last_message.uuid.toString(),
-              sender: {
-                id: room.last_message.sender_info.id.toString(),
-                name: room.last_message.sender_info.name,
-                avatar:
-                  room.last_message.sender_info.avatar ||
-                  "/assets/images/general/student.png",
-                role:
-                  room.last_message.sender_info.role === "admin"
-                    ? "teacher"
-                    : (room.last_message.sender_info.role as
-                        | "teacher"
-                        | "student"
-                        | "parent"),
-              },
-              content: room.last_message.content,
-              timestamp: new Date(
-                room.last_message.created_at
-              ).toLocaleTimeString("fr-FR", {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              read: room.last_message.status !== "sent",
-            }
-          : {
-              id: "",
-              sender: { id: "", name: "", avatar: "", role: "student" },
-              content: "Aucun message",
-              timestamp: "",
-              read: true,
-            },
-        unreadCount: room.unread_count,
-      };
-    });
-  }, [rooms, currentUserId]);
+  //     return {
+  //       id: room.id.toString(),
+  //       type: conversationType,
+  //       participants: room.participants.map((p) => ({
+  //         id: p.id.toString(),
+  //         name: p.name,
+  //         avatar: p.avatar || "/assets/images/general/student.png",
+  //         role:
+  //           p.role === "admin"
+  //             ? "teacher"
+  //             : (p.role as "teacher" | "student" | "parent"),
+  //       })),
+  //       displayName,
+  //       lastMessage: room.last_message
+  //         ? {
+  //             id: room.last_message.uuid.toString(),
+  //             sender: {
+  //               id: room.last_message.sender_info.id.toString(),
+  //               name: room.last_message.sender_info.name,
+  //               avatar:
+  //                 room.last_message.sender_info.avatar ||
+  //                 "/assets/images/general/student.png",
+  //               role:
+  //                 room.last_message.sender_info.role === "admin"
+  //                   ? "teacher"
+  //                   : (room.last_message.sender_info.role as
+  //                       | "teacher"
+  //                       | "student"
+  //                       | "parent"),
+  //             },
+  //             content: room.last_message.content,
+  //             timestamp: new Date(
+  //               room.last_message.created_at
+  //             ).toLocaleTimeString("fr-FR", {
+  //               hour: "2-digit",
+  //               minute: "2-digit",
+  //             }),
+  //             read: room.last_message.status !== "sent",
+  //           }
+  //         : {
+  //             id: "",
+  //             sender: { id: "", name: "", avatar: "", role: "student" },
+  //             content: "Aucun message",
+  //             timestamp: "",
+  //             read: true,
+  //           },
+  //       unreadCount: room.unread_count,
+  //     };
+  //   });
+  // }, [rooms, currentUserId]);
 
   // const chatMessages: Message[] = useMemo(() => {
   //   return messages.map((msg) => ({
@@ -262,7 +262,96 @@ export default function StudentCommunication() {
   //     read: msg.status !== "sent",
   //   }));
   // }, [messages]);
-const chatMessages: Message[] = useMemo(() => {
+
+const conversations: Conversation[] = useMemo(() => {
+  if (!allRooms || !Array.isArray(allRooms)) {
+    console.log("[DEBUG] allRooms est undefined ou pas un tableau:", allRooms);
+    return [];
+  }
+
+  
+  
+  return allRooms.map((room) => {
+    const isGroup = room.is_group;
+    let conversationType: "individual" | "class" | "announcement" | "parent" = "individual";
+    let displayName = "Conversation";
+
+    if (isGroup) {
+      if (room.room_type === "class") {
+        conversationType = "class";
+        displayName = `Group: ${room.name}`;
+      } else if (room.room_type === "announcement") {
+        conversationType = "announcement";
+        displayName = `Group Announcement: ${room.name}`;
+      } else if (room.room_type === "parent") {
+        conversationType = "parent";
+        displayName = `Parent Group: ${room.name}`;
+      } else {
+        conversationType = "class";
+        displayName = `Group: ${room.name}`;
+      }
+    } else {
+      conversationType = "individual";
+      displayName =
+        room.participants?.find(
+          (p) => p.id.toString() !== currentUserId?.toString()
+        )?.name ||
+        room.participants?.[0]?.name ||
+        "Unknown User";
+    }
+
+    return {
+      id: room.id.toString(),
+      type: conversationType,
+      participants: room.participants?.map((p) => ({
+        id: p.id.toString(),
+        name: p.name,
+        avatar: p.avatar || "/assets/images/general/student.png",
+        role:
+          p.role === "admin"
+            ? "teacher"
+            : (p.role as "teacher" | "student" | "parent"),
+      })) || [],
+      displayName,
+      lastMessage: room.last_message
+        ? {
+            id: room.last_message.uuid.toString(),
+            sender: {
+              id: room.last_message.sender_info.id.toString(),
+              name: room.last_message.sender_info.name,
+              avatar:
+                room.last_message.sender_info.avatar ||
+                "/assets/images/general/student.png",
+              role:
+                room.last_message.sender_info.role === "admin"
+                  ? "teacher"
+                  : (room.last_message.sender_info.role as
+                      | "teacher"
+                      | "student"
+                      | "parent"),
+            },
+            content: room.last_message.content,
+            timestamp: new Date(
+              room.last_message.created_at
+            ).toLocaleTimeString("fr-FR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            read: room.last_message.status !== "sent",
+          }
+        : {
+            id: "",
+            sender: { id: "", name: "", avatar: "", role: "student" },
+            content: "Aucun message",
+            timestamp: "",
+            read: true,
+          },
+      unreadCount: room.unread_count || 0,
+    };
+  });
+}, [allRooms, currentUserId]);
+
+  const chatMessages: Message[] = useMemo(() => {
   console.log("🔍 DEBUG messages raw:", messages);
   
   const formattedMessages = messages.map((msg) => {
@@ -337,12 +426,20 @@ const chatMessages: Message[] = useMemo(() => {
     }
   };
 
+  // const handleSelectConversation = (conversation: Conversation) => {
+  //   const room = rooms.find((r) => r.id.toString() === conversation.id);
+  //   if (room) {
+  //     setSelectedRoom(room);
+  //   }
+  // };
+
   const handleSelectConversation = (conversation: Conversation) => {
-    const room = rooms.find((r) => r.id.toString() === conversation.id);
-    if (room) {
-      setSelectedRoom(room);
-    }
-  };
+  // Remplacer rooms par allRooms
+  const room = allRooms.find((r) => r.id.toString() === conversation.id);
+  if (room) {
+    setSelectedRoom(room);
+  }
+};
 
   // CORRIGÉ: Désactiver la création de conversation pour les étudiants
   const handleCreateConversation = async () => {
@@ -357,6 +454,8 @@ const chatMessages: Message[] = useMemo(() => {
     setAnnounceDialogOpen(false);
     setSelectedRecipients([]);
   };
+
+  
 
   if (dataError) {
     return (

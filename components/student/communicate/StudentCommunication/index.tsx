@@ -48,7 +48,7 @@ export default function StudentCommunication() {
 
   // Utiliser le hook student
   const {
-    rooms,
+    allRooms,
     selectedRoom,
     setSelectedRoom,
     deselectRoom,
@@ -68,7 +68,7 @@ export default function StudentCommunication() {
 
   // Conversion des rooms en conversations
   const conversations: Conversation[] = useMemo(() => {
-    return rooms.map((room) => {
+    return allRooms.map((room) => {
       const isGroup = room.is_group;
 
       const displayName = isGroup
@@ -114,7 +114,7 @@ export default function StudentCommunication() {
         unreadCount: room.unread_count,
       };
     });
-  }, [rooms, currentUserId]);
+  }, [allRooms, currentUserId]);
 
   // CORRECTION: Transformer les messages pour qu'ils aient le même format
   const formattedMessages = useMemo(() => {
@@ -159,12 +159,12 @@ export default function StudentCommunication() {
 
   const handleSelectConversation = useCallback(
     (conversation: Conversation) => {
-      const room = rooms.find((r) => r.id.toString() === conversation.id);
+      const room = allRooms.find((r) => r.id.toString() === conversation.id);
       if (room) {
         setSelectedRoom(room);
       }
     },
-    [rooms, setSelectedRoom]
+    [allRooms, setSelectedRoom]
   );
 
   // Utiliser la fonction du hook
