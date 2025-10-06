@@ -93,19 +93,39 @@ const TeachersList = () => {
     }
   };
 
-  const downloadTemplate = () => {
-    const headers = ['first_name', 'last_name', 'email', 'phone_number', 'subjects', 'grade_levels'];
-    const sampleData = ['John', 'Smith', 'john.smith@email.com', '+1234567890', 'Mathematics,Physics', '10,11'];
-    const csvContent = headers.join(',') + '\n' + sampleData.join(',') + '\n';
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'teachers_template.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
-    toast.success('Template downloaded successfully!');
-  };
+  // const downloadTemplate = () => {
+  //   const headers = ['first_name', 'last_name', 'email', 'phone_number', 'subjects', 'grade_levels'];
+  //   const sampleData = ['John', 'Smith', 'john.smith@email.com', '+1234567890', 'Mathematics,Physics', '10,11'];
+  //   const csvContent = headers.join(',') + '\n' + sampleData.join(',') + '\n';
+  //   const blob = new Blob([csvContent], { type: 'text/csv' });
+  //   const url = window.URL.createObjectURL(blob);
+  //   const a = document.createElement('a');
+  //   a.href = url;
+  //   a.download = 'teachers_template.csv';
+  //   a.click();
+  //   window.URL.revokeObjectURL(url);
+  //   toast.success('Template downloaded successfully!');
+  // };
+
+const downloadTemplate = () => {
+  // Format CORRECT pour l'importation
+  const headers = ['first_name', 'last_name', 'email', 'role', 'grade_levels', 'subjects'];
+  const sampleTeacher = ['John', 'Smith', 'john.smith@email.com', 'teacher', '10,11', 'Mathematics'];
+  const sampleStudent = ['Jane', 'Doe', 'jane.doe@email.com', 'student', '9', ''];
+  
+  let csvContent = headers.join(',') + '\n';
+  csvContent += sampleTeacher.join(',') + '\n';
+  csvContent += sampleStudent.join(',') + '\n';
+  
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'users_import_template.csv';
+  a.click();
+  window.URL.revokeObjectURL(url);
+  toast.success('Template downloaded successfully!');
+};
 
   const filteredTeachers = enhancedTeachers
     .filter(teacher => 
