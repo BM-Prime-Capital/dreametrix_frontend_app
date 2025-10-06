@@ -133,7 +133,7 @@ export function CreateArrangementDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="flex gap-2 items-center text-lg bg-green-500 hover:bg-green-600 rounded-md px-2 py-4 lg:px-4 lg:py-4">
+        <Button className="flex gap-2 items-center text-lg bg-green-500 hover:bg-green-600 rounded-xl px-2 py-4 lg:px-4 lg:py-4">
           <Image
             src={generalImages.add || teacherImages.upload}
             alt="add"
