@@ -29,10 +29,25 @@ type FormData = {
   file?: File;
 };
 
-export function AddAssignmentDialog() {
+interface AddAssignmentDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function AddAssignmentDialog({ open, onOpenChange }: AddAssignmentDialogProps = {}) {
   const { tenantDomain, accessToken } = useRequestInfo();
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  // Use external open prop if provided, otherwise use internal state
+  const isOpen = open !== undefined ? open : internalOpen;
+  const handleOpenChange = (newOpen: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(newOpen);
+    } else {
+      setInternalOpen(newOpen);
+    }
+  };
   const [formData, setFormData] = useState<FormData>({
     name: "",
     course: "",
@@ -60,7 +75,7 @@ export function AddAssignmentDialog() {
 
       await createAssignment(form, tenantDomain, accessToken);
 
-      setOpen(false);
+      handleOpenChange(false);
       window.location.reload();
     } finally {
       setIsSubmitting(false);
@@ -92,23 +107,11 @@ export function AddAssignmentDialog() {
 
     // Redirect to digital library with query parameters
     router.push(`/teacher/digital_library?${queryParams.toString()}`);
-    setOpen(false);
+    handleOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      {/* <DialogTrigger asChild>
-        <Button className="flex gap-2 items-center text-lg bg-[#3e81d4] hover:bg-[#3e81d4]/90 text-white rounded-lg px-4 py-3 shadow-md transition-all">
-          <Image
-            src={generalImages.add}
-            alt="add"
-            width={24}
-            height={24}
-            className="w-6 h-6 filter brightness-0 invert"
-          />
-          <span>Add New Assignment</span>
-        </Button>
-      </DialogTrigger> */}
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="flex gap-3 items-center text-lg bg-[#f59e0b] hover:bg-[#f59e0b]/90 text-white rounded-xl px-5 py-4 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] group">
           <div className="relative flex items-center justify-center">
@@ -297,7 +300,7 @@ export function AddAssignmentDialog() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setOpen(false)}
+                onClick={() => handleOpenChange(false)}
                 className="px-6 py-2 text-gray-700 hover:bg-gray-50 border-gray-300 order-2 sm:order-1"
               >
                 Cancel
