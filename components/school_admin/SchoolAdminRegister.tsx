@@ -19,14 +19,8 @@ import { userPath } from "@/constants/userConstants";
 import DreaMetrixLogo from "../ui/dreametrix-logo";
 import { useSchoolRegistration } from "@/hooks/SchoolAdmin/useSchoolRegistration";
 import { useSchoolSearch } from "@/hooks/SchoolAdmin/useSchoolSearch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import React, { useEffect, useState, useMemo } from "react";
+
+import React, { useEffect, useState } from "react";
 import {
   fetchUSStates,
   fetchCitiesByState,
@@ -112,7 +106,7 @@ interface RegisterProps {
   userType: string;
   userBasePath: string;
 }
-export default function SchoolAdminRegister({ userType, userBasePath }: RegisterProps) {
+export default function SchoolAdminRegister({}: RegisterProps) {
   const router = useRouter();
   const { formData, errors, isLoading, handleInputChange, handleSubmit } =
     useSchoolRegistration();
@@ -344,7 +338,7 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
                   No schools found
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  We couldn't find your school in our database.
+                  We couldn&apos;t find your school in our database.
                 </p>
                 <Button
                   onClick={goToManualForm}
@@ -454,7 +448,7 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
                 onClick={goBackToSearch}
                 className="text-gray-600"
               >
-                This isn't my school
+                This isn&apos;t my school
               </Button>
             </div>
           </div>

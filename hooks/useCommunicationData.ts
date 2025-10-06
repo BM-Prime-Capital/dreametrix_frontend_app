@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -76,7 +77,7 @@ export function useCommunicationData(): UseCommunicationDataReturn {
       const [classesData, studentsData, teachersData] = await Promise.all([
         getClasses(tenantDomain, accessToken, refreshToken),
         getStudents(tenantDomain, accessToken),
-        getTeachers(tenantDomain, accessToken, refreshToken),
+        getTeachers(tenantDomain, accessToken),
       ]);
 
       // ---------------- CLASSES ----------------
