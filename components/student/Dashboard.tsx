@@ -314,40 +314,40 @@ return (
     <section className="flex flex-col gap-6 w-full p-4 sm:p-6 lg:p-8">
 
       {/* HEADER */}
-<div className="rounded-2xl p-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg flex flex-col sm:flex-row items-center justify-between gap-6 transition-all">
-  <div className="flex items-center gap-4">
-    <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
-      <AvatarImage src="/placeholder.svg" />
-      <AvatarFallback className="bg-white/20 text-2xl font-bold text-white">
-        {initials}
-      </AvatarFallback>
-    </Avatar>
-    <div>
-      <h1 className="text-3xl font-extrabold tracking-tight">
-        Welcome back, {firstName}! 👋
-      </h1>
-      <p className="text-blue-100 text-sm">
-        {userProfile.school} • Grade {userProfile.grade}
-      </p>
-    </div>
-  </div>
+      <div className="rounded-2xl p-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg flex flex-col sm:flex-row items-center justify-between gap-6 transition-all">
+        <div className="flex items-center gap-4">
+          <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
+            <AvatarImage src="/placeholder.svg" />
+            <AvatarFallback className="bg-white/20 text-2xl font-bold text-white">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight">
+              Welcome back, {firstName}! 👋
+            </h1>
+            <p className="text-blue-100 text-sm">
+              {userProfile.school} • Grade {userProfile.grade}
+            </p>
+          </div>
+        </div>
 
-  <div className="flex gap-3">
-    <Button
-      variant="secondary"
-      className="rounded-xl bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border-white/20 transition-all"
-      onClick={() => router.push("/student/settings")}
-    >
-      <Settings className="h-5 w-5 mr-2" /> Settings
-    </Button>
-    <Button
-      className="rounded-xl bg-white text-blue-700 hover:bg-blue-50 shadow-md transition-all"
-      onClick={() => router.push("/student/messages")}
-    >
-      <MessageCircle className="h-5 w-5 mr-2" /> Messages
-    </Button>
-  </div>
-</div>
+        <div className="flex gap-3">
+          <Button
+            variant="secondary"
+            className="rounded-xl bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border-white/20 transition-all"
+            onClick={() => router.push("/student/settings")}
+          >
+            <Settings className="h-5 w-5 mr-2" /> Settings
+          </Button>
+          <Button
+            className="rounded-xl bg-white text-blue-700 hover:bg-blue-50 shadow-md transition-all"
+            onClick={() => router.push("/student/messages")}
+          >
+            <MessageCircle className="h-5 w-5 mr-2" /> Messages
+          </Button>
+        </div>
+      </div>
 
 
       {/* QUICK STATS */}
