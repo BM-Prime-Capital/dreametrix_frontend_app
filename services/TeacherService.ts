@@ -1,11 +1,9 @@
 "use server";
 
-import { redirect } from "next/navigation";
 
 export async function getTeachers(
   tenantPrimaryDomain: string,
   accessToken: string,
-  refreshToken: string
 ) {
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
