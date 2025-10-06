@@ -10,7 +10,6 @@ import { useEffect, useState } from "react";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Loader } from "../ui/loader";
 import NoDataPersonalized from "../ui/no-data-personalized";
-import { getRewardsFocusView } from "@/services/RewardsService";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { views } from "@/constants/global";
@@ -51,14 +50,14 @@ export default function ChildStudyFocusedView({
         console.log("Child Study Data:", childStudyData);
 
         // Récupérer les données de récompenses si nécessaire
-        const rewardsData = await getRewardsFocusView(
-          tenantPrimaryDomain,
-          accessToken,
-          refreshToken,
-          "",
-          "",
-          student.student.id
-        );
+        // const rewardsData = await getRewardsFocusView(
+        //   tenantPrimaryDomain,
+        //   accessToken,
+        //   refreshToken,
+        //   "",
+        //   "",
+        //   student.student.id
+        // );
 
         // Transformer les données avec les informations réelles de l'API
         const transformedData = {
