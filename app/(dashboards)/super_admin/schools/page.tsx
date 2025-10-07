@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-//import { useRouter } from "next/navigation";
+import { useCallback, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,6 +27,8 @@ import {
   CheckCircle
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
+import { useRequestInfo } from "@/hooks/useRequestInfo";
+import { getAllSchools, getSchoolCreationRequests } from "@/services/super-admin-service";
 
 type School = {
   id: string;
@@ -50,120 +51,193 @@ type School = {
   lastUpdated: string;
 };
 
+type ApiSchool = {
+  id: number;
+  name: string;
+  email: string;
+  phone_number: string;
+  region: string;
+  city: string;
+  address: string;
+  country: {
+    code: string;
+    name: string;
+  };
+  is_active: boolean;
+  on_trial: boolean;
+  created_at: string;
+  last_update: string;
+};
+
+type SchoolRequest = {
+  id: number;
+  name: string;
+  school_email: string;
+  administrator_email: string;
+  phone: string;
+  country: string;
+  city: string;
+  address: string;
+  region: string;
+  is_reviewed: boolean;
+  is_approved: boolean | null;
+  is_denied: boolean | null;
+  created_at: string;
+};
+
+const SchoolCardSkeleton = () => (
+  <Card className="p-4 animate-pulse h-full">
+    <div className="flex flex-col h-full">
+      <div className="p-3 bg-gray-200 rounded-lg w-fit mb-3">
+        <div className="h-6 w-6 bg-gray-300 rounded"></div>
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="h-6 bg-gray-200 rounded flex-1"></div>
+          <div className="h-5 w-16 bg-gray-200 rounded"></div>
+        </div>
+        <div className="flex items-center gap-1 mb-3">
+          <div className="h-3 w-3 bg-gray-200 rounded"></div>
+          <div className="h-4 bg-gray-200 rounded flex-1"></div>
+        </div>
+        <div className="grid grid-cols-3 gap-2 text-sm">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex flex-col items-center p-2 bg-gray-100 rounded">
+              <div className="h-4 w-4 bg-gray-200 rounded mb-1"></div>
+              <div className="h-4 w-8 bg-gray-200 rounded"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="h-3 bg-gray-200 rounded mt-3 pt-2 border-t"></div>
+    </div>
+  </Card>
+);
+
+const HeaderSkeleton = () => (
+  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+      <div className="h-7 w-48 bg-gray-200 rounded mb-2"></div>
+      <div className="h-4 w-32 bg-gray-200 rounded"></div>
+    </div>
+    <div className="flex gap-2 w-full md:w-auto">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="h-9 w-24 bg-gray-200 rounded"></div>
+      ))}
+    </div>
+  </div>
+);
+
+// Squelette pour la barre de recherche et filtres
+const SearchBarSkeleton = () => (
+  <Card className="p-4">
+    <div className="flex flex-col md:flex-row gap-4">
+      <div className="relative flex-1">
+        <div className="h-10 bg-gray-200 rounded"></div>
+      </div>
+      <div className="flex gap-2">
+        {[...Array(2)].map((_, i) => (
+          <div key={i} className="h-9 w-36 bg-gray-200 rounded"></div>
+        ))}
+      </div>
+    </div>
+  </Card>
+);
+
 export default function SchoolsPage() {
-  //const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingSchools, setIsLoadingSchools] = useState(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showPendingOnly, setShowPendingOnly] = useState(false);
+  const [showActiveOnly, setShowActiveOnly] = useState(false);
+  const { accessToken } = useRequestInfo();
+  const [schools, setSchools] = useState<School[]>([]);
+  const [schoolRequests, setSchoolRequests] = useState<SchoolRequest[]>([]);
 
-  // Sample data - replace with actual API calls
-  const [schools] = useState<School[]>([
-    {
-      "id": "1",
-      "name": "Central Elementary School",
-      "district": "North District",
-      "address": "123 Education St",
-      "city": "Metropolis",
-      "postalCode": "12345",
-      "country": "Country",
-      "phone": "+1 (555) 123-4567",
-      "email": "contact@central.edu",
-      "website": "https://central.edu",
-      "principal": "Dr. Sarah Johnson",
-      "description": "A leading elementary school in the district",
-      "students": 420,
-      "teachers": 28,
-      "courses": 15,
-      "status": "active",
-      "pendingValidation": false,
-      "lastUpdated": "2023-10-15"
-    },
-    {
-      "id": "2",
-      "name": "Sunnyvale High School",
-      "district": "South District",
-      "address": "456 Sunshine Ave",
-      "city": "Sunnyvale",
-      "postalCode": "67890",
-      "country": "Country",
-      "phone": "+1 (555) 987-6543",
-      "email": "info@sunnyvalehs.edu",
-      "website": "https://sunnyvalehs.edu",
-      "principal": "Mr. James Wilson",
-      "description": "Renowned for STEM programs and athletics",
-      "students": 850,
-      "teachers": 55,
-      "courses": 32,
-      "status": "active",
-      "pendingValidation": false,
-      "lastUpdated": "2023-11-20"
-    },
-    {
-      "id": "3",
-      "name": "Riverside Middle School",
-      "district": "East District",
-      "address": "789 River Rd",
-      "city": "Rivertown",
-      "postalCode": "34567",
-      "country": "Country",
-      "phone": "+1 (555) 456-7890",
-      "email": "admin@riversidems.edu",
-      "website": "https://riversidems.edu",
-      "principal": "Ms. Emily Davis",
-      "description": "Focus on arts and environmental education",
-      "students": 620,
-      "teachers": 42,
-      "courses": 25,
-      "status": "pending",
-      "pendingValidation": true,
-      "lastUpdated": "2023-09-05"
-    },
-    {
-      "id": "4",
-      "name": "Westwood Academy",
-      "district": "West District",
-      "address": "321 Oak Lane",
-      "city": "Westwood",
-      "postalCode": "89012",
-      "country": "Country",
-      "phone": "+1 (555) 234-5678",
-      "email": "admissions@westwood.edu",
-      "website": "https://westwood.edu",
-      "principal": "Dr. Robert Chen",
-      "description": "Private school with IB program",
-      "students": 350,
-      "teachers": 30,
-      "courses": 40,
-      "status": "pending",
-      "pendingValidation": true,
-      "lastUpdated": "2023-12-10"
-    },
-    {
-      "id": "5",
-      "name": "Pinecrest Elementary",
-      "district": "North District",
-      "address": "555 Forest Blvd",
-      "city": "Metropolis",
-      "postalCode": "12348",
-      "country": "Country",
-      "phone": "+1 (555) 345-6789",
-      "email": "hello@pinecrest.edu",
-      "website": "https://pinecrest.edu",
-      "principal": "Mrs. Linda Martinez",
-      "description": "Dual-language immersion program",
-      "students": 380,
-      "teachers": 25,
-      "courses": 18,
-      "status": "inactive",
-      "pendingValidation": false,
-      "lastUpdated": "2024-01-15"
+  const loadAllData = useCallback(async () => {
+    if (!accessToken) return;
+    
+    setIsLoadingSchools(true);
+    try {
+      const [schoolsResponse, requestsResponse] = await Promise.all([
+        getAllSchools(accessToken),
+        getSchoolCreationRequests(accessToken)
+      ]);
+
+      const apiSchools: ApiSchool[] = schoolsResponse.results || [];
+      const formattedSchools: School[] = apiSchools.map(school => ({
+        id: school.id.toString(),
+        name: school.name,
+        district: school.region,
+        address: school.address,
+        city: school.city,
+        postalCode: "",
+        country: school.country.name || school.country.code,
+        phone: school.phone_number,
+        email: school.email,
+        principal: "",
+        description: "",
+        students: 0,
+        teachers: 0,
+        courses: 0,
+        status: school.is_active ? "active" : "inactive",
+        pendingValidation: false,
+        lastUpdated: school.last_update
+      }));
+
+      const requests: SchoolRequest[] = requestsResponse.results || [];
+      setSchoolRequests(requests);
+      
+      const pendingRequests: School[] = requests
+        .filter(req => !req.is_reviewed && req.is_approved === null)
+        .map(req => ({
+          id: `request-${req.id}`,
+          name: req.name,
+          district: req.region,
+          address: req.address,
+          city: req.city,
+          postalCode: "",
+          country: req.country,
+          phone: req.phone,
+          email: req.school_email,
+          principal: req.administrator_email,
+          description: "",
+          students: 0,
+          teachers: 0,
+          courses: 0,
+          status: "pending",
+          pendingValidation: true,
+          lastUpdated: req.created_at
+        }));
+
+      setSchools([...formattedSchools, ...pendingRequests]);
+      
+    } catch (error) {
+      console.error("Error loading data:", error);
+      setSchools([]);
+      setSchoolRequests([]);
+    } finally {
+      setIsLoadingSchools(false);
     }
-  ]);
+  }, [accessToken]);
+
+  useEffect(() => {
+    loadAllData();
+  }, [loadAllData]);
+
+  const refreshData = async () => {
+    setIsLoading(true);
+    try {
+      await loadAllData();
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredSchools = schools.filter(school => {
     const matchesSearch = school.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -171,6 +245,10 @@ export default function SchoolsPage() {
     
     if (showPendingOnly) {
       return matchesSearch && school.pendingValidation;
+    }
+    
+    if (showActiveOnly) {
+      return matchesSearch && school.status === "active" && !school.pendingValidation;
     }
     
     return matchesSearch;
@@ -187,12 +265,11 @@ export default function SchoolsPage() {
     
     setIsLoading(true);
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      // Process file and update schools state
       console.log("Importing file:", selectedFile.name);
       setIsImportModalOpen(false);
       setSelectedFile(null);
+      await refreshData();
     } finally {
       setIsLoading(false);
     }
@@ -203,19 +280,17 @@ export default function SchoolsPage() {
     setIsLoading(true);
     
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       if (selectedSchool) {
-        // Update existing school
         console.log("Updating school");
       } else {
-        // Create new school
         console.log("Creating new school");
       }
       
       setIsFormModalOpen(false);
       setSelectedSchool(null);
+      await refreshData();
     } finally {
       setIsLoading(false);
     }
@@ -226,82 +301,161 @@ export default function SchoolsPage() {
     
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log("Approving school:", selectedSchool.name);
+      const requestId = parseInt(selectedSchool.id.replace('request-', ''));
+      const schoolRequest = schoolRequests.find(req => req.id === requestId);
       
-      // Update school status
+      if (schoolRequest) {
+        
+        const response = await fetch(`https://backend-dreametrix.com/school-requests/${requestId}/`, {
+          method: "PUT",
+          // headers: {
+          //   "Content-Type": "application/json",
+          //   Authorization: `Basic ${credentials}`,
+          // },
+
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+
+          
+          body: JSON.stringify({
+            ...schoolRequest,
+            is_approved: true,
+            is_reviewed: true
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to approve school");
+        }
+
+        console.log("School approved:", selectedSchool.name);
+      }
+      
       setIsApproveModalOpen(false);
       setIsFormModalOpen(false);
       setSelectedSchool(null);
+      await refreshData();
+    } catch (error) {
+      console.error("Error approving school:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <div className="flex flex-col gap-6 w-full">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Schools Management</h1>
-          <p className="text-sm text-gray-500">
-            Manage all schools in your system ({schools.length} total)
-          </p>
-        </div>
-        <div className="flex gap-2 w-full md:w-auto">
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={() => setIsImportModalOpen(true)}
-          >
-            <Download className="h-4 w-4" />
-            Import
-          </Button>
-          <Button
-            className="gap-2"
-            onClick={() => {
-              setSelectedSchool(null);
-              setIsFormModalOpen(true);
-            }}
-          >
-            <Plus className="h-4 w-4" />
-            Add School
-          </Button>
+  if (isLoadingSchools) {
+    return (
+      <div className="flex flex-col gap-6 w-full">
+        <HeaderSkeleton />
+        <SearchBarSkeleton />
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {[...Array(8)].map((_, i) => (
+            <SchoolCardSkeleton key={i} />
+          ))}
         </div>
       </div>
+    );
+  }
 
-      {/* Search Bar */}
-      <Card className="p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search schools by name or district..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+  return (
+    <div className="flex flex-col gap-6 w-full">
+      {isLoadingSchools ? (
+        <HeaderSkeleton />
+      ) : (
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">Schools Management</h1>
+            <p className="text-sm text-gray-500">
+              Manage all schools in your system ({schools.length} total)
+            </p>
           </div>
-          <div className="flex gap-2">
-            <Button 
-              variant={showPendingOnly ? "default" : "outline"} 
+          <div className="flex gap-2 w-full md:w-auto">
+            <Button
+              variant="outline"
               className="gap-2"
-              onClick={() => setShowPendingOnly(!showPendingOnly)}
+              onClick={() => setIsImportModalOpen(true)}
             >
-              <Filter className="h-4 w-4" />
-              Pending Validation
+              <Download className="h-4 w-4" />
+              Import
             </Button>
-            <Button variant="outline" className="gap-2">
-              <Filter className="h-4 w-4" />
-              More Filters
+            <Button
+              className="gap-2"
+              onClick={() => {
+                setSelectedSchool(null);
+                setIsFormModalOpen(true);
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              Add School
+            </Button>
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={refreshData}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Users className="h-4 w-4" />
+              )}
+              Refresh
             </Button>
           </div>
         </div>
-      </Card>
+      )}
 
-      {/* Schools List */}
-      {filteredSchools.length > 0 ? (
+      {isLoadingSchools ? (
+        <SearchBarSkeleton />
+      ) : (
+        <Card className="p-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search schools by name or district..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant={showPendingOnly ? "default" : "outline"} 
+                className="gap-2"
+                onClick={() => {
+                  setShowPendingOnly(!showPendingOnly);
+                  setShowActiveOnly(false);
+                }}
+              >
+                <Filter className="h-4 w-4" />
+                Pending Validation
+              </Button>
+              <Button 
+                variant={showActiveOnly ? "default" : "outline"} 
+                className="gap-2"
+                onClick={() => {
+                  setShowActiveOnly(!showActiveOnly);
+                  setShowPendingOnly(false);
+                }}
+              >
+                <Filter className="h-4 w-4" />
+                Active Schools
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {isLoadingSchools ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {[...Array(8)].map((_, i) => (
+            <SchoolCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : filteredSchools.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredSchools.map((school) => (
             <Card 
@@ -332,11 +486,6 @@ export default function SchoolsPage() {
                       >
                         {school.status.charAt(0).toUpperCase() + school.status.slice(1)}
                       </Badge>
-                      {/* {school.pendingValidation && (
-                        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                          Pending
-                        </Badge>
-                      )} */}
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mb-3 flex items-center gap-1">
@@ -372,20 +521,22 @@ export default function SchoolsPage() {
           <p className="text-sm text-gray-500 max-w-md text-center">
             {showPendingOnly 
               ? "No schools are pending validation. Try adjusting your search or filters."
+              : showActiveOnly
+              ? "No active schools found. Try adjusting your search or filters."
               : "No schools match your search criteria. Try adjusting your search or filters."
             }
           </p>
           <Button variant="outline" onClick={() => {
             setSearchQuery("");
             setShowPendingOnly(false);
+            setShowActiveOnly(false);
           }}>
             Clear filters
           </Button>
         </Card>
       )}
 
-      {/* Pagination */}
-      {filteredSchools.length > 0 && (
+      {!isLoadingSchools && filteredSchools.length > 0 && (
         <div className="flex items-center justify-between mt-6">
           <Button variant="outline" className="gap-2">
             <ChevronLeft className="h-4 w-4" />
@@ -401,7 +552,6 @@ export default function SchoolsPage() {
         </div>
       )}
 
-      {/* Import Modal */}
       <Modal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
@@ -455,7 +605,6 @@ export default function SchoolsPage() {
         </div>
       </Modal>
 
-      {/* School Form Modal */}
       <Modal
         isOpen={isFormModalOpen}
         onClose={() => {
@@ -473,7 +622,6 @@ export default function SchoolsPage() {
         <form onSubmit={handleSubmitSchool}>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Basic Information */}
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">School Name*</Label>
@@ -506,7 +654,6 @@ export default function SchoolsPage() {
                 </div>
               </div>
 
-              {/* Contact Information */}
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email*</Label>
@@ -539,7 +686,6 @@ export default function SchoolsPage() {
                 </div>
               </div>
 
-              {/* Location */}
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="address">Address*</Label>
@@ -584,7 +730,6 @@ export default function SchoolsPage() {
                 </div>
               </div>
 
-              {/* Statistics */}
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
@@ -634,7 +779,6 @@ export default function SchoolsPage() {
                 </div>
               </div>
 
-              {/* Settings */}
               <div className="space-y-4">
                 <div className="flex items-center space-x-2">
                   <Switch 
@@ -645,7 +789,6 @@ export default function SchoolsPage() {
                 </div>
               </div>
 
-              {/* Description */}
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea 
@@ -696,7 +839,6 @@ export default function SchoolsPage() {
         </form>
       </Modal>
 
-      {/* Approve Confirmation Modal */}
       <Modal
         isOpen={isApproveModalOpen}
         onClose={() => setIsApproveModalOpen(false)}
