@@ -1,10 +1,11 @@
 "use client";
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { FiSearch, FiPlus, FiChevronRight, FiUser, FiMail, FiAlertCircle, FiAward, FiClock } from 'react-icons/fi';
-import { Loader } from "@/components/ui/loader";
-import AddTeacherModal from './add-teacher-modal';
+import { useState, useRef } from 'react';
+import { FiSearch, FiUpload, FiChevronRight, FiUser, FiMail, FiAlertCircle, FiAward, FiClock, FiDownload, FiFileText } from 'react-icons/fi';
+import { useTeachers } from '@/hooks/SchoolAdmin/use-teachers';
+import { useBaseUrl } from '@/hooks/SchoolAdmin/use-base-url';
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
+import { toast } from 'react-toastify';
 
 const avatarColors = [
   'bg-blue-100 text-blue-600',
@@ -95,29 +96,84 @@ const TeachersList = () => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const { teachers, isLoading, error, refetch } = useTeachers();
+  const { baseUrl } = useBaseUrl();
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Simulate loading
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const enhancedTeachers = defaultTeachers.map(teacher => ({
+  const enhancedTeachers = teachers.map(teacher => ({
     ...teacher,
-    photo: teacher.photo || '',
-    status: teacher.status || (Math.random() > 0.2 ? 'active' : 'inactive')
+    photo: '',
+    status: 'active',
+    subjects: ['Subject'],
+    grade_levels: ['10'],
+    years_experience: 5
   }));
 
-  const handleTeacherAdded = () => {
-    // In a real app, you would refresh the data here
-    // For now, we'll just close the modal
-    setIsAddModalOpen(false);
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls') && !file.name.endsWith('.csv')) {
+      toast.error('Please select an Excel file (.xlsx, .xls) or CSV file (.csv)');
+      return;
+    }
+
+    setSelectedFile(file);
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile || !baseUrl) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('excel_file', selectedFile);
+
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      
+      const response = await fetch(`${baseUrl}/school-admin/upload-users/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload file');
+      }
+
+      const result = await response.json();
+      const message = result.created_count 
+        ? `Successfully uploaded ${result.created_count} teachers`
+        : 'File processed successfully';
+      toast.success(message);
+      refetch();
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      toast.error('Failed to upload teachers. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const downloadTemplate = () => {
+    const headers = ['first_name', 'last_name', 'email', 'phone_number', 'subjects', 'grade_levels'];
+    const sampleData = ['John', 'Smith', 'john.smith@email.com', '+1234567890', 'Mathematics,Physics', '10,11'];
+    const csvContent = headers.join(',') + '\n' + sampleData.join(',') + '\n';
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'teachers_template.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+    toast.success('Template downloaded successfully!');
   };
 
   const filteredTeachers = enhancedTeachers
@@ -169,7 +225,7 @@ const TeachersList = () => {
           <FiAlertCircle className="text-3xl mb-2" />
           <p className="text-lg font-medium">Data loading error</p>
           <p className="text-sm text-gray-500 mt-2">
-            {error.message || "Failed to load teachers information"}
+            {error || "Failed to load teachers information"}
           </p>
           <button 
             onClick={() => window.location.reload()}
@@ -189,24 +245,65 @@ const TeachersList = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Teachers Directory</h1>
           <p className="text-gray-600 mt-1">
-            {filteredTeachers.length} {filteredTeachers.length === 1 ? 'teacher' : 'teachers'} available
+            {filteredTeachers.length} {filteredTeachers.length === 1 ? 'teacher' : 'teachers'} found
+          </p>
+          <p className="text-sm text-gray-500 mt-1">
+            Download template → Fill with teacher data → Upload Excel/CSV file
           </p>
         </div>
         
-        <button 
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg"
-          onClick={() => setIsAddModalOpen(true)}
-        >
-          <FiPlus className="text-lg" />
-          <span>Add New Teacher</span>
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={downloadTemplate}
+            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
+          >
+            <FiDownload className="text-base" />
+            <span>Template</span>
+          </button>
+          
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm max-w-48"
+          >
+            <FiFileText className="text-base" />
+            <span className="truncate">{selectedFile ? selectedFile.name : 'Select File'}</span>
+          </button>
+          
+          <button
+            onClick={handleUpload}
+            disabled={!selectedFile || isUploading || !baseUrl}
+            className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
+          >
+            {isUploading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            ) : (
+              <FiUpload className="text-base" />
+            )}
+            <span>{isUploading ? 'Uploading...' : 'Upload'}</span>
+          </button>
+          
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+        </div>
       </div>
 
-      <AddTeacherModal 
-        isOpen={isAddModalOpen} 
-        onClose={() => setIsAddModalOpen(false)}
-        onTeacherAdded={handleTeacherAdded}
-      />
+      {/* Upload Status */}
+      {isUploading && (
+        <div className="w-full bg-blue-50 border border-blue-200 p-4 rounded-xl mb-6">
+          <div className="flex items-center gap-3">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+            <div>
+              <p className="text-blue-800 font-medium">Uploading teachers...</p>
+              <p className="text-blue-600 text-sm">Please wait while we process your Excel file</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filter and search bar */}
       <div className="w-full bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-col md:flex-row gap-4">
@@ -338,19 +435,45 @@ const TeachersList = () => {
           <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <FiUser className="text-gray-400 text-3xl" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-1">No teachers found</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-1">
+            {searchTerm || activeFilter !== 'all' ? 'No teachers found' : 'No teachers yet'}
+          </h3>
           <p className="text-gray-500 mb-4">
-            {searchTerm ? 'No matches for your search criteria' : 'Currently no teachers in this category'}
+            {searchTerm
+              ? "Try adjusting your search"
+              : activeFilter !== 'all'
+              ? "No teachers in this category"
+              : "Upload an Excel file to add teachers"}
           </p>
-          <button 
-            onClick={() => {
-              setSearchTerm('');
-              setActiveFilter('all');
-            }}
-            className="text-indigo-600 hover:text-indigo-800 font-medium"
-          >
-            Clear all filters
-          </button>
+          {searchTerm || activeFilter !== 'all' ? (
+            <button
+              onClick={() => {
+                setSearchTerm("");
+                setActiveFilter("all");
+              }}
+              className="text-indigo-600 hover:text-indigo-800 font-medium"
+            >
+              Reset filters
+            </button>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+              <button
+                onClick={downloadTemplate}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
+              >
+                <FiDownload className="text-base" />
+                <span>Download Template</span>
+              </button>
+              <span className="text-gray-400">then</span>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
+              >
+                <FiFileText className="text-base" />
+                <span>Select File</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

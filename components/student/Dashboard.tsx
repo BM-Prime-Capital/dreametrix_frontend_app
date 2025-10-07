@@ -309,612 +309,226 @@ export default function StudentDashboard() {
   const firstName = userProfile.full_name.split(' ')[0] || 'Student';
   const initials = userProfile.full_name.split(' ').map(n => n[0]).join('').toUpperCase() || 'ST';
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      <section className="flex flex-col gap-6 w-full">
-        {/* Header Section Moderne */}
-        <div className="bg-gradient-to-r from-[#25AAE1] via-[#25AAE1] to-[#1D8CB3] p-8 rounded-2xl shadow-xl">
-          <div className="flex flex-col md:flex-row items-center justify-between text-white">
-            <div className="flex items-center gap-6 mb-6 md:mb-0">
-              <div className="relative">
-                <Avatar className="h-20 w-20 border-4 border-white/30 shadow-xl">
-                  <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback className="bg-white/20 text-white text-2xl font-bold">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#4CAF50] rounded-full flex items-center justify-center border-2 border-white">
-                  <TrendingUp className="h-4 w-4 text-white" />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold mb-2">Welcome back, {firstName}!</h1>
-                <p className="text-white/90 text-lg">
-                  Ready to learn something new today?
-                </p>
-                <div className="flex items-center gap-4 mt-3">
-                  <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
-                    <BookMarked className="h-4 w-4" />
-                    <span className="text-sm">Grade {userProfile.grade}</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
-                    <Award className="h-4 w-4" />
-                    <span className="text-sm">
-                      {rewardsLoading ? "Student" : 
-                       rewardsData?.student?.totalPoints && rewardsData.student.totalPoints > 100 ? "Top Student" :
-                       rewardsData?.student?.totalPoints && rewardsData.student.totalPoints > 50 ? "Good Student" :
-                       "Student"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* <div className="flex gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-12 w-12 bg-white/10 hover:bg-white/20 text-white border-white/20 relative rounded-xl transition-all duration-300 hover:scale-110"
-              >
-                <Bell className="h-6 w-6" />
-                <span className="absolute -top-2 -right-2 bg-[#FF5252] text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold">
-                  {assignmentsLoading ? "0" : Math.max(0, getAssignmentStats().total - getAssignmentStats().completed)}
-                </span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-12 w-12 bg-white/10 hover:bg-white/20 text-white border-white/20 rounded-xl transition-all duration-300 hover:scale-110"
-              >
-                <MessageCircle className="h-6 w-6" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-12 w-12 bg-white/10 hover:bg-white/20 text-white border-white/20 rounded-xl transition-all duration-300 hover:scale-110"
-              >
-                <Settings className="h-6 w-6" />
-              </Button>
-            </div> */}
+return (
+  <div className="min-h-screen">
+    <section className="flex flex-col gap-6 w-full p-4 sm:p-6 lg:p-8">
+
+      {/* HEADER */}
+      <div className="rounded-2xl p-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg flex flex-col sm:flex-row items-center justify-between gap-6 transition-all">
+        <div className="flex items-center gap-4">
+          <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
+            <AvatarImage src="/placeholder.svg" />
+            <AvatarFallback className="bg-white/20 text-2xl font-bold text-white">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight">
+              Welcome back, {firstName}! 👋
+            </h1>
+            <p className="text-blue-100 text-sm">
+              {userProfile.school} • Grade {userProfile.grade}
+            </p>
           </div>
         </div>
 
-        <div className="flex flex-col gap-6">
-          <div className="space-y-6">
-            {/* Quick Stats Section Moderne */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="p-6 bg-gradient-to-br from-[#4CAF50] to-[#45A049] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/20 rounded-xl">
-                    <Trophy className="h-8 w-8" />
-                  </div>
-                  <div>
-                    <p className="text-white/90 text-sm font-medium">Grade Average</p>
-                    <p className="text-3xl font-bold">
-                      {dashboardLoading ? "--" : dashboardData?.academic_overview?.overall_average ? `${dashboardData.academic_overview.overall_average}%` : `${calculateOverallAverage(studentClasses)}%`}
-                    </p>
-                    <p className="text-white/70 text-xs">
-                      {dashboardData?.academic_overview?.total_courses || studentClasses.length} {(dashboardData?.academic_overview?.total_courses || studentClasses.length) === 1 ? 'class' : 'classes'}
-                    </p>
-                  </div>
-                </div>
-              </Card>
+        <div className="flex gap-3">
+          <Button
+            variant="secondary"
+            className="rounded-xl bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border-white/20 transition-all"
+            onClick={() => router.push("/student/settings")}
+          >
+            <Settings className="h-5 w-5 mr-2" /> Settings
+          </Button>
+          <Button
+            className="rounded-xl bg-white text-blue-700 hover:bg-blue-50 shadow-md transition-all"
+            onClick={() => router.push("/student/messages")}
+          >
+            <MessageCircle className="h-5 w-5 mr-2" /> Messages
+          </Button>
+        </div>
+      </div>
 
-              <Card className="p-6 bg-gradient-to-br from-[#25AAE1] to-[#1D8CB3] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/20 rounded-xl">
-                    <BookOpen className="h-8 w-8" />
-                  </div>
-                  <div>
-                    <p className="text-white/90 text-sm font-medium">Assignments</p>
-                    <p className="text-3xl font-bold">
-                      {(dashboardLoading && assignmentsLoading) ? "--" : `${getAssignmentStats().completed}/${getAssignmentStats().total}`}
-                    </p>
-                    <p className="text-white/70 text-xs">
-                      {(dashboardLoading && assignmentsLoading) ? "Loading..." : `${getAssignmentStats().percentage}% completed`}
-                    </p>
-                  </div>
-                </div>
-              </Card>
 
-              <Card className="p-6 bg-gradient-to-br from-[#25AAE1] to-[#1D8CB3] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/20 rounded-xl">
-                    <Clock className="h-8 w-8" />
-                  </div>
-                  <div>
-                    <p className="text-white/90 text-sm font-medium">Study Time</p>
-                    <p className="text-3xl font-bold">
-                      {attendanceLoading ? "--" : getStudyTimeFromAttendance()}
-                    </p>
-                    <p className="text-white/70 text-xs">
-                      {dashboardData?.attendance ? `${dashboardData.attendance.rate}% attendance` : 
-                       attendanceData ? `${attendanceData.summary?.attendance_rate || 0}% attendance` : "This month"}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-6 bg-gradient-to-br from-[#FF9800] to-[#F57C00] text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 rounded-2xl border-0">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/20 rounded-xl">
-                    <Star className="h-8 w-8" />
-                  </div>
-                  <div>
-                    <p className="text-white/90 text-sm font-medium">Achievements</p>
-                    <p className="text-3xl font-bold">
-                      {rewardsLoading ? "--" : getAchievementsCount()}
-                    </p>
-                    <p className="text-white/70 text-xs">
-                      {rewardsData ? `${rewardsData.student?.totalPoints || 0} points` : "Total earned"}
-                    </p>
-                  </div>
-                </div>
-              </Card>
+      {/* QUICK STATS */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          {
+            title: "Grade Average",
+            icon: Trophy,
+            value: dashboardLoading
+              ? "--"
+              : `${calculateOverallAverage(studentClasses)}%`,
+            sub: `${studentClasses.length} classes`,
+            color: "from-blue-500 to-blue-700",
+          },
+          {
+            title: "Assignments",
+            icon: BookOpen,
+            value: `${getAssignmentStats().completed}/${getAssignmentStats().total}`,
+            sub: `${getAssignmentStats().percentage}% done`,
+            color: "from-green-500 to-green-700",
+          },
+          {
+            title: "Attendance",
+            icon: Clock,
+            value: getStudyTimeFromAttendance(),
+            sub:
+              dashboardData?.attendance?.rate !== undefined
+                ? `${dashboardData.attendance.rate}% attendance`
+                : "Loading...",
+            color: "from-indigo-500 to-indigo-700",
+          },
+          {
+            title: "Rewards",
+            icon: Star,
+            value: getAchievementsCount(),
+            sub: `${rewardsData?.student?.totalPoints || 0} points`,
+            color: "from-amber-500 to-yellow-600",
+          },
+        ].map((stat, i) => (
+          <Card
+            key={i}
+            className="p-6 rounded-2xl border border-gray-100 bg-white shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+          >
+            <div className="flex items-center gap-4">
+              <div
+                className={`p-4 rounded-full bg-gradient-to-br ${stat.color} text-white shadow-md`}
+              >
+                <stat.icon className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 font-medium">{stat.title}</p>
+                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                <p className="text-xs text-gray-500">{stat.sub}</p>
+              </div>
             </div>
+          </Card>
 
-            {/* Quick Actions Moderne */}
-            <Card className="p-8 shadow-xl border-0 bg-white rounded-2xl">
-              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] rounded-xl">
-                  <Zap className="h-6 w-6 text-white" />
-                </div>
-                Quick Actions
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Button
-                  className="h-auto flex-col gap-3 p-6 bg-gradient-to-br from-[#25AAE1] to-[#1D8CB3] hover:from-[#1D8CB3] hover:to-[#25AAE1] transition-all duration-300 transform hover:scale-105 rounded-xl shadow-lg"
-                  onClick={() => router.push("/student/attendance")}
-                >
-                  <Calendar className="h-8 w-8" />
-                  <span className="text-sm font-semibold">Attendance</span>
-                </Button>
-                <Button
-                  className="h-auto flex-col gap-3 p-6 bg-gradient-to-br from-[#4CAF50] to-[#45A049] hover:from-[#45A049] hover:to-[#4CAF50] transition-all duration-300 transform hover:scale-105 rounded-xl shadow-lg"
-                  onClick={() => router.push("/student/assignments")}
-                >
-                  <BookOpen className="h-8 w-8" />
-                  <span className="text-sm font-semibold">Assignments</span>
-                </Button>
-                <Button
-                  className="h-auto flex-col gap-3 p-6 bg-gradient-to-br from-[#25AAE1] to-[#1D8CB3] hover:from-[#1D8CB3] hover:to-[#25AAE1] transition-all duration-300 transform hover:scale-105 rounded-xl shadow-lg"
-                  onClick={() => router.push("/student/gradebook")}
-                >
-                  <GraduationCap className="h-8 w-8" />
-                  <span className="text-sm font-semibold">Grades</span>
-                </Button>
-                <Button
-                  className="h-auto flex-col gap-3 p-6 bg-gradient-to-br from-[#FF9800] to-[#F57C00] hover:from-[#F57C00] hover:to-[#FF9800] transition-all duration-300 transform hover:scale-105 rounded-xl shadow-lg"
-                  onClick={() => router.push("/student/rewards")}
-                >
-                  <Target className="h-8 w-8" />
-                  <span className="text-sm font-semibold">Rewards</span>
-                </Button>
+        ))}
+      </div>
+
+      {/* QUICK ACTIONS */}
+      <Card className="p-6 bg-white/80 border border-gray-200 rounded-2xl shadow-md hover:shadow-lg transition-all">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { title: "Attendance", icon: Calendar, link: "/student/attendance" },
+            { title: "Assignments", icon: BookOpen, link: "/student/assignments" },
+            { title: "Grades", icon: GraduationCap, link: "/student/gradebook" },
+            { title: "Rewards", icon: Target, link: "/student/rewards" },
+          ].map((action, i) => (
+            <Button
+              key={i}
+              variant="outline"
+              className="flex flex-col items-center justify-center p-5 h-auto rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-lg hover:scale-[1.05] transition-all duration-300 text-gray-700 hover:text-blue-700"
+              onClick={() => router.push(action.link)}
+            >
+              <div className="p-3 bg-blue-50 rounded-full mb-2">
+                <action.icon className="h-6 w-6 text-blue-600" />
               </div>
-            </Card>
+              <span className="text-sm font-semibold">{action.title}</span>
+            </Button>
 
-            {/* Student Progress Section */}
-            <StudentProgress dashboardData={dashboardData} />
+          ))}
+        </div>
+      </Card>
 
-            {/* Recent Submissions Section */}
-            {dashboardData?.recent_submissions && dashboardData.recent_submissions.length > 0 && (
-              <Card className="p-8 shadow-xl border-0 bg-white rounded-2xl">
-                <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-r from-[#4CAF50] to-[#45A049] rounded-xl">
-                    <BookOpen className="h-6 w-6 text-white" />
-                  </div>
-                  Recent Submissions
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {dashboardData.recent_submissions.slice(0, 4).map((submission) => (
-                    <div 
-                      key={submission.id} 
-                      className={`flex items-center gap-4 p-4 rounded-xl ${
-                        submission.marked && submission.grade !== null 
-                          ? submission.grade >= 85 ? 'bg-green-50' 
-                            : submission.grade >= 70 ? 'bg-yellow-50'
-                            : 'bg-red-50'
-                          : 'bg-gray-50'
-                      }`}
-                    >
-                      <div className={`p-3 rounded-xl ${
-                        submission.marked && submission.grade !== null
-                          ? submission.grade >= 85 ? 'bg-green-500'
-                            : submission.grade >= 70 ? 'bg-yellow-500' 
-                            : 'bg-red-500'
-                          : 'bg-gray-400'
-                      }`}>
-                        {submission.marked && submission.grade !== null 
-                          ? <Trophy className="h-6 w-6 text-white" />
-                          : <Clock className="h-6 w-6 text-white" />
-                        }
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-800">{submission.assessment_name}</p>
-                        <p className="text-sm text-gray-600">{submission.course_name}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            submission.marked 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-yellow-100 text-yellow-700'
-                          }`}>
-                            {submission.marked ? 'Graded' : 'Pending'}
-                          </span>
-                          {submission.grade !== null && (
-                            <span className="text-sm font-semibold text-gray-700">
-                              {submission.grade}%
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {new Date(submission.submitted_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+      {/* RECENT SUBMISSIONS */}
+      {dashboardData?.recent_submissions && (
+        <Card className="p-6 bg-white/80 border border-gray-200 rounded-2xl shadow-md hover:shadow-lg transition-all">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4 border-l-4 border-blue-600 pl-3">
+            Recent Submissions
+          </h2>
+
+          <div className="space-y-3">
+            {dashboardData.recent_submissions.slice(0, 4).map((submission) => (
+              <div
+                key={submission.id}
+                
+                className="flex justify-between items-center p-4 rounded-xl border border-gray-100 hover:bg-blue-50/50 transition-all duration-200"
+
+              >
+                <div>
+                  <p className="font-semibold text-gray-800">
+                    {submission.assessment_name}
+                  </p>
+                  <p className="text-sm text-gray-500">{submission.course_name}</p>
                 </div>
-              </Card>
-            )}
-
-            {/* Attendance Summary Section */}
-            {dashboardData?.attendance && (
-              <Card className="p-8 shadow-xl border-0 bg-white rounded-2xl">
-                <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] rounded-xl">
-                    <Calendar className="h-6 w-6 text-white" />
-                  </div>
-                  Attendance Summary
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {/* Attendance Rate */}
-                  <div className={`p-4 rounded-xl ${
-                    dashboardData.attendance.rate >= 95 ? 'bg-green-50' :
-                    dashboardData.attendance.rate >= 85 ? 'bg-yellow-50' :
-                    'bg-red-50'
-                  }`}>
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-xl ${
-                        dashboardData.attendance.rate >= 95 ? 'bg-green-500' :
-                        dashboardData.attendance.rate >= 85 ? 'bg-yellow-500' :
-                        'bg-red-500'
-                      }`}>
-                        {dashboardData.attendance.rate >= 95 ? 
-                          <CheckCircle className="h-5 w-5 text-white" /> :
-                          dashboardData.attendance.rate >= 85 ?
-                          <AlertCircle className="h-5 w-5 text-white" /> :
-                          <XCircle className="h-5 w-5 text-white" />
-                        }
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-800">Overall Rate</p>
-                        <p className="text-2xl font-bold text-gray-900">{dashboardData.attendance.rate}%</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Present Days */}
-                  <div className="p-4 rounded-xl bg-green-50">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-500 rounded-xl">
-                        <CheckCircle className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-800">Present</p>
-                        <p className="text-2xl font-bold text-gray-900">{dashboardData.attendance.present_days}</p>
-                        <p className="text-sm text-gray-600">of {dashboardData.attendance.total_days} days</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Absent Days */}
-                  <div className="p-4 rounded-xl bg-red-50">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-red-500 rounded-xl">
-                        <XCircle className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-800">Absent</p>
-                        <p className="text-2xl font-bold text-gray-900">{dashboardData.attendance.absent_days}</p>
-                        <p className="text-sm text-gray-600">days missed</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Late Days */}
-                  <div className="p-4 rounded-xl bg-yellow-50">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-yellow-500 rounded-xl">
-                        <AlertCircle className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-800">Late</p>
-                        <p className="text-2xl font-bold text-gray-900">{dashboardData.attendance.late_days}</p>
-                        <p className="text-sm text-gray-600">days late</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* Recent Achievements Section Moderne */}
-            <Card className="p-8 shadow-xl border-0 bg-white rounded-2xl">
-              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-r from-[#FF9800] to-[#F57C00] rounded-xl">
-                  <Trophy className="h-6 w-6 text-white" />
-                </div>
-                Recent Achievements
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {rewardsLoading ? (
-                  // Loading state
-                  <>
-                    <div className="flex items-center gap-4 p-6 bg-gray-100 rounded-2xl animate-pulse">
-                      <div className="p-4 bg-gray-300 rounded-xl w-16 h-16"></div>
-                      <div>
-                        <div className="h-4 bg-gray-300 rounded w-24 mb-2"></div>
-                        <div className="h-3 bg-gray-300 rounded w-32"></div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 p-6 bg-gray-100 rounded-2xl animate-pulse">
-                      <div className="p-4 bg-gray-300 rounded-xl w-16 h-16"></div>
-                      <div>
-                        <div className="h-4 bg-gray-300 rounded w-28 mb-2"></div>
-                        <div className="h-3 bg-gray-300 rounded w-20"></div>
-                      </div>
-                    </div>
-                  </>
-                ) : rewardsData?.student?.latestNews && rewardsData.student.latestNews.length > 0 ? (
-                  // Real achievements from API
-                  rewardsData.student.latestNews.slice(0, 2).map((news, index) => (
-                    <div key={index} className={`flex items-center gap-4 p-6 bg-gradient-to-r ${news.status === 'good' ? 'from-[#4CAF50]/10 to-[#45A049]/10' : 'from-[#FF9800]/10 to-[#F57C00]/10'} rounded-2xl hover:shadow-lg transition-all duration-300 transform hover:scale-105`}>
-                      <div className={`p-4 ${news.status === 'good' ? 'bg-[#4CAF50]' : 'bg-[#FF9800]'} rounded-xl`}>
-                        {news.status === 'good' ? <Trophy className="h-8 w-8 text-white" /> : <Star className="h-8 w-8 text-white" />}
-                      </div>
-                      <div>
-                        <p className="font-bold text-gray-800 text-lg">
-                          {news.status === 'good' ? 'Great Work!' : 'Activity'}
-                        </p>
-                        <p className="text-gray-600">
-                          {news.class} - {new Date(news.date).toLocaleDateString()}
-                        </p>
-                        <p className={`text-sm font-semibold ${news.status === 'good' ? 'text-[#4CAF50]' : 'text-[#FF9800]'}`}>
-                          {news.points > 0 ? `+${news.points}` : news.points} points
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  // Fallback when no achievements
-                  <>
-                    <div className="flex items-center gap-4 p-6 bg-gradient-to-r from-[#25AAE1]/10 to-[#1D8CB3]/10 rounded-2xl">
-                      <div className="p-4 bg-[#25AAE1] rounded-xl">
-                        <Star className="h-8 w-8 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-gray-800 text-lg">Keep Going!</p>
-                        <p className="text-gray-600">Your achievements will appear here</p>
-                        <p className="text-[#25AAE1] text-sm font-semibold">Stay motivated</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 p-6 bg-gradient-to-r from-[#4CAF50]/10 to-[#45A049]/10 rounded-2xl">
-                      <div className="p-4 bg-[#4CAF50] rounded-xl">
-                        <Trophy className="h-8 w-8 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-gray-800 text-lg">Ready to Excel!</p>
-                        <p className="text-gray-600">Complete assignments to earn points</p>
-                        <p className="text-[#4CAF50] text-sm font-semibold">Start now</p>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </Card>
-
-            {/* Today's Schedule Quick View Moderne */}
-            <Card className="p-8 shadow-xl border-0 bg-white rounded-2xl">
-              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] rounded-xl">
-                  <Calendar className="h-6 w-6 text-white" />
-                </div>
-                Today&apos;s Schedule
-              </h2>
-              <div className="space-y-4">
-                {(dashboardLoading && gradesLoading) ? (
-                  // Loading state
-                  <>
-                    <div className="flex items-center gap-4 p-4 bg-gray-100 rounded-xl animate-pulse">
-                      <div className="w-4 h-4 bg-gray-300 rounded-full"></div>
-                      <div className="flex-1">
-                        <div className="h-4 bg-gray-300 rounded w-24 mb-2"></div>
-                        <div className="h-3 bg-gray-300 rounded w-32"></div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 p-4 bg-gray-100 rounded-xl animate-pulse">
-                      <div className="w-4 h-4 bg-gray-300 rounded-full"></div>
-                      <div className="flex-1">
-                        <div className="h-4 bg-gray-300 rounded w-20 mb-2"></div>
-                        <div className="h-3 bg-gray-300 rounded w-28"></div>
-                      </div>
-                    </div>
-                  </>
-                ) : dashboardData?.academic_overview?.courses && dashboardData.academic_overview.courses.length > 0 ? (
-                  // Real courses from dashboard API
-                  dashboardData.academic_overview.courses.slice(0, 3).map((course, index) => {
-                    const colors = [
-                      { bg: 'from-[#25AAE1]/10 to-[#1D8CB3]/10', dot: 'bg-[#25AAE1]', text: 'text-[#25AAE1]' },
-                      { bg: 'from-[#4CAF50]/10 to-[#45A049]/10', dot: 'bg-[#4CAF50]', text: 'text-[#4CAF50]' },
-                      { bg: 'from-[#FF9800]/10 to-[#F57C00]/10', dot: 'bg-[#FF9800]', text: 'text-[#FF9800]' }
-                    ];
-                    const color = colors[index % colors.length];
-                    const status = index === 0 ? 'Available' : index === 1 ? 'Upcoming' : 'Later';
-                    
-                    return (
-                      <div key={course.id} className={`flex items-center gap-4 p-4 bg-gradient-to-r ${color.bg} rounded-xl hover:shadow-md transition-all duration-200`}>
-                        <div className={`w-4 h-4 ${color.dot} rounded-full`}></div>
-                        <div className="flex-1">
-                          <p className="font-semibold text-gray-800">{course.name}</p>
-                          <p className="text-gray-600">
-                            {course.subject} • {course.teacher} • Grade: {course.grade}%
-                          </p>
-                        </div>
-                        <div className={`${color.text} font-semibold`}>{status}</div>
-                      </div>
-                    );
-                  })
-                ) : studentClasses && studentClasses.length > 0 ? (
-                  // Fallback to original studentClasses data
-                  studentClasses.slice(0, 3).map((studentClass, index) => {
-                    const colors = [
-                      { bg: 'from-[#25AAE1]/10 to-[#1D8CB3]/10', dot: 'bg-[#25AAE1]', text: 'text-[#25AAE1]' },
-                      { bg: 'from-[#4CAF50]/10 to-[#45A049]/10', dot: 'bg-[#4CAF50]', text: 'text-[#4CAF50]' },
-                      { bg: 'from-[#FF9800]/10 to-[#F57C00]/10', dot: 'bg-[#FF9800]', text: 'text-[#FF9800]' }
-                    ];
-                    const color = colors[index % colors.length];
-                    const status = index === 0 ? 'Available' : index === 1 ? 'Upcoming' : 'Later';
-                    
-                    return (
-                      <div key={studentClass.course_id} className={`flex items-center gap-4 p-4 bg-gradient-to-r ${color.bg} rounded-xl hover:shadow-md transition-all duration-200`}>
-                        <div className={`w-4 h-4 ${color.dot} rounded-full`}></div>
-                        <div className="flex-1">
-                          <p className="font-semibold text-gray-800">{studentClass.course}</p>
-                          <p className="text-gray-600">
-                            Average: {studentClass.student_average}% • {studentClass.assessments?.length || 0} assessments
-                          </p>
-                        </div>
-                        <div className={`${color.text} font-semibold`}>{status}</div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  // Fallback when no classes
-                  <div className="flex items-center justify-center p-8 bg-gray-50 rounded-xl">
-                    <div className="text-center">
-                      <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600 font-medium">No classes available</p>
-                      <p className="text-gray-500 text-sm">Your schedule will appear here</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Card>
-
-            {/* Latest Polls */}
-            <Card className="p-8 shadow-xl border-0 bg-gradient-to-br from-[#FF9800]/10 to-[#F57C00]/10 rounded-2xl">
-              <div className="space-y-6">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-r from-[#FF9800] to-[#F57C00] rounded-xl">
-                    <Bell className="h-6 w-6 text-white" />
-                  </div>
-                  Latest Polls
-                </h2>
-                <div className="space-y-4">
-                  {pollsLoading ? (
-                    // Loading state
-                    <>
-                      <div className="flex items-start gap-4 p-6 bg-gray-100 rounded-2xl animate-pulse">
-                        <div className="p-3 bg-gray-300 rounded-xl mt-1 w-12 h-12"></div>
-                        <div className="flex-1">
-                          <div className="h-4 bg-gray-300 rounded w-24 mb-2"></div>
-                          <div className="h-3 bg-gray-300 rounded w-32"></div>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-4 p-6 bg-gray-100 rounded-2xl animate-pulse">
-                        <div className="p-3 bg-gray-300 rounded-xl mt-1 w-12 h-12"></div>
-                        <div className="flex-1">
-                          <div className="h-4 bg-gray-300 rounded w-28 mb-2"></div>
-                          <div className="h-3 bg-gray-300 rounded w-36"></div>
-                        </div>
-                      </div>
-                    </>
-                  ) : pollsData && pollsData.length > 0 ? (
-                    // Real polls from API
-                    pollsData.slice(0, 2).map((poll, index) => (
-                      <div key={poll.id || index} className="flex items-start gap-4 p-6 bg-white rounded-2xl shadow-lg">
-                        <div className="p-3 bg-[#25AAE1] rounded-xl mt-1">
-                          <Bell className="h-6 w-6 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-gray-800 font-bold text-lg">
-                            {poll.title || 'Poll Available'}
-                          </p>
-                          <p className="text-gray-600 mt-1">
-                            <span className="font-bold text-[#25AAE1]">
-                              {poll.description || 'New poll to complete'}
-                            </span>
-                          </p>
-                          {poll.end_date && (
-                            <p className="text-gray-500 text-xs mt-1">
-                              Due: {new Date(poll.end_date).toLocaleDateString()}
-                            </p>
-                          )}
-                          <Button
-                            size="sm"
-                            className="mt-3 bg-[#25AAE1] hover:bg-[#1D8CB3] text-white rounded-xl transition-all duration-300 hover:scale-105"
-                            onClick={() => router.push('/student/polls')}
-                          >
-                            Respond Now
-                          </Button>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    // Fallback when no polls
-                    <>
-                      <div className="flex items-start gap-4 p-6 bg-white rounded-2xl shadow-lg">
-                        <div className="p-3 bg-[#4CAF50] rounded-xl mt-1">
-                          <BookOpen className="h-6 w-6 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-gray-800 font-bold text-lg">
-                            All Caught Up!
-                          </p>
-                          <p className="text-gray-600 mt-1">
-                            <span className="font-bold text-[#4CAF50]">
-                              No pending notifications
-                            </span>
-                          </p>
-                          <Button
-                            size="sm"
-                            className="mt-3 bg-[#4CAF50] hover:bg-[#45A049] text-white rounded-xl transition-all duration-300 hover:scale-105"
-                            onClick={() => router.push('/student/assignments')}
-                          >
-                            View Assignments
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-4 p-6 bg-white rounded-2xl shadow-lg">
-                        <div className="p-3 bg-[#FF9800] rounded-xl mt-1">
-                          <Star className="h-6 w-6 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-gray-800 font-bold text-lg">
-                            Keep Learning
-                          </p>
-                          <p className="text-gray-600 mt-1">
-                            <span className="font-bold text-[#FF9800]">
-                              Check your progress
-                            </span>
-                          </p>
-                          <Button
-                            size="sm"
-                            className="mt-3 bg-[#FF9800] hover:bg-[#F57C00] text-white rounded-xl transition-all duration-300 hover:scale-105"
-                            onClick={() => router.push('/student/gradebook')}
-                          >
-                            View Grades
-                          </Button>
-                        </div>
-                      </div>
-                    </>
+                <div className="text-right">
+                  <span
+                    className={`text-sm px-2 py-1 rounded-full ${
+                      submission.marked
+                        ? "bg-green-100 text-green-700"
+                        : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {submission.marked ? "Graded" : "Pending"}
+                  </span>
+                  {submission.grade !== null && (
+                    <p className="text-gray-700 font-bold mt-1">
+                      {submission.grade}%
+                    </p>
                   )}
                 </div>
               </div>
-            </Card>
-
-            
+            ))}
           </div>
-        </div>
-      </section>
-    </div>
-  );
+        </Card>
+      )}
+
+      {/* ATTENDANCE SUMMARY */}
+      {dashboardData?.attendance && (
+        <Card className="p-6 bg-white/80 border border-gray-200 rounded-2xl shadow-md hover:shadow-lg transition-all">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Attendance Summary</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              {
+                label: "Rate",
+                value: `${dashboardData.attendance.rate}%`,
+                color: "from-blue-500 to-blue-700",
+                icon: CheckCircle,
+              },
+              {
+                label: "Present",
+                value: dashboardData.attendance.present_days,
+                color: "from-green-500 to-green-700",
+                icon: CheckCircle,
+              },
+              {
+                label: "Absent",
+                value: dashboardData.attendance.absent_days,
+                color: "from-red-500 to-red-700",
+                icon: XCircle,
+              },
+              {
+                label: "Late",
+                value: dashboardData.attendance.late_days,
+                color: "from-yellow-500 to-amber-600",
+                icon: AlertCircle,
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gradient-to-r hover:from-blue-50/60 hover:to-purple-50/60 transition-all duration-300"
+              >
+                <div
+                  className={`p-3 rounded-xl bg-gradient-to-br ${item.color} text-white shadow-md`}
+                >
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">{item.label}</p>
+                  <p className="text-lg font-bold text-gray-900">{item.value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+    </section>
+  </div>
+);
+
+
 }

@@ -107,7 +107,7 @@ export default function TeacherCommunication() {
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const [isCreatingAnnouncement, setIsCreatingAnnouncement] = useState(false);
 
-    const storedUser = localStorage.getItem(localStorageKey.USER_DATA);
+  const storedUser = localStorage.getItem(localStorageKey.USER_DATA);
   const currentUserId = storedUser ? JSON.parse(storedUser).id : null;
 
   const {
@@ -252,6 +252,16 @@ const conversations: Conversation[] = useMemo(() => {
 }, [rooms, currentUserId]);
 
 
+useEffect(() => {
+  console.log("🔍 DEBUG Communication Data:", {
+    students: students?.map(s => ({ id: s.id, name: s.name })),
+    parents: parents?.map(p => ({ id: p.id, name: p.name })),
+    teachers: teachers?.map(t => ({ id: t.id, name: t.name })),
+    selectedRecipients
+  });
+}, [students, parents, teachers, selectedRecipients]);
+
+
 
   const chatMessages: Message[] = useMemo(() => {
     return messages.map((msg) => ({
@@ -319,6 +329,13 @@ const conversations: Conversation[] = useMemo(() => {
   };
 
 const handleCreateConversation = async () => {
+    console.log("🎯 Creating conversation with recipients:", {
+    selectedRecipients,
+    recipientType,
+    students: students.filter(s => selectedRecipients.includes(s.id)),
+    classes: classes.filter(c => selectedRecipients.includes(c.id)),
+    parents: parents.filter(p => selectedRecipients.includes(p.id))
+  });
   if (selectedRecipients.length === 0 || isCreatingConversation) return;
 
   setIsCreatingConversation(true);
@@ -333,7 +350,7 @@ const handleCreateConversation = async () => {
       conversationName =
         selectedStudentNames.length === 1
           ? `Conversation avec ${selectedStudentNames[0]}`
-          : `Conversation avec ${selectedStudentNames.length} étudiants`;
+          : `Conversation avec ${selectedStudentNames.length} students`;
     } else if (recipientType === "class") {
       const selectedClassNames = classes
         .filter((cls) => selectedRecipients.includes(cls.id))
@@ -359,7 +376,7 @@ const handleCreateConversation = async () => {
     const newRoom = await createRoom(
       conversationName,
       selectedRecipients.map((id) => parseInt(id)),
-      isGroupChat, // ✅ true si c’est une classe
+      isGroupChat, // true si c’est une classe
       newMessage.trim() || undefined
     );
 
@@ -388,6 +405,58 @@ const handleCreateConversation = async () => {
     // Les messages se rechargent automatiquement via useChatMessages
   }
   }, [selectedRoom]);
+
+
+  // Dans TeacherCommunication.tsx
+const debugFindUserMappings = async () => {
+  console.log("🔍 DÉBUT - Recherche des mappings utilisateurs...");
+
+  // 1. Afficher tous les utilisateurs de useCommunicationData
+  console.log("📊 Utilisateurs de useCommunicationData:", 
+    students.map(s => ({ id: s.id, name: s.name }))
+  );
+
+  // 2. Analyser les rooms existantes pour trouver les vrais IDs Chat
+  console.log("🏠 Rooms existantes et leurs participants:");
+  rooms.forEach(room => {
+    console.log(`Room: ${room.name} (ID: ${room.id})`);
+    room.participants.forEach(participant => {
+      console.log(`  - ${participant.name} (Chat ID: ${participant.id})`);
+    });
+  });
+
+  // 3. Essayer de trouver Angella dans les rooms existantes
+  const angellaInRooms = rooms.flatMap(room => 
+    room.participants.filter(p => 
+      p.name.toLowerCase().includes('angella') || 
+      p.name.toLowerCase().includes('mbumba')
+    )
+  );
+  
+  console.log("🎯 Angella trouvée dans les rooms:", angellaInRooms);
+
+  // 4. Proposer un mapping basé sur l'analyse
+  console.log("💡 MAPPING PROPOSÉ:");
+  students.forEach(student => {
+    const foundInRooms = rooms.flatMap(room => 
+      room.participants.filter(p => 
+        p.name.toLowerCase().includes(student.name.toLowerCase().split(' ')[0]) ||
+        student.name.toLowerCase().includes(p.name.toLowerCase().split(' ')[0])
+      )
+    );
+    
+    if (foundInRooms.length > 0) {
+      console.log(`  ${student.name} (Comm ID: ${student.id}) → ${foundInRooms[0].name} (Chat ID: ${foundInRooms[0].id})`);
+    }
+  });
+};
+
+// Appelez cette fonction dans un useEffect
+useEffect(() => {
+  if (students.length > 0 && rooms.length > 0) {
+    debugFindUserMappings();
+  }
+}, [students, rooms]);
 
   const handleCreateAnnouncement = async () => {
     if (!newMessage.trim() || selectedRecipients.length === 0 || isCreatingAnnouncement)

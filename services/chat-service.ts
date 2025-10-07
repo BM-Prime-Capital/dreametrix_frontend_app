@@ -141,7 +141,8 @@ export class ChatMessageService {
     tenantPrimaryDomain: string | undefined,
     accessToken: string | undefined,
     limit?: number,
-    offset?: number
+    offset?: number,
+    chatRoomId?: number
   ): Promise<ChatMessagesResponse> {
     try {
       assertToken(accessToken);
@@ -150,6 +151,7 @@ export class ChatMessageService {
       const params: Record<string, string> = {};
       if (limit !== undefined) params.limit = String(limit);
       if (offset !== undefined) params.offset = String(offset);
+      if (chatRoomId) params.chat = chatRoomId.toString();
 
       const url = buildUrlWithParams(base, CHAT_ENDPOINTS.MESSAGES, params);
 
@@ -177,6 +179,51 @@ export class ChatMessageService {
       );
     }
   }
+
+    /**
+   *  STUDENT-SPECIFIC METHODS
+   *  (if any student-specific logic is needed, it can be added here)
+   */
+
+    /**
+   * GET /chats/rooms/:uuid/ → retourne le détail d'une room avec ses messages
+   */
+  static async getChatMessages(
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
+    roomUuid: string
+  ): Promise<ChatRoomDetail> {
+    try {
+      assertToken(accessToken);
+
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}/chats/rooms/${roomUuid}/`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔎 [ChatMessageService.getChatMessages] URL =>", url);
+      }
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: buildAuthHeaders(accessToken),
+      });
+
+      if (!response.ok) {
+        return normalizeFetchError(response, accessToken);
+      }
+
+      return (await response.json()) as ChatRoomDetail;
+    } catch (error) {
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
+    }
+  }
+
 
   /**
    * POST /chats/messages/ (payload JSON générique)
@@ -432,6 +479,48 @@ static async createChatMessage(
 // ChatRoomService - CORRIGÉ POUR SUPPORTER LES PARTICIPANTS
 // -----------------------------------------------------------------------------------------
 export class ChatRoomService {
+
+
+  /**
+   * POST /chats/rooms/{id}/mark_as_read/ - Marquer une conversation comme lue
+   */
+  static async markAsRead(
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
+    roomId: number
+  ): Promise<{ success: boolean }> {
+    try {
+      assertToken(accessToken);
+
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}/chats/rooms/${roomId}/mark_as_read/`;
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("📖 [ChatRoomService.markAsRead] URL =>", url);
+      }
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: buildAuthHeaders(accessToken),
+      });
+
+      if (!response.ok) {
+        return normalizeFetchError(response, accessToken);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
+      );
+    }
+  }
+
+
   /**
    * GET /chats/rooms/ (filtres optionnels + pagination)
    */
@@ -547,63 +636,61 @@ export class ChatRoomService {
 /**
  * POST /chats/rooms/create/ (endpoint spécialisé – FormData corrigé)
  */
-static async createChatRoom(
-  tenantPrimaryDomain: string | undefined,
-  accessToken: string | undefined,
-  roomData: {
-    name?: string;
-    participant_ids?: number[];
-    is_group?: boolean;
-    initial_message?: string;
-  }
-): Promise<ChatRoom> {
-  try {
-    assertToken(accessToken);
 
-    const base = resolveBaseURL(tenantPrimaryDomain);
-    const url = `${base}${CHAT_ENDPOINTS.ROOMS_CREATE}`;
+  static async createChatRoom(
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
+    roomData: {
+      name?: string;
+      participants?: number[];   // remplace participant_ids
+      is_group?: boolean;
+      initial_message?: string;
+    }
+  ): Promise<ChatRoom> {
+    try {
+      assertToken(accessToken);
 
-    if (process.env.NODE_ENV === "development") {
-      console.log("📝 [ChatRoomService.createChatRoom] URL =>", url, "payload =>", roomData);
-    }
+      const base = resolveBaseURL(tenantPrimaryDomain);
+      const url = `${base}${CHAT_ENDPOINTS.ROOMS_CREATE}`;
 
-    // 🔑 Utilisation de FormData (plus de JSON.stringify)
-    const formData = new FormData();
-    if (roomData.name) formData.append("name", roomData.name);
-    if (roomData.is_group !== undefined) {
-      formData.append("is_group", String(roomData.is_group));
-    }
-    if (roomData.initial_message) {
-      formData.append("initial_message", roomData.initial_message);
-    }
-    if (roomData.participant_ids && Array.isArray(roomData.participant_ids)) {
-      roomData.participant_ids.forEach((id) =>
-        formData.append("participants", id.toString())
+      const formData = new FormData();
+      if (roomData.name) formData.append("name", roomData.name);
+      if (roomData.is_group !== undefined) {
+        formData.append("is_group", String(roomData.is_group));
+      }
+      if (roomData.initial_message) {
+        formData.append("initial_message", roomData.initial_message);
+      }
+
+      // unifié : on utilise "participants"
+      if (roomData.participants && Array.isArray(roomData.participants)) {
+        roomData.participants.forEach((id) =>
+          formData.append("participants", id.toString())
+        );
+      }
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: buildAuthHeaders(accessToken),
+        body: formData,
+      });
+
+      if (!response.ok) {
+        return normalizeFetchError(response, accessToken);
+      }
+
+      return (await response.json()) as ChatRoom;
+    } catch (error) {
+      console.error("❌ [ChatRoomService.createChatRoom] Erreur:", error);
+      if (error instanceof ChatApiError) throw error;
+      throw new ChatApiError(
+        error instanceof Error ? error.message : "Unknown error occurred",
+        0,
+        error,
+        accessToken
       );
     }
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: buildAuthHeaders(accessToken), // ⚡ pas de "Content-Type", c’est géré par FormData
-      body: formData,
-    });
-
-    if (!response.ok) {
-      return normalizeFetchError(response, accessToken);
-    }
-
-    return (await response.json()) as ChatRoom;
-  } catch (error) {
-    console.error("❌ [ChatRoomService.createChatRoom] Erreur:", error);
-    if (error instanceof ChatApiError) throw error;
-    throw new ChatApiError(
-      error instanceof Error ? error.message : "Unknown error occurred",
-      0,
-      error,
-      accessToken
-    );
   }
-}
 
   /**
    * GET /chats/rooms/:id/
@@ -804,6 +891,13 @@ static async createChatRoom(
       );
     }
   }
+
+
+
+
+
+
+
 }
 
 // -----------------------------------------------------------------------------------------

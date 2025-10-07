@@ -40,6 +40,7 @@ interface MessageAreaProps {
   onDeselectConversation: () => void;
   onOpenCompose: () => void;
   onOpenAnnounce: () => void;
+  currentUserId: string | number | null;
 }
 
 export function MessageArea({
@@ -52,6 +53,8 @@ export function MessageArea({
   onDeselectConversation,
   onOpenCompose,
   onOpenAnnounce,
+  currentUserId,
+  
 }: MessageAreaProps) {
   const [, setIsTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -77,6 +80,7 @@ export function MessageArea({
     }
   }, [messages]);
 
+  
 
 
   const handleVoiceCall = () => {
@@ -132,7 +136,20 @@ export function MessageArea({
                   </AvatarFallback>
                 </Avatar>
                 {/* Indicateur en ligne */}
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                <div
+                  className={cn(
+                    "absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white",
+                    selectedConversation.participants[0]?.status === "online"
+                      ? "bg-green-500"
+                      : selectedConversation.participants[0]?.status === "busy"
+                      ? "bg-red-500"
+                      : selectedConversation.participants[0]?.status === "away"
+                      ? "bg-yellow-400"
+                      : "bg-gray-400"
+                  )}
+                ></div>
+
+
               </div>
               <div>
                 <h3 className="font-bold text-xl text-gray-800">
@@ -159,10 +176,18 @@ export function MessageArea({
                       ? "Announcement"
                       : `${selectedConversation.participants.length} members`}
                   </Badge>
+                  {/* Statut texte */}
                   <span className="text-xs text-gray-500 flex items-center">
                     <Clock className="h-3 w-3 mr-1" />
-                    Active now
+                    {selectedConversation.participants[0]?.status === "online"
+                      ? "Active now"
+                      : selectedConversation.participants[0]?.status === "busy"
+                      ? "Busy"
+                      : selectedConversation.participants[0]?.status === "away"
+                      ? "Away"
+                      : "Offline"}
                   </span>
+
                 </div>
               </div>
             </div>
@@ -276,125 +301,116 @@ export function MessageArea({
               </div>
             ) : (
               <>
-                {messages.map((message: any) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-3 max-w-[85%] animate-fade-in ${
-                      message.sender.role === "teacher"
-                        ? "ml-auto flex-row-reverse"
-                        : ""
-                    }`}
-                  >
-                    <Avatar
-                      className={cn(
-                        "h-10 w-10 rounded-xl border-2 shadow-md flex-shrink-0 transition-all duration-200 hover:scale-105",
-                        message.sender.role === "teacher"
-                          ? "border-blue-300 bg-gradient-to-br from-blue-100 to-blue-200"
-                          : "border-gray-200 bg-gradient-to-br from-gray-100 to-gray-200"
-                      )}
-                    >
-                      <AvatarImage
-                        src={message.sender.avatar}
-                        alt={message.sender.name}
-                        className="object-cover rounded-lg"
-                      />
-                      <AvatarFallback className="rounded-lg font-medium">
-                        {message.sender?.name?.charAt(0) || "?"}
-                      </AvatarFallback>
-                    </Avatar>
+                {messages.map((message: any) => {
+                  const isCurrentUser = message.sender.id.toString() === currentUserId?.toString();
+                  const messageKey = message.id || message.uuid || `msg-${message.timestamp}-${Math.random()}`;
 
+                  return (
                     <div
-                      className={cn(
-                        "rounded-2xl p-4 shadow-sm transition-all duration-200 hover:shadow-md",
-                        message.sender.role === "teacher"
-                          ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white mr-0"
-                          : "bg-white border border-gray-200 shadow-sm"
-                      )}
+                      key={messageKey}
+                      className={`flex gap-3 max-w-[85%] animate-fade-in ${
+                        isCurrentUser ? "ml-auto flex-row-reverse" : ""
+                      }`}
                     >
-                      <div className="flex justify-between items-center mb-2">
-                        <span
-                          className={cn(
-                            "text-sm font-semibold",
-                            message.sender.role === "teacher"
-                              ? "text-blue-100"
-                              : "text-gray-700"
-                          )}
-                        >
-                          {message.sender.name}
-                        </span>
-                        <span
-                          className={cn(
-                            "text-xs flex items-center gap-1",
-                            message.sender.role === "teacher"
-                              ? "text-blue-200"
-                              : "text-gray-500"
-                          )}
-                        >
-                           {typeof message.timestamp === 'object' 
-                              ? message.timestamp.toLocaleTimeString("en-US", { 
-                                  hour: "2-digit", 
-                                  minute: "2-digit" 
-                                })
-                              : message.timestamp}
-                            {message.sender.role === "teacher" && (
-                              <CheckCheck className="h-3 w-3 ml-1" />
-                            )}
-                          {message.sender.role === "teacher" && (
-                            <CheckCheck className="h-3 w-3 ml-1" />
-                          )}
-                        </span>
-                      </div>
-                      <p
+                      <Avatar
                         className={cn(
-                          "text-sm leading-relaxed",
-                          message.sender.role === "teacher"
-                            ? "text-white"
-                            : "text-gray-800"
+                          "h-10 w-10 rounded-xl border-2 shadow-md flex-shrink-0 transition-all duration-200 hover:scale-105",
+                          isCurrentUser
+                            ? "border-blue-300 bg-gradient-to-br from-blue-100 to-blue-200"
+                            : "border-gray-200 bg-gradient-to-br from-gray-100 to-gray-200"
                         )}
                       >
-                        {message.content}
-                      </p>
+                        <AvatarImage
+                          src={message.sender_info.avatar}
+                          alt={message.sender_info.name}
+                          className="object-cover rounded-lg"
+                        />
+                        <AvatarFallback className="rounded-lg font-medium">
+                          {message.sender_info?.name?.charAt(0) || "?"}
+                        </AvatarFallback>
+                      </Avatar>
 
-                      {message.attachments && message.attachments.length > 0 && (
-                        <div
+                      <div
+                        className={cn(
+                          "rounded-2xl p-4 shadow-sm transition-all duration-200 hover:shadow-md",
+                          isCurrentUser
+                            ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white mr-0"
+                            : "bg-white border border-gray-200 shadow-sm"
+                        )}
+                      >
+                        <div className="flex justify-between items-center mb-2">
+                          <span
+                            className={cn(
+                              "text-sm font-semibold",
+                              isCurrentUser ? "text-blue-100" : "text-gray-700"
+                            )}
+                          >
+                            {message.sender.name}
+                          </span>
+                          <span
+                            className={cn(
+                              "text-xs flex items-center gap-1",
+                              isCurrentUser ? "text-blue-200" : "text-gray-500"
+                            )}
+                          >
+                            {typeof message.timestamp === "object"
+                              ? message.timestamp.toLocaleTimeString("en-US", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : message.timestamp}
+                            {isCurrentUser && <CheckCheck className="h-3 w-3 ml-1" />}
+                          </span>
+                        </div>
+                        <p
                           className={cn(
-                            "mt-3 pt-3",
-                            message.sender.role === "teacher"
-                              ? "border-t border-white/30"
-                              : "border-t border-gray-100"
+                            "text-sm leading-relaxed",
+                            isCurrentUser ? "text-white" : "text-gray-800"
                           )}
                         >
-                          {message.attachments.map((attachment: any, i: string) => (
-                            <div
-                              key={i}
-                              className="flex items-center gap-2 text-xs mt-2 p-2 bg-white/20 rounded-lg"
-                            >
-                              <Paperclip
-                                className={cn(
-                                  "h-3 w-3",
-                                  message.sender.role === "teacher"
-                                    ? "text-blue-200"
-                                    : "text-blue-500"
-                                )}
-                              />
-                              <a
-                                href={attachment.url}
-                                className={cn(
-                                  "underline font-medium",
-                                  message.sender.role === "teacher"
-                                    ? "text-blue-200 hover:text-white"
-                                    : "text-blue-600 hover:text-blue-800"
-                                )}
+                          {message.content}
+                        </p>
+
+                        {message.attachments && message.attachments.length > 0 && (
+                          <div
+                            className={cn(
+                              "mt-3 pt-3",
+                              isCurrentUser
+                                ? "border-t border-white/30"
+                                : "border-t border-gray-100"
+                            )}
+                          >
+                            {message.attachments.map((attachment: any, i: string) => (
+                              <div
+                                key={i}
+                                className="flex items-center gap-2 text-xs mt-2 p-2 bg-white/20 rounded-lg"
                               >
-                                {attachment.name}
-                              </a>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                                <Paperclip
+                                  className={cn(
+                                    "h-3 w-3",
+                                    isCurrentUser ? "text-blue-200" : "text-blue-500"
+                                  )}
+                                />
+                                <a
+                                  href={attachment.url}
+                                  className={cn(
+                                    "underline font-medium",
+                                    isCurrentUser
+                                      ? "text-blue-200 hover:text-white"
+                                      : "text-blue-600 hover:text-blue-800"
+                                  )}
+                                >
+                                  {attachment.name}
+                                </a>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
+
               </>
             )}
             <div ref={bottomRef} />

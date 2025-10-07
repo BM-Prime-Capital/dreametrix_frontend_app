@@ -19,14 +19,8 @@ import { userPath } from "@/constants/userConstants";
 import DreaMetrixLogo from "../ui/dreametrix-logo";
 import { useSchoolRegistration } from "@/hooks/SchoolAdmin/useSchoolRegistration";
 import { useSchoolSearch } from "@/hooks/SchoolAdmin/useSchoolSearch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import React, { useEffect, useState, useMemo } from "react";
+
+import React, { useEffect, useState } from "react";
 import {
   fetchUSStates,
   fetchCitiesByState,
@@ -53,6 +47,7 @@ enum RegistrationStep {
   SEARCH = "search",
   SCHOOL_SUMMARY = "summary",
   MANUAL_FORM = "manual",
+  SUCCESS = "success",
 }
 
 interface StepIndicatorProps {
@@ -64,6 +59,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
     { id: RegistrationStep.SEARCH, label: 'Search', number: 1 },
     { id: RegistrationStep.SCHOOL_SUMMARY, label: 'Confirm', number: 2 },
     { id: RegistrationStep.MANUAL_FORM, label: 'Details', number: 3 },
+    { id: RegistrationStep.SUCCESS, label: 'Success', number: 4 },
   ];
 
   return (
@@ -112,7 +108,7 @@ interface RegisterProps {
   userType: string;
   userBasePath: string;
 }
-export default function SchoolAdminRegister({ userType, userBasePath }: RegisterProps) {
+export default function SchoolAdminRegister({}: RegisterProps) {
   const router = useRouter();
   const { formData, errors, isLoading, handleInputChange, handleSubmit } =
     useSchoolRegistration();
@@ -141,8 +137,7 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
   const [openCityPopover, setOpenCityPopover] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState<number>(10);
+  const [apiError, setApiError] = useState<string | null>(null); // New state for API errors
 
   // Select school from search results
   const handleSchoolSelect = (school: SchoolDisplay) => {
@@ -153,6 +148,7 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
   // Go to manual form
   const goToManualForm = () => {
     setCurrentStep(RegistrationStep.MANUAL_FORM);
+    setApiError(null); // Clear API errors when navigating
   };
 
   // Go back to search
@@ -160,6 +156,7 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
     setCurrentStep(RegistrationStep.SEARCH);
     setSelectedSchool(null);
     clearSearch();
+    setApiError(null); // Clear API errors when navigating
   };
 
   // Fetch US states only when manual form is accessed
@@ -211,32 +208,28 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
     loadCities();
   }, [formData.state, currentStep]);
 
-  // Auto-redirect to login after successful registration
-  useEffect(() => {
-    if (successMessage && successMessage.includes("successfully")) {
-      if (countdown > 0) {
-        const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-        return () => clearTimeout(timer);
-      } else {
-        router.push(userPath.LOGIN);
-      }
-    }
-  }, [successMessage, countdown, router]);
-
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setApiError(null); // Clear previous API errors
     
     try {
       const result = await handleSubmit();
       console.log("Registration result:", result);
 
       if (result?.task_id) {
-        setSuccessMessage(
-          "School created successfully. Credentials will be sent to the provided email shortly."
-        );
+        setCurrentStep(RegistrationStep.SUCCESS);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration failed:", error);
+      
+      // Handle API error response - display the exact message from API
+      if (error.response?.data?.message) {
+        setApiError(error.response.data.message);
+      } else if (error.message) {
+        setApiError(error.message);
+      } else {
+        setApiError("An unexpected error occurred. Please try again.");
+      }
     }
   };
 
@@ -344,7 +337,7 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
                   No schools found
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  We couldn't find your school in our database.
+                  We couldn&apos;t find your school in our database.
                 </p>
                 <Button
                   onClick={goToManualForm}
@@ -454,12 +447,56 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
                 onClick={goBackToSearch}
                 className="text-gray-600"
               >
-                This isn't my school
+                This isn&apos;t my school
               </Button>
             </div>
           </div>
         </div>
       )}
+    </div>
+  );
+
+  // Render success step
+  const renderSuccessStep = () => (
+    <div className="space-y-6 text-center">
+      <div className="flex justify-center">
+        <div className="rounded-full bg-green-100 p-4">
+          <Check className="h-12 w-12 text-green-600" strokeWidth={3} />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-gray-900">
+          Registration Submitted Successfully!
+        </h2>
+        
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6 max-w-md mx-auto">
+          <p className="text-green-800 text-sm leading-relaxed">
+            Your school registration request has been submitted successfully. 
+            You will receive an email regarding the status of your request within the next 24 hours.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
+        <Button
+          onClick={() => router.push(userPath.LOGIN)}
+          className="bg-[#25AAE1] hover:bg-[#1453B8] text-white h-12 px-6"
+        >
+          Back to Login
+        </Button>
+        <Button
+          onClick={() => {
+            setCurrentStep(RegistrationStep.SEARCH);
+            clearSearch();
+            setSelectedSchool(null);
+          }}
+          variant="outline"
+          className="h-12 px-6"
+        >
+          Register Another School
+        </Button>
+      </div>
     </div>
   );
 
@@ -495,6 +532,21 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
             Back to Search
           </Button>
         </div>
+
+        {/* Display API error message */}
+        {apiError && (
+          <div
+            className="p-4 border border-red-200 bg-red-50 rounded-lg flex items-start gap-3 animate-in slide-in-from-top-1"
+            role="alert"
+            aria-live="assertive"
+          >
+            <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+            <div>
+              <p className="font-medium text-red-800">Registration Error</p>
+              <p className="text-sm text-red-700 mt-1">{apiError}</p>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -833,52 +885,6 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
             {isLoading ? "Registering..." : "Register School"}
           </button>
         </form>
-
-        {successMessage && successMessage.includes("successfully") && (
-          <div className="space-y-4 text-center py-4">
-            <div className="flex justify-center">
-              <div className="rounded-full bg-green-100 p-3">
-                <Check className="h-6 w-6 text-green-600" strokeWidth={3} />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-xl font-bold text-gray-900">
-                Registration Successful!
-              </h3>
-              <p className="text-gray-600 text-sm">
-                {successMessage}
-              </p>
-            </div>
-
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg inline-block">
-              <p className="text-xs text-blue-800">
-                Redirecting to login in{' '}
-                <span className="font-bold text-base text-blue-900">{countdown}</span>
-                {' '}second{countdown !== 1 ? 's' : ''}...
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
-              <Button
-                onClick={() => router.push(userPath.LOGIN)}
-                className="bg-green-600 hover:bg-green-700 text-white h-10"
-              >
-                Go to Login Now
-              </Button>
-              <Button
-                onClick={() => {
-                  setSuccessMessage(null);
-                  setCountdown(10);
-                }}
-                variant="outline"
-                className="h-10"
-              >
-                Register Another School
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
     );
   };
@@ -892,6 +898,8 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
         return renderSchoolSummary();
       case RegistrationStep.MANUAL_FORM:
         return renderManualForm();
+      case RegistrationStep.SUCCESS:
+        return renderSuccessStep();
       default:
         return renderSchoolSearch();
     }
@@ -929,14 +937,12 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
           </div>
         )}
 
-        {successMessage && successMessage.includes("successfully") ? (
-          getCurrentStepContent()
-        ) : (
-          <>
-            <StepIndicator currentStep={currentStep} />
-            {getCurrentStepContent()}
+        <>
+          <StepIndicator currentStep={currentStep} />
+          {getCurrentStepContent()}
 
-            {/* Login Link */}
+          {/* Login Link - Only show on non-success steps */}
+          {currentStep !== RegistrationStep.SUCCESS && (
             <div className="mt-6">
               <p className="text-center text-sm text-gray-600">
                 Already registered?{" "}
@@ -948,8 +954,8 @@ export default function SchoolAdminRegister({ userType, userBasePath }: Register
                 </Link>
               </p>
             </div>
-          </>
-        )}
+          )}
+        </>
       </div>
     </div>
   );

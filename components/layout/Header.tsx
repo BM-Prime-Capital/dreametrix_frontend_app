@@ -2,7 +2,12 @@
 
 import { useRouter } from "next/navigation"
 import Cookies from "js-cookie"
-import { Bell, ChevronDown, LogOut, User, Settings, Search } from "lucide-react"
+import {  
+  ChevronDown, 
+  LogOut, 
+  User, 
+  // Settings,  
+} from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,27 +20,28 @@ import { cn } from "@/utils/tailwind"
 import DreaMetrixLogo from "../ui/dreametrix-logo"
 import UserAvatar from "../ui/user-avatar"
 import { Button } from "../ui/button"
-import { Input } from "../ui/input"
-import Link from "next/link"
+// import { Input } from "../ui/input"
+
 
 export function Header() {
   const router = useRouter()
 
-  const getUserData = (): { full_name: string } => {
-    if (typeof window === 'undefined') return { full_name: "Guest" }
+  const getUserData = (): { full_name: string,  role:string } => {
+    if (typeof window === 'undefined') return { full_name: "Guest", role: "Guest" }
     
     try {
       const userData = localStorage.getItem(localStorageKey.USER_DATA)
+      // console.log("USER INFO",JSON.parse(userData || '{}'))
       return userData 
         ? JSON.parse(userData) 
-        : { full_name: "Guest" }
+        : { full_name: "Guest", role: "Guest" }
     } catch (error) {
       console.error("Error parsing user data:", error)
-      return { full_name: "Guest" }
+      return { full_name: "Guest", role: "Guest" }
     }
   }
 
-  const { full_name } = getUserData()
+  const { full_name, role } = getUserData()
 
   const handleLogout = () => {
     Cookies.remove("tenantDomain")
@@ -96,7 +102,7 @@ export function Header() {
             >
               <div className="px-3 py-2 mb-1">
                 <p className="text-sm font-medium">{full_name}</p>
-                <p className="text-xs text-muted-foreground">Teacher</p>
+                <p className="text-xs text-muted-foreground">{role.charAt(0).toUpperCase() + role.slice(1)}</p>
               </div>
               
               <DropdownMenuSeparator />
@@ -111,12 +117,12 @@ export function Header() {
                 <span>My Profile</span>
               </DropdownMenuItem>
               
-              <DropdownMenuItem className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm">
+              {/* <DropdownMenuItem className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-muted text-primary">
                   <Settings className="h-4 w-4" />
                 </div>
                 <span>Settings</span>
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               
               <DropdownMenuSeparator />
               
