@@ -17,6 +17,8 @@ export interface LinkedStudent {
   student_id: number
   student_user_id: number
   student_full_name: string
+  student_email?: string
+  relationship_since?: string
 }
 
 export interface RequestLinkPayload {
@@ -260,3 +262,121 @@ class ParentRelationshipServiceClass {
 
 // Export singleton instance
 export const ParentRelationshipService = new ParentRelationshipServiceClass()
+
+/**
+ * Helper functions for direct use in components
+ */
+
+/**
+ * Send a link request to a student by email
+ * @param accessToken - Parent's access token
+ * @param studentEmail - Student's email address
+ * @param message - Optional message to the student
+ */
+export async function sendLinkRequest(
+  accessToken: string,
+  studentEmail: string,
+  message?: string
+): Promise<RequestLinkResponse> {
+  try {
+    const response = await fetch(`${BACKEND_BASE_URL}/parents/request-link/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({
+        student_email: studentEmail,
+        message: message || ""
+      })
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || "Failed to send link request")
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error("Error sending link request:", error)
+    throw error
+  }
+}
+
+/**
+ * Get list of pending link requests (returns array format for components)
+ */
+export async function getListRequestLink(accessToken: string): Promise<any[]> {
+  try {
+    const response = await fetch(`${BACKEND_BASE_URL}/parents/parent/pending-student-links/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error("Failed to load pending requests")
+    }
+
+    const data = await response.json()
+    return Array.isArray(data) ? data : []
+  } catch (error) {
+    console.error("Error fetching pending requests:", error)
+    throw error
+  }
+}
+
+/**
+ * Cancel a pending link request
+ */
+export async function cancelLinkRequest(
+  accessToken: string,
+  requestId: number
+): Promise<void> {
+  try {
+    const response = await fetch(`${BACKEND_BASE_URL}/parents/parent/pending-student-links/${requestId}/`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error("Failed to cancel request")
+    }
+  } catch (error) {
+    console.error("Error canceling request:", error)
+    throw error
+  }
+}
+
+/**
+ * Unlink a student from parent account
+ */
+export async function unlinkStudent(
+  accessToken: string,
+  studentId: number
+): Promise<void> {
+  try {
+    const response = await fetch(`${BACKEND_BASE_URL}/parents/unlink-requests/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({
+        student_id: studentId
+      })
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || "Failed to unlink student")
+    }
+  } catch (error) {
+    console.error("Error unlinking student:", error)
+    throw error
+  }
+}

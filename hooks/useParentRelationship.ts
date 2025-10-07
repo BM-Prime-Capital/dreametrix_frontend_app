@@ -22,6 +22,7 @@ interface UseParentRelationshipReturn {
   requestLink: (studentCode: string) => Promise<void>
   cancelRequest: (requestId: number) => Promise<void>
   refreshData: () => Promise<void>
+  refetch: () => Promise<void>
 }
 
 /**
@@ -151,6 +152,7 @@ export function useParentRelationship(
     // Actions
     requestLink,
     cancelRequest,
-    refreshData
+    refreshData,
+    refetch: refreshData
   }
 }

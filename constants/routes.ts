@@ -326,6 +326,11 @@ export const ParentRoutes = [
     label: "REPORT CARDS",
   },
   {
+    path: `${userPath.PARENT_BASE_PATH}/relationship`,
+    icon: `/assets/images/teacher/dashboard/relationship.svg`,
+    label: "RELATIONSHIP",
+  },
+  {
     path: `${userPath.PARENT_BASE_PATH}/communicate`,
     icon: menuImages.communicate,
     label: "COMMUNICATE",

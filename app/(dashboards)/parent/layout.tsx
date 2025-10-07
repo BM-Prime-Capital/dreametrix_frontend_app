@@ -25,7 +25,7 @@ function ParentDashboardContent({ children }: { children: React.ReactNode }) {
   } = useParentRelationship(accessToken)
 
   // Pages that should bypass the empty state check
-  const bypassPages = ["/parent/link-student", "/parent/communicate"]
+  const bypassPages = ["/parent/link-student", "/parent/communicate", "/parent/relationship"]
   const shouldBypass = bypassPages.some(page => pathname?.startsWith(page))
 
   // Show loading while checking relationship status
