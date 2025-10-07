@@ -24,7 +24,8 @@ import {
   FileUp,
   X,
   Save,
-  Loader2
+  Loader2,
+  CheckCircle
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 
@@ -45,6 +46,7 @@ type School = {
   teachers: number;
   courses: number;
   status: "active" | "pending" | "inactive";
+  pendingValidation: boolean;
   lastUpdated: string;
 };
 
@@ -53,9 +55,11 @@ export default function SchoolsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showPendingOnly, setShowPendingOnly] = useState(false);
 
   // Sample data - replace with actual API calls
   const [schools] = useState<School[]>([
@@ -76,6 +80,7 @@ export default function SchoolsPage() {
       "teachers": 28,
       "courses": 15,
       "status": "active",
+      "pendingValidation": false,
       "lastUpdated": "2023-10-15"
     },
     {
@@ -95,6 +100,7 @@ export default function SchoolsPage() {
       "teachers": 55,
       "courses": 32,
       "status": "active",
+      "pendingValidation": false,
       "lastUpdated": "2023-11-20"
     },
     {
@@ -113,7 +119,8 @@ export default function SchoolsPage() {
       "students": 620,
       "teachers": 42,
       "courses": 25,
-      "status": "active",
+      "status": "pending",
+      "pendingValidation": true,
       "lastUpdated": "2023-09-05"
     },
     {
@@ -132,7 +139,8 @@ export default function SchoolsPage() {
       "students": 350,
       "teachers": 30,
       "courses": 40,
-      "status": "active",
+      "status": "pending",
+      "pendingValidation": true,
       "lastUpdated": "2023-12-10"
     },
     {
@@ -152,14 +160,21 @@ export default function SchoolsPage() {
       "teachers": 25,
       "courses": 18,
       "status": "inactive",
+      "pendingValidation": false,
       "lastUpdated": "2024-01-15"
     }
   ]);
 
-  const filteredSchools = schools.filter(school =>
-    school.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    school.district.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredSchools = schools.filter(school => {
+    const matchesSearch = school.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      school.district.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (showPendingOnly) {
+      return matchesSearch && school.pendingValidation;
+    }
+    
+    return matchesSearch;
+  });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -199,6 +214,24 @@ export default function SchoolsPage() {
         console.log("Creating new school");
       }
       
+      setIsFormModalOpen(false);
+      setSelectedSchool(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleApproveSchool = async () => {
+    if (!selectedSchool) return;
+    
+    setIsLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log("Approving school:", selectedSchool.name);
+      
+      // Update school status
+      setIsApproveModalOpen(false);
       setIsFormModalOpen(false);
       setSelectedSchool(null);
     } finally {
@@ -250,10 +283,20 @@ export default function SchoolsPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button variant="outline" className="gap-2">
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant={showPendingOnly ? "default" : "outline"} 
+              className="gap-2"
+              onClick={() => setShowPendingOnly(!showPendingOnly)}
+            >
+              <Filter className="h-4 w-4" />
+              Pending Validation
+            </Button>
+            <Button variant="outline" className="gap-2">
+              <Filter className="h-4 w-4" />
+              More Filters
+            </Button>
+          </div>
         </div>
       </Card>
 
@@ -276,18 +319,25 @@ export default function SchoolsPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-semibold text-lg truncate">{school.name}</h3>
-                    <Badge
-                      variant={
-                        school.status === "active"
-                          ? "default"
-                          : school.status === "pending"
-                          ? "secondary"
-                          : "destructive"
-                      }
-                      className="shrink-0"
-                    >
-                      {school.status.charAt(0).toUpperCase() + school.status.slice(1)}
-                    </Badge>
+                    <div className="flex gap-1">
+                      <Badge
+                        variant={
+                          school.status === "active"
+                            ? "default"
+                            : school.status === "pending"
+                            ? "secondary"
+                            : "destructive"
+                        }
+                        className="shrink-0"
+                      >
+                        {school.status.charAt(0).toUpperCase() + school.status.slice(1)}
+                      </Badge>
+                      {/* {school.pendingValidation && (
+                        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                          Pending
+                        </Badge>
+                      )} */}
+                    </div>
                   </div>
                   <p className="text-sm text-gray-600 mb-3 flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
@@ -320,10 +370,16 @@ export default function SchoolsPage() {
           <Frown className="h-12 w-12 text-gray-400" />
           <h3 className="font-medium text-lg">No schools found</h3>
           <p className="text-sm text-gray-500 max-w-md text-center">
-            No schools match your search criteria. Try adjusting your search or filters.
+            {showPendingOnly 
+              ? "No schools are pending validation. Try adjusting your search or filters."
+              : "No schools match your search criteria. Try adjusting your search or filters."
+            }
           </p>
-          <Button variant="outline" onClick={() => setSearchQuery("")}>
-            Clear search
+          <Button variant="outline" onClick={() => {
+            setSearchQuery("");
+            setShowPendingOnly(false);
+          }}>
+            Clear filters
           </Button>
         </Card>
       )}
@@ -406,10 +462,10 @@ export default function SchoolsPage() {
           setIsFormModalOpen(false);
           setSelectedSchool(null);
         }}
-        title={selectedSchool ? "Edit School" : "Create New School"}
+        title={selectedSchool ? "School Details" : "Create New School"}
         description={
           selectedSchool 
-            ? "Update the school information" 
+            ? "View and manage school information" 
             : "Fill in the details for the new school"
         }
         size="2xl"
@@ -601,30 +657,73 @@ export default function SchoolsPage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
-              <Button 
-                variant="outline" 
-                type="button"
-                onClick={() => {
-                  setIsFormModalOpen(false);
-                  setSelectedSchool(null);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : selectedSchool ? (
-                  <Save className="h-4 w-4 mr-2" />
-                ) : (
-                  <Plus className="h-4 w-4 mr-2" />
-                )}
-                {selectedSchool ? "Update School" : "Create School"}
-              </Button>
+            <div className="flex justify-between items-center pt-4 border-t">
+              {selectedSchool?.pendingValidation && (
+                <Button 
+                  type="button"
+                  onClick={() => setIsApproveModalOpen(true)}
+                  className="gap-2"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  Approve School
+                </Button>
+              )}
+              
+              <div className="flex gap-2 ml-auto">
+                <Button 
+                  variant="outline" 
+                  type="button"
+                  onClick={() => {
+                    setIsFormModalOpen(false);
+                    setSelectedSchool(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : selectedSchool ? (
+                    <Save className="h-4 w-4 mr-2" />
+                  ) : (
+                    <Plus className="h-4 w-4 mr-2" />
+                  )}
+                  {selectedSchool ? "Update School" : "Create School"}
+                </Button>
+              </div>
             </div>
           </div>
         </form>
+      </Modal>
+
+      {/* Approve Confirmation Modal */}
+      <Modal
+        isOpen={isApproveModalOpen}
+        onClose={() => setIsApproveModalOpen(false)}
+        title="Approve School"
+        description={`Are you sure you want to approve ${selectedSchool?.name}? This action cannot be undone.`}
+        size="sm"
+      >
+        <div className="flex justify-end gap-2 mt-4">
+          <Button 
+            variant="outline" 
+            onClick={() => setIsApproveModalOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleApproveSchool}
+            disabled={isLoading}
+            className="gap-2"
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <CheckCircle className="h-4 w-4" />
+            )}
+            Approve
+          </Button>
+        </div>
       </Modal>
     </div>
   );

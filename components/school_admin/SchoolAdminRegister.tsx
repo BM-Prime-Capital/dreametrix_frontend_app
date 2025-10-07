@@ -47,6 +47,7 @@ enum RegistrationStep {
   SEARCH = "search",
   SCHOOL_SUMMARY = "summary",
   MANUAL_FORM = "manual",
+  SUCCESS = "success",
 }
 
 interface StepIndicatorProps {
@@ -58,6 +59,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
     { id: RegistrationStep.SEARCH, label: 'Search', number: 1 },
     { id: RegistrationStep.SCHOOL_SUMMARY, label: 'Confirm', number: 2 },
     { id: RegistrationStep.MANUAL_FORM, label: 'Details', number: 3 },
+    { id: RegistrationStep.SUCCESS, label: 'Success', number: 4 },
   ];
 
   return (
@@ -136,6 +138,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
   const [loadingCities, setLoadingCities] = useState(false);
   const [openCityPopover, setOpenCityPopover] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null); // New state for API errors
   const [countdown, setCountdown] = useState<number>(10);
 
   // Select school from search results
@@ -147,6 +150,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
   // Go to manual form
   const goToManualForm = () => {
     setCurrentStep(RegistrationStep.MANUAL_FORM);
+    setApiError(null); // Clear API errors when navigating
   };
 
   // Go back to search
@@ -154,6 +158,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
     setCurrentStep(RegistrationStep.SEARCH);
     setSelectedSchool(null);
     clearSearch();
+    setApiError(null); // Clear API errors when navigating
   };
 
   // Fetch US states only when manual form is accessed
@@ -207,30 +212,39 @@ export default function SchoolAdminRegister({}: RegisterProps) {
 
   // Auto-redirect to login after successful registration
   useEffect(() => {
-    if (successMessage && successMessage.includes("successfully")) {
-      if (countdown > 0) {
-        const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-        return () => clearTimeout(timer);
-      } else {
-        router.push(userPath.LOGIN);
-      }
+    if (currentStep === RegistrationStep.SUCCESS && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (currentStep === RegistrationStep.SUCCESS && countdown === 0) {
+      router.push(userPath.LOGIN);
     }
-  }, [successMessage, countdown, router]);
+  }, [currentStep, countdown, router]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setApiError(null); // Clear previous API errors
     
     try {
       const result = await handleSubmit();
       console.log("Registration result:", result);
 
       if (result?.task_id) {
+        setCurrentStep(RegistrationStep.SUCCESS);
         setSuccessMessage(
-          "School created successfully. Credentials will be sent to the provided email shortly."
+          "Your school registration request has been submitted successfully. You will receive an email regarding the status of your request within the next 24 hours."
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration failed:", error);
+      
+      // Handle API error response
+      if (error.response?.data?.message) {
+        setApiError(error.response.data.message);
+      } else if (error.message) {
+        setApiError(error.message);
+      } else {
+        setApiError("An unexpected error occurred. Please try again.");
+      }
     }
   };
 
@@ -457,6 +471,60 @@ export default function SchoolAdminRegister({}: RegisterProps) {
     </div>
   );
 
+  // Render success step
+  const renderSuccessStep = () => (
+    <div className="space-y-6 text-center">
+      <div className="flex justify-center">
+        <div className="rounded-full bg-green-100 p-4">
+          <Check className="h-12 w-12 text-green-600" strokeWidth={3} />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-gray-900">
+          Registration Submitted Successfully!
+        </h2>
+        
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6 max-w-md mx-auto">
+          <p className="text-green-800 text-sm leading-relaxed">
+            Your school registration request has been submitted successfully. 
+            You will receive an email regarding the status of your request within the next 24 hours.
+          </p>
+        </div>
+
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg inline-block">
+          <p className="text-sm text-blue-800">
+            Redirecting to login in{' '}
+            <span className="font-bold text-base text-blue-900">{countdown}</span>
+            {' '}second{countdown !== 1 ? 's' : ''}...
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
+        <Button
+          onClick={() => router.push(userPath.LOGIN)}
+          className="bg-green-600 hover:bg-green-700 text-white h-12 px-6"
+        >
+          Go to Login Now
+        </Button>
+        <Button
+          onClick={() => {
+            setCurrentStep(RegistrationStep.SEARCH);
+            setSuccessMessage(null);
+            setCountdown(10);
+            clearSearch();
+            setSelectedSchool(null);
+          }}
+          variant="outline"
+          className="h-12 px-6"
+        >
+          Register Another School
+        </Button>
+      </div>
+    </div>
+  );
+
   // Render manual form step
   const renderManualForm = () => {
     const renderErrorMessage = (errorMessage: string | null, fieldId: string) => {
@@ -489,6 +557,21 @@ export default function SchoolAdminRegister({}: RegisterProps) {
             Back to Search
           </Button>
         </div>
+
+        {/* Display API error message */}
+        {apiError && (
+          <div
+            className="p-4 border border-red-200 bg-red-50 rounded-lg flex items-start gap-3 animate-in slide-in-from-top-1"
+            role="alert"
+            aria-live="assertive"
+          >
+            <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+            <div>
+              <p className="font-medium text-red-800">Registration Error</p>
+              <p className="text-sm text-red-700 mt-1">{apiError}</p>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -827,52 +910,6 @@ export default function SchoolAdminRegister({}: RegisterProps) {
             {isLoading ? "Registering..." : "Register School"}
           </button>
         </form>
-
-        {successMessage && successMessage.includes("successfully") && (
-          <div className="space-y-4 text-center py-4">
-            <div className="flex justify-center">
-              <div className="rounded-full bg-green-100 p-3">
-                <Check className="h-6 w-6 text-green-600" strokeWidth={3} />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-xl font-bold text-gray-900">
-                Registration Successful!
-              </h3>
-              <p className="text-gray-600 text-sm">
-                {successMessage}
-              </p>
-            </div>
-
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg inline-block">
-              <p className="text-xs text-blue-800">
-                Redirecting to login in{' '}
-                <span className="font-bold text-base text-blue-900">{countdown}</span>
-                {' '}second{countdown !== 1 ? 's' : ''}...
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
-              <Button
-                onClick={() => router.push(userPath.LOGIN)}
-                className="bg-green-600 hover:bg-green-700 text-white h-10"
-              >
-                Go to Login Now
-              </Button>
-              <Button
-                onClick={() => {
-                  setSuccessMessage(null);
-                  setCountdown(10);
-                }}
-                variant="outline"
-                className="h-10"
-              >
-                Register Another School
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
     );
   };
@@ -886,6 +923,8 @@ export default function SchoolAdminRegister({}: RegisterProps) {
         return renderSchoolSummary();
       case RegistrationStep.MANUAL_FORM:
         return renderManualForm();
+      case RegistrationStep.SUCCESS:
+        return renderSuccessStep();
       default:
         return renderSchoolSearch();
     }
@@ -923,25 +962,27 @@ export default function SchoolAdminRegister({}: RegisterProps) {
           </div>
         )}
 
-        {successMessage && successMessage.includes("successfully") ? (
+        {currentStep === RegistrationStep.SUCCESS ? (
           getCurrentStepContent()
         ) : (
           <>
             <StepIndicator currentStep={currentStep} />
             {getCurrentStepContent()}
 
-            {/* Login Link */}
-            <div className="mt-6">
-              <p className="text-center text-sm text-gray-600">
-                Already registered?{" "}
-                <Link
-                  href={userPath.LOGIN}
-                  className="text-[#25AAE1] hover:text-[#1453B8] font-medium underline-offset-2 hover:underline"
-                >
-                  Login here
-                </Link>
-              </p>
-            </div>
+            {/* Login Link - Only show on non-success steps */}
+            {/* {currentStep !== RegistrationStep.SUCCESS && (
+              <div className="mt-6">
+                <p className="text-center text-sm text-gray-600">
+                  Already registered?{" "}
+                  <Link
+                    href={userPath.LOGIN}
+                    className="text-[#25AAE1] hover:text-[#1453B8] font-medium underline-offset-2 hover:underline"
+                  >
+                    Login here
+                  </Link>
+                </p>
+              </div>
+            )} */}
           </>
         )}
       </div>
