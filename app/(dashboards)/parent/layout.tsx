@@ -57,13 +57,14 @@ function ParentDashboardContent({ children }: { children: React.ReactNode }) {
 
   // Normal dashboard view
   return (
-    <div className="flex flex-col lg:flex-row gap-6">
+    <div className="flex flex-col lg:flex-row gap-6 p-4 lg:p-6">
       <SidebarProvider>
-        <Card className="w-full lg:w-[200px] h-fit">
-          <ParentSidebar routes={ParentRoutes} />
-        </Card>
+        <ParentSidebar routes={ParentRoutes} />
       </SidebarProvider>
-      {children}
+
+      <main className="flex-1 bg-background">
+        {children}
+      </main>
 
       {/* Smart loading overlay */}
       <LoadingOverlay
