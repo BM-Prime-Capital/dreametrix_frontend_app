@@ -149,7 +149,7 @@ export default function ParentClassesPage() {
             </h1>
             <p className="text-blue-100 text-base">Monitor your children&apos;s academic programs and class schedules</p>
           </div>
-          <div className="flex gap-2">
+          {/* <div className="flex gap-2">
             <Button 
               className="bg-white/20 hover:bg-white/30 text-white border-white/30 text-sm px-3 py-2"
             >
@@ -162,7 +162,7 @@ export default function ParentClassesPage() {
               <BookOpen className="h-3 w-3 mr-1" />
               Programs
             </Button>
-          </div>
+          </div> */}
         </div>
 
         {/* Parent Code Display */}
