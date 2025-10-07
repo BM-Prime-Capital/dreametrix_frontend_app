@@ -109,10 +109,11 @@ export function useLogin() {
           router.push("/parent");
           break;
         case "superadmin":
-          router.push("/superadmin");
+          router.push("/super_admin");
           break;
         default:
-          router.push("/dashboard");
+          router.push("/super_admin");
+          //router.push("/dashboard");
       }
 
       return true;

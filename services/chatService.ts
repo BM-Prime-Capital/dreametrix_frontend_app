@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// src/services/chatService.ts
 import { io, Socket } from "socket.io-client";
 //import {Conversation } from "@/types/chat";
 
