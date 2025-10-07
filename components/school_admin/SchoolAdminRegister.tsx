@@ -137,9 +137,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
   const [openCityPopover, setOpenCityPopover] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null); // New state for API errors
-  const [countdown, setCountdown] = useState<number>(10);
 
   // Select school from search results
   const handleSchoolSelect = (school: SchoolDisplay) => {
@@ -210,16 +208,6 @@ export default function SchoolAdminRegister({}: RegisterProps) {
     loadCities();
   }, [formData.state, currentStep]);
 
-  // Auto-redirect to login after successful registration
-  useEffect(() => {
-    if (currentStep === RegistrationStep.SUCCESS && countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (currentStep === RegistrationStep.SUCCESS && countdown === 0) {
-      router.push(userPath.LOGIN);
-    }
-  }, [currentStep, countdown, router]);
-
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setApiError(null); // Clear previous API errors
@@ -230,14 +218,11 @@ export default function SchoolAdminRegister({}: RegisterProps) {
 
       if (result?.task_id) {
         setCurrentStep(RegistrationStep.SUCCESS);
-        setSuccessMessage(
-          "Your school registration request has been submitted successfully. You will receive an email regarding the status of your request within the next 24 hours."
-        );
       }
     } catch (error: any) {
       console.error("Registration failed:", error);
       
-      // Handle API error response
+      // Handle API error response - display the exact message from API
       if (error.response?.data?.message) {
         setApiError(error.response.data.message);
       } else if (error.message) {
@@ -491,28 +476,18 @@ export default function SchoolAdminRegister({}: RegisterProps) {
             You will receive an email regarding the status of your request within the next 24 hours.
           </p>
         </div>
-
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg inline-block">
-          <p className="text-sm text-blue-800">
-            Redirecting to login in{' '}
-            <span className="font-bold text-base text-blue-900">{countdown}</span>
-            {' '}second{countdown !== 1 ? 's' : ''}...
-          </p>
-        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
         <Button
           onClick={() => router.push(userPath.LOGIN)}
-          className="bg-green-600 hover:bg-green-700 text-white h-12 px-6"
+          className="bg-[#25AAE1] hover:bg-[#1453B8] text-white h-12 px-6"
         >
-          Go to Login Now
+          Back to Login
         </Button>
         <Button
           onClick={() => {
             setCurrentStep(RegistrationStep.SEARCH);
-            setSuccessMessage(null);
-            setCountdown(10);
             clearSearch();
             setSelectedSchool(null);
           }}
@@ -962,29 +937,25 @@ export default function SchoolAdminRegister({}: RegisterProps) {
           </div>
         )}
 
-        {currentStep === RegistrationStep.SUCCESS ? (
-          getCurrentStepContent()
-        ) : (
-          <>
-            <StepIndicator currentStep={currentStep} />
-            {getCurrentStepContent()}
+        <>
+          <StepIndicator currentStep={currentStep} />
+          {getCurrentStepContent()}
 
-            {/* Login Link - Only show on non-success steps */}
-            {/* {currentStep !== RegistrationStep.SUCCESS && (
-              <div className="mt-6">
-                <p className="text-center text-sm text-gray-600">
-                  Already registered?{" "}
-                  <Link
-                    href={userPath.LOGIN}
-                    className="text-[#25AAE1] hover:text-[#1453B8] font-medium underline-offset-2 hover:underline"
-                  >
-                    Login here
-                  </Link>
-                </p>
-              </div>
-            )} */}
-          </>
-        )}
+          {/* Login Link - Only show on non-success steps */}
+          {currentStep !== RegistrationStep.SUCCESS && (
+            <div className="mt-6">
+              <p className="text-center text-sm text-gray-600">
+                Already registered?{" "}
+                <Link
+                  href={userPath.LOGIN}
+                  className="text-[#25AAE1] hover:text-[#1453B8] font-medium underline-offset-2 hover:underline"
+                >
+                  Login here
+                </Link>
+              </p>
+            </div>
+          )}
+        </>
       </div>
     </div>
   );
