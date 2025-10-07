@@ -1,0 +1,334 @@
+{
+  "api_version": "1.0",
+  "last_updated": "2025-10-07",
+  "base_url": "/parents",
+  "authentication": "Bearer Token required for all endpoints",
+
+  "endpoints": [
+    {
+      "name": "Parent Dashboard",
+      "endpoint": "/parents/parent/dashboard",
+      "method": "GET",
+      "description": "Get complete dashboard data for authenticated parent with enriched information from all subsystems",
+      "authentication": "Bearer token required",
+      "headers": {
+        "Authorization": "Bearer {access_token}",
+        "Content-Type": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "parent_info": {
+            "id": 1,
+            "full_name": "Abraham Nlandu",
+            "email": "abraham@example.com",
+            "linked_students_count": 2
+          },
+          "students_summary": [
+            {
+              "student_id": 8,
+              "student_user_id": 12,
+              "full_name": "Jordan Nguepi",
+              "grade_level": "Grade 5",
+              "attendance": {
+                "status": "present",
+                "attendance_rate": 95.5,
+                "present_days": 38,
+                "absent_days": 2,
+                "late_days": 1
+              },
+              "academic_performance": {
+                "current_average": 87.5,
+                "grade_letter": "A-",
+                "trending": "up"
+              },
+              "assignments": {
+                "pending_count": 3,
+                "completed_count": 12,
+                "total_count": 15
+              },
+              "subjects": [
+                {
+                  "name": "Mathematics",
+                  "grade": "A-",
+                  "grade_percentage": 89.0,
+                  "trending": "up"
+                }
+              ],
+              "rewards": {
+                "total_points": 285,
+                "rank": "Gold",
+                "recent_achievements": ["Perfect Attendance Week", "Math Champion"]
+              },
+              "character": {
+                "good_character_count": 32,
+                "bad_character_count": 3,
+                "character_score": 91.4,
+                "trending": "up"
+              },
+              "classes": {
+                "total_classes": 6,
+                "active_classes": ["Mathematics", "Science", "English"]
+              }
+            }
+          ],
+          "quick_stats": {
+            "total_students": 2,
+            "all_present_today": true,
+            "average_attendance_rate": 93.75,
+            "average_grade": 85.0,
+            "total_pending_assignments": 5,
+            "total_rewards_points": 500,
+            "average_character_score": 89.45
+          },
+          "recent_activity": [
+            {
+              "type": "grade",
+              "student_name": "Jordan",
+              "description": "Received A- in Mathematics Quiz",
+              "timestamp": "2025-01-07T10:30:00Z"
+            }
+          ]
+        }
+      },
+      "errors": {
+        "401": "Unauthorized - Invalid or expired token",
+        "404": "No linked students found",
+        "500": "Internal server error"
+      }
+    },
+
+    {
+      "name": "Request Student Link",
+      "endpoint": "/parents/parent/request-student-link/",
+      "method": "POST",
+      "description": "Request to link a student account to parent account",
+      "authentication": "Bearer token required",
+      "headers": {
+        "Authorization": "Bearer {access_token}",
+        "Content-Type": "application/json"
+      },
+      "request_body": {
+        "student_code": "ABC123456"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "message": "Link request submitted successfully",
+          "request_id": 15,
+          "status": "pending"
+        }
+      },
+      "errors": {
+        "400": "Invalid student code",
+        "401": "Unauthorized - Invalid or expired token",
+        "404": "Student not found with provided code",
+        "409": "Link request already exists or student already linked",
+        "500": "Internal server error"
+      }
+    },
+
+    {
+      "name": "List Pending Link Requests",
+      "endpoint": "/parents/parent/pending-student-links/",
+      "method": "GET",
+      "description": "Get all pending link requests for the authenticated parent",
+      "authentication": "Bearer token required",
+      "headers": {
+        "Authorization": "Bearer {access_token}",
+        "Content-Type": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "body": [
+          {
+            "relation_id": 3,
+            "student_id": 15,
+            "student_user_id": 20,
+            "student_full_name": "Michael Johnson",
+            "requested_at": "2025-01-05T14:30:00Z"
+          }
+        ]
+      },
+      "errors": {
+        "401": "Unauthorized - Invalid or expired token",
+        "500": "Internal server error"
+      }
+    },
+
+    {
+      "name": "List Linked Students",
+      "endpoint": "/parents/parent/linked-students/",
+      "method": "GET",
+      "description": "Get all approved linked students for the authenticated parent",
+      "authentication": "Bearer token required",
+      "headers": {
+        "Authorization": "Bearer {access_token}",
+        "Content-Type": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "body": [
+          {
+            "relation_id": 1,
+            "student_id": 8,
+            "student_user_id": 12,
+            "student_full_name": "Jordan Nguepi"
+          },
+          {
+            "relation_id": 2,
+            "student_id": 9,
+            "student_user_id": 13,
+            "student_full_name": "Alice Smith"
+          }
+        ]
+      },
+      "errors": {
+        "401": "Unauthorized - Invalid or expired token",
+        "404": "No linked students found",
+        "500": "Internal server error"
+      }
+    },
+
+    {
+      "name": "Cancel Link Request",
+      "endpoint": "/parents/parent/cancel-student-link/{request_id}/",
+      "method": "DELETE",
+      "description": "Cancel a pending link request",
+      "authentication": "Bearer token required",
+      "headers": {
+        "Authorization": "Bearer {access_token}",
+        "Content-Type": "application/json"
+      },
+      "path_parameters": {
+        "request_id": "The ID of the link request to cancel"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "message": "Link request canceled successfully",
+          "request_id": 3
+        }
+      },
+      "errors": {
+        "401": "Unauthorized - Invalid or expired token",
+        "404": "Link request not found",
+        "403": "Forbidden - Cannot cancel this request",
+        "500": "Internal server error"
+      }
+    }
+  ],
+
+  "data_sources": {
+    "description": "The dashboard endpoint aggregates data from multiple backend services",
+    "services": [
+      {
+        "name": "AttendanceService",
+        "provides": [
+          "attendance.status",
+          "attendance.attendance_rate",
+          "attendance.present_days",
+          "attendance.absent_days",
+          "attendance.late_days"
+        ]
+      },
+      {
+        "name": "GradebookService",
+        "provides": [
+          "academic_performance.current_average",
+          "academic_performance.grade_letter",
+          "academic_performance.trending",
+          "subjects[]"
+        ]
+      },
+      {
+        "name": "AssignmentService",
+        "provides": [
+          "assignments.pending_count",
+          "assignments.completed_count",
+          "assignments.total_count"
+        ]
+      },
+      {
+        "name": "RewardsService",
+        "provides": [
+          "rewards.total_points",
+          "rewards.rank",
+          "rewards.recent_achievements"
+        ]
+      },
+      {
+        "name": "CharacterService",
+        "provides": [
+          "character.good_character_count",
+          "character.bad_character_count",
+          "character.character_score",
+          "character.trending"
+        ]
+      },
+      {
+        "name": "ClassService",
+        "provides": [
+          "classes.total_classes",
+          "classes.active_classes"
+        ]
+      }
+    ]
+  },
+
+  "calculations": {
+    "character_score": "Formula: (good_character_count / (good_character_count + bad_character_count)) * 100",
+    "attendance_rate": "Formula: (present_days / (present_days + absent_days + late_days)) * 100",
+    "trending": "Compare current value with value from 30 days ago. Up if +2% or more, Down if -2% or less, Stable otherwise",
+    "rewards_rank": {
+      "Bronze": "0-99 points",
+      "Silver": "100-249 points",
+      "Gold": "250-499 points",
+      "Platinum": "500+ points"
+    }
+  },
+
+  "performance_considerations": {
+    "caching": {
+      "duration": "5-10 minutes",
+      "key_format": "parent_dashboard:{parent_id}",
+      "invalidation_triggers": [
+        "Attendance marked",
+        "Grade updated",
+        "Assignment status changed",
+        "Reward awarded",
+        "Character point added"
+      ]
+    },
+    "optimization": "Use database joins instead of multiple queries. Pre-calculate aggregates where possible.",
+    "target_response_time": {
+      "target": "< 500ms",
+      "maximum": "< 1000ms"
+    }
+  },
+
+  "security": {
+    "authentication": "JWT Bearer token in Authorization header",
+    "authorization": "Parent can only access data for their linked students",
+    "data_privacy": "Do not expose sensitive student information beyond what parent has access to",
+    "audit_logging": "Log all dashboard access attempts for security audit"
+  },
+
+  "frontend_integration": {
+    "hook": "useParentDashboard(accessToken)",
+    "service": "ParentDashboardService.getDashboardData(accessToken)",
+    "mock_fallback": "Automatically uses mock data if API returns 404 or is unreachable",
+    "loading_states": "Managed by useLoading() context",
+    "error_handling": "Displays error states with retry option"
+  },
+
+  "notes": [
+    "All percentages are rounded to 1 decimal place",
+    "Timestamps are in ISO 8601 format (UTC)",
+    "Student codes are case-insensitive and trimmed",
+    "Trending calculations are based on last 30 days of data",
+    "Recent activity is limited to last 5-10 events sorted by timestamp (most recent first)",
+    "Attendance status reflects TODAY's status only",
+    "Subject list is limited to top 5 subjects by enrollment or recent activity"
+  ]
+}

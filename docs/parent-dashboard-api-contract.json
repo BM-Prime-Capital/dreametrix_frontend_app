@@ -1,0 +1,538 @@
+{
+  "endpoint": "/parents/parent/dashboard",
+  "method": "GET",
+  "description": "Get complete dashboard data for authenticated parent with enriched information from all subsystems",
+  "authentication": "Bearer token required",
+  "request": {
+    "headers": {
+      "Authorization": "Bearer {access_token}",
+      "Content-Type": "application/json"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "parent_info": {
+        "type": "object",
+        "description": "Basic parent information",
+        "properties": {
+          "id": {
+            "type": "number",
+            "example": 1
+          },
+          "full_name": {
+            "type": "string",
+            "example": "Abraham Nlandu"
+          },
+          "email": {
+            "type": "string",
+            "example": "abraham@example.com"
+          },
+          "linked_students_count": {
+            "type": "number",
+            "example": 2
+          }
+        }
+      },
+      "students_summary": {
+        "type": "array",
+        "description": "Summary of all linked students with comprehensive metrics from all subsystems",
+        "items": {
+          "type": "object",
+          "properties": {
+            "student_id": {
+              "type": "number",
+              "example": 8
+            },
+            "student_user_id": {
+              "type": "number",
+              "example": 12
+            },
+            "full_name": {
+              "type": "string",
+              "example": "Jordan Nguepi"
+            },
+            "grade_level": {
+              "type": "string",
+              "example": "Grade 5"
+            },
+            "attendance": {
+              "type": "object",
+              "description": "Attendance data from AttendanceService",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": ["present", "absent", "late"],
+                  "example": "present"
+                },
+                "attendance_rate": {
+                  "type": "number",
+                  "description": "Percentage (0-100)",
+                  "example": 95.5
+                },
+                "present_days": {
+                  "type": "number",
+                  "example": 38
+                },
+                "absent_days": {
+                  "type": "number",
+                  "example": 2
+                },
+                "late_days": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
+            },
+            "academic_performance": {
+              "type": "object",
+              "description": "Academic data from GradebookService",
+              "properties": {
+                "current_average": {
+                  "type": "number",
+                  "description": "Overall average grade percentage (0-100)",
+                  "example": 87.5
+                },
+                "grade_letter": {
+                  "type": "string",
+                  "example": "A-"
+                },
+                "trending": {
+                  "type": "string",
+                  "enum": ["up", "down", "stable"],
+                  "example": "up"
+                }
+              }
+            },
+            "assignments": {
+              "type": "object",
+              "description": "Assignments data from AssignmentService",
+              "properties": {
+                "pending_count": {
+                  "type": "number",
+                  "example": 3
+                },
+                "completed_count": {
+                  "type": "number",
+                  "example": 12
+                },
+                "total_count": {
+                  "type": "number",
+                  "example": 15
+                }
+              }
+            },
+            "subjects": {
+              "type": "array",
+              "description": "Top 3-5 subjects with current grades from GradebookService",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Mathematics"
+                  },
+                  "grade": {
+                    "type": "string",
+                    "example": "A-"
+                  },
+                  "grade_percentage": {
+                    "type": "number",
+                    "example": 89.0
+                  },
+                  "trending": {
+                    "type": "string",
+                    "enum": ["up", "down", "stable"],
+                    "example": "up"
+                  }
+                }
+              }
+            },
+            "rewards": {
+              "type": "object",
+              "description": "Rewards/points data from RewardsService",
+              "properties": {
+                "total_points": {
+                  "type": "number",
+                  "example": 285
+                },
+                "rank": {
+                  "type": "string",
+                  "example": "Gold",
+                  "description": "Rank tier based on points (Bronze/Silver/Gold/Platinum)"
+                },
+                "recent_achievements": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": ["Perfect Attendance Week", "Math Champion", "Top Reader"]
+                }
+              }
+            },
+            "character": {
+              "type": "object",
+              "description": "Character development data from CharacterService",
+              "properties": {
+                "good_character_count": {
+                  "type": "number",
+                  "example": 32
+                },
+                "bad_character_count": {
+                  "type": "number",
+                  "example": 3
+                },
+                "character_score": {
+                  "type": "number",
+                  "description": "Percentage score (good / total * 100)",
+                  "example": 91.4
+                },
+                "trending": {
+                  "type": "string",
+                  "enum": ["up", "down", "stable"],
+                  "example": "up"
+                }
+              }
+            },
+            "classes": {
+              "type": "object",
+              "description": "Classes enrollment data from ClassService",
+              "properties": {
+                "total_classes": {
+                  "type": "number",
+                  "example": 6
+                },
+                "active_classes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": ["Mathematics", "Science", "English", "History", "Art", "P.E."]
+                }
+              }
+            }
+          }
+        }
+      },
+      "quick_stats": {
+        "type": "object",
+        "description": "Aggregated statistics across all linked students",
+        "properties": {
+          "total_students": {
+            "type": "number",
+            "example": 2
+          },
+          "all_present_today": {
+            "type": "boolean",
+            "example": true
+          },
+          "average_attendance_rate": {
+            "type": "number",
+            "description": "Average across all students",
+            "example": 93.75
+          },
+          "average_grade": {
+            "type": "number",
+            "description": "Average across all students",
+            "example": 85.0
+          },
+          "total_pending_assignments": {
+            "type": "number",
+            "description": "Sum of pending assignments for all students",
+            "example": 5
+          },
+          "total_rewards_points": {
+            "type": "number",
+            "description": "Sum of points for all students",
+            "example": 500
+          },
+          "average_character_score": {
+            "type": "number",
+            "description": "Average character score across all students",
+            "example": 89.45
+          }
+        }
+      },
+      "recent_activity": {
+        "type": "array",
+        "description": "Recent activity timeline from all subsystems (last 5-10 events)",
+        "items": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["grade", "assignment", "reward", "character", "attendance"],
+              "example": "grade"
+            },
+            "student_name": {
+              "type": "string",
+              "example": "Jordan"
+            },
+            "description": {
+              "type": "string",
+              "example": "Received A- in Mathematics Quiz"
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2025-01-07T10:30:00Z"
+            }
+          }
+        }
+      }
+    }
+  },
+  "example_response": {
+    "parent_info": {
+      "id": 1,
+      "full_name": "Abraham Nlandu",
+      "email": "abraham@example.com",
+      "linked_students_count": 2
+    },
+    "students_summary": [
+      {
+        "student_id": 8,
+        "student_user_id": 12,
+        "full_name": "Jordan Nguepi",
+        "grade_level": "Grade 5",
+        "attendance": {
+          "status": "present",
+          "attendance_rate": 95.5,
+          "present_days": 38,
+          "absent_days": 2,
+          "late_days": 1
+        },
+        "academic_performance": {
+          "current_average": 87.5,
+          "grade_letter": "A-",
+          "trending": "up"
+        },
+        "assignments": {
+          "pending_count": 3,
+          "completed_count": 12,
+          "total_count": 15
+        },
+        "subjects": [
+          {
+            "name": "Mathematics",
+            "grade": "A-",
+            "grade_percentage": 89.0,
+            "trending": "up"
+          },
+          {
+            "name": "Science",
+            "grade": "B+",
+            "grade_percentage": 87.5,
+            "trending": "up"
+          },
+          {
+            "name": "English",
+            "grade": "A",
+            "grade_percentage": 92.0,
+            "trending": "stable"
+          }
+        ],
+        "rewards": {
+          "total_points": 285,
+          "rank": "Gold",
+          "recent_achievements": ["Perfect Attendance Week", "Math Champion", "Top Reader"]
+        },
+        "character": {
+          "good_character_count": 32,
+          "bad_character_count": 3,
+          "character_score": 91.4,
+          "trending": "up"
+        },
+        "classes": {
+          "total_classes": 6,
+          "active_classes": ["Mathematics", "Science", "English", "History", "Art", "P.E."]
+        }
+      },
+      {
+        "student_id": 9,
+        "student_user_id": 13,
+        "full_name": "Alice Smith",
+        "grade_level": "Grade 3",
+        "attendance": {
+          "status": "present",
+          "attendance_rate": 92.0,
+          "present_days": 36,
+          "absent_days": 3,
+          "late_days": 2
+        },
+        "academic_performance": {
+          "current_average": 82.5,
+          "grade_letter": "B+",
+          "trending": "stable"
+        },
+        "assignments": {
+          "pending_count": 2,
+          "completed_count": 10,
+          "total_count": 12
+        },
+        "subjects": [
+          {
+            "name": "Reading",
+            "grade": "A-",
+            "grade_percentage": 88.0,
+            "trending": "up"
+          },
+          {
+            "name": "Mathematics",
+            "grade": "B",
+            "grade_percentage": 80.0,
+            "trending": "down"
+          },
+          {
+            "name": "Science",
+            "grade": "B+",
+            "grade_percentage": 83.0,
+            "trending": "stable"
+          }
+        ],
+        "rewards": {
+          "total_points": 215,
+          "rank": "Silver",
+          "recent_achievements": ["Art Star", "Good Helper"]
+        },
+        "character": {
+          "good_character_count": 28,
+          "bad_character_count": 4,
+          "character_score": 87.5,
+          "trending": "stable"
+        },
+        "classes": {
+          "total_classes": 5,
+          "active_classes": ["Reading", "Mathematics", "Science", "Art", "Music"]
+        }
+      }
+    ],
+    "quick_stats": {
+      "total_students": 2,
+      "all_present_today": true,
+      "average_attendance_rate": 93.75,
+      "average_grade": 85.0,
+      "total_pending_assignments": 5,
+      "total_rewards_points": 500,
+      "average_character_score": 89.45
+    },
+    "recent_activity": [
+      {
+        "type": "grade",
+        "student_name": "Jordan",
+        "description": "Received A- in Mathematics Quiz",
+        "timestamp": "2025-01-07T10:30:00Z"
+      },
+      {
+        "type": "reward",
+        "student_name": "Jordan",
+        "description": "Earned 'Math Champion' achievement",
+        "timestamp": "2025-01-07T09:15:00Z"
+      },
+      {
+        "type": "assignment",
+        "student_name": "Alice",
+        "description": "Submitted Art Project",
+        "timestamp": "2025-01-06T16:45:00Z"
+      },
+      {
+        "type": "character",
+        "student_name": "Jordan",
+        "description": "Received Good Character point for helping classmate",
+        "timestamp": "2025-01-06T14:20:00Z"
+      },
+      {
+        "type": "attendance",
+        "student_name": "Alice",
+        "description": "Perfect Attendance this week",
+        "timestamp": "2025-01-05T08:00:00Z"
+      }
+    ]
+  },
+  "error_responses": {
+    "401": {
+      "description": "Unauthorized - Invalid or expired token",
+      "body": {
+        "error": "Authentication required"
+      }
+    },
+    "404": {
+      "description": "Parent has no linked students",
+      "body": {
+        "error": "No linked students found",
+        "message": "Please link a student to view dashboard data"
+      }
+    },
+    "500": {
+      "description": "Server error",
+      "body": {
+        "error": "Internal server error"
+      }
+    }
+  },
+  "data_sources": {
+    "description": "This endpoint aggregates data from multiple backend services",
+    "services": [
+      {
+        "name": "AttendanceService",
+        "provides": ["attendance.status", "attendance.attendance_rate", "attendance.present_days", "attendance.absent_days", "attendance.late_days"]
+      },
+      {
+        "name": "GradebookService",
+        "provides": ["academic_performance.*", "subjects[]"]
+      },
+      {
+        "name": "AssignmentService",
+        "provides": ["assignments.pending_count", "assignments.completed_count", "assignments.total_count"]
+      },
+      {
+        "name": "RewardsService",
+        "provides": ["rewards.total_points", "rewards.rank", "rewards.recent_achievements"]
+      },
+      {
+        "name": "CharacterService",
+        "provides": ["character.good_character_count", "character.bad_character_count", "character.character_score", "character.trending"]
+      },
+      {
+        "name": "ClassService",
+        "provides": ["classes.total_classes", "classes.active_classes"]
+      }
+    ]
+  },
+  "calculations": {
+    "character_score": "Formula: (good_character_count / (good_character_count + bad_character_count)) * 100",
+    "trending": "Compare current value with value from 30 days ago. Up if +2% or more, Down if -2% or less, Stable otherwise",
+    "attendance_rate": "Formula: (present_days / (present_days + absent_days + late_days)) * 100",
+    "quick_stats.average_attendance_rate": "Average of all students' attendance_rate",
+    "quick_stats.average_grade": "Average of all students' current_average",
+    "quick_stats.total_pending_assignments": "Sum of all students' pending_count",
+    "quick_stats.total_rewards_points": "Sum of all students' total_points",
+    "quick_stats.average_character_score": "Average of all students' character_score"
+  },
+  "notes": [
+    "This endpoint consolidates data from 6 different services (Attendance, Gradebook, Assignments, Rewards, Character, Classes)",
+    "Data is calculated for the current academic year/term",
+    "Attendance status reflects TODAY's status only",
+    "Subject list is limited to top 5 subjects by enrollment or recent activity",
+    "All percentages are rounded to 1 decimal place",
+    "Trending calculations are based on last 30 days of performance data",
+    "Recent activity includes last 5-10 events sorted by timestamp (most recent first)",
+    "Rewards rank tiers: 0-99 (Bronze), 100-249 (Silver), 250-499 (Gold), 500+ (Platinum)"
+  ],
+  "related_endpoints": [
+    "GET /parents/parent/linked-students/ - Get list of linked students",
+    "GET /parents/parent/pending-student-links/ - Get pending link requests",
+    "GET /parents/attendance/ - Detailed attendance records (from AttendanceService)",
+    "GET /parents/assignments/ - Detailed assignments data (from AssignmentService)",
+    "GET /parents/gradebook/ - Detailed grades and academic data (from GradebookService)",
+    "GET /parents/rewards/ - Detailed rewards and achievements (from RewardsService)",
+    "GET /parents/characters/ - Detailed character development data (from CharacterService)",
+    "GET /parents/classes/ - Detailed class enrollment (from ClassService)"
+  ],
+  "performance_considerations": {
+    "caching": "Recommended cache duration: 5-10 minutes with cache key format: parent_dashboard:{parent_id}",
+    "invalidation_triggers": ["Attendance marked", "Grade updated", "Assignment status changed", "Reward awarded", "Character point added"],
+    "optimization": "Use database joins instead of multiple queries. Pre-calculate aggregates where possible.",
+    "target_response_time": "< 500ms (target), < 1000ms (maximum)"
+  }
+}
