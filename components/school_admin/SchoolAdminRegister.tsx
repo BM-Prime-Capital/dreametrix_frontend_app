@@ -181,32 +181,40 @@ export default function SchoolAdminRegister({}: RegisterProps) {
     }
   }, [currentStep]);
 
-  useEffect(() => {
-    if (currentStep !== RegistrationStep.MANUAL_FORM || !formData.state) {
-      setCities([]);
-      return;
-    }
+useEffect(() => {
+  if (currentStep !== RegistrationStep.MANUAL_FORM || !formData.state) {
+    setCities([]);
+    return;
+  }
 
-    const loadCities = async () => {
-      setLoadingCities(true);
-      try {
-        const citiesData = await fetchCitiesByState(formData.state);
-        const uniqueCities = [...new Set(citiesData)].sort();
-        setCities(uniqueCities);
+  const loadCities = async () => {
+    setLoadingCities(true);
+    try {
+      const normalizedState = formData.state
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
 
-        if (formData.city && !uniqueCities.includes(formData.city)) {
-          handleInputChange("city", "");
-        }
-      } catch (error) {
-        console.error("Cities loading error:", error);
-        setCities([]);
+      const citiesData = await fetchCitiesByState(normalizedState);
+      
+      const uniqueCities = [...new Set(citiesData)].sort();
+      setCities(uniqueCities);
+
+      if (formData.city && !uniqueCities.includes(formData.city)) {
         handleInputChange("city", "");
-      } finally {
-        setLoadingCities(false);
       }
-    };
-    loadCities();
-  }, [formData.state, currentStep]);
+    } catch (error) {
+      console.error("Cities loading error:", error);
+      setCities([]);
+      handleInputChange("city", "");
+    } finally {
+      setLoadingCities(false);
+    }
+  };
+  
+  loadCities();
+}, [formData.state, currentStep]);
 
   // Validation function for required fields
   const isFormValid = () => {
