@@ -279,7 +279,7 @@ export default function ParentRegister() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <p className="text-sm">
-                  You will receive an email within maximum 24 hours. Please be patient and check your emails after this period.
+                  You will receive an email shortly. Please be patient and check your emails after this period.
                 </p>
               </div>
             </div>
