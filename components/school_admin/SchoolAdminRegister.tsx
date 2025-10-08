@@ -150,7 +150,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
     setCurrentStep(RegistrationStep.MANUAL_FORM);
     setSelectedSchool(null);
     // Set default country when going to manual form
-    handleInputChange("country", "United States");
+    handleInputChange("country", "USA");
     setApiError(null);
   };
 
@@ -468,7 +468,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
                   if (selectedSchool.phone) {
                     handleInputChange("phone", selectedSchool.phone);
                   }
-                  handleInputChange("country", selectedSchool.country || "United States");
+                  handleInputChange("country", selectedSchool.country || "USA");
                   // Set region based on state for now
                   handleInputChange("region", selectedSchool.state);
                   setCurrentStep(RegistrationStep.MANUAL_FORM);
@@ -579,7 +579,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
             <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
             <div>
               <p className="font-medium text-red-800">Registration Error</p>
-              <p className="text-sm text-red-700 mt-1">{apiError}</p>
+              <p className="text-sm text-red-700 mt-1">{apiError} : Please change the administrator email.</p>
             </div>
           </div>
         )}
@@ -722,7 +722,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
               {/* Hidden country field that's actually connected to form state */}
               <input 
                 type="hidden" 
-                value={formData.country || "United States"}
+                value={formData.country || "USA"}
                 onChange={(e) => handleInputChange("country", e.target.value)}
               />
             </div>
