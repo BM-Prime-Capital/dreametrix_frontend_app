@@ -3,456 +3,474 @@
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { 
-  AlertTriangle,
+import {
   CheckCircle,
-  Clock,
-  MessageSquare,
   Users,
   BookOpen,
-  Calendar,
-  Award,
-  Star,
   TrendingUp,
   TrendingDown,
-  Bell,
-  Eye,
-  Trophy,
-  GraduationCap,
-  Heart,
-  FileText,
-  Phone,
-  Mail,
   AlertCircle,
-  Info,
-  Sparkles,
-  User,
-  Settings,
-  LogOut,
-  Shield,
-  CreditCard,
-  Home
+  Minus,
+  XCircle,
+  Award,
+  Heart,
+  Clock,
+  Calendar,
+  FileText,
+  Eye
 } from "lucide-react"
+import { useParentDashboard } from "@/hooks/useParentDashboard"
+import { useRequestInfo } from "@/hooks/useRequestInfo"
+import Link from "next/link"
 
 export default function ParentDashboardPage() {
+  const { accessToken } = useRequestInfo()
+  const {
+    parentInfo,
+    studentsSummary,
+    quickStats,
+    dashboardData,
+    loading,
+    error,
+    hasStudents,
+    allPresentToday,
+    studentsCount,
+    isMockMode
+  } = useParentDashboard(accessToken)
+
+  if (loading) {
+    return (
+      <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="bg-white p-8 rounded-xl shadow-sm border border-red-200 max-w-md">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="h-8 w-8 text-red-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Unable to Load Dashboard</h3>
+            <p className="text-gray-600 mb-4">{error}</p>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
+  if (!hasStudents) {
+    return (
+      <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 max-w-md">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="h-8 w-8 text-blue-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">No Students Linked</h3>
+            <p className="text-gray-600">Please link a student to view dashboard data.</p>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
+  const getAttendanceIcon = (status: string) => {
+    switch (status) {
+      case "present":
+        return <CheckCircle className="h-4 w-4 text-green-600" />
+      case "absent":
+        return <XCircle className="h-4 w-4 text-red-600" />
+      case "late":
+        return <AlertCircle className="h-4 w-4 text-orange-600" />
+      default:
+        return <Minus className="h-4 w-4 text-gray-600" />
+    }
+  }
+
+  const getAttendanceBadgeClass = (status: string) => {
+    switch (status) {
+      case "present":
+        return "bg-green-100 text-green-800 border-green-200"
+      case "absent":
+        return "bg-red-100 text-red-800 border-red-200"
+      case "late":
+        return "bg-orange-100 text-orange-800 border-orange-200"
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200"
+    }
+  }
+
+  const getTrendingIcon = (trending: string) => {
+    switch (trending) {
+      case "up":
+        return <TrendingUp className="h-3 w-3 text-green-600" />
+      case "down":
+        return <TrendingDown className="h-3 w-3 text-red-600" />
+      default:
+        return <Minus className="h-3 w-3 text-gray-600" />
+    }
+  }
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case "grade":
+        return <BookOpen className="h-4 w-4" />
+      case "assignment":
+        return <FileText className="h-4 w-4" />
+      case "reward":
+        return <Award className="h-4 w-4" />
+      case "character":
+        return <Heart className="h-4 w-4" />
+      case "attendance":
+        return <CheckCircle className="h-4 w-4" />
+      default:
+        return <AlertCircle className="h-4 w-4" />
+    }
+  }
+
+  const getActivityColor = (type: string) => {
+    switch (type) {
+      case "grade":
+        return "bg-blue-100 text-blue-600"
+      case "assignment":
+        return "bg-purple-100 text-purple-600"
+      case "reward":
+        return "bg-yellow-100 text-yellow-600"
+      case "character":
+        return "bg-pink-100 text-pink-600"
+      case "attendance":
+        return "bg-green-100 text-green-600"
+      default:
+        return "bg-gray-100 text-gray-600"
+    }
+  }
+
+  const formatTimeAgo = (timestamp: string) => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const diffDays = Math.floor(diffHours / 24)
+
+    if (diffDays > 0) return `${diffDays}d ago`
+    if (diffHours > 0) return `${diffHours}h ago`
+    return "Just now"
+  }
+
   return (
     <div className="w-full min-h-screen bg-gray-50 p-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header principal */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Sparkles className="h-8 w-8 text-blue-600" />
-              <h1 className="text-4xl font-bold text-gray-800">
-                Parent Dashboard
-              </h1>
-            </div>
-            <div className="flex items-center gap-4">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">
+              Welcome back, {parentInfo?.full_name || "Parent"}
+            </h1>
+            <p className="text-gray-600">
+              Here&apos;s an overview of your {studentsCount === 1 ? "child&apos;s" : "children&apos;s"} progress
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {isMockMode && (
+              <Badge className="bg-blue-100 text-blue-800 border-blue-200 px-4 py-2 font-medium">
+                DEMO MODE
+              </Badge>
+            )}
+            {allPresentToday && (
               <Badge className="bg-green-100 text-green-800 border-green-200 px-4 py-2 font-medium">
                 <CheckCircle className="h-4 w-4 mr-1" />
-                All Children Present
+                All Present Today
               </Badge>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Layout principal en 3 colonnes */}
-        <div className="grid grid-cols-12 gap-6">
-          
-          {/* ASIDE GAUCHE - Alertes et Notifications */}
-          <aside className="col-span-3 space-y-6">
-            
-            {/* Alertes importantes */}
-            <Card className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
-                </div>
-                <h3 className="font-bold text-lg text-gray-800">Urgent Alerts</h3>
-              </div>
-              <div className="space-y-3">
-                <div className="p-3 bg-red-50 rounded-lg border-l-4 border-red-500">
-                  <div className="flex items-center gap-2 mb-1">
-                    <FileText className="h-4 w-4 text-red-600" />
-                    <span className="text-sm font-semibold text-gray-800">Permission Slip</span>
-                  </div>
-                  <p className="text-xs text-gray-600">Jordan - Field trip next week</p>
-                  <Button size="sm" className="w-full mt-2 bg-red-600 hover:bg-red-700 text-white text-xs">
-                    Sign Now
-                  </Button>
-                </div>
-                
-                <div className="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-500">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="h-4 w-4 text-orange-600" />
-                    <span className="text-sm font-semibold text-gray-800">Parent Meeting</span>
-                  </div>
-                  <p className="text-xs text-gray-600">Tomorrow at 3:00 PM</p>
-                  <Button size="sm" className="w-full mt-2 bg-orange-600 hover:bg-orange-700 text-white text-xs">
-                    Confirm
-                  </Button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Notifications récentes */}
-            <Card className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
+        {/* Quick Stats Grid */}
+        {quickStats && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <Card className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Bell className="h-5 w-5 text-blue-600" />
-                </div>
-                <h3 className="font-bold text-lg text-gray-800">Notifications</h3>
-              </div>
-              <div className="space-y-3">
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2 mb-1">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm font-semibold text-gray-800">Math Quiz Tomorrow</span>
-                  </div>
-                  <p className="text-xs text-gray-600">Jordan has a Mathematics quiz</p>
-                </div>
-                
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Clock className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm font-semibold text-gray-800">Science Project</span>
-                  </div>
-                  <p className="text-xs text-gray-600">Alice's project due in 3 days</p>
-                </div>
-                
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2 mb-1">
-                    <MessageSquare className="h-4 w-4 text-purple-600" />
-                    <span className="text-sm font-semibold text-gray-800">New Message</span>
-                  </div>
-                  <p className="text-xs text-gray-600">From Mrs. Johnson</p>
-                </div>
-              </div>
-            </Card>
-
-            {/* Rappels rapides */}
-            <Card className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-green-600" />
-                </div>
-                <h3 className="font-bold text-lg text-gray-800">Quick Reminders</h3>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                  <span className="text-gray-700">Jordan - Math Quiz (Tomorrow)</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                  <span className="text-gray-700">Alice - Science Project (3 days)</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span className="text-gray-700">Parent Meeting (Tomorrow 3PM)</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-gray-700">School Newsletter Available</span>
-                </div>
-              </div>
-            </Card>
-          </aside>
-
-          {/* CENTRE - Informations principales */}
-          <main className="col-span-6 space-y-6">
-            
-            {/* Vue d'ensemble des enfants */}
-            <div className="grid grid-cols-1 gap-6">
-              {/* Jordan */}
-              <Card className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-300">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="relative">
-                      <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 font-bold text-lg">
-                        JN
-                      </div>
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                        <CheckCircle className="h-3 w-3 text-white" />
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-1">Jordan Nguepi</h3>
-                      <p className="text-gray-600 text-sm">Grade 5 • Age 10</p>
-                    </div>
-                  </div>
-                  <Badge className="bg-green-100 text-green-800 border-green-200 px-3 py-1 text-sm font-medium">
-                    Present
-                  </Badge>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600 mb-1">A-</div>
-                    <div className="text-blue-600 text-xs font-medium">Current Grade</div>
-                  </div>
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600 mb-1">95%</div>
-                    <div className="text-blue-600 text-xs font-medium">Attendance</div>
-                  </div>
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600 mb-1">12</div>
-                    <div className="text-blue-600 text-xs font-medium">Assignments</div>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className="font-bold text-blue-600 text-sm">Mathematics</div>
-                    <div className="flex items-center justify-center gap-1 mt-1">
-                      <span className="font-bold text-blue-600">A-</span>
-                      <TrendingUp className="h-3 w-3 text-green-600" />
-                    </div>
-                  </div>
-                  <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className="font-bold text-blue-600 text-sm">Science</div>
-                    <div className="flex items-center justify-center gap-1 mt-1">
-                      <span className="font-bold text-blue-600">B+</span>
-                      <TrendingUp className="h-3 w-3 text-green-600" />
-                    </div>
-                  </div>
-                  <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className="font-bold text-blue-600 text-sm">English</div>
-                    <div className="flex items-center justify-center gap-1 mt-1">
-                      <span className="font-bold text-blue-600">A</span>
-                      <TrendingUp className="h-3 w-3 text-green-600" />
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Alice */}
-              <Card className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-300">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="relative">
-                      <div className="w-14 h-14 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold text-lg">
-                        AS
-                      </div>
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                        <CheckCircle className="h-3 w-3 text-white" />
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-1">Alice Smith</h3>
-                      <p className="text-gray-600 text-sm">Grade 3 • Age 8</p>
-                    </div>
-                  </div>
-                  <Badge className="bg-green-100 text-green-800 border-green-200 px-3 py-1 text-sm font-medium">
-                    Present
-                  </Badge>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600 mb-1">B+</div>
-                    <div className="text-blue-600 text-xs font-medium">Current Grade</div>
-                  </div>
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600 mb-1">92%</div>
-                    <div className="text-blue-600 text-xs font-medium">Attendance</div>
-                  </div>
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600 mb-1">8</div>
-                    <div className="text-blue-600 text-xs font-medium">Assignments</div>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className="font-bold text-blue-600 text-sm">Reading</div>
-                    <div className="flex items-center justify-center gap-1 mt-1">
-                      <span className="font-bold text-blue-600">A-</span>
-                      <TrendingUp className="h-3 w-3 text-green-600" />
-                    </div>
-                  </div>
-                  <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className="font-bold text-blue-600 text-sm">Math</div>
-                    <div className="flex items-center justify-center gap-1 mt-1">
-                      <span className="font-bold text-blue-600">B</span>
-                      <TrendingDown className="h-3 w-3 text-red-600" />
-                    </div>
-                  </div>
-                  <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className="font-bold text-blue-600 text-sm">Science</div>
-                    <div className="flex items-center justify-center gap-1 mt-1">
-                      <span className="font-bold text-blue-600">B+</span>
-                      <TrendingUp className="h-3 w-3 text-green-600" />
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
-
-            {/* Communications récentes */}
-            <Card className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <MessageSquare className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <h2 className="text-xl font-bold text-gray-800">Recent Communications</h2>
-                </div>
-                <Button variant="ghost" className="text-purple-600 hover:text-purple-700 font-medium hover:bg-purple-50 rounded-lg">
-                  View All
-                </Button>
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-100">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-sm font-bold">
-                    MJ
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-bold text-gray-800">Mrs. Johnson</h4>
-                      <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full">2 hours ago</span>
-                    </div>
-                    <p className="text-sm text-gray-700 mb-3">Alice has shown great improvement in reading this week.</p>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50 rounded-lg text-xs">
-                        Reply
-                      </Button>
-                      <Button size="sm" variant="outline" className="border-green-300 text-green-600 hover:bg-green-50 rounded-lg text-xs">
-                        <Phone className="h-3 w-3 mr-1" />
-                        Call
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg border border-green-100">
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-600 text-sm font-bold">
-                    DW
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-bold text-gray-800">Mr. Wilson</h4>
-                      <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full">1 day ago</span>
-                    </div>
-                    <p className="text-sm text-gray-700 mb-3">Jordan's mathematics quiz results are excellent! He scored 95%.</p>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="border-green-300 text-green-600 hover:bg-green-50 rounded-lg text-xs">
-                        Reply
-                      </Button>
-                      <Button size="sm" variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50 rounded-lg text-xs">
-                        <Mail className="h-3 w-3 mr-1" />
-                        Email
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </main>
-
-          {/* ASIDE DROITE - Informations personnelles du parent */}
-          <aside className="col-span-3 space-y-6">
-            
-            {/* Profil du parent */}
-            <Card className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <div className="text-center mb-4">
-                <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 font-bold text-xl mx-auto mb-3">
-                  JN
-                </div>
-                <h3 className="font-bold text-lg text-gray-800">Jordan Nguepi</h3>
-                <p className="text-gray-600 text-sm">Parent Account</p>
-                <Badge className="bg-green-100 text-green-800 border-green-200 mt-2">
-                  <Shield className="h-3 w-3 mr-1" />
-                  Verified Parent
-                </Badge>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <Users className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <div className="font-semibold text-gray-800">2 Children</div>
-                    <div className="text-xs text-gray-600">Jordan & Alice</div>
-                  </div>
                 </div>
-                
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Home className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <div className="font-semibold text-gray-800">Active Since</div>
-                    <div className="text-xs text-gray-600">January 2024</div>
-                  </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-800">{quickStats.total_students}</p>
+                  <p className="text-xs text-gray-600">Students</p>
                 </div>
-                
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <CreditCard className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <div className="font-semibold text-gray-800">Account Status</div>
-                    <div className="text-xs text-gray-600">Premium Member</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-4">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Account Settings
-                </Button>
               </div>
             </Card>
 
-            {/* Statistiques personnelles */}
-            <Card className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
+            <Card className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Trophy className="h-5 w-5 text-green-600" />
+                  <CheckCircle className="h-5 w-5 text-green-600" />
                 </div>
-                <h3 className="font-bold text-lg text-gray-800">Your Stats</h3>
-              </div>
-              <div className="space-y-4">
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600 mb-1">156</div>
-                  <div className="text-sm text-gray-600">Days Active</div>
-                </div>
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600 mb-1">89%</div>
-                  <div className="text-sm text-gray-600">Response Rate</div>
-                </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600 mb-1">24</div>
-                  <div className="text-sm text-gray-600">Messages Sent</div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-800">{quickStats.average_attendance_rate.toFixed(1)}%</p>
+                  <p className="text-xs text-gray-600">Attendance</p>
                 </div>
               </div>
             </Card>
 
-            {/* Actions rapides */}
-            <Card className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <Award className="h-5 w-5 text-orange-600" />
+            <Card className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <BookOpen className="h-5 w-5 text-purple-600" />
                 </div>
-                <h3 className="font-bold text-lg text-gray-800">Quick Actions</h3>
-              </div>
-              <div className="space-y-3">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Contact Teacher
-                </Button>
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Schedule Meeting
-                </Button>
-                <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium">
-                  <FileText className="h-4 w-4 mr-2" />
-                  View Reports
-                </Button>
-                <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium">
-                  <BookOpen className="h-4 w-4 mr-2" />
-                  Library Access
-                </Button>
+                <div>
+                  <p className="text-2xl font-bold text-gray-800">{quickStats.average_grade.toFixed(1)}%</p>
+                  <p className="text-xs text-gray-600">Avg Grade</p>
+                </div>
               </div>
             </Card>
-          </aside>
+
+            <Card className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-800">{quickStats.total_pending_assignments}</p>
+                  <p className="text-xs text-gray-600">Pending</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                  <Award className="h-5 w-5 text-yellow-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-800">{quickStats.total_rewards_points}</p>
+                  <p className="text-xs text-gray-600">Points</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
+                  <Heart className="h-5 w-5 text-pink-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-800">{quickStats.average_character_score.toFixed(1)}%</p>
+                  <p className="text-xs text-gray-600">Character</p>
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Students Overview - 2 columns */}
+          <div className="lg:col-span-2 space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800">Students Overview</h2>
+
+            {studentsSummary.map((student) => (
+              <Card
+                key={student.student_id}
+                className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-300"
+              >
+                {/* Student Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">
+                        {getInitials(student.full_name)}
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full border-2 border-white flex items-center justify-center">
+                        {getAttendanceIcon(student.attendance.status)}
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800 mb-1">{student.full_name}</h3>
+                      <p className="text-gray-600 text-sm">{student.grade_level} • {student.classes.total_classes} Classes</p>
+                    </div>
+                  </div>
+                  <Badge className={`px-3 py-1 text-sm font-medium ${getAttendanceBadgeClass(student.attendance.status)}`}>
+                    {student.attendance.status.charAt(0).toUpperCase() + student.attendance.status.slice(1)}
+                  </Badge>
+                </div>
+
+                {/* Quick Metrics Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                  <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <span className="text-2xl font-bold text-blue-600">{student.academic_performance.grade_letter}</span>
+                      {getTrendingIcon(student.academic_performance.trending)}
+                    </div>
+                    <div className="text-blue-600 text-xs font-medium">Grade</div>
+                    <div className="text-gray-600 text-xs">{student.academic_performance.current_average.toFixed(1)}%</div>
+                  </div>
+
+                  <div className="text-center p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600 mb-1">{student.attendance.attendance_rate.toFixed(0)}%</div>
+                    <div className="text-green-600 text-xs font-medium">Attendance</div>
+                    <div className="text-gray-600 text-xs">{student.attendance.present_days}d</div>
+                  </div>
+
+                  <div className="text-center p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600 mb-1">{student.assignments.pending_count}</div>
+                    <div className="text-orange-600 text-xs font-medium">Pending</div>
+                    <div className="text-gray-600 text-xs">{student.assignments.completed_count}/{student.assignments.total_count}</div>
+                  </div>
+
+                  <div className="text-center p-3 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg">
+                    <div className="text-2xl font-bold text-yellow-600 mb-1">{student.rewards.total_points}</div>
+                    <div className="text-yellow-600 text-xs font-medium">Points</div>
+                    <div className="text-gray-600 text-xs">{student.rewards.rank}</div>
+                  </div>
+                </div>
+
+                {/* Top Subjects */}
+                {student.subjects.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="font-bold text-gray-800 mb-3 text-sm">Top Subjects</h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      {student.subjects.slice(0, 3).map((subject, index) => (
+                        <div key={index} className="text-center p-2 bg-gray-50 rounded-lg border border-gray-200">
+                          <div className="font-bold text-gray-800 text-xs mb-1">{subject.name}</div>
+                          <div className="flex items-center justify-center gap-1">
+                            <span className="font-bold text-blue-600 text-sm">{subject.grade}</span>
+                            {getTrendingIcon(subject.trending)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Progress Bars */}
+                <div className="space-y-3 mb-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-gray-600">Assignments Progress</span>
+                      <span className="text-xs text-gray-500">{student.assignments.completed_count}/{student.assignments.total_count}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all"
+                        style={{ width: `${(student.assignments.completed_count / student.assignments.total_count) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-gray-600">Character Score</span>
+                      <span className="text-xs text-gray-500">{student.character.character_score.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-pink-500 to-red-600 h-2 rounded-full transition-all"
+                        style={{ width: `${student.character.character_score}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
+                  <Link href={`/parent/gradebook`} className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full text-xs">
+                      <Eye className="h-3 w-3 mr-1" />
+                      View Grades
+                    </Button>
+                  </Link>
+                  <Link href={`/parent/assignments`} className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full text-xs">
+                      <FileText className="h-3 w-3 mr-1" />
+                      Assignments
+                    </Button>
+                  </Link>
+                  <Link href={`/parent/attendance`} className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full text-xs">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      Attendance
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Recent Activity Sidebar - 1 column */}
+          <div className="lg:col-span-1">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Recent Activity</h2>
+            <Card className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+              <div className="space-y-4">
+                {dashboardData?.recent_activity?.map((activity, index) => (
+                  <div key={index} className="flex items-start gap-3 pb-4 border-b border-gray-100 last:border-0 last:pb-0">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${getActivityColor(activity.type)}`}>
+                      {getActivityIcon(activity.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 mb-1">
+                        {activity.student_name}
+                      </p>
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        {activity.description}
+                      </p>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Clock className="h-3 w-3 text-gray-400" />
+                        <span className="text-xs text-gray-400">{formatTimeAgo(activity.timestamp)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {(!dashboardData?.recent_activity || dashboardData.recent_activity.length === 0) && (
+                  <div className="text-center py-8">
+                    <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">No recent activity</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Quick Links */}
+            <Card className="bg-gradient-to-br from-blue-500 to-purple-600 p-6 rounded-xl shadow-sm mt-4 text-white">
+              <h3 className="font-bold text-lg mb-4">Quick Links</h3>
+              <div className="space-y-2">
+                <Link href="/parent/classes">
+                  <Button variant="secondary" className="w-full justify-start bg-white/20 hover:bg-white/30 text-white border-0">
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    View All Classes
+                  </Button>
+                </Link>
+                <Link href="/parent/report-cards">
+                  <Button variant="secondary" className="w-full justify-start bg-white/20 hover:bg-white/30 text-white border-0">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Report Cards
+                  </Button>
+                </Link>
+                <Link href="/parent/rewards">
+                  <Button variant="secondary" className="w-full justify-start bg-white/20 hover:bg-white/30 text-white border-0">
+                    <Award className="h-4 w-4 mr-2" />
+                    View Rewards
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
