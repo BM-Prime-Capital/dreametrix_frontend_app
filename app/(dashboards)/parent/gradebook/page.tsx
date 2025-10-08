@@ -26,13 +26,23 @@ export default function ParentGradebookPage() {
     totalAssessments: 0
   })
 
+  // Safety: ensure loading stops when component unmounts
+  useEffect(() => {
+    return () => {
+      stopLoading()
+    }
+  }, [stopLoading])
+
   // Fetch linked students on mount
   useEffect(() => {
     fetchLinkedStudents()
   }, [accessToken])
 
   const fetchLinkedStudents = async () => {
-    if (!accessToken) return
+    if (!accessToken) {
+      stopLoading()
+      return
+    }
 
     try {
       setLoading(true)
@@ -44,13 +54,11 @@ export default function ParentGradebookPage() {
       if (students.length > 0 && !selectedStudentId) {
         setSelectedStudentId(students[0].id)
       }
-
-      stopLoading()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch linked students")
-      stopLoading()
     } finally {
       setLoading(false)
+      stopLoading() // Always stop global loading
     }
   }
 

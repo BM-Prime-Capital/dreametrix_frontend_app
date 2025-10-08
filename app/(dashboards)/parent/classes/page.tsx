@@ -25,37 +25,37 @@ export default function ParentClassesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Safety: ensure loading stops when component unmounts
+  useEffect(() => {
+    return () => {
+      stopLoading()
+    }
+  }, [stopLoading])
+
   // Fetch classes data
   const fetchClassesData = async () => {
-    if (!accessToken) return
-    
+    if (!accessToken) {
+      stopLoading()
+      return
+    }
+
     setLoading(true)
     setError(null)
-    
+
     try {
       const data = await getParentClasses(accessToken)
       setClasses(data)
-      // Arrêter le chargement dès qu'on reçoit une réponse (succès)
-      stopLoading()
     } catch (error) {
       setError(error instanceof Error ? error.message : "Error loading classes data")
-      // Arrêter le chargement même en cas d'erreur
-      stopLoading()
     } finally {
       setLoading(false)
+      stopLoading() // Always stop global loading
     }
   }
 
   useEffect(() => {
     fetchClassesData()
   }, [accessToken, refreshToken])
-
-  // S'assurer que le chargement s'arrête même si l'API échoue
-  useEffect(() => {
-    if (!loading && !error) {
-      stopLoading()
-    }
-  }, [loading, error, stopLoading])
 
   const handleRefresh = () => {
     setLoading(true) // Set loading to true for refresh

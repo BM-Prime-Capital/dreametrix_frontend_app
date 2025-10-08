@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileIcon, FileTextIcon, Calendar, Users, AlertCircle, Eye, BookOpen, Clock, CheckCircle } from "lucide-react";
+import { FileIcon, FileTextIcon, Calendar, Users, AlertCircle, Eye, BookOpen, Clock, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { ViewAssignmentDialog } from "@/components/student/assignments/view-assignment-dialog";
 import { ViewSubmissionDialog } from "@/components/student/assignments/view-submission-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +41,8 @@ export function ParentAssignmentsTable({
     useState(false);
   const [selectedAssignment, setSelectedAssignment] =
     useState<ParentAssignment | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
 
   const handleAssignmentClick = (assignment: ParentAssignment) => {
     setSelectedAssignment(assignment);
@@ -67,11 +69,29 @@ export function ParentAssignmentsTable({
       assignment.kind.toLowerCase() === selectedType.toLowerCase();
 
     // Filter by student
-    const studentMatch = selectedStudent === "all-students" || 
+    const studentMatch = selectedStudent === "all-students" ||
       assignment.students?.some(student => student.id.toString() === selectedStudent);
 
     return classMatch && typeMatch && studentMatch;
   });
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedStudent, selectedClass, selectedType]);
+
+  // Pagination functions
+  const getCurrentPageData = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredAssignments.slice(startIndex, endIndex);
+  };
+
+  const totalPages = Math.ceil(filteredAssignments.length / itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   // Get students to display based on filter
   const getStudentsToDisplay = (assignment: ParentAssignment) => {
@@ -161,7 +181,7 @@ export function ParentAssignmentsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAssignments.map((assignment, index) => (
+            {getCurrentPageData().map((assignment, index) => (
               <TableRow 
                 key={assignment.id} 
                 className={`hover:bg-blue-50/50 transition-all duration-200 cursor-pointer ${
@@ -260,6 +280,54 @@ export function ParentAssignmentsTable({
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center py-4 px-6 border-t border-gray-100">
+          <div className="text-sm text-gray-600">
+            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredAssignments.length)} of {filteredAssignments.length} records
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(page)}
+                  className={`w-8 h-8 p-0 ${
+                    currentPage === page
+                      ? "bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white"
+                      : ""
+                  }`}
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1"
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Assignment Details Dialog */}
       {selectedAssignment && (

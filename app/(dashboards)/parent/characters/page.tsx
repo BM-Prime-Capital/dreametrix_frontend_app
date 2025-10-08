@@ -23,9 +23,19 @@ export default function ParentCharactersPage() {
   const [selectedStudentForDialog, setSelectedStudentForDialog] = useState<TransformedCharacterData | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
+  // Safety: ensure loading stops when component unmounts
+  useEffect(() => {
+    return () => {
+      stopLoading()
+    }
+  }, [stopLoading])
+
   // Fetch character data
   const fetchCharacterData = async () => {
-    if (!accessToken) return
+    if (!accessToken) {
+      stopLoading()
+      return
+    }
 
     setLoading(true)
     setError(null)
@@ -34,12 +44,11 @@ export default function ParentCharactersPage() {
       const data = await getParentCharacterView(accessToken)
       const transformedData = transformCharacterData(data)
       setStudentsSummary(transformedData)
-      stopLoading()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error loading character data")
-      stopLoading()
     } finally {
       setLoading(false)
+      stopLoading() // Always stop global loading
     }
   }
 

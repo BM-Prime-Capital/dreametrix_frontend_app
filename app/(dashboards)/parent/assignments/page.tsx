@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RefreshCw, Loader2, AlertCircle, FileText, Calendar, Users, TrendingUp } from 'lucide-react'
 import { useRequestInfo } from "@/hooks/useRequestInfo"
 import { getParentAssignments, ParentAssignment } from "@/services/ParentAssignmentService"
-import { getParentClasses, ParentClass } from "@/services/ParentClassService"
 import { menuImages } from "@/constants/images"
 import Image from "next/image"
 import { useLoading } from "@/lib/LoadingContext"
@@ -22,58 +21,41 @@ export default function ParentAssignmentsPage() {
   const [selectedType, setSelectedType] = useState<string>("all-types")
   const [refreshKey, setRefreshKey] = useState(0)
   const [assignments, setAssignments] = useState<ParentAssignment[]>([])
-  const [classes, setClasses] = useState<ParentClass[]>([])
   const [filtersLoading, setFiltersLoading] = useState(true)
   const [filtersError, setFiltersError] = useState<string | null>(null)
 
-  // Fetch assignments and classes data
+  // Safety: ensure loading stops when component unmounts
+  useEffect(() => {
+    return () => {
+      stopLoading()
+    }
+  }, [stopLoading])
+
+  // Fetch assignments data
   const fetchData = async () => {
-    if (!accessToken) return
-    
+    if (!accessToken) {
+      stopLoading()
+      return
+    }
+
     setFiltersLoading(true)
     setFiltersError(null)
-    
+
     try {
-      const [assignmentsData, classesData] = await Promise.all([
-        getParentAssignments(accessToken),
-        getParentClasses(accessToken)
-      ])
-      
-      // Combine assignments with student information
-      const assignmentsWithStudents = assignmentsData.map((assignment: ParentAssignment) => {
-        // Find which students are in this class
-        const studentsInClass = classesData.flatMap((classItem: ParentClass) => 
-          classItem.students.filter(student => classItem.id === assignment.course.id)
-            .map(student => ({
-              id: student.id,
-              name: `${student.first_name} ${student.last_name}`
-            }))
-        )
-        
-        return {
-          ...assignment,
-          students: studentsInClass
-        }
-      })
-      
-      setAssignments(assignmentsWithStudents)
-      setClasses(classesData)
-      // Arrêter le chargement dès qu'on reçoit une réponse (succès)
-      stopLoading()
+      // Fetch assignments - API already includes student info
+      const assignmentsData = await getParentAssignments(accessToken)
+      setAssignments(assignmentsData)
     } catch (error) {
       setFiltersError(error instanceof Error ? error.message : "Error loading data")
-      // Arrêter le chargement même en cas d'erreur
-      stopLoading()
     } finally {
       setFiltersLoading(false)
+      stopLoading() // Always stop global loading
     }
   }
 
   useEffect(() => {
     fetchData()
   }, [accessToken, refreshToken])
-
-  // Supprimer le useEffect de sécurité car on gère maintenant dans le try/catch
 
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1)
@@ -102,9 +84,17 @@ export default function ParentAssignmentsPage() {
     ...assignmentTypes
   ]
 
+  // Extract unique students from assignments
+  const uniqueStudents = assignments.map(assignment => ({
+    id: assignment.student_id,
+    name: assignment.student_name
+  })).filter((student, index, self) =>
+    self.findIndex(s => s.id === student.id) === index
+  )
+
   // Calculer les statistiques globales
   const totalAssignments = assignments.length
-  const totalStudents = classes.reduce((total, classItem) => total + classItem.students.length, 0)
+  const totalStudents = uniqueStudents.length
   const totalClasses = uniqueClasses.length
   const publishedAssignments = assignments.filter(assignment => assignment.published).length
   const pendingAssignments = totalAssignments - publishedAssignments
@@ -163,7 +153,7 @@ export default function ParentAssignmentsPage() {
             </h1>
             <p className="text-blue-100 text-base">Monitor your children&apos;s homework and project deadlines</p>
           </div>
-          <div className="flex gap-2">
+          {/* <div className="flex gap-2">
             <Button 
               className="bg-white/20 hover:bg-white/30 text-white border-white/30 text-sm px-3 py-2"
             >
@@ -176,7 +166,7 @@ export default function ParentAssignmentsPage() {
               <Calendar className="h-3 w-3 mr-1" />
               Calendar
             </Button>
-          </div>
+          </div> */}
         </div>
 
         {/* Filters and Stats */}
@@ -217,9 +207,9 @@ export default function ParentAssignmentsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all-students">All Students ({totalStudents})</SelectItem>
-                {classes.flatMap(classItem => classItem.students).map((student) => (
+                {uniqueStudents.map((student) => (
                   <SelectItem key={student.id} value={student.id.toString()}>
-                    {`${student.first_name} ${student.last_name}`}
+                    {student.name}
                   </SelectItem>
                 ))}
               </SelectContent>
