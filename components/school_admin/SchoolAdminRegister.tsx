@@ -137,7 +137,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
   const [openCityPopover, setOpenCityPopover] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null); 
 
   // Select school from search results
   const handleSchoolSelect = (school: SchoolDisplay) => {
@@ -181,40 +181,48 @@ export default function SchoolAdminRegister({}: RegisterProps) {
     }
   }, [currentStep]);
 
-  useEffect(() => {
-    if (currentStep !== RegistrationStep.MANUAL_FORM || !formData.state) {
-      setCities([]);
-      return;
-    }
+useEffect(() => {
+  if (currentStep !== RegistrationStep.MANUAL_FORM || !formData.state) {
+    setCities([]);
+    return;
+  }
 
-    const loadCities = async () => {
-      setLoadingCities(true);
-      try {
-        const citiesData = await fetchCitiesByState(formData.state);
-        const uniqueCities = [...new Set(citiesData)].sort();
-        setCities(uniqueCities);
+  const loadCities = async () => {
+    setLoadingCities(true);
+    try {
+      const normalizedState = formData.state
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
 
-        if (formData.city && !uniqueCities.includes(formData.city)) {
-          handleInputChange("city", "");
-        }
-      } catch (error) {
-        console.error("Cities loading error:", error);
-        setCities([]);
+      const citiesData = await fetchCitiesByState(normalizedState);
+      
+      const uniqueCities = [...new Set(citiesData)].sort();
+      setCities(uniqueCities);
+
+      if (formData.city && !uniqueCities.includes(formData.city)) {
         handleInputChange("city", "");
-      } finally {
-        setLoadingCities(false);
       }
-    };
-    loadCities();
-  }, [formData.state, currentStep]);
+    } catch (error) {
+      console.error("Cities loading error:", error);
+      setCities([]);
+      handleInputChange("city", "");
+    } finally {
+      setLoadingCities(false);
+    }
+  };
+  
+  loadCities();
+}, [formData.state, currentStep]);
 
   // Validation function for required fields
   const isFormValid = () => {
     const requiredFields = [
-      'name', 'school_email', 'administrator_email', 'phone',
+      'name', 'school_email', 'administrator_email', 'phone', 
       'state', 'city', 'address', 'country'
     ];
-
+    
     const isValid = requiredFields.every(field => {
       const value = formData[field as keyof typeof formData];
       return value && value.toString().trim() !== '';
@@ -232,10 +240,10 @@ export default function SchoolAdminRegister({}: RegisterProps) {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setApiError(null);
-
+    
     console.log("✅ onSubmit called");
     console.log("📝 Form data:", formData);
-
+    
     if (!isFormValid()) {
       console.log("❌ Form validation failed - missing required fields");
       setApiError("Please fill in all required fields");
@@ -243,7 +251,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
     }
 
     console.log("✅ Form is valid, proceeding with submission...");
-
+    
     try {
       console.log("🔄 Calling handleSubmit...");
       const result = await handleSubmit();
@@ -258,7 +266,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
       }
     } catch (error: any) {
       console.error("❌ Registration failed:", error);
-
+      
       if (error.response?.data?.message) {
         setApiError(error.response.data.message);
       } else if (error.message) {
@@ -397,7 +405,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
             </Button>
           </div>
         )}
-
+        
       </div>
     </div>
   );
@@ -505,11 +513,11 @@ export default function SchoolAdminRegister({}: RegisterProps) {
         <h2 className="text-2xl font-bold text-gray-900">
           Registration Submitted Successfully!
         </h2>
-
+        
         <div className="bg-green-50 border border-green-200 rounded-lg p-6 max-w-md mx-auto">
           <p className="text-green-800 text-sm leading-relaxed">
-            Your school registration request has been submitted successfully.
-            You will receive an email regarding the status of your request within the next 24 hours.
+            Your school registration request has been submitted successfully. 
+            You will receive an email regarding the status of your request shortly.
           </p>
         </div>
       </div>
@@ -720,8 +728,8 @@ export default function SchoolAdminRegister({}: RegisterProps) {
                 </div>
               </div>
               {/* Hidden country field that's actually connected to form state */}
-              <input
-                type="hidden"
+              <input 
+                type="hidden" 
                 value={formData.country || "USA"}
                 onChange={(e) => handleInputChange("country", e.target.value)}
               />
@@ -1000,5 +1008,3 @@ export default function SchoolAdminRegister({}: RegisterProps) {
     </div>
   );
 }
-
-
