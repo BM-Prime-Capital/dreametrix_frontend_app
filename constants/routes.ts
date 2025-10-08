@@ -336,11 +336,11 @@ export const ParentRoutes = [
     icon: `/assets/images/teacher/dashboard/relationship.svg`,
     label: "RELATIONSHIP",
   },
-  {
-    path: `${userPath.PARENT_BASE_PATH}/communicate`,
-    icon: menuImages.communicate,
-    label: "COMMUNICATE",
-  },
+  // {
+  //   path: `${userPath.PARENT_BASE_PATH}/communicate`,
+  //   icon: menuImages.communicate,
+  //   label: "COMMUNICATE",
+  // },
 ];
 
 export const SuperAdminRoutes = [

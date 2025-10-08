@@ -50,6 +50,9 @@ interface ParentChildrenResponse {
     course_id: number
     course_name: string
     subject: string
+    class_average: number
+    student_average: number
+    assessments: Assessment[]
   }[]
 }
 
@@ -121,14 +124,12 @@ export async function getStudentClassesForParent(
     }
 
     // Transformer les courses en StudentClass[]
-    // Note: L'API de base ne retourne pas class_average, student_average, assessments
-    // On va devoir les fetch individuellement ou utiliser des valeurs par défaut
     const classes: StudentClass[] = student.courses.map(course => ({
       course: course.course_name,
       course_id: course.course_id,
-      class_average: 0, // Valeur par défaut, sera mise à jour lors du fetch des détails
-      student_average: 0, // Valeur par défaut, sera mise à jour lors du fetch des détails
-      assessments: [] // Vide par défaut, sera rempli lors du fetch des détails
+      class_average: course.class_average,
+      student_average: course.student_average,
+      assessments: course.assessments
     }))
 
     console.log('Student classes data for parent:', classes)

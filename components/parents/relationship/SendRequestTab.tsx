@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Loader2, Send, CheckCircle, AlertCircle } from "lucide-react"
-import { sendLinkRequest } from "@/services/ParentRelationshipService"
+import { Loader2, Send, CheckCircle, AlertCircle, UserPlus } from "lucide-react"
+import { ParentRelationshipService, sendLinkRequest } from "@/services/ParentRelationshipService"
 
 interface SendRequestTabProps {
   accessToken: string
@@ -16,6 +16,7 @@ interface SendRequestTabProps {
 export function SendRequestTab({ accessToken }: SendRequestTabProps) {
   const [email, setEmail] = useState("")
   const [message, setMessage] = useState("")
+  const [studentCode, setStudentCode] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -23,27 +24,34 @@ export function SendRequestTab({ accessToken }: SendRequestTabProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!email.trim()) {
-      setError("Please enter a student email address")
+    // Validation
+    if (!studentCode.trim()) {
+      setError("Please enter a student code")
+      return
+    }
+
+    if (!accessToken) {
+      setError("No access token available. Please log in again.")
       return
     }
 
     setLoading(true)
     setError(null)
-    setSuccess(false)
 
     try {
-      await sendLinkRequest(accessToken, email, message)
-      setSuccess(true)
-      setEmail("")
-      setMessage("")
+      // Call the actual API
+      await ParentRelationshipService.requestLink(studentCode, accessToken)
 
-      // Clear success message after 5 seconds
+      // Show success message
+      setSuccess(true)
+
+      // Redirect to dashboard after 2 seconds
       setTimeout(() => {
         setSuccess(false)
-      }, 5000)
+      }, 2000)
+
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to send link request")
+      setError(err instanceof Error ? err.message : "Failed to submit link request. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -73,102 +81,59 @@ export function SendRequestTab({ accessToken }: SendRequestTabProps) {
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/10 to-transparent rounded-bl-3xl"></div>
 
           <div className="relative z-10 p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Email Input with Enhanced Design */}
-              <div className="space-y-3">
-                <Label htmlFor="email" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <div className="w-6 h-6 bg-purple-100 rounded-md flex items-center justify-center">
-                    <Send className="h-3 w-3 text-purple-600" />
-                  </div>
-                  Student Email Address <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="student@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                  className="w-full h-12 px-4 border-2 border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 transition-all duration-300 rounded-xl"
-                  required
-                />
-                <p className="text-xs text-gray-500 flex items-center gap-1 ml-1">
-                  💡 Enter the email address the student uses to sign in
-                </p>
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Student Code Input */}
+            <div className="space-y-2">
+              <Label htmlFor="studentCode" className="text-base font-semibold text-gray-700">
+                Student Code <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="studentCode"
+                type="text"
+                placeholder="Enter student code (e.g., STU12345678)"
+                value={studentCode}
+                onChange={(e) => {
+                  setStudentCode(e.target.value.toUpperCase())
+                  setError(null)
+                }}
+                disabled={loading}
+                className="text-lg py-6 font-mono uppercase"
+                maxLength={20}
+              />
+              <p className="text-sm text-gray-500">
+                The student code is case-insensitive
+              </p>
+            </div>
 
-              {/* Optional Message with Enhanced Design */}
-              <div className="space-y-3">
-                <Label htmlFor="message" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <div className="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center">
-                    <AlertCircle className="h-3 w-3 text-blue-600" />
-                  </div>
-                  Personal Message (Optional)
-                </Label>
-                <Textarea
-                  id="message"
-                  placeholder="Hi! I would like to connect with you to follow your academic progress and support your learning journey..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  disabled={loading}
-                  className="w-full min-h-[120px] px-4 py-3 border-2 border-gray-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 transition-all duration-300 rounded-xl resize-none"
-                  maxLength={500}
-                />
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">Add a personal touch to your request</span>
-                  <span className={`font-medium ${message.length > 450 ? 'text-orange-500' : 'text-gray-500'}`}>
-                    {message.length}/500
-                  </span>
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                  <p className="text-sm text-red-700 font-medium">{error}</p>
                 </div>
               </div>
+            )}
 
-              {/* Error Message with Enhanced Design */}
-              {error && (
-                <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-red-50 to-red-100/50 border-2 border-red-200 rounded-xl shadow-sm animate-in slide-in-from-top-2">
-                  <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <AlertCircle className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="flex-1 pt-0.5">
-                    <p className="text-sm font-bold text-red-800 mb-1">Unable to Send Request</p>
-                    <p className="text-sm text-red-600">{error}</p>
-                  </div>
-                </div>
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              disabled={loading || !studentCode.trim()}
+              className="w-full bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] hover:from-[#1D8CB3] hover:to-[#1453B8] text-white py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Submitting Request...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="h-5 w-5 mr-2" />
+                  Submit Link Request
+                </>
               )}
-
-              {/* Success Message with Enhanced Design */}
-              {success && (
-                <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-100/50 border-2 border-green-200 rounded-xl shadow-sm animate-in slide-in-from-top-2">
-                  <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <CheckCircle className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="flex-1 pt-0.5">
-                    <p className="text-sm font-bold text-green-800 mb-1">Request Sent Successfully!</p>
-                    <p className="text-sm text-green-600">
-                      Your link request has been sent. The student will receive a notification.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Enhanced Submit Button */}
-              <Button
-                type="submit"
-                disabled={loading || !email.trim()}
-                className="w-full h-14 bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 text-white hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 rounded-xl text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 group"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    Sending Request...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-5 w-5 mr-2 group-hover:translate-x-1 transition-transform duration-300" />
-                    Send Link Request
-                  </>
-                )}
-              </Button>
-            </form>
+            </Button>
+          </form>
           </div>
         </Card>
 

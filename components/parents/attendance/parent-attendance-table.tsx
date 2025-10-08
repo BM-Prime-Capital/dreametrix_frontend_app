@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -33,15 +33,17 @@ interface ParentAttendanceTableProps {
   error: string | null
 }
 
-export function ParentAttendanceTable({ 
-  selectedStudent, 
-  selectedClass, 
+export function ParentAttendanceTable({
+  selectedStudent,
+  selectedClass,
   attendanceData,
   loading,
   error
 }: ParentAttendanceTableProps) {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [selectedAttendance, setSelectedAttendance] = useState<TransformedAttendanceData | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(5)
 
   // Fonction pour transformer les données API en format d'affichage
   const transformAttendanceData = (): TransformedAttendanceData[] => {
@@ -85,17 +87,35 @@ export function ParentAttendanceTable({
   const transformedData = transformAttendanceData()
   const filteredData = transformedData.filter((item) => {
     // Filtre par étudiant
-    const studentMatch = 
-      selectedStudent === "all-students" || 
+    const studentMatch =
+      selectedStudent === "all-students" ||
       item.studentId.toString() === selectedStudent
-    
+
     // Filtre par classe
-    const classMatch = 
-      selectedClass === "all-classes" || 
+    const classMatch =
+      selectedClass === "all-classes" ||
       item.classId.toString() === selectedClass
-    
+
     return studentMatch && classMatch
   })
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [selectedStudent, selectedClass])
+
+  // Pagination functions
+  const getCurrentPageData = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return filteredData.slice(startIndex, endIndex)
+  }
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
 
   // Show loading state
   if (loading) {
@@ -188,7 +208,7 @@ export function ParentAttendanceTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredData.map((item, index) => (
+            {getCurrentPageData().map((item, index) => (
               <TableRow 
                 key={item.id} 
                 className={`hover:bg-blue-50/50 transition-all duration-200 cursor-pointer ${
@@ -271,6 +291,54 @@ export function ParentAttendanceTable({
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center py-4 px-6 border-t border-gray-100">
+          <div className="text-sm text-gray-600">
+            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} records
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(page)}
+                  className={`w-8 h-8 p-0 ${
+                    currentPage === page
+                      ? "bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white"
+                      : ""
+                  }`}
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1"
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {filteredData.length === 0 && !loading && (
         <div className="text-center py-16">
