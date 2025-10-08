@@ -84,7 +84,7 @@ export function ParentSidebar({ routes }: { routes: MenuRoute[] }) {
       </div>
 
       {/* Footer du sidebar */}
-      <div className="p-4 border-t border-gray-100 mt-auto">
+      {/* <div className="p-4 border-t border-gray-100 mt-auto">
         <div className="bg-gradient-to-r from-[#25AAE1]/10 to-[#1D8CB3]/10 p-4 rounded-xl">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] rounded-lg flex items-center justify-center">
@@ -98,7 +98,7 @@ export function ParentSidebar({ routes }: { routes: MenuRoute[] }) {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </Card>
   )
 }

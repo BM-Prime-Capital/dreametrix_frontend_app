@@ -341,17 +341,6 @@ export const ParentRoutes = [
     icon: menuImages.communicate,
     label: "COMMUNICATE",
   },
-  {
-    path: `${userPath.PARENT_BASE_PATH}/library`,
-    icon: menuImages.report_card,
-    label: "LIBRARY",
-  },
-  {
-    path: `${userPath.PARENT_BASE_PATH}/help`,
-    icon: menuImages.support,
-    label: "NEED HELP?",
-    isSecondary: true,
-  },
 ];
 
 export const SuperAdminRoutes = [

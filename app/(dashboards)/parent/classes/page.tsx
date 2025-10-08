@@ -166,16 +166,16 @@ export default function ParentClassesPage() {
         </div>
 
         {/* Parent Code Display */}
-        <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm mb-4">
+        {/* <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm mb-4">
           <div className="flex items-center gap-2">
             <Award className="h-4 w-4 text-blue-200" />
             <span className="text-blue-200 text-sm">Parent&apos;s Code:</span>
             <span className="text-white font-mono font-bold text-lg">8787NK920</span>
           </div>
-        </div>
+        </div> */}
 
         {/* Filters and Stats */}
-        <div className="flex items-center justify-between">
+        <div className="flex pt-6 items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
               <div className="flex items-center gap-2 mb-2">
