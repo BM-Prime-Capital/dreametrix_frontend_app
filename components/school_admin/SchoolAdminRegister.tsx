@@ -137,7 +137,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
   const [openCityPopover, setOpenCityPopover] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null); // New state for API errors
+  const [apiError, setApiError] = useState<string | null>(null); 
 
   // Select school from search results
   const handleSchoolSelect = (school: SchoolDisplay) => {
@@ -148,7 +148,10 @@ export default function SchoolAdminRegister({}: RegisterProps) {
   // Go to manual form
   const goToManualForm = () => {
     setCurrentStep(RegistrationStep.MANUAL_FORM);
-    setApiError(null); // Clear API errors when navigating
+    setSelectedSchool(null);
+    // Set default country when going to manual form
+    handleInputChange("country", "United States");
+    setApiError(null);
   };
 
   // Go back to search
@@ -156,7 +159,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
     setCurrentStep(RegistrationStep.SEARCH);
     setSelectedSchool(null);
     clearSearch();
-    setApiError(null); // Clear API errors when navigating
+    setApiError(null);
   };
 
   // Fetch US states only when manual form is accessed
@@ -178,7 +181,6 @@ export default function SchoolAdminRegister({}: RegisterProps) {
     }
   }, [currentStep]);
 
-  // Fetch cities when state changes (only in manual form)
   useEffect(() => {
     if (currentStep !== RegistrationStep.MANUAL_FORM || !formData.state) {
       setCities([]);
@@ -189,11 +191,9 @@ export default function SchoolAdminRegister({}: RegisterProps) {
       setLoadingCities(true);
       try {
         const citiesData = await fetchCitiesByState(formData.state);
-        // Remove duplicates and sort alphabetically
         const uniqueCities = [...new Set(citiesData)].sort();
         setCities(uniqueCities);
 
-        // Reset city selection if the current city is not in the new list
         if (formData.city && !uniqueCities.includes(formData.city)) {
           handleInputChange("city", "");
         }
@@ -208,21 +208,57 @@ export default function SchoolAdminRegister({}: RegisterProps) {
     loadCities();
   }, [formData.state, currentStep]);
 
+  // Validation function for required fields
+  const isFormValid = () => {
+    const requiredFields = [
+      'name', 'school_email', 'administrator_email', 'phone', 
+      'state', 'city', 'address', 'country'
+    ];
+    
+    const isValid = requiredFields.every(field => {
+      const value = formData[field as keyof typeof formData];
+      return value && value.toString().trim() !== '';
+    });
+
+    console.log("Form validation check:", {
+      formData,
+      requiredFields,
+      isValid
+    });
+
+    return isValid;
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setApiError(null); // Clear previous API errors
+    setApiError(null);
+    
+    console.log("✅ onSubmit called");
+    console.log("📝 Form data:", formData);
+    
+    if (!isFormValid()) {
+      console.log("❌ Form validation failed - missing required fields");
+      setApiError("Please fill in all required fields");
+      return;
+    }
+
+    console.log("✅ Form is valid, proceeding with submission...");
     
     try {
+      console.log("🔄 Calling handleSubmit...");
       const result = await handleSubmit();
-      console.log("Registration result:", result);
+      console.log("✅ Registration result:", result);
 
       if (result?.task_id) {
+        console.log("🎉 Success, moving to success step");
         setCurrentStep(RegistrationStep.SUCCESS);
+      } else {
+        console.log("❌ No task_id in result");
+        setApiError("Registration completed but no task ID received. Please contact support.");
       }
     } catch (error: any) {
-      console.error("Registration failed:", error);
+      console.error("❌ Registration failed:", error);
       
-      // Handle API error response - display the exact message from API
       if (error.response?.data?.message) {
         setApiError(error.response.data.message);
       } else if (error.message) {
@@ -432,7 +468,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
                   if (selectedSchool.phone) {
                     handleInputChange("phone", selectedSchool.phone);
                   }
-                  handleInputChange("country", selectedSchool.country??"USA");
+                  handleInputChange("country", selectedSchool.country || "United States");
                   // Set region based on state for now
                   handleInputChange("region", selectedSchool.state);
                   setCurrentStep(RegistrationStep.MANUAL_FORM);
@@ -683,7 +719,12 @@ export default function SchoolAdminRegister({}: RegisterProps) {
                   <p className="text-sm text-blue-700">Currently available for schools in the United States</p>
                 </div>
               </div>
-              <input type="hidden" name="country" value="United States" />
+              {/* Hidden country field that's actually connected to form state */}
+              <input 
+                type="hidden" 
+                value={formData.country || "United States"}
+                onChange={(e) => handleInputChange("country", e.target.value)}
+              />
             </div>
 
             {/* State Select */}
@@ -889,7 +930,6 @@ export default function SchoolAdminRegister({}: RegisterProps) {
     );
   };
 
-  // Get current step content
   const getCurrentStepContent = () => {
     switch (currentStep) {
       case RegistrationStep.SEARCH:
