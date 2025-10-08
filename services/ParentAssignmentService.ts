@@ -85,7 +85,7 @@ export async function getParentAssignments(
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  const url = `${BACKEND_BASE_URL}/assessments/`;
+  const url = `${BACKEND_BASE_URL}/parents/children/assessments/`;
   
   try {
     const response = await fetch(url, {
