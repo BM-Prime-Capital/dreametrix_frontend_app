@@ -5,9 +5,10 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RefreshCw, Loader2, Heart, Star, Users, TrendingUp, Award, Smile, Frown, AlertCircle } from "lucide-react"
+import { RefreshCw, Loader2, Heart, Star, Users, TrendingUp, Award, Smile, Frown, AlertCircle, Eye } from "lucide-react"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
 import { getParentCharacterView, transformCharacterData, TransformedCharacterData } from "@/services/CharacterService"
+import { CharacterDetailsDialog } from "@/components/parents/characters/character-details-dialog"
 import { menuImages } from "@/constants/images"
 import Image from "next/image"
 import { useLoading } from "@/lib/LoadingContext"
@@ -19,6 +20,8 @@ export default function ParentCharactersPage() {
   const [studentsSummary, setStudentsSummary] = useState<TransformedCharacterData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedStudentForDialog, setSelectedStudentForDialog] = useState<TransformedCharacterData | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   // Fetch character data
   const fetchCharacterData = async () => {
@@ -240,10 +243,32 @@ export default function ParentCharactersPage() {
                   <span className="text-gray-600">Bad: {student.character.bad_character_count}</span>
                 </div>
               </div>
+
+              {/* View Details Button */}
+              <Button
+                onClick={() => {
+                  setSelectedStudentForDialog(student)
+                  setIsDialogOpen(true)
+                }}
+                className="w-full mt-4 bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] hover:from-[#1D8CB3] hover:to-[#1453B8] text-white"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                View Details
+              </Button>
             </div>
           </Card>
         ))}
       </div>
+
+      {/* Character Details Dialog */}
+      <CharacterDetailsDialog
+        isOpen={isDialogOpen}
+        onClose={() => {
+          setIsDialogOpen(false)
+          setSelectedStudentForDialog(null)
+        }}
+        student={selectedStudentForDialog}
+      />
 
       {/* Summary Statistics */}
       <Card className="bg-white rounded-2xl shadow-xl border-0 overflow-hidden">

@@ -29,6 +29,28 @@ export interface ParentCharacterData {
   };
 }
 
+// Interface pour les ratings détaillés
+export interface CharacterRating {
+  id: number;
+  date: string;
+  class: {
+    id: number;
+    name: string;
+    subject: string;
+  };
+  teacher: {
+    id: number;
+    full_name: string;
+    email: string;
+  };
+  good_statistics_character: string[];
+  bad_statistics_character: string[];
+  sanctions: string;
+  period: string;
+  teacher_comment_good_character: string;
+  teacher_comment_bad_character: string;
+}
+
 // Interface pour les données transformées (pour la page)
 export interface TransformedCharacterData {
   student_id: number;
@@ -39,6 +61,12 @@ export interface TransformedCharacterData {
     bad_character_count: number;
     character_score: number;
     trending: "up" | "down" | "stable";
+  };
+  ratings: CharacterRating[];
+  summary: {
+    total_days_evaluated: number;
+    average_good_per_day: number;
+    average_bad_per_day: number;
   };
 }
 
@@ -69,6 +97,12 @@ export function transformCharacterData(apiData: ParentCharacterData[]): Transfor
         bad_character_count: student.summary.total_bad_character,
         character_score: Math.round(characterScore * 10) / 10,
         trending
+      },
+      ratings: student.ratings as CharacterRating[],
+      summary: {
+        total_days_evaluated: student.summary.total_days_evaluated,
+        average_good_per_day: student.summary.average_good_per_day,
+        average_bad_per_day: student.summary.average_bad_per_day
       }
     };
   });
