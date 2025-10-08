@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RefreshCw, Loader2, Heart, Star, Users, TrendingUp, Award, Smile, Frown, AlertCircle } from "lucide-react"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
-import { useParentDashboard } from "@/hooks/useParentDashboard"
+import { getParentCharacterView, transformCharacterData, TransformedCharacterData } from "@/services/CharacterService"
 import { menuImages } from "@/constants/images"
 import Image from "next/image"
 import { useLoading } from "@/lib/LoadingContext"
@@ -16,24 +16,36 @@ export default function ParentCharactersPage() {
   const { accessToken } = useRequestInfo()
   const { stopLoading } = useLoading()
   const [selectedStudent, setSelectedStudent] = useState<string>("all-students")
+  const [studentsSummary, setStudentsSummary] = useState<TransformedCharacterData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Use central dashboard hook
-  const {
-    studentsSummary,
-    loading,
-    error,
-    refreshData,
-    isMockMode
-  } = useParentDashboard(accessToken)
+  // Fetch character data
+  const fetchCharacterData = async () => {
+    if (!accessToken) return
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const data = await getParentCharacterView(accessToken)
+      const transformedData = transformCharacterData(data)
+      setStudentsSummary(transformedData)
+      stopLoading()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error loading character data")
+      stopLoading()
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    if (!loading) {
-      stopLoading()
-    }
-  }, [loading, stopLoading])
+    fetchCharacterData()
+  }, [accessToken])
 
   const handleRefresh = () => {
-    refreshData()
+    fetchCharacterData()
   }
 
   // Filter students based on selection
@@ -78,19 +90,6 @@ export default function ParentCharactersPage() {
 
   return (
     <div className="w-full space-y-6">
-      {/* Mock Data Warning */}
-      {isMockMode && (
-        <Card className="bg-amber-50 border-amber-200 p-4">
-          <div className="flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 text-amber-600" />
-            <div>
-              <p className="text-amber-900 font-medium">Using Mock Data</p>
-              <p className="text-amber-700 text-sm">Backend API not yet implemented. Displaying sample data.</p>
-            </div>
-          </div>
-        </Card>
-      )}
-
       {/* Header Section */}
       <div className="bg-gradient-to-br from-[#25AAE1] via-[#1D8CB3] to-[#1453B8] p-6 rounded-2xl text-white shadow-xl">
         <div className="flex justify-between items-start mb-4">

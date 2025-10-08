@@ -15,7 +15,7 @@ export interface StudentCharacterData {
   };
 }
 
-// Interface pour les données character parent
+// Interface pour les données character parent (API response)
 export interface ParentCharacterData {
   student_id: number;
   full_name: string;
@@ -27,6 +27,51 @@ export interface ParentCharacterData {
     average_good_per_day: number;
     average_bad_per_day: number;
   };
+}
+
+// Interface pour les données transformées (pour la page)
+export interface TransformedCharacterData {
+  student_id: number;
+  full_name: string;
+  grade_level: string;
+  character: {
+    good_character_count: number;
+    bad_character_count: number;
+    character_score: number;
+    trending: "up" | "down" | "stable";
+  };
+}
+
+/**
+ * Transforme les données de l'API en format attendu par la page Characters
+ */
+export function transformCharacterData(apiData: ParentCharacterData[]): TransformedCharacterData[] {
+  return apiData.map(student => {
+    const totalCharacters = student.summary.total_good_character + student.summary.total_bad_character;
+    const characterScore = totalCharacters > 0
+      ? (student.summary.total_good_character / totalCharacters) * 100
+      : 0;
+
+    // Déterminer la tendance basée sur la moyenne journalière
+    let trending: "up" | "down" | "stable" = "stable";
+    if (student.summary.average_good_per_day > student.summary.average_bad_per_day * 1.5) {
+      trending = "up";
+    } else if (student.summary.average_bad_per_day > student.summary.average_good_per_day * 1.5) {
+      trending = "down";
+    }
+
+    return {
+      student_id: student.student_id,
+      full_name: student.full_name,
+      grade_level: "", // L'API ne fournit pas le grade_level
+      character: {
+        good_character_count: student.summary.total_good_character,
+        bad_character_count: student.summary.total_bad_character,
+        character_score: Math.round(characterScore * 10) / 10,
+        trending
+      }
+    };
+  });
 }
 
 export async function getStudentCharacterView(
@@ -70,37 +115,40 @@ export async function getStudentCharacterView(
 
 
 export async function getParentCharacterView(
-  tenantPrimaryDomain: string,
-  accessToken: string,
-  refreshToken: string
+  accessToken: string
 ): Promise<ParentCharacterData[]> {
-  // if (!accessToken) {
-  //   throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
-  // }
+  if (!accessToken) {
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
+  }
 
-  // const url = `${tenantPrimaryDomain}/characters/character-ratings/parent_view/`;
+  const url = `${BACKEND_BASE_URL}/characters/character-ratings/parent_view/`;
 
-  // const response = await fetch(url, {
-  //   method: "GET",
-  //   headers: {
-  //     Authorization: `Bearer ${accessToken}`,
-  //     "Content-Type": "application/json",
-  //   },
-  // });
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
 
-  // if (!response.ok) {
-  //   if (response.status === 401) {
-  //     throw new Error("Session expirée. Veuillez vous reconnecter.");
-  //   } else if (response.status === 403) {
-  //     throw new Error("Vous n'avez pas la permission d'accéder aux characters.");
-  //   } else {
-  //     throw new Error("Erreur lors de la récupération des characters.");
-  //   }
-  // }
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error("Session expirée. Veuillez vous reconnecter.");
+      } else if (response.status === 403) {
+        throw new Error("Vous n'avez pas la permission d'accéder aux characters.");
+      } else {
+        throw new Error("Erreur lors de la récupération des characters.");
+      }
+    }
 
-  // const data = await response.json();
-  // return data;
-  return [];
+    const data = await response.json();
+    console.log("Parent character data:", data);
+    return data;
+  } catch (error) {
+    console.error("Network error:", error);
+    throw new Error("Échec de la connexion au serveur");
+  }
 }
 
 const characterPath = "/characters/initialize-class/";
