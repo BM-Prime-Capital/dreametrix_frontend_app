@@ -517,7 +517,7 @@ useEffect(() => {
         <div className="bg-green-50 border border-green-200 rounded-lg p-6 max-w-md mx-auto">
           <p className="text-green-800 text-sm leading-relaxed">
             Your school registration request has been submitted successfully. 
-            You will receive an email regarding the status of your request within the next 24 hours.
+            You will receive an email regarding the status of your request shortly.
           </p>
         </div>
       </div>
