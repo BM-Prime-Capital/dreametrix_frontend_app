@@ -18,7 +18,6 @@ interface StoredUserData {
 
 export const useAuth = (allowedUserTypes: userTypeEnum[]) => {
   const { accessToken } = useRequestInfo()
-  console.log("accessToken", accessToken)
   const router = useRouter();
   
   useEffect(() => {
@@ -29,13 +28,13 @@ export const useAuth = (allowedUserTypes: userTypeEnum[]) => {
       if (userDataString) {
         try {
           const userData: StoredUserData = JSON.parse(userDataString);
-          userRole = userData.role as userTypeEnum;
+          // Si le rôle est une chaîne vide, on le considère comme SUPER_ADMIN
+          userRole = userData.role === '' ? userTypeEnum.SUPER_ADMIN : userData.role as userTypeEnum;
         } catch (error) {
           console.error('Error parsing user data:', error);
         }
       }
       
-      console.log("userRole", userRole);
       
       if (!userRole || !allowedUserTypes.includes(userRole)) {
         let redirectPath = '/login';

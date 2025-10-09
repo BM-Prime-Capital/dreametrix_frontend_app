@@ -95,7 +95,9 @@ export function useLogin() {
       dispatch(loginSuccess({ user: userData, tenant: tenantData, token: data.access }));
 
       // --- Redirection en fonction du rôle
+      console.log("userRole.dara", data.user.role)
       switch (data.user.role) {
+        
         case "school_admin":
           router.push("/school_admin");
           break;
@@ -112,7 +114,7 @@ export function useLogin() {
           router.push("/super_admin");
           break;
         default:
-          router.push("/super_admin");
+          router.push("/super_admin/schools");
           //router.push("/dashboard");
       }
 
