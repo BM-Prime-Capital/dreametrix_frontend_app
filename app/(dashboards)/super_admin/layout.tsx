@@ -12,7 +12,7 @@ export default function SchoolAminDashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ProtectedRoute allowedUserTypes={[userTypeEnum.SCHOOL_ADMIN]}>
+    <ProtectedRoute allowedUserTypes={[userTypeEnum.SUPER_ADMIN]}>
     <SidebarProvider>
       <div className="flex flex-col lg:flex-row gap-6">
         <Card className="w-full lg:w-[200px] h-fit">

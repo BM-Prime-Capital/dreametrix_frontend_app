@@ -155,7 +155,6 @@ const quickActions = [
 
 const SchoolAdminDashboard = () => {
   return (
-    <ProtectedRoute allowedUserTypes={[userTypeEnum.SCHOOL_ADMIN]}>
     <div className="p-6 w-full bg-white">
       <Title className="text-2xl font-bold mb-6">School Dashboard</Title>
       
@@ -288,7 +287,6 @@ const SchoolAdminDashboard = () => {
         </Card>
       </div>
     </div>
-    </ProtectedRoute>
   );
 };
 
