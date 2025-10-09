@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import { 
-  FiUsers, FiBook, FiFileText, FiCheckCircle,
+  FiUsers, FiBook, FiFileText, FiCheckCircle, 
   FiClock, FiTrendingUp, FiCalendar, FiMail
 } from 'react-icons/fi';
 import Link from 'next/link';
@@ -38,25 +38,80 @@ const SchoolAdminDashboard = () => {
   if (!data) return null;
 
   return (
-    <div className="p-6 w-full bg-white">
-      <Title className="text-2xl font-bold mb-6">School Dashboard</Title>
-      
-      {/* Overview Cards */}
-      <Grid numItemsSm={2} numItemsLg={4} className="gap-6 mb-6">
-        {data.map((item) => (
-          <Link href={item.path} key={item.name}>
-            <Card decoration="top" decorationColor={item.color}>
-              <Flex justifyContent="start" className="space-x-4">
-                <Icon icon={item.icon} variant="light" size="xl" color={item.color} />
-                <div>
-                  <Text>{item.name}</Text>
-                  <Metric>{item.value}</Metric>
-                </div>
-              </Flex>
-            </Card>
-          </Link>
-        ))}
-      </Grid>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+          School Dashboard
+        </h1>
+        <p className="text-gray-600">Welcome back! Here's what's happening at your school today.</p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Link href="/school_admin/students" className="group">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-200 group-hover:scale-105">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <FiUsers className="w-6 h-6 text-blue-600" />
+              </div>
+              <span className="text-2xl font-bold text-gray-900">{data.overview.total_students}</span>
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-1">Students</h3>
+            <p className="text-sm text-gray-500">Total enrolled</p>
+          </div>
+        </Link>
+
+        <Link href="/school_admin/teachers" className="group">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-200 group-hover:scale-105">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-green-100 rounded-lg">
+                <FiUsers className="w-6 h-6 text-green-600" />
+              </div>
+              <span className="text-2xl font-bold text-gray-900">{data.overview.total_teachers}</span>
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-1">Teachers</h3>
+            <p className="text-sm text-gray-500">Active faculty</p>
+          </div>
+        </Link>
+
+        <Link href="/school_admin/classes" className="group">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-200 group-hover:scale-105">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <FiBook className="w-6 h-6 text-purple-600" />
+              </div>
+              <span className="text-2xl font-bold text-gray-900">{data.overview.total_courses}</span>
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-1">Courses</h3>
+            <p className="text-sm text-gray-500">Active courses</p>
+          </div>
+        </Link>
+
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-orange-100 rounded-lg">
+              <FiFileText className="w-6 h-6 text-orange-600" />
+            </div>
+            <span className="text-2xl font-bold text-gray-900">{data.overview.total_assessments}</span>
+          </div>
+          <h3 className="font-semibold text-gray-900 mb-1">Assessments</h3>
+          <p className="text-sm text-gray-500">Total created</p>
+        </div>
+      </div>
+
+      {/* Submissions Overview */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-yellow-100 rounded-lg">
+              <FiClock className="w-6 h-6 text-yellow-600" />
+            </div>
+            <span className="text-2xl font-bold text-gray-900">{data.overview.pending_submissions}</span>
+          </div>
+          <h3 className="font-semibold text-gray-900 mb-1">Pending</h3>
+          <p className="text-sm text-gray-500">Awaiting review</p>
+        </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-4">
@@ -95,8 +150,8 @@ const SchoolAdminDashboard = () => {
               <span className="font-medium text-gray-900">{course.course__name}</span>
               <div className="flex items-center gap-3">
                 <div className="w-32 bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
                     style={{ width: `${Math.min(course.class_average, 100)}%` }}
                   ></div>
                 </div>
