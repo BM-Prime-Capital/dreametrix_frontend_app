@@ -1,7 +1,8 @@
 "use client";
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { FiSearch, FiChevronRight, FiUser, FiMail, FiUsers } from 'react-icons/fi';
+import { FiSearch, FiChevronRight, FiUser, FiMail, FiUsers, FiAlertCircle } from 'react-icons/fi';
+import { useParents } from '@/hooks/SchoolAdmin/use-parents';
 import { Loader } from "@/components/ui/loader";
 import AddParentModal from './AddParentModal';
 import { SkeletonCard } from '@/components/ui/SkeletonCard';
@@ -22,137 +23,52 @@ const getAvatarColor = (name: string) => {
   return avatarColors[charCode % avatarColors.length];
 };
 
-interface Parent {
-  id: number;
-  user: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone: string;
-  };
-  children: {
-    name: string;
-    grade: string;
-    class: string;
-  }[];
-  status: 'active' | 'inactive';
-  last_contact: string;
-}
+
 
 const ParentsListPage = () => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
 
-  // Default data
-  const parents: Parent[] = [
-    {
-      id: 1,
-      user: {
-        first_name: "Michael",
-        last_name: "Johnson",
-        email: "michael.johnson@example.com",
-        phone: "+1555123456"
-      },
-      children: [
-        { name: "Emma Johnson", grade: "5", class: "B" },
-        { name: "Lucas Johnson", grade: "8", class: "A" }
-      ],
-      status: 'active',
-      last_contact: "2023-10-15"
-    },
-    {
-      id: 2,
-      user: {
-        first_name: "Sarah",
-        last_name: "Williams",
-        email: "sarah.williams@example.com",
-        phone: "+1555234567"
-      },
-      children: [
-        { name: "Olivia Williams", grade: "3", class: "C" }
-      ],
-      status: 'active',
-      last_contact: "2023-11-02"
-    },
-    {
-      id: 3,
-      user: {
-        first_name: "Robert",
-        last_name: "Brown",
-        email: "robert.brown@example.com",
-        phone: "+1555345678"
-      },
-      children: [
-        { name: "Noah Brown", grade: "10", class: "A" },
-        { name: "Sophia Brown", grade: "7", class: "B" }
-      ],
-      status: 'inactive',
-      last_contact: "2023-09-20"
-    },
-    {
-      id: 4,
-      user: {
-        first_name: "Jennifer",
-        last_name: "Davis",
-        email: "jennifer.davis@example.com",
-        phone: "+1555456789"
-      },
-      children: [
-        { name: "Liam Davis", grade: "2", class: "A" }
-      ],
-      status: 'active',
-      last_contact: "2023-11-10"
-    },
-    {
-      id: 5,
-      user: {
-        first_name: "David",
-        last_name: "Miller",
-        email: "david.miller@example.com",
-        phone: "+1555567890"
-      },
-      children: [
-        { name: "Ava Miller", grade: "6", class: "C" },
-        { name: "Mason Miller", grade: "4", class: "B" }
-      ],
-      status: 'active',
-      last_contact: "2023-10-28"
-    },
-    {
-      id: 6,
-      user: {
-        first_name: "Jessica",
-        last_name: "Wilson",
-        email: "jessica.wilson@example.com",
-        phone: "+1555678901"
-      },
-      children: [
-        { name: "Isabella Wilson", grade: "9", class: "A" }
-      ],
-      status: 'inactive',
-      last_contact: "2023-08-15"
-    }
-  ];
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const { parents, isLoading, error, refetch } = useParents();
 
-  const filteredParents = parents
-    .filter(parent => 
-      `${parent.user.first_name} ${parent.user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter(parent => 
-      activeFilter === 'all' || parent.status === activeFilter
-    );
+  console.log('Parents from hook:', parents);
+  console.log('Parents length:', parents?.length);
+  console.log('Is loading:', isLoading);
+  console.log('Error:', error);
 
-  if (isLoading) {
+  const enhancedParents = (parents || []);
+  
+  const filteredParents = enhancedParents
+    .filter((parent: any) => {
+      const fullName = `${parent.user.first_name || ''} ${parent.user.last_name || ''}`.toLowerCase();
+      return fullName.includes(searchTerm.toLowerCase()) || parent.user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+
+  const totalPages = Math.ceil(filteredParents.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedParents = filteredParents.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  if (error) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center w-full h-full bg-white bg-opacity-75 z-50">
-        <div className="flex flex-col items-center">
-          <Loader className="text-blue-600 w-12 h-12" />
-          <p className="mt-4 text-sm text-slate-500">
-            Loading parents...
+      <div className="fixed inset-0 flex items-center justify-center w-full h-full bg-white z-50">
+        <div className="flex flex-col items-center text-red-500">
+          <FiAlertCircle className="text-3xl mb-2" />
+          <p className="text-lg font-medium">Loading error</p>
+          <p className="text-sm text-gray-500 mt-2">
+            {error || "Failed to load parents data"}
           </p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 text-blue-600 hover:text-blue-800 font-medium"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -193,19 +109,15 @@ const ParentsListPage = () => {
   }
 
   return (
-    <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 py-6 bg-gray-50 min-h-screen">
-      {/* Header with actions */}
-      <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50 px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 mb-8 text-white">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Parent Directory</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-4xl font-bold mb-2">Parent Directory</h1>
+          <p className="text-blue-100">
             {filteredParents.length} {filteredParents.length === 1 ? 'parent' : 'parents'} found
           </p>
         </div>
-        
-        
-          <AddParentModal />
-        
       </div>
 
       {/* Control bar */}
@@ -219,107 +131,127 @@ const ParentsListPage = () => {
             placeholder="Search by name..."
             className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
         
-        <div className="flex gap-2">
-          <button
-            onClick={() => setActiveFilter('all')}
-            className={`px-4 py-2 rounded-lg border transition-all ${activeFilter === 'all' ? 'bg-indigo-100 border-indigo-300 text-indigo-700' : 'border-gray-200 hover:bg-gray-50'}`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setActiveFilter('active')}
-            className={`px-4 py-2 rounded-lg border transition-all ${activeFilter === 'active' ? 'bg-green-100 border-green-300 text-green-700' : 'border-gray-200 hover:bg-gray-50'}`}
-          >
-            Active
-          </button>
-          <button
-            onClick={() => setActiveFilter('inactive')}
-            className={`px-4 py-2 rounded-lg border transition-all ${activeFilter === 'inactive' ? 'bg-red-100 border-red-300 text-red-700' : 'border-gray-200 hover:bg-gray-50'}`}
-          >
-            Inactive
-          </button>
+
+      </div>
+
+      {/* Parents table */}
+      <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+              <tr>
+                <th className="px-6 py-4 text-left font-semibold">Parent Name</th>
+                <th className="px-6 py-4 text-left font-semibold">Email</th>
+                <th className="px-6 py-4 text-left font-semibold">Children</th>
+                <th className="px-6 py-4 text-left font-semibold">Role</th>
+                <th className="px-6 py-4 text-left font-semibold">Joined</th>
+                <th className="px-6 py-4 text-center font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {paginatedParents.map((parent: any) => {
+                const initials = `${parent.user.first_name[0] || ''}${parent.user.last_name[0] || ''}`;
+                const avatarClass = getAvatarColor(parent.user.first_name + parent.user.last_name);
+                
+                return (
+                  <tr key={parent.id} className="hover:bg-blue-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm ${avatarClass}`}>
+                          {initials}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-900">
+                            {parent.user.first_name} {parent.user.last_name}
+                          </div>
+                          <div className="text-sm text-gray-500">Parent</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-gray-900">{parent.user.email}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-gray-900">
+                        {parent.children?.length || 0} {parent.children?.length === 1 ? 'child' : 'children'}
+                      </div>
+                      {parent.children?.length > 0 && (
+                        <div className="text-sm text-gray-500">
+                          {parent.children[0].user.full_name}{parent.children.length > 1 && ` +${parent.children.length - 1} more`}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
+                        {parent.user.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {new Date(parent.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center">
+                        <button
+                          onClick={() => router.push(`/school_admin/parents/details/${parent.id}`)}
+                          className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all"
+                          title="View Details"
+                        >
+                          <FiChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Parent cards - full width container */}
-      <div className="w-full">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {filteredParents.map((parent) => {
-            const initials = `${parent.user.first_name[0]}${parent.user.last_name[0]}`;
-            const avatarClass = getAvatarColor(parent.user.first_name + parent.user.last_name);
-            const lastContactDate = new Date(parent.last_contact).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric'
-            });
-            
-            return (
-              <div 
-                key={parent.id}
-                onClick={() => router.push(`/school_admin/parents/details/${parent.id}`)}
-                className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 cursor-pointer"
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6 px-4">
+          <div className="text-sm text-gray-600">
+            Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredParents.length)} of {filteredParents.length} parents
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`px-3 py-2 text-sm rounded-lg ${
+                  currentPage === page
+                    ? 'bg-blue-600 text-white'
+                    : 'border border-gray-300 hover:bg-gray-50'
+                }`}
               >
-                <div className="p-5">
-                  <div className="flex items-start gap-4">
-                    <div className="relative">
-                      <div className={`w-14 h-14 rounded-full flex items-center justify-center font-medium text-lg ${avatarClass}`}>
-                        {initials}
-                      </div>
-                      {parent.status === 'active' && (
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {parent.user.first_name} {parent.user.last_name}
-                      </h3>
-                      <p className="text-sm text-gray-500 flex items-center gap-1">
-                        <FiUsers className="text-gray-400" />
-                        {parent.children.length} {parent.children.length === 1 ? 'child' : 'children'}
-                      </p>
-                      <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
-                        <FiMail className="text-gray-400" />
-                        <span className="truncate">{parent.user.email}</span>
-                      </p>
-                    </div>
-                    
-                    <FiChevronRight className="text-gray-400" />
-                  </div>
-                  
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <div className="space-y-2">
-                      {parent.children.slice(0, 2).map((child, index) => (
-                        <div key={index} className="text-sm text-gray-600">
-                          {child.name} (Grade {child.grade} - Class {child.class})
-                        </div>
-                      ))}
-                      {parent.children.length > 2 && (
-                        <div className="text-xs text-gray-500">
-                          +{parent.children.length - 2} more children
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="mt-3 flex justify-between items-center">
-                      <div className="text-xs text-gray-500">
-                        Last contact: {lastContactDate}
-                      </div>
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${parent.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
-                        {parent.status === 'active' ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Empty state */}
       {filteredParents.length === 0 && !isLoading && (
@@ -332,13 +264,10 @@ const ParentsListPage = () => {
             {searchTerm ? 'Try adjusting your search' : 'No parents in this category'}
           </p>
           <button 
-            onClick={() => {
-              setSearchTerm('');
-              setActiveFilter('all');
-            }}
+            onClick={() => setSearchTerm('')}
             className="text-indigo-600 hover:text-indigo-800 font-medium"
           >
-            Reset filters
+            Clear search
           </button>
         </div>
       )}
