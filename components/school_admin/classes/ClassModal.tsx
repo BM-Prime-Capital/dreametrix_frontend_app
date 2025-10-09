@@ -1,23 +1,24 @@
-// components/school-admin/classes/ClassModal.tsx
 "use client";
 import { useState } from 'react';
 import { FiX } from 'react-icons/fi';
+import { toast } from 'react-toastify';
 
 interface ClassModalProps {
   isOpen: boolean;
   onClose: () => void;
   classData: any;
   actionType: 'view' | 'edit' | 'create';
+  onSuccess?: () => void;
 }
 
-const ClassModal = ({ isOpen, onClose, classData, actionType }: ClassModalProps) => {
+const ClassModal = ({ isOpen, onClose, classData, actionType, onSuccess }: ClassModalProps) => {
   const [formData, setFormData] = useState({
     name: classData?.name || '',
-    gradeLevel: classData?.gradeLevel || '',
-    teacher: classData?.teacher || '',
-    schedule: classData?.schedule || '',
+    grade_level: classData?.grade_level || '',
+    subject: classData?.subject || '',
     description: classData?.description || ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isViewMode = actionType === 'view';
 
@@ -29,11 +30,37 @@ const ClassModal = ({ isOpen, onClose, classData, actionType }: ClassModalProps)
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Logique de soumission ici
-    console.log('Form submitted:', formData);
-    onClose();
+    setIsSubmitting(true);
+    
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const url = actionType === 'edit' 
+        ? `${process.env.NEXT_PUBLIC_API_URL}/classes/${classData.id}/`
+        : `${process.env.NEXT_PUBLIC_API_URL}/classes/`;
+      
+      const response = await fetch(url, {
+        method: actionType === 'edit' ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      if (response.ok) {
+        toast.success(`Class ${actionType === 'edit' ? 'updated' : 'created'} successfully`);
+        onSuccess?.();
+        onClose();
+      } else {
+        toast.error('Operation failed');
+      }
+    } catch (error) {
+      toast.error('Operation failed');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -72,13 +99,13 @@ const ClassModal = ({ isOpen, onClose, classData, actionType }: ClassModalProps)
             </div>
             
             <div>
-              <label htmlFor="gradeLevel" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="grade_level" className="block text-sm font-medium text-gray-700 mb-1">
                 Grade Level *
               </label>
               <select
-                id="gradeLevel"
-                name="gradeLevel"
-                value={formData.gradeLevel}
+                id="grade_level"
+                name="grade_level"
+                value={formData.grade_level}
                 onChange={handleChange}
                 required
                 disabled={isViewMode}
@@ -92,30 +119,14 @@ const ClassModal = ({ isOpen, onClose, classData, actionType }: ClassModalProps)
             </div>
             
             <div>
-              <label htmlFor="teacher" className="block text-sm font-medium text-gray-700 mb-1">
-                Teacher *
+              <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
+                Subject *
               </label>
               <input
                 type="text"
-                id="teacher"
-                name="teacher"
-                value={formData.teacher}
-                onChange={handleChange}
-                required
-                disabled={isViewMode}
-                className={`w-full px-3 py-2 border rounded-md ${isViewMode ? 'bg-gray-100' : 'border-gray-300'} focus:outline-none focus:ring-2 focus:ring-indigo-200`}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="schedule" className="block text-sm font-medium text-gray-700 mb-1">
-                Schedule *
-              </label>
-              <input
-                type="text"
-                id="schedule"
-                name="schedule"
-                value={formData.schedule}
+                id="subject"
+                name="subject"
+                value={formData.subject}
                 onChange={handleChange}
                 required
                 disabled={isViewMode}
@@ -150,9 +161,10 @@ const ClassModal = ({ isOpen, onClose, classData, actionType }: ClassModalProps)
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-indigo-600 rounded-md text-sm font-medium text-white hover:bg-indigo-700"
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-indigo-600 rounded-md text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
               >
-                {actionType === 'edit' ? 'Update Class' : 'Create Class'}
+                {isSubmitting ? 'Saving...' : (actionType === 'edit' ? 'Update Class' : 'Create Class')}
               </button>
             </div>
           )}
