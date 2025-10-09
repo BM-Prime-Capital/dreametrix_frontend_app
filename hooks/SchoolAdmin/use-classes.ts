@@ -5,44 +5,26 @@ import { useBaseUrl } from "./use-base-url";
 import { toast } from "react-toastify";
 import { localStorageKey } from "@/constants/global";
 
-export interface User {
-  full_name: string | undefined;
-  email: string;
-  username: string;
-  phone_number: string | null;
-  first_name: string;
-  last_name: string;
-  date_joined: string;
-  is_active: boolean;
-}
-
-export interface School {
-  name: string;
-  email: string;
-  phone_number: string;
-  code: string;
-  is_active: boolean;
-}
-
-export interface Teacher {
+export interface ClassData {
   id: number;
-  user: User;
-  school: School;
-  uuid: string;
+  name: string;
+  grade_level: string;
+  subject: string;
+  teacher: string;
+  student_count: number;
   created_at: string;
   last_update: string;
-  extra_data: null;
 }
 
-export interface TeachersResponse {
+export interface ClassesResponse {
   count: number;
   next: string | null;
   previous: string | null;
-  results: Teacher[];
+  results: ClassData[];
 }
 
-export function useTeachers() {
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
+export function useClasses() {
+  const [classes, setClasses] = useState<ClassData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { baseUrl, error: baseUrlError } = useBaseUrl();
@@ -56,20 +38,18 @@ export function useTeachers() {
     }
 
     if (!baseUrl) {
-      return; // Wait for baseUrl to be available
+      return;
     }
 
-    const fetchTeachers = async () => {
+    const fetchClasses = async () => {
       try {
         const accessToken = localStorage.getItem(localStorageKey.ACCESS_TOKEN);
 
         if (!accessToken) {
-          throw new Error(
-            "Vous n'êtes pas connecté. Veuillez vous reconnecter."
-          );
+          throw new Error("You are not logged in. Please log in again.");
         }
 
-        const response = await fetch(`${baseUrl}/teachers/`, {
+        const response = await fetch(`${baseUrl}/classes/`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
@@ -77,36 +57,31 @@ export function useTeachers() {
 
         if (!response.ok) {
           if (response.status === 401) {
-            throw new Error(
-              "Votre session a expiré. Veuillez vous reconnecter."
-            );
+            throw new Error("Your session has expired. Please log in again.");
           } else if (response.status === 403) {
-            throw new Error(
-              "Vous n'avez pas la permission d'accéder aux enseignants."
-            );
+            throw new Error("You don't have permission to access classes.");
           } else {
-            throw new Error("Erreur lors de la récupération des enseignants.");
+            throw new Error("Error loading classes.");
           }
         }
 
-        const data: TeachersResponse = await response.json();
-        console.log('Teachers API Response:', data);
-        console.log('Teachers Results:', data.results);
+        const data: ClassesResponse = await response.json();
+        console.log('Classes API Response:', data);
+        console.log('Classes Results:', data.results);
         
         if (data && Array.isArray(data.results)) {
-          setTeachers(data.results);
+          setClasses(data.results);
         } else if (Array.isArray(data)) {
-          // Handle case where API returns array directly
-          setTeachers(data as Teacher[]);
+          setClasses(data as ClassData[]);
         } else {
           console.warn('Unexpected API response format:', data);
-          setTeachers([]);
+          setClasses([]);
         }
       } catch (err) {
         const errorMessage =
           err instanceof Error
             ? err.message
-            : "Erreur lors de la récupération des enseignants.";
+            : "Error loading classes.";
         setError(errorMessage);
         toast.error(errorMessage);
       } finally {
@@ -114,12 +89,12 @@ export function useTeachers() {
       }
     };
 
-    fetchTeachers();
+    fetchClasses();
   }, [baseUrl, baseUrlError, refreshTrigger]);
 
   const refetch = () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
-  return { teachers, isLoading, error, refetch };
+  return { classes, isLoading, error, refetch };
 }

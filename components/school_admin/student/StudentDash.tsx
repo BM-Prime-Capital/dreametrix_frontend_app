@@ -37,22 +37,15 @@ const getAvatarColor = (name: string) => {
 const StudentsListPage = () => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeFilter, setActiveFilter] = useState<
-    "all" | "active" | "inactive"
-  >("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const { students, isLoading, error, refetch } = useStudents();
   const { baseUrl } = useBaseUrl();
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const enhancedStudents = students?.map(student => ({
-    ...student,
-    attendance:  Math.floor(Math.random() * 30) + 70,
-    status:  (Math.random() > 0.2 ? 'active' : 'inactive'),
-    photo: '',
-    class: ['A', 'B', 'C'][Math.floor(Math.random() * 3)]
-  })) || [];
+  const enhancedStudents = students || [];
   // const enhancedStudents = students?.map(student => ({
   //   ...student,
   //   attendance: student.attendance || Math.floor(Math.random() * 30) + 70,
@@ -62,14 +55,19 @@ const StudentsListPage = () => {
   // })) || [];
 
   const filteredStudents = enhancedStudents
-    .filter((student) =>
+    .filter((student: any) =>
       `${student.user.first_name} ${student.user.last_name}`
         .toLowerCase()
-        .includes(searchTerm.toLowerCase())
-    )
-    .filter(
-      (student) => activeFilter === "all" || student.status === activeFilter
+        .includes(searchTerm.toLowerCase()) || student.user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedStudents = filteredStudents.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -200,59 +198,55 @@ const StudentsListPage = () => {
   }
 
   return (
-    <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 py-6 bg-gray-50 min-h-screen">
-      {/* Header with actions */}
-      <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Student Management
-          </h1>
-          <p className="text-gray-600 mt-1">
-            {filteredStudents.length}{" "}
-            {filteredStudents.length === 1 ? "student" : "students"} found
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
-            Download template → Fill with student data → Upload Excel/CSV file
-          </p>
-        </div>
-
-        <div className="flex gap-3">
-          <button
-            onClick={downloadTemplate}
-            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
-          >
-            <FiDownload className="text-base" />
-            <span>Template</span>
-          </button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50 px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 mb-8 text-white">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Student Management</h1>
+            <p className="text-blue-100">
+              {filteredStudents.length} {filteredStudents.length === 1 ? "student" : "students"} found
+            </p>
+          </div>
           
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm max-w-48"
-          >
-            <FiFileText className="text-base" />
-            <span className="truncate">{selectedFile ? selectedFile.name : 'Select File'}</span>
-          </button>
-          
-          <button
-            onClick={handleUpload}
-            disabled={!selectedFile || isUploading || !baseUrl}
-            className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
-          >
-            {isUploading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            ) : (
-              <FiUpload className="text-base" />
-            )}
-            <span>{isUploading ? 'Uploading...' : 'Upload'}</span>
-          </button>
-          
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".xlsx,.xls,.csv"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
+          <div className="flex gap-3">
+            <button
+              onClick={downloadTemplate}
+              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
+            >
+              <FiDownload className="text-base" />
+              <span>Template</span>
+            </button>
+            
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm max-w-48"
+            >
+              <FiFileText className="text-base" />
+              <span className="truncate">{selectedFile ? selectedFile.name : 'Select File'}</span>
+            </button>
+            
+            <button
+              onClick={handleUpload}
+              disabled={!selectedFile || isUploading || !baseUrl}
+              className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
+            >
+              {isUploading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : (
+                <FiUpload className="text-base" />
+              )}
+              <span>{isUploading ? 'Uploading..' : 'Upload'}</span>
+            </button>
+            
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+          </div>
         </div>
       </div>
 
@@ -271,165 +265,130 @@ const StudentsListPage = () => {
         </div>
       )}
 
-      {/* Control bar */}
-      <div className="w-full bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <FiSearch className="text-gray-400" />
+      {/* Search bar */}
+      <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-gray-200/50 mb-8">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <FiSearch className="text-gray-400 text-lg" />
           </div>
           <input
             type="text"
-            placeholder="Search by name..."
-            className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
+            placeholder="Search by name or email..."
+            className="block w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all text-lg"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
-
-        <div className="flex gap-2">
-          <button
-            onClick={() => setActiveFilter("all")}
-            className={`px-4 py-2 rounded-lg border transition-all ${
-              activeFilter === "all"
-                ? "bg-indigo-100 border-indigo-300 text-indigo-700"
-                : "border-gray-200 hover:bg-gray-50"
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setActiveFilter("active")}
-            className={`px-4 py-2 rounded-lg border transition-all ${
-              activeFilter === "active"
-                ? "bg-green-100 border-green-300 text-green-700"
-                : "border-gray-200 hover:bg-gray-50"
-            }`}
-          >
-            Active
-          </button>
-          <button
-            onClick={() => setActiveFilter("inactive")}
-            className={`px-4 py-2 rounded-lg border transition-all ${
-              activeFilter === "inactive"
-                ? "bg-red-100 border-red-300 text-red-700"
-                : "border-gray-200 hover:bg-gray-50"
-            }`}
-          >
-            Inactive
-          </button>
-        </div>
       </div>
 
-      {/* Student cards - full width container */}
-      <div className="w-full">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {filteredStudents.map((student) => {
-            const initials = `${student.user.first_name[0]}${student.user.last_name[0]}`;
-            const avatarClass = getAvatarColor(
-              student.user.first_name + student.user.last_name
-            );
-
-            return (
-              <div
-                key={student.id}
-                onClick={() =>
-                  router.push(`/school_admin/students/details/${student.id}`)
-                }
-                className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 cursor-pointer"
-              >
-                <div className="p-5">
-                  <div className="flex items-start gap-4">
-                    <div className="relative">
-                      {student.photo ? (
-                        <img 
-                          src={student.photo} 
-                          alt={student.user.first_name + " " + student.user.last_name}
-                          className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display =
-                              "none";
-                            const fallback = (e.target as HTMLImageElement)
-                              .nextElementSibling as HTMLElement;
-                            if (fallback) fallback.style.display = "flex";
-                          }}
-                        />
-                      ) : (
-                        <div
-                          className={`w-14 h-14 rounded-full flex items-center justify-center font-medium text-lg ${avatarClass}`}
-                        >
+      {/* Students table */}
+      <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+              <tr>
+                <th className="px-6 py-4 text-left font-semibold">Student Name</th>
+                <th className="px-6 py-4 text-left font-semibold">Email</th>
+                <th className="px-6 py-4 text-left font-semibold">Grade</th>
+                <th className="px-6 py-4 text-left font-semibold">School</th>
+                <th className="px-6 py-4 text-left font-semibold">Joined</th>
+                <th className="px-6 py-4 text-center font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {paginatedStudents.map((student: any) => {
+                const initials = `${student.user.first_name[0] || ''}${student.user.last_name[0] || ''}`;
+                const avatarClass = getAvatarColor(student.user.first_name + student.user.last_name);
+                
+                return (
+                  <tr key={student.id} className="hover:bg-blue-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm ${avatarClass}`}>
                           {initials}
                         </div>
-                      )}
-                      <div
-                        className={`hidden w-14 h-14 rounded-full items-center justify-center font-medium text-lg ${avatarClass}`}
-                        style={{ display: "none" }}
-                      >
-                        {initials}
-                      </div>
-                      {student.status === "active" && (
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                      )}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {student.user.first_name} {student.user.last_name}
-                      </h3>
-                      <p className="text-sm text-gray-500 flex items-center gap-1">
-                        <FiBook className="text-gray-400" />
-                        Grade {student.grade} - Class {student.class}
-                      </p>
-                      <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
-                        <FiMail className="text-gray-400" />
-                        <span className="truncate">{student.user.email}</span>
-                      </p>
-                    </div>
-
-                    <FiChevronRight className="text-gray-400" />
-                  </div>
-
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                          <FiPercent className="text-gray-400" />
-                          Attendance
-                        </p>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full ${
-                              student.attendance > 90
-                                ? "bg-emerald-500"
-                                : student.attendance > 75
-                                ? "bg-amber-500"
-                                : "bg-red-500"
-                            }`}
-                            style={{ width: `${student.attendance}%` }}
-                          />
+                        <div>
+                          <div className="font-semibold text-gray-900">
+                            {student.user.first_name} {student.user.last_name}
+                          </div>
+                          <div className="text-sm text-gray-500">Student</div>
                         </div>
                       </div>
-
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                          student.status === "active"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {student.status === "active" ? "Active" : "Inactive"}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-gray-900">{student.user.email}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
+                        Grade {student.grade}
                       </span>
-                    </div>
-                    <div className="mt-2 text-xs text-gray-500">
-                      {student.enrolled_courses?.length || 0} enrolled courses
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-gray-900">{student.school?.name || 'Not assigned'}</div>
+                      <div className="text-sm text-gray-500">{student.enrolled_courses?.length || 0} courses</div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {new Date(student.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center">
+                        <button
+                          onClick={() => router.push(`/school_admin/students/details/${student.id}`)}
+                          className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all"
+                          title="View Details"
+                        >
+                          <FiChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6 px-4">
+          <div className="text-sm text-gray-600">
+            Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredStudents.length)} of {filteredStudents.length} students
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`px-3 py-2 text-sm rounded-lg ${
+                  currentPage === page
+                    ? 'bg-blue-600 text-white'
+                    : 'border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
       {/* Empty state */}
       {filteredStudents.length === 0 && !isLoading && (
         <div className="w-full bg-white rounded-xl shadow-sm p-8 text-center">
@@ -437,24 +396,19 @@ const StudentsListPage = () => {
             <FiUser className="text-gray-400 text-3xl" />
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-1">
-            {searchTerm || activeFilter !== 'all' ? 'No students found' : 'No students yet'}
+            {searchTerm ? 'No students found' : 'No students yet'}
           </h3>
           <p className="text-gray-500 mb-4">
             {searchTerm
               ? "Try adjusting your search"
-              : activeFilter !== 'all'
-              ? "No students in this category"
               : "Upload an Excel file to add students"}
           </p>
-          {searchTerm || activeFilter !== 'all' ? (
+          {searchTerm ? (
             <button
-              onClick={() => {
-                setSearchTerm("");
-                setActiveFilter("all");
-              }}
+              onClick={() => setSearchTerm("")}
               className="text-indigo-600 hover:text-indigo-800 font-medium"
             >
-              Reset filters
+              Clear search
             </button>
           ) : (
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
