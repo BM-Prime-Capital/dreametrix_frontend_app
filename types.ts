@@ -11,6 +11,7 @@ export interface MenuRoute {
   exact?: boolean;
   badge?: string | number; 
   isSecondary?: boolean; 
+  disabled?: boolean; 
 }
 export interface MiniCourse {
   id: number;

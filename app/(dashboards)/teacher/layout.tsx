@@ -31,7 +31,7 @@ export default function TeacherDashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ProtectedRoute allowedUserTypes={[userTypeEnum.SCHOOL_ADMIN]}>
+    <ProtectedRoute allowedUserTypes={[userTypeEnum.TEACHER]}>
     
     <SidebarProvider>
       <LayoutContent>{children}</LayoutContent>

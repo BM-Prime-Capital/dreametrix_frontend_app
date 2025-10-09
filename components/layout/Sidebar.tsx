@@ -13,7 +13,6 @@ import { useSidebar } from "@/lib/SidebarContext";
 import DreaMetrixLogo from "../ui/dreametrix-logo";
 
 export function Sidebar({ routes }: { routes: MenuRoute[] }) {
-
   console.log("routes", routes)
   const pathname = usePathname();
   const { isCollapsed, setIsCollapsed } = useSidebar();
@@ -69,25 +68,35 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
         <div className="p-4 space-y-2">
           {routes.map((route) => {
             const isActive = isMenuItemActive(route, pathname);
+            const isDisabled = route.disabled;
             
-            return (
-              <Link
-                key={route.path}
-                href={route.path}
+            const routeContent = (
+              <div
                 className={cn(
-                  "group flex items-center gap-4 px-4 py-3 text-sm rounded-2xl transition-all duration-300",
+                  "group flex items-center gap-4 px-4 py-3 text-sm rounded-2xl transition-all duration-300 w-full",
                   "hover:bg-gradient-to-r hover:from-blue-50/80 hover:to-purple-50/80",
                   "hover:shadow-md hover:scale-[1.02] hover:backdrop-blur-sm",
                   "active:scale-[0.98]",
-                  isActive 
+                  isActive && !isDisabled
                     ? "bg-gradient-to-r from-blue-100/90 to-purple-100/90 text-blue-700 font-semibold shadow-md backdrop-blur-sm" 
-                    : "text-gray-700 hover:text-gray-900"
+                    : "text-gray-700 hover:text-gray-900",
+                  // Styles pour les routes désactivées
+                  isDisabled && [
+                    "opacity-50 cursor-not-allowed",
+                    "hover:bg-transparent hover:shadow-none hover:scale-100",
+                    "active:scale-100",
+                    "border border-dashed border-gray-300/60"
+                  ]
                 )}
-                title={isCollapsed ? route.label : undefined}
+                title={isCollapsed ? `${route.label}${isDisabled ? ' (Disabled)' : ''}` : undefined}
               >
                 <div className={cn(
                   "flex items-center justify-center w-6 h-6 transition-all duration-300 flex-shrink-0",
-                  isActive ? "text-blue-600 scale-110" : "text-gray-500 group-hover:text-gray-700 group-hover:scale-105"
+                  isActive && !isDisabled ? "text-blue-600 scale-110" : "text-gray-500 group-hover:text-gray-700 group-hover:scale-105",
+                  isDisabled && [
+                    "text-gray-400",
+                    "group-hover:text-gray-400 group-hover:scale-100"
+                  ]
                 )}>
                   {typeof route.icon === 'string' ? (
                     <Image
@@ -95,20 +104,55 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
                       alt={route.label}
                       width={20}
                       height={20}
-                      className="w-5 h-5 object-contain"
+                      className={cn(
+                        "w-5 h-5 object-contain",
+                        isDisabled && "opacity-60"
+                      )}
                     />
                   ) : (
                     route.icon
                   )}
                 </div>
                 {!isCollapsed && (
-                  <span className="font-medium transition-all duration-300 truncate">
+                  <span className={cn(
+                    "font-medium transition-all duration-300 truncate",
+                    isDisabled && "text-gray-500"
+                  )}>
                     {route.label}
                   </span>
                 )}
-                {isActive && !isCollapsed && (
+                {isActive && !isDisabled && !isCollapsed && (
                   <div className="ml-auto w-2 h-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex-shrink-0 animate-pulse" />
                 )}
+                {isDisabled && !isCollapsed && (
+                  <div className="ml-auto text-xs text-gray-400 font-medium px-2 py-1 bg-gray-100 rounded-md flex-shrink-0">
+                    Soon
+                  </div>
+                )}
+              </div>
+            );
+
+            if (isDisabled) {
+              return (
+                <div key={route.path} className="relative">
+                  {routeContent}
+                  {/* Tooltip pour l'état désactivé */}
+                  {isCollapsed && (
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+                      {route.label} (Disabled)
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            return (
+              <Link
+                key={route.path}
+                href={route.path}
+                className="block"
+              >
+                {routeContent}
               </Link>
             );
           })}
@@ -122,8 +166,8 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
       )}>
         {!isCollapsed && (
           <div className="flex justify-center mb-6 w-[80px]">
-          <DreaMetrixLogo />
-        </div>
+            <DreaMetrixLogo />
+          </div>
         )}
       </div>
     </div>
