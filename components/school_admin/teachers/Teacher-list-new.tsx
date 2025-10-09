@@ -395,16 +395,14 @@ const downloadTemplate = () => {
             <FiUser className="text-gray-400 text-3xl" />
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-1">
-            {searchTerm || activeFilter !== 'all' ? 'No teachers found' : 'No teachers yet'}
+            {searchTerm ? 'No teachers found' : 'No teachers yet'}
           </h3>
           <p className="text-gray-500 mb-4">
             {searchTerm
               ? "Try adjusting your search"
-              : activeFilter !== 'all'
-              ? "No teachers in this category"
               : "Upload an Excel file to add teachers"}
           </p>
-          {searchTerm || activeFilter !== 'all' ? (
+          {searchTerm ? (
             <button
               onClick={() => setSearchTerm("")}
               className="text-indigo-600 hover:text-indigo-800 font-medium"
