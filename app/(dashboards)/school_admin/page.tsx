@@ -17,6 +17,8 @@ import {
   DonutChart 
 } from '@tremor/react';
 import Link from 'next/link';
+import { ProtectedRoute } from '@/components/Support/ProtectedRoute';
+import { userTypeEnum } from '@/constants/userConstants';
 
 // Data definitions
 const data = [

@@ -74,12 +74,14 @@ export const StudentRoutes = [
     icon: menuImages.support,
     label: "NEED HELP?",
     isSecondary: true,
+    disabled: true,
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/settings`,
     icon: menuImages.settings,
     label: "SETTINGS",
     isSecondary: true,
+    disabled: true,
   },
 ];
 
@@ -95,6 +97,7 @@ export const SchoolAdminRoutes = [
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/students`,
     icon: menuImages.seating,
     label: "Students",
+    
   },
 
   // Teachers
@@ -360,6 +363,7 @@ export const SuperAdminRoutes = [
     path: `${userPath.SUPER_ADMIN_BASE_PATH}`,
     icon: generalImages.home,
     label: "Dashboard",
+    disabled: true,
   },
   
   // Schools Management
@@ -367,6 +371,7 @@ export const SuperAdminRoutes = [
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/schools`,
     icon: menuImages.school,
     label: "Schools",
+
   },
   
   // Districts Management
@@ -374,6 +379,9 @@ export const SuperAdminRoutes = [
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/districts`,
     icon: menuImages.district,
     label: "Districts",
+    disabled: true,
+     
+    
   },
   
   // Users Management
@@ -381,6 +389,7 @@ export const SuperAdminRoutes = [
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/users`,
     icon: menuImages.users,
     label: "Users",
+    disabled: true,
   },
   
   // Templates
@@ -388,6 +397,7 @@ export const SuperAdminRoutes = [
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/templates`,
     icon: menuImages.templates,
     label: "Templates",
+    disabled: true,
   },
   
   // Audit Logs
@@ -395,6 +405,7 @@ export const SuperAdminRoutes = [
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/audit-logs`,
     icon: menuImages.logs,
     label: "Audit Logs",
+    disabled: true,
   },
   
   // Subscription Management
@@ -402,6 +413,7 @@ export const SuperAdminRoutes = [
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/subscriptions`,
     icon: menuImages.subscriptions,
     label: "Subscriptions",
+    disabled: true,
   },
   
   // Support Tickets
@@ -410,6 +422,7 @@ export const SuperAdminRoutes = [
     icon: menuImages.support,
     label: "Support",
     isSecondary: true,
+    disabled: true,
   },
   
   // API Management
@@ -417,6 +430,7 @@ export const SuperAdminRoutes = [
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/api-management`,
     icon: menuImages.api,
     label: "API Management",
+    disabled: true,
   },
   
   // Notifications
@@ -424,6 +438,7 @@ export const SuperAdminRoutes = [
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/notifications`,
     icon: menuImages.notifications,
     label: "Notifications",
+    disabled: true,
   },
   
   // Backup & Restore
@@ -431,12 +446,14 @@ export const SuperAdminRoutes = [
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/backup`,
     icon: menuImages.backup,
     label: "Backup",
+    disabled: true,
   },
   // Reports & Analytics
   {
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/analytics`,
     icon: menuImages.analytics,
     label: "Analytics",
+    disabled: true,
   },
 
    // System Settings
@@ -445,5 +462,6 @@ export const SuperAdminRoutes = [
     icon: menuImages.settings,
     label: "System Settings",
     isSecondary: true,
+    disabled: true,
   },
 ];
