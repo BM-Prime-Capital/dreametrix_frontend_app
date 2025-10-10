@@ -50,7 +50,7 @@ export function ParentAttendanceTable({
     if (!attendanceData?.children_attendance) return []
     
     return attendanceData.children_attendance.flatMap(child => 
-      child.attendances.map((attendance, index) => {
+      child.attendances.map((attendance) => {
         // Déterminer le statut basé sur les statistiques
         let status: "Present" | "Late" | "Absent" = "Present"
         if (child.statistics.absent_days > 0) {

@@ -151,7 +151,7 @@ export default function ParentAssignmentsPage() {
               />
               Assignments Dashboard
             </h1>
-            <p className="text-blue-100 text-base">Monitor your children&apos;s homework and project deadlines</p>
+                <p className="text-blue-100 text-base">Monitor your children&apos;s homework and project deadlines</p>
           </div>
           {/* <div className="flex gap-2">
             <Button 

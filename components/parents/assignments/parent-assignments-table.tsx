@@ -199,7 +199,7 @@ export function ParentAssignmentsTable({
                       <div className="text-gray-500 text-sm line-clamp-2">{assignment.description}</div>
                     </div>
                   </div>
-                </TableCell>x
+                </TableCell>
                 <TableCell className="py-4 text-center">
                   <div className="flex items-center justify-center gap-2">
                     <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full flex items-center justify-center">

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ParentAttendanceTable } from "@/components/parents/attendance/parent-attendance-table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FileText, Printer, RefreshCw, Loader2, AlertCircle, Calendar, Users, CheckCircle, Clock, XCircle, TrendingUp, Award } from "lucide-react"
+import { FileText, Printer, RefreshCw, Loader2, Calendar, Users, CheckCircle, Clock, XCircle, TrendingUp, Award } from "lucide-react"
 import { ReportDialog } from "@/components/parents/attendance/report-dialog"
 import { PrintDialog } from "@/components/parents/attendance/print-dialog"
 import { getParentAttendanceView, ParentAttendanceData } from "@/services/AttendanceService"
@@ -98,9 +98,9 @@ export default function ParentAttendancePage() {
               />
               Attendance Dashboard
             </h1>
-            <p className="text-blue-100 text-base">Monitor your children's attendance and punctuality</p>
+            <p className="text-blue-100 text-base">Monitor your children&apos;s attendance and punctuality</p>
           </div>
-          <div className="flex gap-2">
+          {/* <div className="flex gap-2">
             <Button 
               className="bg-white/20 hover:bg-white/30 text-white border-white/30 text-sm px-3 py-2"
               onClick={() => setIsReportModalOpen(true)}
@@ -115,7 +115,7 @@ export default function ParentAttendancePage() {
               <Printer className="h-3 w-3 mr-1" />
               Print
             </Button>
-          </div>
+          </div> */}
         </div>
 
         {/* Filters and Stats */}
@@ -239,7 +239,7 @@ export default function ParentAttendancePage() {
             />
             Attendance Overview
           </h2>
-          <p className="text-gray-600 text-sm mt-1">Detailed view of your children's attendance records and patterns</p>
+          <p className="text-gray-600 text-sm mt-1">Detailed view of your children&apos;s attendance records and patterns</p>
         </div>
         <ParentAttendanceTable
           selectedStudent={selectedStudent}

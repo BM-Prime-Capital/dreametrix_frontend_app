@@ -341,7 +341,7 @@ export default function ParentDashboardPage() {
                 </div>
 
                 {/* Top Subjects */}
-                {student.subjects.length > 0 && (
+                {student.subjects && student.subjects.length > 0 && (
                   <div className="mb-6">
                     <h4 className="font-bold text-gray-800 mb-3 text-sm">Top Subjects</h4>
                     <div className="grid grid-cols-3 gap-2">
