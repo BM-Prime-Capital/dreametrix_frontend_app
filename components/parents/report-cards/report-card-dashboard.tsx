@@ -6,12 +6,13 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { getStudentReportCard, ReportCard } from "@/services/ReportCardService"
+import { getLinkedStudents, LinkedStudent } from "@/services/ParentGradebookService"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
 import { useLoading } from "@/lib/LoadingContext"
-import { 
-  Loader2, 
-  AlertCircle, 
-  RefreshCw, 
+import {
+  Loader2,
+  AlertCircle,
+  RefreshCw,
   Trophy,
   Award,
   TrendingUp,
@@ -19,74 +20,79 @@ import {
   Star,
   Target,
   BookOpen,
-  Users,
-  Mail,
-  Phone,
-  Download,
-  FileText,
-  Eye,
   CheckCircle,
-  Clock,
-  AlertTriangle,
-  GraduationCap,
   School,
   User,
-  BarChart3,
-  PieChart,
   MessageSquare,
-  Clock3,
   CalendarDays,
-  TrendingDown,
-  Activity,
   Crown,
   Medal,
-  Zap,
   Lightbulb,
-  TargetIcon,
-  ArrowUpRight,
-  ArrowDownRight,
-  Minus,
-  Plus,
-  ChevronRight,
-  ChevronLeft
+  TargetIcon
 } from "lucide-react"
 
 interface ReportCardDashboardProps {
-  studentId?: string
+  // No props needed - will fetch linked students
 }
 
-export function ReportCardDashboard({ studentId = "8" }: ReportCardDashboardProps) {
+export function ReportCardDashboard({}: ReportCardDashboardProps) {
   const { accessToken } = useRequestInfo()
   const { stopLoading } = useLoading()
+  const [linkedStudents, setLinkedStudents] = useState<LinkedStudent[]>([])
+  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null)
   const [reportCard, setReportCard] = useState<ReportCard | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedTerm, setSelectedTerm] = useState<string>("")
 
-  const fetchReportCard = async () => {
+  // Fetch linked students
+  const fetchLinkedStudents = async () => {
     if (!accessToken) {
       setError("Authentication required")
       setLoading(false)
-      stopLoading() // Arrêter le chargement même en cas d'erreur d'auth
+      stopLoading()
       return
     }
 
     try {
       setLoading(true)
       setError(null)
-      
-      const data = await getStudentReportCard(accessToken, studentId)
+
+      const students = await getLinkedStudents(accessToken)
+      setLinkedStudents(students)
+
+      // Auto-select first student
+      if (students.length > 0 && !selectedStudentId) {
+        setSelectedStudentId(students[0].id)
+      }
+
+      stopLoading()
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Error loading students"
+      console.error("Error fetching linked students:", err)
+      setError(errorMessage)
+      stopLoading()
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Fetch report card for selected student
+  const fetchReportCard = async (studentId: number) => {
+    if (!accessToken) return
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      const data = await getStudentReportCard(accessToken, studentId.toString())
       console.log("Report card data received:", data)
-      
+
       setReportCard(data)
-      setSelectedTerm(data.student_info.current_term)
-      // Arrêter le chargement dès qu'on reçoit une réponse (succès)
       stopLoading()
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Error loading report card"
       console.error("Error fetching report card:", err)
       setError(errorMessage)
-      // Arrêter le chargement même en cas d'erreur
       stopLoading()
     } finally {
       setLoading(false)
@@ -94,8 +100,14 @@ export function ReportCardDashboard({ studentId = "8" }: ReportCardDashboardProp
   }
 
   useEffect(() => {
-    fetchReportCard()
-  }, [accessToken, studentId])
+    fetchLinkedStudents()
+  }, [accessToken])
+
+  useEffect(() => {
+    if (selectedStudentId) {
+      fetchReportCard(selectedStudentId)
+    }
+  }, [selectedStudentId])
 
   const getGradeColor = (grade: string) => {
     switch (grade) {
@@ -154,7 +166,7 @@ export function ReportCardDashboard({ studentId = "8" }: ReportCardDashboardProp
             <h3 className="text-xl font-bold text-red-800 mb-2">Connection Error</h3>
             <p className="text-red-600 font-medium text-center mb-6">{error}</p>
             <Button
-              onClick={fetchReportCard}
+              onClick={fetchLinkedStudents}
               className="bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] text-white px-8 py-3 rounded-xl hover:shadow-lg transition-all duration-300"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -166,7 +178,7 @@ export function ReportCardDashboard({ studentId = "8" }: ReportCardDashboardProp
     )
   }
 
-  if (!reportCard) {
+  if (!selectedStudentId || !reportCard) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-8 rounded-3xl border border-gray-200 shadow-lg max-w-md w-full">
@@ -175,7 +187,12 @@ export function ReportCardDashboard({ studentId = "8" }: ReportCardDashboardProp
               <AlertCircle className="h-8 w-8 text-gray-400" />
             </div>
             <h3 className="text-xl font-bold text-gray-800 mb-2">No Report Card</h3>
-            <p className="text-gray-600 text-center">Report card data will appear here once available</p>
+            <p className="text-gray-600 text-center">
+              {linkedStudents.length === 0
+                ? "No students linked to your account"
+                : "Select a student to view their report card"
+              }
+            </p>
           </div>
         </div>
       </div>
@@ -194,14 +211,23 @@ export function ReportCardDashboard({ studentId = "8" }: ReportCardDashboardProp
              <p className="text-blue-100 text-base">Comprehensive academic performance overview</p>
            </div>
            <div className="flex gap-2">
-             <Button className="bg-white/20 hover:bg-white/30 text-white border-white/30 text-sm px-3 py-2">
-               <Download className="h-3 w-3 mr-1" />
-               Download
-             </Button>
-             <Button className="bg-white/20 hover:bg-white/30 text-white border-white/30 text-sm px-3 py-2">
-               <FileText className="h-3 w-3 mr-1" />
-               Print
-             </Button>
+             {linkedStudents.length > 1 && (
+               <Select
+                 value={selectedStudentId?.toString()}
+                 onValueChange={(value) => setSelectedStudentId(Number(value))}
+               >
+                 <SelectTrigger className="w-[200px] bg-white/20 border-white/30 text-white placeholder:text-blue-100">
+                   <SelectValue placeholder="Select Student" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {linkedStudents.map((student) => (
+                     <SelectItem key={student.id} value={student.id.toString()}>
+                       {student.full_name}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             )}
            </div>
          </div>
 

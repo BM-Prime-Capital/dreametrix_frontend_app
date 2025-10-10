@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ParentGradebookTable } from "@/components/parents/gradebook/parent-gradebook-table"
+import { ParentGradebookTableV2 } from "@/components/parents/gradebook/parent-gradebook-table-v2"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RefreshCw, Loader2, AlertCircle, BookOpen, Users, TrendingUp, Award, Star, GraduationCap, FileText, Printer } from "lucide-react"
+import { RefreshCw, Loader2, AlertCircle, BookOpen, TrendingUp, Award } from "lucide-react"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
-import { useParentGradebook } from "@/hooks/useParentGradebook"
+import { getLinkedStudents, LinkedStudent, calculateStudentStats, getStudentClassesForParent } from "@/services/ParentGradebookService"
 import { menuImages } from "@/constants/images"
 import Image from "next/image"
 import { useLoading } from "@/lib/LoadingContext"
@@ -16,41 +15,82 @@ import { useLoading } from "@/lib/LoadingContext"
 export default function ParentGradebookPage() {
   const { accessToken } = useRequestInfo()
   const { stopLoading } = useLoading()
-  const [selectedStudent, setSelectedStudent] = useState<string>("all-students")
-  const [selectedClass, setSelectedClass] = useState<string>("all-classes")
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
-  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false)
+  const [linkedStudents, setLinkedStudents] = useState<LinkedStudent[]>([])
+  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [stats, setStats] = useState({
+    overallAverage: 0,
+    totalClasses: 0,
+    bestSubject: { name: "", average: 0 },
+    totalAssessments: 0
+  })
 
-  const {
-    children,
-    gradebookData,
-    classData,
-    loading,
-    error,
-    refreshData,
-    currentPage,
-    totalPages,
-    itemsPerPage,
-    setCurrentPage
-  } = useParentGradebook({ accessToken: accessToken || '' })
-
-  // Arrêter le chargement dès qu'on reçoit une réponse (succès ou erreur)
+  // Safety: ensure loading stops when component unmounts
   useEffect(() => {
-    if (!loading) {
+    return () => {
       stopLoading()
     }
-  }, [loading, stopLoading])
+  }, [stopLoading])
 
-  const handleRefresh = () => {
-    refreshData()
+  // Fetch linked students on mount
+  useEffect(() => {
+    fetchLinkedStudents()
+  }, [accessToken])
+
+  const fetchLinkedStudents = async () => {
+    if (!accessToken) {
+      stopLoading()
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError(null)
+      const students = await getLinkedStudents(accessToken)
+      setLinkedStudents(students)
+
+      // Sélectionner le premier étudiant par défaut
+      if (students.length > 0 && !selectedStudentId) {
+        setSelectedStudentId(students[0].id)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch linked students")
+    } finally {
+      setLoading(false)
+      stopLoading() // Always stop global loading
+    }
   }
 
-  // Calculer les statistiques globales
-  const totalStudents = children.length
-  const totalClasses = classData.length
-  const totalCourses = children.reduce((sum, child) => sum + child.courses.length, 0)
-  const averageGrade = children.length > 0 ? 
-    children.reduce((sum, child) => sum + (child.courses.length * 85), 0) / totalCourses : 0 // Valeur par défaut
+  // Fetch student classes when student selection changes
+  useEffect(() => {
+    if (selectedStudentId && accessToken) {
+      fetchStudentStats()
+    }
+  }, [selectedStudentId, accessToken])
+
+  const fetchStudentStats = async () => {
+    if (!selectedStudentId || !accessToken) return
+
+    try {
+      const classes = await getStudentClassesForParent(selectedStudentId, accessToken)
+      const calculatedStats = calculateStudentStats(classes)
+      setStats(calculatedStats)
+    } catch (err) {
+      console.error("Error fetching student stats:", err)
+    }
+  }
+
+  const handleRefresh = () => {
+    fetchLinkedStudents()
+    if (selectedStudentId) {
+      fetchStudentStats()
+    }
+  }
+
+  const handleStudentChange = (value: string) => {
+    setSelectedStudentId(Number(value))
+  }
 
   if (loading) {
     return (
@@ -86,6 +126,8 @@ export default function ParentGradebookPage() {
     )
   }
 
+  const selectedStudent = linkedStudents.find(s => s.id === selectedStudentId)
+
   return (
     <div className="w-full space-y-6">
       {/* Header Section */}
@@ -93,125 +135,98 @@ export default function ParentGradebookPage() {
         <div className="flex justify-between items-start mb-4">
           <div>
             <h1 className="text-3xl font-bold mb-1 flex items-center gap-3">
-              <Image 
-                src={menuImages.gradebook} 
-                alt="Gradebook" 
-                width={32} 
-                height={32} 
+              <Image
+                src={menuImages.gradebook}
+                alt="Gradebook"
+                width={32}
+                height={32}
                 className="w-8 h-8 brightness-0 invert"
               />
               Gradebook Dashboard
             </h1>
-            <p className="text-blue-100 text-base">Track your children's academic performance and grades</p>
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              className="bg-white/20 hover:bg-white/30 text-white border-white/30 text-sm px-3 py-2"
-            >
-              <FileText className="h-3 w-3 mr-1" />
-              Report
-            </Button>
-            <Button 
-              className="bg-white/20 hover:bg-white/30 text-white border-white/30 text-sm px-3 py-2"
-            >
-              <Printer className="h-3 w-3 mr-1" />
-              Print
-            </Button>
+            <p className="text-blue-100 text-base">Track your children&apos;s academic performance and grades</p>
           </div>
         </div>
 
-        {/* Filters and Stats */}
+        {/* Student Selection and Stats */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
-              <div className="flex items-center gap-2 mb-2">
-                <Users className="h-4 w-4 text-blue-200" />
-                <span className="text-blue-200 text-xs">Students</span>
-              </div>
-              <h3 className="text-lg font-bold">{totalStudents}</h3>
-              <p className="text-blue-100 text-sm">Total Children</p>
-            </div>
-            
-            <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
-              <div className="flex items-center gap-2 mb-2">
-                <BookOpen className="h-4 w-4 text-blue-200" />
-                <span className="text-blue-200 text-xs">Classes</span>
-              </div>
-              <h3 className="text-lg font-bold">{totalClasses}</h3>
-              <p className="text-blue-100 text-sm">Total Classes</p>
-            </div>
-            
             <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className="h-4 w-4 text-blue-200" />
                 <span className="text-blue-200 text-xs">Average</span>
               </div>
-              <h3 className="text-lg font-bold">{averageGrade}%</h3>
-              <p className="text-blue-100 text-sm">Average Grade</p>
+              <h3 className="text-lg font-bold">{stats.overallAverage.toFixed(1)}%</h3>
+              <p className="text-blue-100 text-sm">Overall Average</p>
+            </div>
+
+            <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <BookOpen className="h-4 w-4 text-blue-200" />
+                <span className="text-blue-200 text-xs">Classes</span>
+              </div>
+              <h3 className="text-lg font-bold">{stats.totalClasses}</h3>
+              <p className="text-blue-100 text-sm">Total Classes</p>
+            </div>
+
+            <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <Award className="h-4 w-4 text-blue-200" />
+                <span className="text-blue-200 text-xs">Best Subject</span>
+              </div>
+              <h3 className="text-lg font-bold">{stats.bestSubject.name || "N/A"}</h3>
+              <p className="text-blue-100 text-sm">{stats.bestSubject.average.toFixed(1)}%</p>
             </div>
           </div>
 
           <div className="flex gap-2">
-            <Select value={selectedStudent} onValueChange={setSelectedStudent}>
-              <SelectTrigger className="w-[180px] bg-white/20 border-white/30 text-white placeholder:text-blue-100">
-                <SelectValue placeholder="All Students" />
+            <Select
+              value={selectedStudentId?.toString() || ""}
+              onValueChange={handleStudentChange}
+            >
+              <SelectTrigger className="w-[220px] bg-white/20 border-white/30 text-white placeholder:text-blue-100">
+                <SelectValue placeholder="Select Student" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all-students">All Students</SelectItem>
-                {children.map((child) => (
-                  <SelectItem key={child.user_id} value={child.user_id.toString()}>
-                    {child.full_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedClass} onValueChange={setSelectedClass}>
-              <SelectTrigger className="w-[180px] bg-white/20 border-white/30 text-white placeholder:text-blue-100">
-                <SelectValue placeholder="All Classes" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all-classes">All Classes</SelectItem>
-                {classData.map((classItem) => (
-                  <SelectItem key={classItem.id} value={classItem.id.toString()}>
-                    {classItem.name}
+                {linkedStudents.map((student) => (
+                  <SelectItem key={student.id} value={student.id.toString()}>
+                    {student.full_name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
         </div>
+
+        {selectedStudent && (
+          <div className="mt-4 bg-white/10 p-3 rounded-xl backdrop-blur-sm">
+            <p className="text-blue-200 text-sm">Viewing gradebook for:</p>
+            <p className="text-white font-semibold text-lg">{selectedStudent.full_name}</p>
+          </div>
+        )}
       </div>
 
       {/* Gradebook Table */}
       <Card className="bg-white rounded-2xl shadow-xl border-0 overflow-hidden">
         <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
           <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-            <Image 
-              src={menuImages.gradebook} 
-              alt="Gradebook" 
-              width={20} 
-              height={20} 
+            <Image
+              src={menuImages.gradebook}
+              alt="Gradebook"
+              width={20}
+              height={20}
               className="w-5 h-5"
             />
-            Gradebook Overview
+            Academic Performance
           </h2>
-          <p className="text-gray-600 text-sm mt-1">Detailed view of your children's academic performance and grades</p>
+          <p className="text-gray-600 text-sm mt-1">Click on a class to view detailed grades and submissions</p>
         </div>
-        <ParentGradebookTable
-          selectedStudent={selectedStudent}
-          selectedClass={selectedClass}
-          children={children}
-          gradebookData={gradebookData}
-          classData={classData}
-          loading={loading}
-          error={error}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          itemsPerPage={itemsPerPage}
-          setCurrentPage={setCurrentPage}
-          accessToken={accessToken || ''}
-        />
+        {selectedStudentId && (
+          <ParentGradebookTableV2
+            studentId={selectedStudentId}
+            accessToken={accessToken || ''}
+          />
+        )}
       </Card>
 
       {/* Action Buttons */}

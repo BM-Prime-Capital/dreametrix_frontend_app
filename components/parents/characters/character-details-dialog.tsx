@@ -1,233 +1,202 @@
 "use client"
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Progress } from "@/components/ui/progress"
-import { Heart, Star, TrendingUp, TrendingDown, Users, Calendar, Award, MessageCircle, Target } from "lucide-react"
-import { ParentCharacterData } from "@/services/CharacterService"
+import { Card } from "@/components/ui/card"
+import { TransformedCharacterData } from "@/services/CharacterService"
+import { Calendar, User, BookOpen, Smile, Frown, AlertCircle, MessageSquare, Award } from "lucide-react"
 
 interface CharacterDetailsDialogProps {
   isOpen: boolean
   onClose: () => void
-  character: ParentCharacterData
+  student: TransformedCharacterData | null
 }
 
-export function CharacterDetailsDialog({ isOpen, onClose, character }: CharacterDetailsDialogProps) {
-  // Calculate percentages
-  const totalEvaluations = character.summary.total_good_character + character.summary.total_bad_character
-  const goodPercentage = totalEvaluations > 0 ? Math.round((character.summary.total_good_character / totalEvaluations) * 100) : 0
-  const badPercentage = totalEvaluations > 0 ? Math.round((character.summary.total_bad_character / totalEvaluations) * 100) : 0
+export function CharacterDetailsDialog({ isOpen, onClose, student }: CharacterDetailsDialogProps) {
+  if (!student) return null
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50">
-        <DialogHeader className="bg-gradient-to-r from-blue-300 to-indigo-400 text-white p-6">
-          <DialogTitle className="text-xl font-bold flex items-center gap-2">
-            <Heart className="h-5 w-5" />
-            Character Details
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold text-[#25AAE1] flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#25AAE1] to-[#1D8CB3] flex items-center justify-center text-white font-bold text-lg">
+              {student.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
+            </div>
+            {student.full_name} - Character Details
           </DialogTitle>
         </DialogHeader>
 
-        <div className="p-6 space-y-6">
-          {/* Student Information Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-50 rounded-lg">
-                  <Users className="h-5 w-5 text-blue-400" />
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500 font-medium">Student</div>
-                  <div className="font-semibold text-gray-900">{character.full_name}</div>
-                </div>
-              </div>
+        {/* Summary Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+            <div className="text-center">
+              <Award className="h-6 w-6 text-blue-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-blue-700">{student.character.character_score.toFixed(1)}%</div>
+              <p className="text-blue-600 text-xs">Character Score</p>
             </div>
+          </Card>
 
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-indigo-50 rounded-lg">
-                  <Calendar className="h-5 w-5 text-indigo-400" />
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500 font-medium">Days Evaluated</div>
-                  <div className="font-semibold text-gray-900">{character.summary.total_days_evaluated}</div>
-                </div>
-              </div>
+          <Card className="p-4 bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
+            <div className="text-center">
+              <Calendar className="h-6 w-6 text-purple-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-purple-700">{student.summary.total_days_evaluated}</div>
+              <p className="text-purple-600 text-xs">Days Evaluated</p>
             </div>
-          </div>
+          </Card>
 
-          {/* Tabs for different sections */}
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-white">
-              <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
-              <TabsTrigger value="statistics" className="text-xs">Statistics</TabsTrigger>
-              <TabsTrigger value="ratings" className="text-xs">Ratings</TabsTrigger>
-            </TabsList>
+          <Card className="p-4 bg-gradient-to-r from-green-50 to-green-100 border-green-200">
+            <div className="text-center">
+              <Smile className="h-6 w-6 text-green-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-green-700">{student.summary.average_good_per_day.toFixed(1)}</div>
+              <p className="text-green-600 text-xs">Avg Good/Day</p>
+            </div>
+          </Card>
 
-            <TabsContent value="overview" className="space-y-4 mt-4">
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-2 bg-blue-50 rounded-lg">
-                    <Star className="h-5 w-5 text-blue-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Character Overview</h3>
-                </div>
+          <Card className="p-4 bg-gradient-to-r from-red-50 to-red-100 border-red-200">
+            <div className="text-center">
+              <Frown className="h-6 w-6 text-red-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold text-red-700">{student.summary.average_bad_per_day.toFixed(1)}</div>
+              <p className="text-red-600 text-xs">Avg Bad/Day</p>
+            </div>
+          </Card>
+        </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Total Days Evaluated</span>
-                      <span className="font-semibold text-blue-400">{character.summary.total_days_evaluated}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Good Character Traits</span>
-                      <span className="font-semibold text-green-600">{character.summary.total_good_character}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Areas for Improvement</span>
-                      <span className="font-semibold text-red-600">{character.summary.total_bad_character}</span>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Average Good/Day</span>
-                      <span className="font-semibold text-green-600">{character.summary.average_good_per_day.toFixed(1)}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Average Bad/Day</span>
-                      <span className="font-semibold text-red-600">{character.summary.average_bad_per_day.toFixed(1)}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Total Evaluations</span>
-                      <span className="font-semibold text-gray-600">{totalEvaluations}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
+        {/* Behavior Timeline */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-[#25AAE1]" />
+            Behavior Timeline
+          </h3>
 
-            <TabsContent value="statistics" className="space-y-4 mt-4">
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <TrendingUp className="h-5 w-5 text-green-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Character Statistics</h3>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-gray-700">Good Character Traits ({character.summary.total_good_character})</span>
-                      </div>
-                      <span className="text-sm font-semibold text-green-600">{goodPercentage}%</span>
-                    </div>
-                    <Progress 
-                      value={goodPercentage} 
-                      className="h-2 bg-gray-100" 
-                      style={{ 
-                        '--progress-background': '#10B981',
-                        '--progress-foreground': '#10B981'
-                      } as React.CSSProperties}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-gray-700">Areas for Improvement ({character.summary.total_bad_character})</span>
-                      </div>
-                      <span className="text-sm font-semibold text-red-600">{badPercentage}%</span>
-                    </div>
-                    <Progress 
-                      value={badPercentage} 
-                      className="h-2 bg-gray-100"
-                      style={{ 
-                        '--progress-background': '#EF4444',
-                        '--progress-foreground': '#EF4444'
-                      } as React.CSSProperties}
-                    />
-                  </div>
-                </div>
-
-                {/* Summary Card */}
-                <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-700">Total Character Evaluations</span>
-                    <span className="text-sm font-bold text-blue-400">{totalEvaluations} evaluations</span>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="ratings" className="space-y-4 mt-4">
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Target className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Daily Ratings</h3>
-                </div>
-
-                <div className="space-y-4">
-                  {character.ratings && character.ratings.length > 0 ? (
-                    <div className="space-y-3">
-                      {character.ratings.map((rating, index) => (
-                        <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-700">Day {index + 1}</span>
-                            <span className="text-xs text-gray-500">{rating.date || 'N/A'}</span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="flex items-center gap-2">
-                              <Heart className="h-4 w-4 text-green-500" />
-                              <span className="text-sm text-green-600">{rating.good_character || 0}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <TrendingDown className="h-4 w-4 text-red-500" />
-                              <span className="text-sm text-red-600">{rating.bad_character || 0}</span>
-                            </div>
-                          </div>
+          {student.ratings.length === 0 ? (
+            <Card className="p-8 text-center bg-gray-50">
+              <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No behavior ratings recorded yet</p>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {student.ratings
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .map((rating) => (
+                  <Card key={rating.id} className="p-4 hover:shadow-lg transition-all duration-200 border-l-4 border-[#25AAE1]">
+                    {/* Header: Date, Class, Teacher */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Calendar className="h-4 w-4 text-gray-500" />
+                          <span className="font-semibold text-gray-800">{formatDate(rating.date)}</span>
+                          {rating.period && (
+                            <Badge variant="outline" className="text-xs">
+                              {rating.period}
+                            </Badge>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Target className="h-6 w-6 text-purple-400" />
+                        <div className="flex items-center gap-2 mb-1">
+                          <BookOpen className="h-4 w-4 text-[#25AAE1]" />
+                          <span className="text-sm font-medium text-gray-700">{rating.class.name}</span>
+                          <Badge variant="secondary" className="text-xs">{rating.class.subject}</Badge>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-gray-500" />
+                          <span className="text-sm text-gray-600">{rating.teacher.full_name}</span>
+                        </div>
                       </div>
-                      <p className="text-gray-500 text-sm font-medium">No daily ratings available</p>
-                      <p className="text-gray-400 text-xs mt-1">Daily ratings will appear here when recorded</p>
                     </div>
-                  )}
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-2">
-            <Button 
-              variant="outline" 
-              className="flex-1 bg-white border-gray-200 hover:bg-gray-50 text-gray-700"
-            >
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Contact Teacher
-            </Button>
-            {/* <Button 
-              className="flex-1 bg-gradient-to-r from-blue-300 to-indigo-400 hover:from-blue-400 hover:to-indigo-500 text-white shadow-lg"
-            >
-              <Award className="h-4 w-4 mr-2" />
-              View Full Report
-            </Button> */}
-          </div>
+                    {/* Good Behaviors */}
+                    {rating.good_statistics_character.length > 0 && (
+                      <div className="mb-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Smile className="h-4 w-4 text-green-600" />
+                          <span className="text-sm font-semibold text-green-700">Good Behaviors</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {rating.good_statistics_character.map((behavior, idx) => (
+                            <Badge key={idx} className="bg-green-100 text-green-700 border-green-200">
+                              {behavior}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Bad Behaviors */}
+                    {rating.bad_statistics_character.length > 0 && (
+                      <div className="mb-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Frown className="h-4 w-4 text-red-600" />
+                          <span className="text-sm font-semibold text-red-700">Bad Behaviors</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {rating.bad_statistics_character.map((behavior, idx) => (
+                            <Badge key={idx} className="bg-red-100 text-red-700 border-red-200">
+                              {behavior}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Sanctions */}
+                    {rating.sanctions && rating.sanctions.trim() !== "" && (
+                      <div className="mb-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <AlertCircle className="h-4 w-4 text-orange-600" />
+                          <span className="text-sm font-semibold text-orange-700">Sanctions</span>
+                        </div>
+                        <p className="text-sm text-gray-700 bg-orange-50 p-3 rounded-lg border border-orange-200">
+                          {rating.sanctions}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Teacher Comments */}
+                    {(rating.teacher_comment_good_character || rating.teacher_comment_bad_character) && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <MessageSquare className="h-4 w-4 text-[#25AAE1]" />
+                          <span className="text-sm font-semibold text-gray-700">Teacher Comments</span>
+                        </div>
+                        {rating.teacher_comment_good_character && (
+                          <p className="text-sm text-green-700 bg-green-50 p-3 rounded-lg mb-2 border border-green-200">
+                            <span className="font-semibold">Good: </span>{rating.teacher_comment_good_character}
+                          </p>
+                        )}
+                        {rating.teacher_comment_bad_character && (
+                          <p className="text-sm text-red-700 bg-red-50 p-3 rounded-lg border border-red-200">
+                            <span className="font-semibold">Bad: </span>{rating.teacher_comment_bad_character}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Empty state for rating with no data */}
+                    {rating.good_statistics_character.length === 0 &&
+                     rating.bad_statistics_character.length === 0 &&
+                     !rating.sanctions &&
+                     !rating.teacher_comment_good_character &&
+                     !rating.teacher_comment_bad_character && (
+                      <div className="text-center py-4">
+                        <p className="text-sm text-gray-500">No behavioral observations recorded for this day</p>
+                      </div>
+                    )}
+                  </Card>
+                ))}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
   )
-} 
+}
