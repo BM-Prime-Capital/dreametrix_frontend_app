@@ -185,8 +185,11 @@ export async function unlinkParent(
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  const url = `${tenantPrimaryDomain}/parents/request-unlink/`;
+  const url = `${tenantPrimaryDomain}/parents/unlink-requests/`;
 
+  console.log("unlinkParent url:", url);
+  console.log("unlinkParent parentId:", parentId);
+  console.log("unlinkParent accessToken:", accessToken);
   try {
     const response = await fetch(url, {
       method: 'POST',
