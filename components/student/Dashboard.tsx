@@ -342,7 +342,7 @@ return (
           </Button>
           <Button
             className="rounded-xl bg-white text-blue-700 hover:bg-blue-50 shadow-md transition-all"
-            onClick={() => router.push("/student/messages")}
+            onClick={() => router.push("/student/communicate")}
           >
             <MessageCircle className="h-5 w-5 mr-2" /> Messages
           </Button>
