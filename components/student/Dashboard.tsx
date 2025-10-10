@@ -333,13 +333,13 @@ return (
         </div>
 
         <div className="flex gap-3">
-          <Button
+          {/* <Button
             variant="secondary"
             className="rounded-xl bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border-white/20 transition-all"
             onClick={() => router.push("/student/settings")}
           >
             <Settings className="h-5 w-5 mr-2" /> Settings
-          </Button>
+          </Button> */}
           <Button
             className="rounded-xl bg-white text-blue-700 hover:bg-blue-50 shadow-md transition-all"
             onClick={() => router.push("/student/communicate")}
