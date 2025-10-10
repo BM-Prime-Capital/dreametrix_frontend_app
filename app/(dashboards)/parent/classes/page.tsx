@@ -25,37 +25,37 @@ export default function ParentClassesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Safety: ensure loading stops when component unmounts
+  useEffect(() => {
+    return () => {
+      stopLoading()
+    }
+  }, [stopLoading])
+
   // Fetch classes data
   const fetchClassesData = async () => {
-    if (!accessToken) return
-    
+    if (!accessToken) {
+      stopLoading()
+      return
+    }
+
     setLoading(true)
     setError(null)
-    
+
     try {
       const data = await getParentClasses(accessToken)
       setClasses(data)
-      // Arrêter le chargement dès qu'on reçoit une réponse (succès)
-      stopLoading()
     } catch (error) {
       setError(error instanceof Error ? error.message : "Error loading classes data")
-      // Arrêter le chargement même en cas d'erreur
-      stopLoading()
     } finally {
       setLoading(false)
+      stopLoading() // Always stop global loading
     }
   }
 
   useEffect(() => {
     fetchClassesData()
   }, [accessToken, refreshToken])
-
-  // S'assurer que le chargement s'arrête même si l'API échoue
-  useEffect(() => {
-    if (!loading && !error) {
-      stopLoading()
-    }
-  }, [loading, error, stopLoading])
 
   const handleRefresh = () => {
     setLoading(true) // Set loading to true for refresh
@@ -166,16 +166,16 @@ export default function ParentClassesPage() {
         </div>
 
         {/* Parent Code Display */}
-        <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm mb-4">
+        {/* <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm mb-4">
           <div className="flex items-center gap-2">
             <Award className="h-4 w-4 text-blue-200" />
             <span className="text-blue-200 text-sm">Parent&apos;s Code:</span>
             <span className="text-white font-mono font-bold text-lg">8787NK920</span>
           </div>
-        </div>
+        </div> */}
 
         {/* Filters and Stats */}
-        <div className="flex items-center justify-between">
+        <div className="flex pt-6 items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm">
               <div className="flex items-center gap-2 mb-2">
