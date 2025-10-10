@@ -56,6 +56,53 @@ interface ParentChildrenResponse {
   }[]
 }
 
+// Exported types for UI components
+export type ParentChild = ParentChildrenResponse
+
+// Shape expected by UI hook/components
+export interface ClassData {
+  id: number
+  name: string
+  subject: string
+  level: number
+  teacher: {
+    id: number
+    first_name: string
+    last_name: string
+    email: string
+  }
+}
+
+// Minimal gradebook aggregate for table usage
+export interface GradebookData {
+  student_id: number
+  class_id: number
+  average_score: number
+}
+
+// Fetch full parent children structure including courses
+export async function getParentChildren(accessToken: string): Promise<ParentChild[]> {
+  try {
+    const response = await fetch(`${BACKEND_BASE_URL}/gradebooks/parent/children/`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data: ParentChildrenResponse[] = await response.json()
+    return Array.isArray(data) ? data : []
+  } catch (error) {
+    console.error('Error fetching parent children:', error)
+    throw new Error('Failed to fetch parent children')
+  }
+}
+
 /**
  * Récupère la liste des enfants liés au parent
  */
@@ -282,3 +329,15 @@ export function calculateClassStats(details: StudentGradebookDetail[]) {
     averageScore: Math.round(averageScore * 10) / 10
   }
 } 
+
+// Convenience type and fetcher for dialog usage
+export type GradebookDetails = StudentGradebookDetail
+
+export async function getGradebookDetails(
+  studentId: number,
+  classId: number,
+  accessToken: string
+): Promise<GradebookDetails> {
+  const details = await getStudentClassGradebookForParent(studentId, classId, accessToken)
+  return details[0]
+}

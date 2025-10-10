@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ParentCharacterData } from "@/services/CharacterService"
+import { ParentCharacterData, transformCharacterData } from "@/services/CharacterService"
 import { Loader2, AlertCircle, Heart, Star, TrendingUp, TrendingDown, RefreshCw, Eye, User, Calendar, Smile, Frown } from "lucide-react"
 import { CharacterDetailsDialog } from "./character-details-dialog"
 
@@ -232,7 +232,7 @@ export function ParentCharactersTable({
             setIsDetailsModalOpen(false)
             setSelectedCharacter(null)
           }}
-          character={selectedCharacter}
+          student={transformCharacterData([selectedCharacter])[0]}
         />
       )}
     </div>
