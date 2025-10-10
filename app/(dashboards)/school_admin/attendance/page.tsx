@@ -1,4 +1,6 @@
 "use client";
+import { ProtectedRoute } from '@/components/Support/ProtectedRoute';
+import { userTypeEnum } from '@/constants/userConstants';
 import { useState } from 'react';
 import { 
   FiCheck, FiX, FiCalendar, FiUser, FiClock, 
@@ -115,6 +117,7 @@ const AttendanceTable = () => {
   const uniqueClasses = [...new Set(students.map(student => student.class))];
 
   return (
+    <ProtectedRoute allowedUserTypes={[userTypeEnum.STUDENT]}>
     <div className="p-6 bg-white rounded-lg shadow-md w-full">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -401,6 +404,7 @@ const AttendanceTable = () => {
         </div>
       )}
     </div>
+    </ProtectedRoute>
   );
 };
 

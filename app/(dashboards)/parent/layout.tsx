@@ -12,6 +12,8 @@ import { EmptyParentState } from "@/components/parents/EmptyParentState"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
 import { useParentRelationship } from "@/hooks/useParentRelationship"
 import { Loader2 } from "lucide-react"
+import { ProtectedRoute } from "@/components/Support/ProtectedRoute"
+import { userTypeEnum } from "@/constants/userConstants"
 
 function ParentDashboardContent({ children }: { children: React.ReactNode }) {
   const { showSpinner } = useLoading()
@@ -57,7 +59,8 @@ function ParentDashboardContent({ children }: { children: React.ReactNode }) {
 
   // Normal dashboard view
   return (
-    <div className="flex flex-col lg:flex-row gap-6 p-4 lg:p-6">
+    <ProtectedRoute allowedUserTypes={[userTypeEnum.PARENT]}>
+    <div className="flex flex-col lg:flex-row gap-6">
       <SidebarProvider>
         <ParentSidebar routes={ParentRoutes} />
       </SidebarProvider>
@@ -72,6 +75,7 @@ function ParentDashboardContent({ children }: { children: React.ReactNode }) {
         message="Loading page..."
       />
     </div>
+    </ProtectedRoute>
   )
 }
 
@@ -81,10 +85,12 @@ export default function ParentDashboardLayout({
   children: React.ReactNode
 }) {
   return (
+    <ProtectedRoute allowedUserTypes={[userTypeEnum.PARENT]}>
     <LoadingProvider>
       <ParentDashboardContent>
         {children}
       </ParentDashboardContent>
     </LoadingProvider>
+    </ProtectedRoute>
   )
 }

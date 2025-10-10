@@ -24,7 +24,7 @@ export interface School {
   is_active: boolean;
 }
 
-export interface Teacher {
+export interface Parent {
   id: number;
   user: User;
   school: School;
@@ -34,15 +34,15 @@ export interface Teacher {
   extra_data: null;
 }
 
-export interface TeachersResponse {
+export interface ParentsResponse {
   count: number;
   next: string | null;
   previous: string | null;
-  results: Teacher[];
+  results: Parent[];
 }
 
-export function useTeachers() {
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
+export function useParents() {
+  const [parents, setParents] = useState<Parent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { baseUrl, error: baseUrlError } = useBaseUrl();
@@ -56,20 +56,18 @@ export function useTeachers() {
     }
 
     if (!baseUrl) {
-      return; // Wait for baseUrl to be available
+      return;
     }
 
-    const fetchTeachers = async () => {
+    const fetchParents = async () => {
       try {
         const accessToken = localStorage.getItem(localStorageKey.ACCESS_TOKEN);
 
         if (!accessToken) {
-          throw new Error(
-            "Vous n'êtes pas connecté. Veuillez vous reconnecter."
-          );
+          throw new Error("You are not logged in. Please log in again.");
         }
 
-        const response = await fetch(`${baseUrl}/teachers/`, {
+        const response = await fetch(`${baseUrl}/parents/`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
@@ -77,36 +75,31 @@ export function useTeachers() {
 
         if (!response.ok) {
           if (response.status === 401) {
-            throw new Error(
-              "Votre session a expiré. Veuillez vous reconnecter."
-            );
+            throw new Error("Your session has expired. Please log in again.");
           } else if (response.status === 403) {
-            throw new Error(
-              "Vous n'avez pas la permission d'accéder aux enseignants."
-            );
+            throw new Error("You don't have permission to access parents.");
           } else {
-            throw new Error("Erreur lors de la récupération des enseignants.");
+            throw new Error("Error loading parents.");
           }
         }
 
-        const data: TeachersResponse = await response.json();
-        console.log('Teachers API Response:', data);
-        console.log('Teachers Results:', data.results);
+        const data: ParentsResponse = await response.json();
+        console.log('Parents API Response:', data);
+        console.log('Parents Results:', data.results);
         
         if (data && Array.isArray(data.results)) {
-          setTeachers(data.results);
+          setParents(data.results);
         } else if (Array.isArray(data)) {
-          // Handle case where API returns array directly
-          setTeachers(data as Teacher[]);
+          setParents(data as Parent[]);
         } else {
           console.warn('Unexpected API response format:', data);
-          setTeachers([]);
+          setParents([]);
         }
       } catch (err) {
         const errorMessage =
           err instanceof Error
             ? err.message
-            : "Erreur lors de la récupération des enseignants.";
+            : "Error loading parents.";
         setError(errorMessage);
         toast.error(errorMessage);
       } finally {
@@ -114,12 +107,12 @@ export function useTeachers() {
       }
     };
 
-    fetchTeachers();
+    fetchParents();
   }, [baseUrl, baseUrlError, refreshTrigger]);
 
   const refetch = () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
-  return { teachers, isLoading, error, refetch };
+  return { parents, isLoading, error, refetch };
 }
