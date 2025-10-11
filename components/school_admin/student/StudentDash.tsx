@@ -12,11 +12,13 @@ import {
   FiAlertCircle,
   FiDownload,
   FiFileText,
+  FiPlus,
 } from "react-icons/fi";
 import { useStudents } from "@/hooks/SchoolAdmin/use-students";
 import { useBaseUrl } from "@/hooks/SchoolAdmin/use-base-url";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { toast } from "react-toastify";
+import CreateStudentModal from './CreateStudentModal';
 const avatarColors = [
   "bg-blue-100 text-blue-600",
   "bg-green-100 text-green-600",
@@ -44,6 +46,7 @@ const StudentsListPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const enhancedStudents = students || [];
   // const enhancedStudents = students?.map(student => ({
@@ -211,13 +214,14 @@ const StudentsListPage = () => {
           
           <div className="flex gap-3">
             <button
-              onClick={downloadTemplate}
-              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
+              onClick={() => setShowCreateModal(true)}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
             >
-              <FiDownload className="text-base" />
-              <span>Template</span>
+              <FiPlus className="text-base" />
+              <span>Add Student</span>
             </button>
             
+
             <button
               onClick={() => fileInputRef.current?.click()}
               className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm max-w-48"
@@ -431,6 +435,12 @@ const StudentsListPage = () => {
           )}
         </div>
       )}
+      
+      <CreateStudentModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={refetch}
+      />
     </div>
   );
 };

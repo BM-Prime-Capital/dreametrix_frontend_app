@@ -122,18 +122,18 @@ export const SchoolAdminRoutes = [
   },
 
   // Subjects
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/subjects`,
-    icon: menuImages.libraryBooks,
-    label: "Subjects",
-  },
+  // {
+  //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/subjects`,
+  //   icon: menuImages.libraryBooks,
+  //   label: "Subjects",
+  // },
 
   // Timetable
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/timetable`,
-    icon: menuImages.calendar,
-    label: "Timetable",
-  },
+  // {
+  //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/timetable`,
+  //   icon: menuImages.calendar,
+  //   label: "Timetable",
+  // },
 
   // Grades
   {
@@ -157,40 +157,40 @@ export const SchoolAdminRoutes = [
   },
 
   // Finance 
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/finance`,
-    icon: menuImages.payments,
-    label: "Finance",
-  },
+  // {
+  //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/finance`,
+  //   icon: menuImages.payments,
+  //   label: "Finance",
+  // },
 
   // Library 
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/library`,
-    icon: menuImages.libraryBooks,
-    label: "Library",
-  },
+  // {
+  //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/library`,
+  //   icon: menuImages.libraryBooks,
+  //   label: "Library",
+  // },
 
   // Reports 
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/reports`,
-    icon: menuImages.analytics,
-    label: "Reports",
-  },
+  // {
+  //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/reports`,
+  //   icon: menuImages.analytics,
+  //   label: "Reports",
+  // },
 
   // Transport
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/transports`,
-    icon: menuImages.transport,
-    label: "Transport",
-  },
+  // {
+  //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/transports`,
+  //   icon: menuImages.transport,
+  //   label: "Transport",
+  // },
 
    // Settings
-   {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/settings`,
-    icon: menuImages.settings,
-    label: "Settings",
-    isSecondary: true,
-  },
+   // {
+   //  path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/settings`,
+   //  icon: menuImages.settings,
+   //  label: "Settings",
+   //  isSecondary: true,
+   // },
 ];
 
 export const TeacherRoutes = [
