@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -14,7 +15,6 @@ import {
   User,
   Calendar,
   MapPin,
-  Phone,
   Shield,
   Camera,
   ArrowLeft,
@@ -97,7 +97,6 @@ export default function StudentProfile() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [formData, setFormData] = useState<Partial<UserData & ProfileData>>({});
   
-  // États pour le changement de mot de passe
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordData, setPasswordData] = useState<ChangePasswordData>({
@@ -122,10 +121,8 @@ export default function StudentProfile() {
     try {
       setIsUpdating(true);
       
-      // Filtrer seulement les champs modifiés et éditables
       const updateData: any = {};
       
-      // Champs user éditables
       editableFields.user_fields.forEach(field => {
         if (formData[field as keyof typeof formData] !== undefined && 
             formData[field as keyof typeof formData] !== userData[field as keyof UserData]) {
