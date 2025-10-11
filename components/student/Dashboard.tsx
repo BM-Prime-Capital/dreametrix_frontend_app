@@ -1,12 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import {
-  Instagram,
   MessageCircle,
   Calendar,
   BookOpen,
@@ -15,19 +14,10 @@ import {
   Star,
   Target,
   GraduationCap,
-  Zap,
-  Users,
-  Settings,
-  Bell,
-  TrendingUp,
-  Award,
-  BookMarked,
   CheckCircle,
   XCircle,
   AlertCircle,
 } from "lucide-react";
-import PageTitleH1 from "../ui/page-title-h1";
-import StudentProgress from "./StudentProgress";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getUserData } from "@/app/utils/getUserFullName";
@@ -58,13 +48,13 @@ export default function StudentDashboard() {
   const [assignments, setAssignments] = useState<any[]>([]);
   const [attendanceData, setAttendanceData] = useState<StudentAttendanceData | null>(null);
   const [rewardsData, setRewardsData] = useState<StudentRewardsData | null>(null);
-  const [pollsData, setPollsData] = useState<any[]>([]);
+  const [, setPollsData] = useState<any[]>([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
-  const [gradesLoading, setGradesLoading] = useState(true);
-  const [assignmentsLoading, setAssignmentsLoading] = useState(true);
-  const [attendanceLoading, setAttendanceLoading] = useState(true);
-  const [rewardsLoading, setRewardsLoading] = useState(true);
-  const [pollsLoading, setPollsLoading] = useState(true);
+  const [, setGradesLoading] = useState(true);
+  const [, setAssignmentsLoading] = useState(true);
+  const [, setAttendanceLoading] = useState(true);
+  const [, setRewardsLoading] = useState(true);
+  const [, setPollsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { tenantDomain, accessToken, isLoading: requestInfoLoading } = useRequestInfo();
@@ -333,16 +323,16 @@ return (
         </div>
 
         <div className="flex gap-3">
-          <Button
+          {/* <Button
             variant="secondary"
             className="rounded-xl bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border-white/20 transition-all"
             onClick={() => router.push("/student/settings")}
           >
             <Settings className="h-5 w-5 mr-2" /> Settings
-          </Button>
+          </Button> */}
           <Button
             className="rounded-xl bg-white text-blue-700 hover:bg-blue-50 shadow-md transition-all"
-            onClick={() => router.push("/student/messages")}
+            onClick={() => router.push("/student/communicate")}
           >
             <MessageCircle className="h-5 w-5 mr-2" /> Messages
           </Button>

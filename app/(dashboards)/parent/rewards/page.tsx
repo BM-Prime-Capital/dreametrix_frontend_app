@@ -25,32 +25,37 @@ export default function ParentRewardsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Safety: ensure loading stops when component unmounts
+  useEffect(() => {
+    return () => {
+      stopLoading()
+    }
+  }, [stopLoading])
+
   // Fetch rewards data
   const fetchRewardsData = async () => {
-    if (!accessToken) return
-    
+    if (!accessToken) {
+      stopLoading()
+      return
+    }
+
     setLoading(true)
     setError(null)
-    
+
     try {
       const data = await getParentRewardsView(accessToken)
       setRewardsData(data)
-      // Arrêter le chargement dès qu'on reçoit une réponse (succès)
-      stopLoading()
     } catch (error) {
       setError(error instanceof Error ? error.message : "Error loading rewards data")
-      // Arrêter le chargement même en cas d'erreur
-      stopLoading()
     } finally {
       setLoading(false)
+      stopLoading() // Always stop global loading
     }
   }
 
   useEffect(() => {
     fetchRewardsData()
   }, [accessToken])
-
-  // Supprimer le useEffect de sécurité car on gère maintenant dans le try/catch
 
   const handleRefresh = () => {
     fetchRewardsData()
@@ -113,9 +118,9 @@ export default function ParentRewardsPage() {
               />
               Rewards Dashboard
             </h1>
-            <p className="text-blue-100 text-base">Track your children's achievements and reward points</p>
+            <p className="text-blue-100 text-base">Track your children&apos;s achievements and reward points</p>
           </div>
-          <div className="flex gap-2">
+          {/* <div className="flex gap-2">
             <Button 
               className="bg-white/20 hover:bg-white/30 text-white border-white/30 text-sm px-3 py-2"
               onClick={() => setIsReportModalOpen(true)}
@@ -130,7 +135,7 @@ export default function ParentRewardsPage() {
               <Printer className="h-3 w-3 mr-1" />
               Print
             </Button>
-          </div>
+          </div> */}
         </div>
 
         {/* Filters and Stats */}
@@ -256,7 +261,7 @@ export default function ParentRewardsPage() {
             />
             Rewards Overview
           </h2>
-          <p className="text-gray-600 text-sm mt-1">Detailed view of your children's achievements and reward points</p>
+          <p className="text-gray-600 text-sm mt-1">Detailed view of your children&apos;s achievements and reward points</p>
         </div>
         <ParentRewardsTable
           selectedStudent={selectedStudent}

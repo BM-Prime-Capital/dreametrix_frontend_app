@@ -19,19 +19,23 @@ interface ApiAssessment {
   };
 }
 
-interface ApiAssessmentResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: ApiAssessment[];
+interface ApiStudent {
+  id: number;
+  full_name: string;
+  email: string;
+}
+
+interface ApiStudentAssessments {
+  student: ApiStudent;
+  assessments: ApiAssessment[];
 }
 
 // Interface for parent assignments
 export interface ParentAssignment {
-  description: string;
-  title: string;
   id: number;
   name: string;
+  description?: string;
+  title?: string;
   file: string;
   due_date: string;
   weight: string;
@@ -44,23 +48,18 @@ export interface ParentAssignment {
     id: number;
     name: string;
   };
+  student_name: string;
+  student_id: number;
+  student_email: string;
   teacher?: string;
   class?: string;
   day?: string;
-  student_name?: string;
-  student_id?: number;
   students?: {
     id: number;
     name: string;
   }[];
 }
 
-export interface ParentAssignmentsResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: ParentAssignment[];
-}
 
 /**
  * Fetches all assignments for a parent's children
@@ -70,23 +69,14 @@ export interface ParentAssignmentsResponse {
  * @returns Promise<ParentAssignment[]> - Array of assignments for all children
  */
 export async function getParentAssignments(
-  accessToken: string,
-  // refreshToken: string,
-  // filters?: {
-  //   student_id?: number;
-  //   class_id?: number;
-  //   course_id?: number;
-  //   date_from?: string;
-  //   date_to?: string;
-  //   published?: boolean;
-  // }
-): Promise<any> {
+  accessToken: string
+): Promise<ParentAssignment[]> {
   if (!accessToken) {
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  const url = `${BACKEND_BASE_URL}/assessments/`;
-  
+  const url = `${BACKEND_BASE_URL}/parents/children/assessments/`;
+
   try {
     const response = await fetch(url, {
       method: "GET",
@@ -106,31 +96,36 @@ export async function getParentAssignments(
       }
     }
 
-    const data: ApiAssessmentResponse = await response.json();
+    const data: ApiStudentAssessments[] = await response.json();
     console.log("Parent assignments data:", data);
-    
-    // Transform API data to ParentAssignment format
-  //   const assignments: ParentAssignment[] = (
-  //     data.results || []).map((assessment: ApiAssessment): ParentAssignment => (
-  //   //   {
-  //   //   id: assessment.id,
-  //   //   name: assessment.name,
-  //   //   file: assessment.file,
-  //   //   due_date: assessment.due_date,
-  //   //   weight: assessment.weight,
-  //   //   kind: assessment.kind,
-  //   //   published: assessment.published,
-  //   //   created_at: assessment.created_at,
-  //   //   updated_at: assessment.updated_at,
-  //   //   course: assessment.course,
-  //   //   published_at: assessment.published_at,
-  //   //   teacher: "Teacher", // Not provided by API
-  //   //   class: assessment.course.name,
-  //   //   day: assessment.due_date
-  //   // }
-  // ));
-    
-   // return assignments;
+
+    // Transform student-grouped API data to flat ParentAssignment array
+    const assignments: ParentAssignment[] = data.flatMap((studentData) =>
+      studentData.assessments.map((assessment): ParentAssignment => ({
+        id: assessment.id,
+        name: assessment.name,
+        file: assessment.file,
+        due_date: assessment.due_date,
+        weight: assessment.weight,
+        kind: assessment.kind,
+        published: assessment.published,
+        created_at: assessment.created_at,
+        updated_at: assessment.updated_at,
+        course: assessment.course,
+        published_at: assessment.published_at,
+        student_id: studentData.student.id,
+        student_name: studentData.student.full_name,
+        student_email: studentData.student.email,
+        class: assessment.course.name,
+        day: assessment.due_date,
+        students: [{
+          id: studentData.student.id,
+          name: studentData.student.full_name
+        }]
+      }))
+    );
+
+    return assignments;
   } catch (error) {
     console.error("Network error:", error);
     throw new Error("Failed to connect to server");
@@ -141,25 +136,15 @@ export async function getParentAssignments(
  * Fetches assignments for a specific child of a parent
  * @param childId - The ID of the specific child
  * @param accessToken - The parent's access token
- * @param refreshToken - The parent's refresh token
- * @param filters - Optional filters for assignments
  * @returns Promise<ParentAssignment[]> - Array of assignments for the specific child
  */
 export async function getChildAssignments(
   childId: number,
-  accessToken: string,
-  // refreshToken: string,
-  // filters?: {
-  //   class_id?: number;
-  //   course_id?: number;
-  //   date_from?: string;
-  //   date_to?: string;
-  //   published?: boolean;
-  // }
+  accessToken: string
 ): Promise<ParentAssignment[]> {
-  // For now, we'll use the same endpoint as all assignments
-  // In the future, this could be filtered by child_id if the API supports it
-  return getParentAssignments(accessToken);
+  const allAssignments = await getParentAssignments(accessToken);
+  // Filter assignments by the specific child
+  return allAssignments.filter(assignment => assignment.student_id === childId);
 }
 
 /**
