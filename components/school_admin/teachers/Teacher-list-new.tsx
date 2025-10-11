@@ -1,11 +1,12 @@
 "use client";
 import { useRouter } from 'next/navigation';
 import { useState, useRef } from 'react';
-import { FiSearch, FiUpload, FiChevronRight, FiUser, FiMail, FiAlertCircle, FiAward, FiClock, FiDownload, FiFileText } from 'react-icons/fi';
+import { FiSearch, FiUpload, FiChevronRight, FiUser, FiMail, FiAlertCircle, FiAward, FiClock, FiDownload, FiFileText, FiPlus } from 'react-icons/fi';
 import { useTeachers } from '@/hooks/SchoolAdmin/use-teachers';
 import { useBaseUrl } from '@/hooks/SchoolAdmin/use-base-url';
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { toast } from 'react-toastify';
+import CreateTeacherModal from './CreateTeacherModal';
 
 const avatarColors = [
   'bg-blue-100 text-blue-600',
@@ -33,6 +34,7 @@ const TeachersList = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   console.log('Teachers from hook:', teachers);
   console.log('Teachers length:', teachers?.length);
@@ -207,13 +209,14 @@ const downloadTemplate = () => {
           
           <div className="flex gap-3">
             <button
-              onClick={downloadTemplate}
-              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
+              onClick={() => setShowCreateModal(true)}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
             >
-              <FiDownload className="text-base" />
-              <span>Template</span>
+              <FiPlus className="text-base" />
+              <span>Add Teacher</span>
             </button>
             
+
             <button
               onClick={() => fileInputRef.current?.click()}
               className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm max-w-48"
@@ -430,6 +433,12 @@ const downloadTemplate = () => {
           )}
         </div>
       )}
+      
+      <CreateTeacherModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={refetch}
+      />
     </div>
   );
 };
