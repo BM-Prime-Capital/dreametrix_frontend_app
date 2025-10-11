@@ -4,15 +4,13 @@ import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Users, UserPlus, Clock, Link2, Sparkles } from "lucide-react"
+import { Users, UserPlus, Clock, Link2 } from "lucide-react"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
 import { useParentPage } from "@/hooks/useParentPage"
 import { useParentRelationship } from "@/hooks/useParentRelationship"
 import { LinkedStudentsTab } from "@/components/parents/relationship/LinkedStudentsTab"
 import { PendingRequestsTab } from "@/components/parents/relationship/PendingRequestsTab"
 import { SendRequestTab } from "@/components/parents/relationship/SendRequestTab"
-import { menuImages } from "@/constants/images"
-import Image from "next/image"
 
 export default function ParentRelationshipPage() {
   const page = useParentPage({ requireStudents: false })

@@ -214,7 +214,7 @@ export function ParentClassesTable({
                         <Eye className="h-4 w-4 mr-2" />
                         Details
                       </Button>
-                      <Button
+                      {/* <Button
                         variant="outline"
                         size="sm"
                         className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 hover:from-green-600 hover:to-green-700 transition-all duration-300"
@@ -225,7 +225,7 @@ export function ParentClassesTable({
                       >
                         <MessageSquare className="h-4 w-4 mr-2" />
                         Message
-                      </Button>
+                      </Button> */}
                     </div>
                   </TableCell>
                 </TableRow>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trash2 } from "lucide-react";
 import { ParentMessageDetail } from "./parent-message-detail";
@@ -46,9 +46,30 @@ export function ParentMessageList({
   const [messages, setMessages] = useState<ParentCommunicationMessage[]>([]);
 
   // Update local messages when fetched data changes
-  useMemo(() => {
+  useEffect(() => {
     setMessages(fetchedMessages);
   }, [fetchedMessages]);
+
+  // Calculate filtered messages (must be before early returns)
+  const filteredMessages = useMemo(() => {
+    return messages.filter((message) => {
+      const tabFilter =
+        activeTab === "teachers"
+          ? message.sender !== "Principal Johnson"
+          : activeTab === "school-admin"
+          ? message.sender === "Principal Johnson"
+          : false;
+
+      const studentFilter =
+        selectedStudents.length === 0
+          ? true
+          : message.regardingIds
+          ? message.regardingIds.some((id) => selectedStudents.includes(id))
+          : false;
+
+      return tabFilter && studentFilter;
+    });
+  }, [messages, activeTab, selectedStudents]);
 
   const handleClick = (id: number) => {
     setMessages((prevMessages) =>
@@ -86,26 +107,6 @@ export function ParentMessageList({
       </div>
     );
   }
-
-  const filteredMessages = useMemo(() => {
-    return messages.filter((message) => {
-      const tabFilter =
-        activeTab === "teachers"
-          ? message.sender !== "Principal Johnson"
-          : activeTab === "school-admin"
-          ? message.sender === "Principal Johnson"
-          : false;
-
-      const studentFilter =
-        selectedStudents.length === 0
-          ? true
-          : message.regardingIds
-          ? message.regardingIds.some((id) => selectedStudents.includes(id))
-          : false;
-
-      return tabFilter && studentFilter;
-    });
-  }, [messages, activeTab, selectedStudents]);
 
   return (
     <div className="w-full">

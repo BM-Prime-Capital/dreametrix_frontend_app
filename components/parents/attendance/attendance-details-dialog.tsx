@@ -174,7 +174,7 @@ export function AttendanceDetailsDialog({ isOpen, onClose, attendance }: Attenda
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-2">
+          {/* <div className="flex gap-3 pt-2">
             <Button 
               variant="outline" 
               className="flex-1 bg-white border-gray-200 hover:bg-gray-50 text-gray-700"
@@ -188,7 +188,7 @@ export function AttendanceDetailsDialog({ isOpen, onClose, attendance }: Attenda
               <History className="h-4 w-4 mr-2" />
               View Full History
             </Button>
-          </div>
+          </div> */}
         </div>
       </DialogContent>
     </Dialog>

@@ -69,20 +69,20 @@ export const StudentRoutes = [
     label: "STUDENT PROFILE",
     isSecondary: true,
   },
-  {
-    path: `${userPath.STUDENT_BASE_PATH}/help`,
-    icon: menuImages.support,
-    label: "NEED HELP?",
-    isSecondary: true,
-    disabled: true,
-  },
-  {
-    path: `${userPath.STUDENT_BASE_PATH}/settings`,
-    icon: menuImages.settings,
-    label: "SETTINGS",
-    isSecondary: true,
-    disabled: true,
-  },
+  // {
+  //   path: `${userPath.STUDENT_BASE_PATH}/help`,
+  //   icon: menuImages.support,
+  //   label: "NEED HELP?",
+  //   isSecondary: true,
+  //   disabled: true,
+  // },
+  // {
+  //   path: `${userPath.STUDENT_BASE_PATH}/settings`,
+  //   icon: menuImages.settings,
+  //   label: "SETTINGS",
+  //   isSecondary: true,
+  //   disabled: true,
+  // },
 ];
 
 export const SchoolAdminRoutes = [
@@ -339,22 +339,11 @@ export const ParentRoutes = [
     icon: `/assets/images/teacher/dashboard/relationship.svg`,
     label: "RELATIONSHIP",
   },
-  {
-    path: `${userPath.PARENT_BASE_PATH}/communicate`,
-    icon: menuImages.communicate,
-    label: "COMMUNICATE",
-  },
-  {
-    path: `${userPath.PARENT_BASE_PATH}/library`,
-    icon: menuImages.report_card,
-    label: "LIBRARY",
-  },
-  {
-    path: `${userPath.PARENT_BASE_PATH}/help`,
-    icon: menuImages.support,
-    label: "NEED HELP?",
-    isSecondary: true,
-  },
+  // {
+  //   path: `${userPath.PARENT_BASE_PATH}/communicate`,
+  //   icon: menuImages.communicate,
+  //   label: "COMMUNICATE",
+  // },
 ];
 
 export const SuperAdminRoutes = [

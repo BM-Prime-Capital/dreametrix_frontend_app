@@ -65,7 +65,7 @@ export interface StudentSummary {
   attendance: AttendanceInfo
   academic_performance: AcademicPerformance
   assignments: AssignmentsInfo
-  subjects: SubjectGrade[]
+  subjects?: SubjectGrade[]
   rewards: RewardsInfo
   character: CharacterInfo
   classes: ClassesInfo
@@ -110,7 +110,7 @@ class ParentDashboardServiceClass {
     accessToken: string
   ): Promise<ParentDashboardData> {
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/parents/parent/dashboard`, {
+      const response = await fetch(`${BACKEND_BASE_URL}/parents/dashboard/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

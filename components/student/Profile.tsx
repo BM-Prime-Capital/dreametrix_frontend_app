@@ -532,7 +532,7 @@ export default function StudentProfile() {
                     { icon: BookOpen, label: "View Grades", action: () => router.push("/student/gradebook") },
                     { icon: Award, label: "Achievements", action: () => router.push("/student/rewards") },
                     { icon: Calendar, label: "Attendance", action: () => router.push("/student/attendance") },
-                    { icon: Target, label: "Set Goals", action: () => console.log("Set Goals") }
+                    // { icon: Target, label: "Set Goals", action: () => console.log("Set Goals") }
                   ].map((action, index) => (
                     <Button
                       key={index}
