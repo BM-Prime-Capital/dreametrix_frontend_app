@@ -393,7 +393,7 @@ export default function ForgotPasswordPage() {
 
       <button
         type="submit"
-        disabled={isLoading || (newPassword && confirmPassword && newPassword !== confirmPassword)}
+        disabled={isLoading || Boolean(newPassword && confirmPassword && newPassword !== confirmPassword)}
         className="w-full bg-[#25AAE1] hover:bg-[#1453B8] text-white py-3 rounded-lg
                  transition-colors focus:outline-none focus:ring-2 focus:ring-[#25AAE1]
                  focus:ring-offset-2 disabled:opacity-50 text-base font-semibold"
