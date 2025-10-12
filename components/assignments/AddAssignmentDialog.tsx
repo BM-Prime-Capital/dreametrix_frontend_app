@@ -149,178 +149,178 @@ export function AddAssignmentDialog({ open, onOpenChange }: AddAssignmentDialogP
           </DialogTitle>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto">
-          <form
-            onSubmit={handleSubmit}
+        <form
+          onSubmit={handleSubmit}
             className="flex flex-wrap gap-4 p-4 items-start"
-          >
-            {classesLoading ? (
-              <Loader />
-            ) : (
-              <div className="w-full">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Class
-                </label>
-                <select
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3e81d4] focus:border-[#3e81d4] transition-colors"
-                  value={formData.course}
-                  onChange={(e) => handleChange("course", e.target.value)}
-                  required
-                >
-                  <option value="">Select a class</option>
-                  {classes?.map((cls: Class) => (
-                    <option key={cls.id} value={cls.id}>
-                      {cls.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div className="w-full sm:w-[calc(50%-0.5rem)]">
+        >
+          {classesLoading ? (
+            <Loader />
+          ) : (
+            <div className="w-full">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Assignment Name
-              </label>
-              <Input
-                className="w-full focus:ring-2 focus:ring-[#3e81d4]"
-                placeholder="Enter assignment name"
-                value={formData.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="w-full sm:w-[calc(50%-0.5rem)]">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Due Date
-              </label>
-              <Input
-                type="date"
-                className="w-full focus:ring-2 focus:ring-[#3e81d4]"
-                value={formData.due_date}
-                onChange={(e) => handleChange("due_date", e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="w-full sm:w-[calc(50%-0.5rem)]">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Type
+                Class
               </label>
               <select
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3e81d4] focus:border-[#3e81d4] transition-colors"
-                value={formData.kind}
-                onChange={(e) => handleChange("kind", e.target.value)}
+                value={formData.course}
+                onChange={(e) => handleChange("course", e.target.value)}
                 required
               >
-                <option value="homework">Homework</option>
-                <option value="test">Test</option>
-                <option value="quiz">Quiz</option>
-                <option value="participation">Participation</option>
-                <option value="other">Other</option>
+                <option value="">Select a class</option>
+                {classes?.map((cls: Class) => (
+                  <option key={cls.id} value={cls.id}>
+                    {cls.name}
+                  </option>
+                ))}
               </select>
             </div>
+          )}
+
+            <div className="w-full sm:w-[calc(50%-0.5rem)]">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Assignment Name
+            </label>
+            <Input
+              className="w-full focus:ring-2 focus:ring-[#3e81d4]"
+              placeholder="Enter assignment name"
+              value={formData.name}
+              onChange={(e) => handleChange("name", e.target.value)}
+              required
+            />
+          </div>
+
+            <div className="w-full sm:w-[calc(50%-0.5rem)]">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Due Date
+            </label>
+            <Input
+              type="date"
+              className="w-full focus:ring-2 focus:ring-[#3e81d4]"
+              value={formData.due_date}
+              onChange={(e) => handleChange("due_date", e.target.value)}
+              required
+            />
+          </div>
+
+            <div className="w-full sm:w-[calc(50%-0.5rem)]">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Type
+            </label>
+            <select
+              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3e81d4] focus:border-[#3e81d4] transition-colors"
+              value={formData.kind}
+              onChange={(e) => handleChange("kind", e.target.value)}
+              required
+            >
+              <option value="homework">Homework</option>
+              <option value="test">Test</option>
+              <option value="quiz">Quiz</option>
+              <option value="participation">Participation</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
 
             <div className="w-full sm:w-[calc(50%-0.5rem)]">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Publish Status
               </label>
               <div className="flex items-center gap-2 p-2">
-                <label className="relative flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.published}
-                    onChange={(e) => handleChange("published", e.target.checked)}
-                    className="sr-only"
-                  />
-                  <div
-                    className={`w-5 h-5 border-2 rounded-md transition-colors 
-                    ${
-                      formData.published
-                        ? "bg-[#3e81d4] border-[#3e81d4]"
-                        : "bg-white border-gray-300"
-                    }`}
-                  >
-                    {formData.published && (
-                      <svg
-                        className="w-4 h-4 text-white mx-auto mt-0.5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                  <span className="ml-2 text-sm text-gray-700">
-                    Publish immediately
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            <div className="w-full">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Attach File
-              </label>
-              <Input
-                type="file"
-                className="w-full file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#3e81d4]/10 file:text-[#3e81d4] hover:file:bg-[#3e81d4]/20"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
-                required
+            <label className="relative flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.published}
+                onChange={(e) => handleChange("published", e.target.checked)}
+                className="sr-only"
               />
-            </div>
-            <div className="w-full flex items-center justify-center my-4">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-              <span className="px-4 text-sm font-medium text-gray-500 bg-white">
-                OR
-              </span>
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-            </div>
-            {/* Go to Digital Library Button */}
-            <div className="w-full">
-              <Button
-                type="button"
-                onClick={handleGoToDigitalLibrary}
-                className="w-full flex gap-2 items-center text-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg px-4 py-3 shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02]"
+              <div
+                className={`w-5 h-5 border-2 rounded-md transition-colors 
+                ${
+                  formData.published
+                    ? "bg-[#3e81d4] border-[#3e81d4]"
+                    : "bg-white border-gray-300"
+                }`}
               >
-                <BookOpen className="w-5 h-5" />
-                <span>Go to Digital Library</span>
-              </Button>
-              <p className="text-xs text-gray-500 mt-1 text-center">
-                Create worksheets and materials for this assignment
-              </p>
-            </div>
+                {formData.published && (
+                  <svg
+                    className="w-4 h-4 text-white mx-auto mt-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                )}
+              </div>
+              <span className="ml-2 text-sm text-gray-700">
+                Publish immediately
+              </span>
+            </label>
+              </div>
+          </div>
+
+          <div className="w-full">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Attach File
+            </label>
+            <Input
+              type="file"
+              className="w-full file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#3e81d4]/10 file:text-[#3e81d4] hover:file:bg-[#3e81d4]/20"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              required
+            />
+          </div>
+          <div className="w-full flex items-center justify-center my-4">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+            <span className="px-4 text-sm font-medium text-gray-500 bg-white">
+              OR
+            </span>
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+          </div>
+          {/* Go to Digital Library Button */}
+          <div className="w-full">
+            <Button
+              type="button"
+              onClick={handleGoToDigitalLibrary}
+              className="w-full flex gap-2 items-center text-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg px-4 py-3 shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02]"
+            >
+              <BookOpen className="w-5 h-5" />
+              <span>Go to Digital Library</span>
+            </Button>
+            <p className="text-xs text-gray-500 mt-1 text-center">
+              Create worksheets and materials for this assignment
+            </p>
+          </div>
 
             <div className="w-full flex flex-col sm:flex-row justify-end gap-3 mt-6 border-t pt-4">
-              <Button
-                type="button"
-                variant="outline"
+            <Button
+              type="button"
+              variant="outline"
                 onClick={() => handleOpenChange(false)}
                 className="px-6 py-2 text-gray-700 hover:bg-gray-50 border-gray-300 order-2 sm:order-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
                 className="px-6 py-2 bg-[#3e81d4] hover:bg-[#3e81d4]/90 text-white disabled:opacity-70 disabled:cursor-not-allowed order-1 sm:order-2"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Creating...
-                  </span>
-                ) : (
-                  "Create Assignment"
-                )}
-              </Button>
-            </div>
-          </form>
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Creating...
+                </span>
+              ) : (
+                "Create Assignment"
+              )}
+            </Button>
+          </div>
+        </form>
         </div>
       </DialogContent>
     </Dialog>
