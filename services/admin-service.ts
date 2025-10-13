@@ -123,6 +123,82 @@ export async function requestApprobationList(
     }
   }
 
+  export async function getTeacherData(
+    accessToken: string,
+    tenantDomain: string,
+    id: string
+  ) {
+    try {
+
+      const url = `${tenantDomain}/teachers/${id}/`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.text();
+        return {
+          success: false,
+          message: errorData || "Error approving request."
+        };
+      }
+  
+      const data = await response.json();
+      return {
+        success: true,
+        data: data
+      };
+    } catch (error) {
+      console.error("Error", error);
+      return {
+        success: false,
+        message: "Error approving request."
+      };
+    }
+  }
+
+  export async function getStudentData(
+    accessToken: string,
+    tenantDomain: string,
+    id: string
+  ) {
+    try {
+
+      const url = `${tenantDomain}/students/${id}/`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.text();
+        return {
+          success: false,
+          message: errorData || "Error approving request."
+        };
+      }
+  
+      const data = await response.json();
+      return {
+        success: true,
+        data: data
+      };
+    } catch (error) {
+      console.error("Error", error);
+      return {
+        success: false,
+        message: "Error approving request."
+      };
+    }
+  }
+
 
   export async function updateStudentProfile(
     accessToken: string,
