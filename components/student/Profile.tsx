@@ -32,9 +32,11 @@ import {
 } from "lucide-react";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 interface UserData {
   id: number;
+  uuid: string;
   email: string;
   first_name: string;
   last_name: string;
@@ -605,7 +607,31 @@ export default function StudentProfile() {
                       </p>
                       <p className="text-gray-600 flex items-center gap-2">
                         <School className="h-4 w-4" />
-                        Student ID: STU{userData?.id.toString().padStart(6, '0')}
+                        Student ID: {userData?.uuid.slice(0, 15)+"..."}
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="ml-2 p-1 h-7 w-7"
+                          title="Copy Student ID"
+                          onClick={async () => {
+                            if (userData?.uuid) {
+                              await navigator.clipboard.writeText(userData.uuid);
+                              toast.success("Student ID copied to clipboard");
+                            }
+                          }}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 text-gray-500"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <rect x="9" y="9" width="13" height="13" rx="2" />
+                            <rect x="3" y="3" width="13" height="13" rx="2" />
+                          </svg>
+                        </Button>
                       </p>
                     </div>
                   </div>

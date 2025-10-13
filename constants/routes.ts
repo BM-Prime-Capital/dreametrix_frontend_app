@@ -69,20 +69,20 @@ export const StudentRoutes = [
     label: "STUDENT PROFILE",
     isSecondary: true,
   },
-  {
-    path: `${userPath.STUDENT_BASE_PATH}/help`,
-    icon: menuImages.support,
-    label: "NEED HELP?",
-    isSecondary: true,
-    disabled: true,
-  },
-  {
-    path: `${userPath.STUDENT_BASE_PATH}/settings`,
-    icon: menuImages.settings,
-    label: "SETTINGS",
-    isSecondary: true,
-    disabled: true,
-  },
+  // {
+  //   path: `${userPath.STUDENT_BASE_PATH}/help`,
+  //   icon: menuImages.support,
+  //   label: "NEED HELP?",
+  //   isSecondary: true,
+  //   disabled: true,
+  // },
+  // {
+  //   path: `${userPath.STUDENT_BASE_PATH}/settings`,
+  //   icon: menuImages.settings,
+  //   label: "SETTINGS",
+  //   isSecondary: true,
+  //   disabled: true,
+  // },
 ];
 
 export const SchoolAdminRoutes = [
