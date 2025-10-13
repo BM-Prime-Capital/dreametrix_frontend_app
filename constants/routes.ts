@@ -354,6 +354,7 @@ export const SuperAdminRoutes = [
     label: "Dashboard",
     disabled: true,
   },
+
   
   // Schools Management
   {
@@ -362,6 +363,13 @@ export const SuperAdminRoutes = [
     label: "Schools",
 
   },
+    // Characters Management
+    {
+      path: `${userPath.SUPER_ADMIN_BASE_PATH}/characters`,
+      icon: menuImages.api,
+      label: "Characters",
+      disabled: false,
+    },
   
   // Districts Management
   {
@@ -414,13 +422,7 @@ export const SuperAdminRoutes = [
     disabled: true,
   },
   
-  // API Management
-  {
-    path: `${userPath.SUPER_ADMIN_BASE_PATH}/api-management`,
-    icon: menuImages.api,
-    label: "API Management",
-    disabled: true,
-  },
+
   
   // Notifications
   {
