@@ -177,6 +177,8 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
   });
 
   const handleDeleteClass = useCallback(async (classId: number) => {
+    
+    console.log("handleDeleteClass tenantDomain:", tenantDomain);
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
@@ -204,6 +206,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
     if (result.isConfirmed) {
       try {
         setIsLoading(true);
+       
         const success = await deleteClass(
           classId,
           tenantDomain,

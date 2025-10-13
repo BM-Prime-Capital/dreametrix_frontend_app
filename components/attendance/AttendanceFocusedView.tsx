@@ -45,7 +45,6 @@ export default function AttendanceFocusedView({
   const [, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
-  console.log("tenantDomain")
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
   const { id: currentClassId } = JSON.parse(
     localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
@@ -55,24 +54,28 @@ export default function AttendanceFocusedView({
     const currentDate = new Date().toISOString().split("T")[0];
     setIsAttendanceDatePast(new Date(attendanceDate) < new Date(currentDate));
     setIsToday(attendanceDate === currentDate);
-    loadData();
-  }, [attendanceDate, currentClassId]);
+  if (tenantDomain && accessToken && refreshToken && currentClassId) {
+      loadData();
+  }
+  }, [attendanceDate, currentClassId, tenantDomain, accessToken, refreshToken]);
 
   const loadData = async () => {
     setIsLoading(true);
     try {
       // Charge d'abord les étudiants
-      const studentsResponse = await fetch(`${tenantDomain}/api/classes/${currentClassId}/students`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'X-Refresh-Token': refreshToken,
-        },
+      console.log("tenantDomain", tenantDomain);
+      console.log("url:", `${tenantDomain}/api/classes/${currentClassId}/students`);
+
+      const studentsResponse = await fetch(`${tenantDomain}/classes/${currentClassId}/students/`, {
+       headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
       });
-      
       if (!studentsResponse.ok) throw new Error('Failed to load students');
-      
+      // 
       const studentsData = await studentsResponse.json();
-      const students = studentsData.students.map((student: any) => ({
+      const students = studentsData.map((student: any) => ({
         id: student.id,
         name: student.name,
         status: 'absent' // Valeur par défaut
@@ -344,7 +347,7 @@ export default function AttendanceFocusedView({
             )}
 
             <div className="flex gap-3 border-l border-gray-300 pl-4 ml-4">
-              <Button
+              {/* <Button
                 variant="outline"
                 className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 rounded-xl px-3 py-2"
                 onClick={() => setShowReportDialog(true)}
@@ -366,7 +369,7 @@ export default function AttendanceFocusedView({
                   <Printer className="h-4 w-4" />
                   <span className="text-sm">Print</span>
                 </Link>
-              </Button>
+              </Button> */}
 
               {isAttendanceDatePast && (
                 <Button

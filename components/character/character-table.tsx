@@ -198,7 +198,7 @@ export function CharacterTable({
                 <TableHead>STUDENT</TableHead>
                 <TableHead>CHARACTER OBSERVATIONS</TableHead>
                 <TableHead>STATISTICS</TableHead>
-                <TableHead>ACTIONS</TableHead>
+                {/* <TableHead>ACTIONS</TableHead> */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -250,7 +250,7 @@ export function CharacterTable({
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    {/* <TableCell>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -260,7 +260,7 @@ export function CharacterTable({
                       >
                         <Pencil className="h-4 w-4 text-bgGreenLight2" />
                       </Button>
-                    </TableCell>
+                    </TableCell> */}
                   </TableRow>
                 ))
               )}
