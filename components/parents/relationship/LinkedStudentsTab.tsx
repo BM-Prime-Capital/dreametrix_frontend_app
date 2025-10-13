@@ -179,7 +179,7 @@ export function LinkedStudentsTab({ accessToken }: LinkedStudentsTabProps) {
                 )}
               </div>
 
-              <Button
+              {/* <Button
                 variant="outline"
                 size="sm"
                 className="w-full text-red-600 hover:bg-red-600 hover:text-white border-red-300 hover:border-red-600 transition-all duration-300 font-semibold group/btn"
@@ -197,7 +197,7 @@ export function LinkedStudentsTab({ accessToken }: LinkedStudentsTabProps) {
                     Remove Connection
                   </>
                 )}
-              </Button>
+              </Button> */}
             </div>
           </Card>
         ))}

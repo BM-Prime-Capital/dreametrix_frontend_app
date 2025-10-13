@@ -5,12 +5,9 @@ import {
   TrendingUp, 
   Clock, 
   CheckCircle, 
-  AlertTriangle, 
-  Users, 
   MessageSquare,
   ThumbsUp,
   BarChart3,
-  Calendar,
   Filter
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -123,7 +120,6 @@ const COMMON_ISSUES = [
 
 export default function SupportDashboard() {
   const [timeRange, setTimeRange] = useState('30d');
-  const [selectedMetric, setSelectedMetric] = useState('all');
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -228,7 +224,7 @@ export default function SupportDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="h-64 flex items-end justify-between gap-2">
-                  {TICKET_TRENDS.map((trend, index) => (
+                  {TICKET_TRENDS.map((trend) => (
                     <div key={trend.period} className="flex-1 flex flex-col items-center">
                       <div className="w-full bg-gray-100 rounded-t flex flex-col" style={{ height: '200px' }}>
                         <div 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export async function requestApprobationList(
     accessToken: string,
     tenantDomain: string
@@ -165,3 +166,32 @@ export async function requestApprobationList(
       };
     }
   }
+
+export const changePassword = async (
+    accessToken: string,
+    tenantDomain: string,
+    currentPassword: string,
+    newPassword: string,
+    confirmPassword: string
+  ): Promise<any> => {
+    const BASE_URL ="https://backend-dreametrix.com";
+    const response = await fetch(`${BASE_URL}/accounts/change-password/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+      }),
+    });
+  
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to change password");
+    }
+  
+    return await response.json();
+  };
