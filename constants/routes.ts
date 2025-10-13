@@ -126,6 +126,7 @@ export const SchoolAdminRoutes = [
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/subjects`,
     icon: menuImages.libraryBooks,
     label: "Subjects",
+    disabled: true,
   },
 
   // Timetable
@@ -158,6 +159,7 @@ export const SchoolAdminRoutes = [
     icon: menuImages.communicate,
     label: "Communication",
     disabled: true,
+
   },
 
   // Finance 
