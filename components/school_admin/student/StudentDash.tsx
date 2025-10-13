@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
@@ -6,9 +7,6 @@ import {
   FiUpload,
   FiChevronRight,
   FiUser,
-  FiMail,
-  FiBook,
-  FiPercent,
   FiAlertCircle,
   FiDownload,
   FiFileText,
