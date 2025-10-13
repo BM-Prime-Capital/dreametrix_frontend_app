@@ -69,20 +69,20 @@ export const StudentRoutes = [
     label: "STUDENT PROFILE",
     isSecondary: true,
   },
-  // {
-  //   path: `${userPath.STUDENT_BASE_PATH}/help`,
-  //   icon: menuImages.support,
-  //   label: "NEED HELP?",
-  //   isSecondary: true,
-  //   disabled: true,
-  // },
-  // {
-  //   path: `${userPath.STUDENT_BASE_PATH}/settings`,
-  //   icon: menuImages.settings,
-  //   label: "SETTINGS",
-  //   isSecondary: true,
-  //   disabled: true,
-  // },
+  {
+    path: `${userPath.STUDENT_BASE_PATH}/help`,
+    icon: menuImages.support,
+    label: "NEED HELP?",
+    isSecondary: true,
+    disabled: true,
+  },
+  {
+    path: `${userPath.STUDENT_BASE_PATH}/settings`,
+    icon: menuImages.settings,
+    label: "SETTINGS",
+    isSecondary: true,
+    disabled: true,
+  },
 ];
 
 export const SchoolAdminRoutes = [
@@ -133,6 +133,7 @@ export const SchoolAdminRoutes = [
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/timetable`,
     icon: menuImages.calendar,
     label: "Timetable",
+    disabled: true,
   },
 
   // Grades
@@ -140,6 +141,7 @@ export const SchoolAdminRoutes = [
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/grades`,
     icon: menuImages.grading,
     label: "Grades",
+    disabled: true,
   },
 
   // Attendance
@@ -147,6 +149,7 @@ export const SchoolAdminRoutes = [
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/attendance`,
     icon: menuImages.attendance,
     label: "Attendance",
+    disabled: true,
   },
 
   // Communication
@@ -154,6 +157,7 @@ export const SchoolAdminRoutes = [
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/communicate`,
     icon: menuImages.communicate,
     label: "Communication",
+    disabled: true,
   },
 
   // Finance 
@@ -161,6 +165,7 @@ export const SchoolAdminRoutes = [
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/finance`,
     icon: menuImages.payments,
     label: "Finance",
+    disabled: true,
   },
 
   // Library 
@@ -168,6 +173,7 @@ export const SchoolAdminRoutes = [
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/library`,
     icon: menuImages.libraryBooks,
     label: "Library",
+    disabled: true,
   },
 
   // Reports 
@@ -175,6 +181,7 @@ export const SchoolAdminRoutes = [
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/reports`,
     icon: menuImages.analytics,
     label: "Reports",
+    disabled: true,
   },
 
   // Transport
@@ -182,6 +189,7 @@ export const SchoolAdminRoutes = [
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/transports`,
     icon: menuImages.transport,
     label: "Transport",
+    disabled: true,
   },
 
    // Settings
@@ -190,6 +198,7 @@ export const SchoolAdminRoutes = [
     icon: menuImages.settings,
     label: "Settings",
     isSecondary: true,
+    disabled: true,
   },
 ];
 
@@ -339,11 +348,12 @@ export const ParentRoutes = [
     icon: `/assets/images/teacher/dashboard/relationship.svg`,
     label: "RELATIONSHIP",
   },
-  // {
-  //   path: `${userPath.PARENT_BASE_PATH}/communicate`,
-  //   icon: menuImages.communicate,
-  //   label: "COMMUNICATE",
-  // },
+  {
+    path: `${userPath.PARENT_BASE_PATH}/communicate`,
+    icon: menuImages.communicate,
+    label: "COMMUNICATE",
+    disabled: true
+  },
 ];
 
 export const SuperAdminRoutes = [
