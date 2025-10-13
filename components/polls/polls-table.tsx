@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BarChart2, Users, Edit2, Trash2, Share2, MoreHorizontal } from "lucide-react";
+import { BarChart2, Users, Edit2, Trash2, /* Share2, */ MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getPolls } from "./api";
+import { getPolls, deletePoll } from "./api";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 type Course = {
   id: number;
@@ -51,6 +62,10 @@ export function PollsTable({ onViewRespondents, onViewResults, onViewGlobal, cla
   const [polls, setPolls] = useState<Poll[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [deletingPollId, setDeletingPollId] = useState<number | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [editingPollId, setEditingPollId] = useState<number | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const { tenantDomain, accessToken } = useRequestInfo();
 
   useEffect(() => {
@@ -75,6 +90,40 @@ export function PollsTable({ onViewRespondents, onViewResults, onViewGlobal, cla
 
   const handlePollCreated = () => {
     setRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleEdit = (pollId: number) => {
+    console.log("handleEdit called with pollId:", pollId);
+    setEditingPollId(pollId);
+    setShowEditDialog(true);
+  };
+
+  const handleDeleteClick = (pollId: number) => {
+    console.log("handleDeleteClick called with pollId:", pollId);
+    setDeletingPollId(pollId);
+    setShowDeleteDialog(true);
+    console.log("Dialog state set to true");
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingPollId) return;
+
+    try {
+      await deletePoll(tenantDomain, accessToken, deletingPollId);
+      toast.success("Poll deleted successfully!");
+      setRefreshTrigger(prev => prev + 1);
+    } catch (error) {
+      console.error("Error deleting poll:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete poll");
+    } finally {
+      setShowDeleteDialog(false);
+      setDeletingPollId(null);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteDialog(false);
+    setDeletingPollId(null);
   };
 
   const formatDate = (dateStr?: string) => {
@@ -166,22 +215,35 @@ export function PollsTable({ onViewRespondents, onViewResults, onViewGlobal, cla
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={() => onViewRespondents?.(poll.id)}>
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            onViewRespondents?.(poll.id);
+                          }}
+                        >
                           <Users className="h-4 w-4 mr-2 text-blue-600" />
                           Respondents
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        {/* <DropdownMenuItem
+                          onSelect={() => {
+                            handleEdit(poll.id);
+                          }}
+                        >
                           <Edit2 className="h-4 w-4 mr-2 text-blue-600" />
                           Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
+                        <DropdownMenuItem
+                          className="text-red-600 focus:text-red-600"
+                          onSelect={() => {
+                            handleDeleteClick(poll.id);
+                          }}
+                        >
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        </DropdownMenuItem> */}
+                        {/* <DropdownMenuItem>
                           <Share2 className="h-4 w-4 mr-2 text-blue-600" />
                           Share
-                        </DropdownMenuItem>
+                        </DropdownMenuItem> */}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -201,6 +263,41 @@ export function PollsTable({ onViewRespondents, onViewResults, onViewGlobal, cla
           )}
         </div>
       )}
+
+      {/* Edit Poll Dialog */}
+      {showEditDialog && editingPollId && (
+        <AddPollsDialog
+          pollId={editingPollId}
+          isOpen={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          onPollCreated={() => {
+            setRefreshTrigger(prev => prev + 1);
+            setEditingPollId(null);
+          }}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the poll
+              and remove all associated data including responses.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteCancel}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

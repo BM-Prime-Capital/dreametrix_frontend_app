@@ -13,7 +13,7 @@ import {
   type VisibilityState,
   type FilterFn
 } from "@tanstack/react-table";
-import { Eye, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { Eye, Search, ChevronLeft, ChevronRight, Download, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 // import {
@@ -251,9 +251,7 @@ export default function RewardsGeneralView({
       <div className="flex justify-between items-center bg-[#79bef2] px-8 py-6 shadow-xl rounded-2xl mx-6 mt-8">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-            <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-            </svg>
+            <Trophy className="h-6 w-6 text-white" />
           </div>
           <div>
             <PageTitleH1 title="Student Rewards" className="text-white font-bold text-2xl" />

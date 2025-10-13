@@ -1,6 +1,6 @@
-import CommunicateDash from '../../../../components/school_admin/communicate/CommunicateDash';
+import TeacherCommunication from "@/components/communicate/TeacherCommunication/index";
+import React from "react";
 
-
-export default function CommunicatePage(){
-    return <CommunicateDash />
+export default function CommunicatePage() {
+  return <TeacherCommunication />;
 }

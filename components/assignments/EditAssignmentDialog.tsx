@@ -317,7 +317,7 @@ export function EditAssignmentDialog({
               type="file"
               className="w-full file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#3e81d4]/10 file:text-[#3e81d4] hover:file:bg-[#3e81d4]/20"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
-              required
+              
             />
           </div>
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
@@ -6,17 +7,16 @@ import {
   FiUpload,
   FiChevronRight,
   FiUser,
-  FiMail,
-  FiBook,
-  FiPercent,
   FiAlertCircle,
   FiDownload,
   FiFileText,
+  FiPlus,
 } from "react-icons/fi";
 import { useStudents } from "@/hooks/SchoolAdmin/use-students";
 import { useBaseUrl } from "@/hooks/SchoolAdmin/use-base-url";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { toast } from "react-toastify";
+import CreateStudentModal from './CreateStudentModal';
 const avatarColors = [
   "bg-blue-100 text-blue-600",
   "bg-green-100 text-green-600",
@@ -44,6 +44,7 @@ const StudentsListPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const enhancedStudents = students || [];
   // const enhancedStudents = students?.map(student => ({
@@ -198,7 +199,7 @@ const StudentsListPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50 px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50 px-4 sm:px-6 lg:px-8 py-8 w-full">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 mb-8 text-white">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -211,13 +212,14 @@ const StudentsListPage = () => {
           
           <div className="flex gap-3">
             <button
-              onClick={downloadTemplate}
-              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
+              onClick={() => setShowCreateModal(true)}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
             >
-              <FiDownload className="text-base" />
-              <span>Template</span>
+              <FiPlus className="text-base" />
+              <span>Add Student</span>
             </button>
             
+
             <button
               onClick={() => fileInputRef.current?.click()}
               className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm max-w-48"
@@ -288,7 +290,7 @@ const StudentsListPage = () => {
       <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+            <thead className="bg-gradient-to-r from-blue-500 to-purple-600 text-dark">
               <tr>
                 <th className="px-6 py-4 text-left font-semibold">Student Name</th>
                 <th className="px-6 py-4 text-left font-semibold">Email</th>
@@ -431,6 +433,12 @@ const StudentsListPage = () => {
           )}
         </div>
       )}
+      
+      <CreateStudentModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={refetch}
+      />
     </div>
   );
 };
