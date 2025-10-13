@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
-import { createPoll } from "./api";
+import { createPoll, getPollById, updatePoll } from "./api";
 import { Textarea } from "@/components/ui/textarea";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Label } from "@/components/ui/label";
@@ -38,17 +38,34 @@ import { toast } from "sonner";
 
 interface AddPollsDialogProps {
   onPollCreated?: () => void;
+  pollId?: number | null;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
-  const [open, setOpen] = useState(false);
+interface Choice {
+  label: string;
+}
+
+interface Question {
+  text: string;
+  question_type: "single" | "multiple" | "text";
+  required: boolean;
+  choices: Choice[];
+}
+
+export function AddPollsDialog({ onPollCreated, pollId, isOpen: externalOpen, onOpenChange: externalOnOpenChange }: AddPollsDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = externalOnOpenChange || setInternalOpen;
+  const isEditMode = !!pollId;
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [pollTitle, setPollTitle] = useState("");
   const [description, setDescription] = useState("");
   const [endDate, setEndDate] = useState<Date | undefined>(new Date());
-  const [questions, setQuestions] = useState<any[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [newQuestionText, setNewQuestionText] = useState("");
-  const [newQuestionType, setNewQuestionType] = useState("single");
+  const [newQuestionType, setNewQuestionType] = useState<"single" | "multiple" | "text">("single");
   const [newOptionText, setNewOptionText] = useState("");
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
   const [temporaryChoices, setTemporaryChoices] = useState<{ label: string }[]>([]);
@@ -69,6 +86,27 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
     }
   }, []);
 
+  // Load poll data when in edit mode
+  useEffect(() => {
+    const loadPollData = async () => {
+      if (!isEditMode || !pollId || !open || !tenantDomain || !accessToken) return;
+
+      try {
+        const pollData = await getPollById(tenantDomain, accessToken, pollId);
+        setPollTitle(pollData.title || "");
+        setDescription(pollData.description || "");
+        setCourseId(pollData.course?.id || pollData.course || null);
+        setEndDate(pollData.deadline ? new Date(pollData.deadline) : new Date());
+        setQuestions(pollData.questions || []);
+      } catch (error) {
+        console.error("Error loading poll data:", error);
+        toast.error("Failed to load poll data");
+      }
+    };
+
+    loadPollData();
+  }, [isEditMode, pollId, open, tenantDomain, accessToken]);
+
   useEffect(() => {
     if (!open) {
       setCurrentStep(1);
@@ -87,12 +125,8 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
   const addOption = () => {
     if (!newOptionText.trim()) return;
 
-    // For single choice, replace existing option if one exists
-    if (newQuestionType === "single") {
-      setTemporaryChoices([{ label: newOptionText.trim() }]);
-    } else {
-      setTemporaryChoices([...temporaryChoices, { label: newOptionText.trim() }]);
-    }
+    // Add option to the list for all question types
+    setTemporaryChoices([...temporaryChoices, { label: newOptionText.trim() }]);
     setNewOptionText("");
   };
 
@@ -103,38 +137,35 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
   };
 
   const addQuestion = () => {
-    console.log("addQuestion called", { newQuestionText, newQuestionType, temporaryChoices, questions: questions.length });
-    
     if (!newQuestionText.trim()) {
-      console.log("Question text is empty");
       toast.warning("Question text cannot be empty");
       return;
     }
 
-    // For single choice, ensure we have at least one option
-    if (newQuestionType === "single" && temporaryChoices.length === 0) {
-      console.log("Single choice validation failed - no options", { temporaryChoices });
-      toast.warning("Single choice questions must have at least one option");
+    // For single choice and multiple choice, ensure we have at least 2 options
+    if (newQuestionType === "single" && temporaryChoices.length < 2) {
+      toast.warning("Single choice questions must have at least 2 options");
       return;
     }
 
-    const questionData = {
+    if (newQuestionType === "multiple" && temporaryChoices.length < 2) {
+      toast.warning("Multiple choice questions must have at least 2 options");
+      return;
+    }
+
+    const questionData: Question = {
       text: newQuestionText.trim(),
       question_type: newQuestionType,
       required: true,
       choices: newQuestionType !== "text" ? [...temporaryChoices] : [],
     };
 
-    console.log("Adding question:", questionData);
-
     if (editingQuestionIndex !== null) {
       const updatedQuestions = [...questions];
       updatedQuestions[editingQuestionIndex] = questionData;
       setQuestions(updatedQuestions);
-      console.log("Updated question at index", editingQuestionIndex);
     } else {
       setQuestions([...questions, questionData]);
-      console.log("Added new question, total questions:", questions.length + 1);
     }
 
     setNewQuestionText("");
@@ -168,42 +199,33 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
   };
 
   const handleSubmit = async () => {
-    console.log("handleSubmit called");
-    console.log("Current state:", { pollTitle, courseId, endDate, questions: questions.length, tenantDomain, accessToken });
-    
     if (!tenantDomain || !accessToken) {
-      console.log("Authentication error - missing tenantDomain or accessToken");
       toast.error("Authentication error. Please try again.");
       return;
     }
 
     if (!pollTitle.trim()) {
-      console.log("Validation error - poll title is empty");
       toast.warning("Poll title is required");
       return;
     }
 
     if (courseId === null) {
-      console.log("Validation error - courseId is null");
       toast.warning("Course ID is required");
       return;
     }
 
     if (!endDate) {
-      console.log("Validation error - endDate is missing");
       toast.warning("End date is required");
       return;
     }
 
     if (questions.length === 0) {
-      console.log("Validation error - no questions");
       toast.warning("Please add at least one question");
       return;
     }
 
-    console.log("All validations passed, starting submission");
     setSubmitting(true);
-    
+
     try {
       const pollData = {
         title: pollTitle.trim(),
@@ -214,22 +236,19 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
         questions: questions.map(q => ({
           ...q,
           text: q.text.trim(),
-          choices: q.choices?.map((c: { label: string }) => ({ label: c.label.trim() }))
+          choices: q.choices?.map((c: Choice) => ({ label: c.label.trim() }))
         })),
       };
-      
-      console.log("Submitting poll data:", pollData);
-      
-      await createPoll(
-        pollData,
-        tenantDomain,
-        accessToken
-      );
 
-      console.log("Poll created successfully");
-      toast.success("Poll created successfully!");
+      if (isEditMode && pollId) {
+        await updatePoll(pollId, pollData, tenantDomain, accessToken);
+        toast.success("Poll updated successfully!");
+      } else {
+        await createPoll(pollData, tenantDomain, accessToken);
+        toast.success("Poll created successfully!");
+      }
+
       setOpen(false);
-      // Trigger refresh of polls data
       onPollCreated?.();
     } catch (error) {
       console.error("Error creating poll:", error);
@@ -257,12 +276,9 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
   };
 
   const nextStep = () => {
-    console.log("nextStep called, current step:", currentStep);
     if (currentStep === 1 && !validateStep1()) {
-      console.log("Step 1 validation failed");
       return;
     }
-    console.log("Moving to next step");
     setCurrentStep((prev) => prev + 1);
   };
 
@@ -272,18 +288,20 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-[#3E81D4] to-[#5D9DF5] hover:from-[#2D71C4] hover:to-[#4C8DE5] text-white px-6 py-5 rounded-xl shadow-lg transition-all hover:shadow-xl transform hover:scale-105 duration-200 ease-in-out">
-          <PlusCircle className="mr-2 h-5 w-5" strokeWidth={2} />
-          <span className="text-lg font-semibold">Create New Poll</span>
-        </Button>
-      </DialogTrigger>
+      {!isEditMode && (
+        <DialogTrigger asChild>
+          <Button className="bg-gradient-to-r from-[#3E81D4] to-[#5D9DF5] hover:from-[#2D71C4] hover:to-[#4C8DE5] text-white px-6 py-5 rounded-xl shadow-lg transition-all hover:shadow-xl transform hover:scale-105 duration-200 ease-in-out">
+            <PlusCircle className="mr-2 h-5 w-5" strokeWidth={2} />
+            <span className="text-lg font-semibold">Create New Poll</span>
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] p-0 border-0 rounded-xl flex flex-col overflow-hidden [&>button]:text-white [&>button]:hover:text-blue-200 [&>button]:hover:bg-white/20 [&>button]:rounded-full [&>button]:p-2 [&>button]:transition-all [&>button]:duration-200">
         {/* Fixed Header */}
         <div className="bg-gradient-to-r from-[#3E81D4] to-[#5D9DF5] p-6 flex-shrink-0">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-white">
-              Create New Poll
+              {isEditMode ? "Edit Poll" : "Create New Poll"}
             </DialogTitle>
             <p className="text-blue-100 mt-1">
               {currentStep === 1 && "Enter basic poll details"}
@@ -432,7 +450,7 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
                     <Label className="text-gray-700 font-medium">Question Type</Label>
                     <Select
                       value={newQuestionType}
-                      onValueChange={(value) => {
+                      onValueChange={(value: "single" | "multiple" | "text") => {
                         setNewQuestionType(value);
                         // Reset choices when changing question type
                         setTemporaryChoices([]);
@@ -460,7 +478,7 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
                       <Label className="text-gray-700 font-medium">Options</Label>
                       <div className="flex gap-2">
                         <Input
-                          placeholder={newQuestionType === "single" ? "Enter the option" : "Add new option"}
+                          placeholder="Add new option"
                           value={newOptionText}
                           onChange={(e) => setNewOptionText(e.target.value)}
                           onKeyDown={(e) => {
@@ -483,8 +501,8 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
                         {temporaryChoices.length === 0 ? (
                           <p className="text-sm text-gray-400">
                             {newQuestionType === "single"
-                              ? "Enter the option for this single choice question"
-                              : "No options yet - add at least one option"}
+                              ? "Add at least 2 options for this single choice question"
+                              : "Add at least 2 options for this multiple choice question"}
                           </p>
                         ) : (
                           temporaryChoices.map((choice, index) => (
@@ -516,7 +534,10 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
                     <Button
                       onClick={addQuestion}
                       className="bg-[#3E81D4] hover:bg-[#2D71C4] text-white py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all"
-                      disabled={newQuestionType === "single" && temporaryChoices.length === 0}
+                      disabled={
+                        (newQuestionType === "single" && temporaryChoices.length < 2) ||
+                        (newQuestionType === "multiple" && temporaryChoices.length < 2)
+                      }
                     >
                       {editingQuestionIndex !== null ? "Update Question" : "Add Question"}
                     </Button>
@@ -565,8 +586,8 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
                             </div>
                             {question.question_type !== "text" && (
                               <div className="mt-3 space-y-2 pl-7">
-                                {question.choices.map((choice: any, cIndex: number) => (
-                                  <div key={cIndex} className="flex items-center gap-3 group">
+                                {question.choices.map((choice: Choice, cIndex: number) => (
+                                  <div key={cIndex} className="flex items-center gap-3">
                                     <RadioGroup>
                                       {question.question_type === "single" ? (
                                         <RadioGroupItem
@@ -583,18 +604,6 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
                                       )}
                                     </RadioGroup>
                                     <Label className="flex-1">{choice.label}</Label>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-6 w-6 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity"
-                                      onClick={() => {
-                                        if (editingQuestionIndex === qIndex) {
-                                          removeOption(cIndex);
-                                        }
-                                      }}
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5" />
-                                    </Button>
                                   </div>
                                 ))}
                               </div>
@@ -684,7 +693,7 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
                           </div>
                           {question.question_type !== "text" && (
                             <div className="mt-3 space-y-2 pl-7">
-                              {question.choices.map((choice: any, cIndex: number) => (
+                              {question.choices.map((choice: Choice, cIndex: number) => (
                                 <div key={cIndex} className="flex items-center gap-3">
                                   <RadioGroup>
                                     {question.question_type === "single" ? (
@@ -743,11 +752,7 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
           ) : (
             <Button
               disabled={submitting}
-              onClick={() => {
-                console.log("Create Poll Now button clicked, current step:", currentStep);
-                console.log("Button disabled:", submitting);
-                handleSubmit();
-              }}
+              onClick={handleSubmit}
               className="bg-gradient-to-r from-[#3E81D4] to-[#5D9DF5] hover:from-[#2D71C4] hover:to-[#4C8DE5] text-white py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
             >
               {submitting ? (
@@ -759,7 +764,9 @@ export function AddPollsDialog({ onPollCreated }: AddPollsDialogProps) {
                   Creating Poll...
                 </span>
               ) : (
-                <span className="text-lg font-medium">Create Poll Now</span>
+                <span className="text-lg font-medium">
+                  {isEditMode ? "Update Poll" : "Create Poll Now"}
+                </span>
               )}
             </Button>
           )}
