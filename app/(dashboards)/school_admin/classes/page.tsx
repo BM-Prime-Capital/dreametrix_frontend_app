@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import ClassModal from '@/components/school_admin/classes/ClassModal';
 import DeleteConfirmationModal from '@/components/ui/DeleteConfirmationModal';
 import { useClasses } from '@/hooks/SchoolAdmin/use-classes';
 import { useState } from 'react';
-import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiEye, FiBook, FiAlertCircle } from 'react-icons/fi';
+import { FiSearch, FiEdit2, FiTrash2, FiEye, FiBook, FiAlertCircle } from 'react-icons/fi';
 import { SkeletonCard } from '@/components/ui/SkeletonCard';
 
 const ClassesPage = () => {
@@ -108,7 +109,7 @@ const ClassesPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50 px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50 px-4 sm:px-6 lg:px-8 py-8 w-full">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 mb-8 text-white">
         <div>
@@ -142,7 +143,7 @@ const ClassesPage = () => {
       <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+            <thead className="bg-gradient-to-r from-blue-500 to-purple-600 text-dark">
               <tr>
                 <th className="px-6 py-4 text-left font-semibold">Class Name</th>
                 <th className="px-6 py-4 text-left font-semibold">Grade</th>
