@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2, Send, CheckCircle, AlertCircle, UserPlus } from "lucide-react"
 import { ParentRelationshipService, sendLinkRequest } from "@/services/ParentRelationshipService"
+import { toast } from "sonner"
 
 interface SendRequestTabProps {
   accessToken: string
@@ -44,7 +45,8 @@ export function SendRequestTab({ accessToken }: SendRequestTabProps) {
 
       // Show success message
       setSuccess(true)
-
+      //toast.success("Link request submitted successfully")
+      toast.success("Link request submitted successfully")
       // Redirect to dashboard after 2 seconds
       setTimeout(() => {
         setSuccess(false)
@@ -98,7 +100,7 @@ export function SendRequestTab({ accessToken }: SendRequestTabProps) {
                 }}
                 disabled={loading}
                 className="text-lg py-6 font-mono uppercase"
-                maxLength={20}
+                // maxLength={20}
               />
               <p className="text-sm text-gray-500">
                 The student code is case-insensitive

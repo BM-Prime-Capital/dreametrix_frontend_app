@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import ReduxProvider from "@/app/ReduxProvider";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "DreaMetrix",
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ReduxProvider>{children}</ReduxProvider>
+        <Toaster />
       </body>
     </html>
   );

@@ -22,7 +22,7 @@ export interface LinkedStudent {
 }
 
 export interface RequestLinkPayload {
-  student_code: string
+  student_uuid: string
 }
 
 export interface RequestLinkResponse {
@@ -60,10 +60,10 @@ class ParentRelationshipServiceClass {
   ): Promise<RequestLinkResponse> {
     try {
       const payload: RequestLinkPayload = {
-        student_code: studentCode.trim().toUpperCase()
+        student_uuid: studentCode.trim().toUpperCase()
       }
 
-      const response = await fetch(`${BACKEND_BASE_URL}/parent/relationship/request-link`, {
+      const response = await fetch(`${BACKEND_BASE_URL}/parents/request-link/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
