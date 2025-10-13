@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { 
+import {
   Users,
   Mail,
   Calendar,
@@ -21,12 +21,13 @@ import {
   Sparkles,
   TrendingUp,
   ArrowLeft,
-  MoreVertical
+  MoreVertical,
+  XOctagon
 } from "lucide-react"
 import { useParents } from "@/hooks/useParents"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
 import { useState } from "react"
-import { confirmParentLink, rejectParentLink, requestUnlinkParent, unlinkParent } from "@/services/parent-service"
+import { confirmParentLink, rejectParentLink, requestUnlinkParent, unlinkParent, cancelUnlinkRequest } from "@/services/parent-service"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
@@ -42,15 +43,20 @@ export default function RelationshipPage() {
   // Pagination state for pending requests
   const [currentPagePending, setCurrentPagePending] = useState(1);
   const [itemsPerPagePending] = useState(3);
-  
+
+  // Pagination state for unlink requests
+  const [currentPageUnlink, setCurrentPageUnlink] = useState(1);
+  const [itemsPerPageUnlink] = useState(3);
+
   const {
     linkedParents,
     pendingLinks,
+    unlinkRequests,
     loading,
     error,
     refetch,
     clearError
-  } = useParents({ includePendingRequests: true }, accessToken, tenantDomain);
+  } = useParents({ includePendingRequests: true, includeUnlinkRequests: true }, accessToken, tenantDomain);
 
   const handleAction = async (action: () => Promise<any>, actionKey: string, successMessage: string) => {
     setLoadingActions(prev => ({ ...prev, [actionKey]: true }));
@@ -108,6 +114,15 @@ export default function RelationshipPage() {
     );
   };
 
+  const handleCancelUnlinkRequest = async (requestId: number) => {
+    if (!tenantDomain || !accessToken) return;
+    await handleAction(
+      () => cancelUnlinkRequest(requestId, tenantDomain, accessToken),
+      `cancel-unlink-${requestId}`,
+      "Unlink request canceled successfully"
+    );
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -148,6 +163,23 @@ export default function RelationshipPage() {
 
   const handlePendingPageChange = (page: number) => {
     setCurrentPagePending(page);
+  };
+
+  // Pagination for unlink requests
+  const paginateUnlinkRequests = () => {
+    if (!unlinkRequests) return [];
+    const startIndex = (currentPageUnlink - 1) * itemsPerPageUnlink;
+    const endIndex = startIndex + itemsPerPageUnlink;
+    return unlinkRequests.slice(startIndex, endIndex);
+  };
+
+  const getTotalPagesUnlink = () => {
+    if (!unlinkRequests) return 0;
+    return Math.ceil(unlinkRequests.length / itemsPerPageUnlink);
+  };
+
+  const handleUnlinkPageChange = (page: number) => {
+    setCurrentPageUnlink(page);
   };
 
   // Reusable Pagination Controls Component
@@ -258,9 +290,9 @@ export default function RelationshipPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
       {/* Header avec le même style que le dashboard */}
-      <div className="rounded-2xl p-8 mx-4 mt-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-2xl">
+      <div className="rounded-2xl p-8 mx-4 mt-4 bg-gradient-to-r from-slate-700 via-slate-600 to-gray-700 text-white shadow-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
@@ -272,10 +304,10 @@ export default function RelationshipPage() {
               <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-              <h1 className="text-4xl font-extrabold tracking-tight mb-2">
-                PARENT RELATIONSHIPS
+              <h1 className="text-4xl font-bold tracking-tight mb-2">
+                Parent Relationships
               </h1>
-              <p className="text-blue-100 text-lg opacity-90">
+              <p className="text-gray-200 text-lg opacity-90">
                 Manage your parent connections and requests
               </p>
             </div>
@@ -295,9 +327,9 @@ export default function RelationshipPage() {
         <div className="max-w-7xl mx-auto">
           {/* Stats Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="p-6 rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+            <Card className="p-6 rounded-2xl border border-gray-200 bg-white shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-md">
+                <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600 shadow-sm">
                   <Users className="h-6 w-6" />
                 </div>
                 <div>
@@ -307,9 +339,9 @@ export default function RelationshipPage() {
               </div>
             </Card>
 
-            <Card className="p-6 rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+            <Card className="p-6 rounded-2xl border border-gray-200 bg-white shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-md">
+                <div className="p-3 rounded-xl bg-amber-50 text-amber-600 shadow-sm">
                   <Clock className="h-6 w-6" />
                 </div>
                 <div>
@@ -319,21 +351,21 @@ export default function RelationshipPage() {
               </div>
             </Card>
 
-            <Card className="p-6 rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+            <Card className="p-6 rounded-2xl border border-gray-200 bg-white shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 text-white shadow-md">
-                  <Heart className="h-6 w-6" />
+                <div className="p-3 rounded-xl bg-rose-50 text-rose-600 shadow-sm">
+                  <XOctagon className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{(linkedParents?.length || 0) + (pendingLinks?.length || 0)}</p>
-                  <p className="text-sm text-gray-600 font-medium">Total Relationships</p>
+                  <p className="text-2xl font-bold text-gray-900">{unlinkRequests?.length || 0}</p>
+                  <p className="text-sm text-gray-600 font-medium">Unlink Requests</p>
                 </div>
               </div>
             </Card>
 
-            <Card className="p-6 rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+            <Card className="p-6 rounded-2xl border border-gray-200 bg-white shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-md">
+                <div className="p-3 rounded-xl bg-slate-50 text-slate-600 shadow-sm">
                   <TrendingUp className="h-6 w-6" />
                 </div>
                 <div>
@@ -366,8 +398,8 @@ export default function RelationshipPage() {
             
             {/* Linked Parents Section */}
             <div className="space-y-6">
-              <Card className="rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6">
+              <Card className="rounded-2xl border border-gray-200 bg-white shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
@@ -375,7 +407,7 @@ export default function RelationshipPage() {
                       </div>
                       <div>
                         <h2 className="text-2xl font-bold text-white">Linked Parents</h2>
-                        <p className="text-blue-100">Parents connected to your account</p>
+                        <p className="text-emerald-50">Parents connected to your account</p>
                       </div>
                     </div>
                     
@@ -401,14 +433,14 @@ export default function RelationshipPage() {
                     <>
                       <div className="space-y-4">
                         {paginateLinkedParents().map((parent) => (
-                          <Card key={parent.parent_id} className="p-5 border border-gray-200 bg-white hover:shadow-lg transition-all duration-300 hover:border-blue-200 rounded-xl group">
+                          <Card key={parent.parent_id} className="p-5 border border-gray-200 bg-white hover:shadow-md transition-all duration-300 hover:border-emerald-300 rounded-xl group">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-4">
                                 <div className="relative">
-                                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center text-white font-bold shadow-md group-hover:scale-105 transition-transform duration-300">
                                     {parent.parent_full_name.split(' ').map(name => name.charAt(0)).join('').slice(0, 2)}
                                   </div>
-                                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
                                     <CheckCircle className="h-3 w-3 text-white" />
                                   </div>
                                 </div>
@@ -428,7 +460,7 @@ export default function RelationshipPage() {
                               </div>
                               <div className="flex items-center gap-3">
                                 <Button
-                                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 rounded-lg shadow-md transition-all duration-300 hover:scale-105 text-sm px-4 py-2"
+                                  className="bg-gradient-to-r from-rose-400 to-red-500 hover:from-rose-500 hover:to-red-600 text-white border-0 rounded-lg shadow-sm transition-all duration-300 hover:scale-[1.02] text-sm px-4 py-2"
                                   onClick={() => handleRequestUnlinkParent(parent.parent_id)}
                                   disabled={loadingActions[`unlink-${parent.parent_id}`]}
                                 >
@@ -470,8 +502,8 @@ export default function RelationshipPage() {
 
             {/* Pending Requests Section */}
             <div className="space-y-6">
-              <Card className="rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden">
-                <div className="bg-gradient-to-r from-orange-500 to-amber-600 p-6">
+              <Card className="rounded-2xl border border-gray-200 bg-white shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
@@ -479,12 +511,12 @@ export default function RelationshipPage() {
                       </div>
                       <div>
                         <h2 className="text-2xl font-bold text-white">Pending Requests</h2>
-                        <p className="text-orange-100">Parents requesting to link with your account</p>
+                        <p className="text-amber-50">Parents requesting to link with your account</p>
                       </div>
                     </div>
-                    
+
                     {pendingLinks?.length > 0 && (
-                      <Badge className="bg-white text-orange-600 border-0 px-3 py-1 rounded-full shadow-lg font-semibold">
+                      <Badge className="bg-white text-amber-700 border-0 px-3 py-1 rounded-full shadow-md font-semibold">
                         {pendingLinks.length} Pending
                       </Badge>
                     )}
@@ -501,11 +533,11 @@ export default function RelationshipPage() {
                     <>
                       <div className="space-y-4">
                         {paginatePendingLinks().map((parent) => (
-                          <Card key={parent.parent_id} className="p-5 border border-gray-200 bg-white hover:shadow-lg transition-all duration-300 hover:border-orange-200 rounded-xl group">
+                          <Card key={parent.parent_id} className="p-5 border border-gray-200 bg-white hover:shadow-md transition-all duration-300 hover:border-amber-300 rounded-xl group">
                             <div className="flex items-center justify-between mb-4">
                               <div className="flex items-center gap-4">
                                 <div className="relative">
-                                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                  <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center text-white font-bold shadow-md group-hover:scale-105 transition-transform duration-300">
                                     {parent.parent_full_name.split(' ').map(name => name.charAt(0)).join('').slice(0, 2)}
                                   </div>
                                   <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-500 rounded-full border-2 border-white flex items-center justify-center">
@@ -524,7 +556,7 @@ export default function RelationshipPage() {
                             
                             <div className="grid grid-cols-2 gap-3">
                               <Button
-                                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-0 rounded-lg shadow-md transition-all duration-300 hover:scale-105"
+                                className="bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white border-0 rounded-lg shadow-sm transition-all duration-300 hover:scale-[1.02]"
                                 onClick={() => handleConfirmLink(parent.parent_id)}
                                 disabled={loadingActions[`confirm-${parent.parent_id}`]}
                               >
@@ -536,7 +568,7 @@ export default function RelationshipPage() {
                                 Approve
                               </Button>
                               <Button
-                                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 rounded-lg shadow-md transition-all duration-300 hover:scale-105"
+                                className="bg-gradient-to-r from-rose-400 to-red-500 hover:from-rose-500 hover:to-red-600 text-white border-0 rounded-lg shadow-sm transition-all duration-300 hover:scale-[1.02]"
                                 onClick={() => handleRejectLink(parent.parent_id)}
                                 disabled={loadingActions[`reject-${parent.parent_id}`]}
                               >
@@ -575,7 +607,7 @@ export default function RelationshipPage() {
               </Card>
 
               {/* Quick Stats Card */}
-              <Card className="rounded-2xl border-0 bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-xl">
+              <Card className="rounded-2xl border border-gray-200 bg-gradient-to-br from-slate-600 to-gray-700 text-white shadow-lg">
                 <div className="p-6">
                   <div className="flex items-center gap-4 mb-6">
                     <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
@@ -583,26 +615,156 @@ export default function RelationshipPage() {
                     </div>
                     <div>
                       <h3 className="text-2xl font-bold text-white">Quick Overview</h3>
-                      <p className="text-blue-100">Your relationship status at a glance</p>
+                      <p className="text-gray-200">Your relationship status at a glance</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-4 bg-white/10 rounded-xl backdrop-blur-sm hover:bg-white/20 transition-all duration-300">
+                    <div className="text-center p-4 bg-white/10 rounded-xl backdrop-blur-sm hover:bg-white/15 transition-all duration-300">
                       <div className="text-2xl font-bold text-white mb-1">
                         {linkedParents?.length || 0}
                       </div>
-                      <div className="text-sm text-blue-100 font-medium">Active Links</div>
+                      <div className="text-sm text-gray-200 font-medium">Active Links</div>
                     </div>
-                    <div className="text-center p-4 bg-white/10 rounded-xl backdrop-blur-sm hover:bg-white/20 transition-all duration-300">
+                    <div className="text-center p-4 bg-white/10 rounded-xl backdrop-blur-sm hover:bg-white/15 transition-all duration-300">
                       <div className="text-2xl font-bold text-white mb-1">
                         {pendingLinks?.length || 0}
                       </div>
-                      <div className="text-sm text-blue-100 font-medium">Awaiting Review</div>
+                      <div className="text-sm text-gray-200 font-medium">Awaiting Review</div>
                     </div>
                   </div>
                 </div>
               </Card>
             </div>
+          </div>
+
+          {/* My Unlink Requests Section - Full Width */}
+          <div className="mt-8">
+            <Card className="rounded-2xl border border-gray-200 bg-white shadow-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-rose-500 to-pink-500 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                      <XOctagon className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-white">My Unlink Requests</h2>
+                      <p className="text-rose-50">Pending requests to unlink from parents</p>
+                    </div>
+                  </div>
+
+                  {unlinkRequests?.length > 0 && (
+                    <Badge className="bg-white text-rose-700 border-0 px-3 py-1 rounded-full shadow-md font-semibold">
+                      {unlinkRequests.filter(req => !req.approved).length} Pending
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-6">
+                {loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <RefreshCw className="h-6 w-6 animate-spin text-red-600" />
+                    <span className="ml-2 text-gray-600">Loading unlink requests...</span>
+                  </div>
+                ) : unlinkRequests?.length ? (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {paginateUnlinkRequests().map((request) => (
+                        <Card key={request.id} className="p-5 border border-gray-200 bg-white hover:shadow-md transition-all duration-300 hover:border-rose-300 rounded-xl group">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <div className="relative">
+                                <div className={`w-12 h-12 ${request.approved ? 'bg-gradient-to-br from-emerald-400 to-teal-500' : 'bg-gradient-to-br from-rose-400 to-pink-500'} rounded-xl flex items-center justify-center text-white font-bold shadow-md group-hover:scale-105 transition-transform duration-300`}>
+                                  {request.parent_name.split(' ').map(name => name.charAt(0)).join('').slice(0, 2)}
+                                </div>
+                                <div className={`absolute -bottom-1 -right-1 w-5 h-5 ${request.approved ? 'bg-emerald-500' : 'bg-amber-500'} rounded-full border-2 border-white flex items-center justify-center`}>
+                                  {request.approved ? (
+                                    <CheckCircle className="h-3 w-3 text-white" />
+                                  ) : (
+                                    <Clock className="h-3 w-3 text-white" />
+                                  )}
+                                </div>
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <h3 className="text-base font-semibold text-gray-900 truncate mb-1">{request.parent_name}</h3>
+                                <div className="flex items-center gap-2 text-xs text-gray-600">
+                                  <User className="h-3 w-3" />
+                                  Parent ID: {request.parent}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-gray-600 flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                Created:
+                              </span>
+                              <span className="text-gray-900 font-medium">
+                                {request.created_at ? formatDate(request.created_at) : 'N/A'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-600">Status:</span>
+                              <Badge className={request.approved ? "bg-emerald-50 text-emerald-700 border-0" : "bg-amber-50 text-amber-700 border-0"}>
+                                {request.approved ? 'Approved' : 'Pending'}
+                              </Badge>
+                            </div>
+
+                            {request.approved && request.approved_at && (
+                              <div className="flex items-center justify-between text-sm pt-2 border-t">
+                                <span className="text-gray-600 flex items-center gap-1">
+                                  <CheckCircle className="h-3 w-3" />
+                                  Approved:
+                                </span>
+                                <span className="text-gray-900 font-medium">
+                                  {formatDate(request.approved_at)}
+                                </span>
+                              </div>
+                            )}
+
+                            {!request.approved && (
+                              <Button
+                                className="w-full bg-gradient-to-r from-slate-500 to-gray-600 hover:from-slate-600 hover:to-gray-700 text-white border-0 rounded-lg shadow-sm transition-all duration-300 hover:scale-[1.02] text-sm"
+                                onClick={() => handleCancelUnlinkRequest(request.id)}
+                                disabled={loadingActions[`cancel-unlink-${request.id}`]}
+                              >
+                                {loadingActions[`cancel-unlink-${request.id}`] ? (
+                                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                                ) : (
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                )}
+                                Cancel Request
+                              </Button>
+                            )}
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+
+                    <PaginationControls
+                      currentPage={currentPageUnlink}
+                      totalPages={getTotalPagesUnlink()}
+                      onPageChange={handleUnlinkPageChange}
+                      totalItems={unlinkRequests.length}
+                      itemsPerPage={itemsPerPageUnlink}
+                      itemName="unlink requests"
+                    />
+                  </>
+
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <XOctagon className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">No Unlink Requests</h3>
+                    <p className="text-gray-500">You haven't requested to unlink from any parents yet.</p>
+                  </div>
+                )}
+              </div>
+            </Card>
           </div>
         </div>
       </div>
