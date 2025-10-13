@@ -159,6 +159,7 @@ export const SchoolAdminRoutes = [
     icon: menuImages.communicate,
     label: "Communication",
     disabled: true,
+
   },
 
   // Finance 
