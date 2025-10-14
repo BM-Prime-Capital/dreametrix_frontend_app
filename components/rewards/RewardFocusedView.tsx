@@ -270,9 +270,9 @@ export default function RewardsFocusedView({
               </svg>
               Recent Activity
             </h3>
-            <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg px-4 py-2 text-sm">
+            {/* <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg px-4 py-2 text-sm">
               View All
-            </Button>
+            </Button> */}
           </div>
           <div className="space-y-3 max-h-64 overflow-y-auto">
             {studentData.latestNews.length > 0 ? (

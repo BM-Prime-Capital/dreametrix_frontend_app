@@ -43,6 +43,76 @@ export const getPolls = async (
   return await fetchWithAuth(`${domain}/polls/polls/`, token);
 };
 
+export const deletePoll = async (
+  domain: string,
+  token: string,
+  pollId: number
+): Promise<void> => {
+  const response = await fetch(`${domain}/polls/polls/${pollId}/`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) throw new Error("Session expirée. Veuillez vous reconnecter.");
+    if (response.status === 403) throw new Error("Vous n'avez pas la permission de supprimer ce sondage.");
+    if (response.status === 404) throw new Error("Sondage introuvable.");
+    throw new Error("Erreur lors de la suppression du sondage.");
+  }
+};
+
+export const getPollById = async (
+  domain: string,
+  token: string,
+  pollId: number
+): Promise<any> => {
+  return await fetchWithAuth(`${domain}/polls/polls/${pollId}/`, token);
+};
+
+export const updatePoll = async (
+  pollId: number,
+  pollData: {
+    title: string;
+    description: string;
+    course: number;
+    deadline: string;
+    is_anonymous: boolean;
+    questions: any[];
+  },
+  tenantPrimaryDomain: string,
+  accessToken: string
+): Promise<any> => {
+  if (!accessToken) {
+    throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
+  }
+
+  const url = `${tenantPrimaryDomain}/polls/polls/${pollId}/`;
+
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(pollData),
+  });
+
+  if (!response.ok) {
+    if (response.status === 403) {
+      throw new Error("Vous n'avez pas la permission de modifier ce sondage.");
+    } else if (response.status === 404) {
+      throw new Error("Sondage introuvable.");
+    } else {
+      throw new Error("Erreur lors de la modification du sondage.");
+    }
+  }
+
+  return await response.json();
+};
+
 
 // api/polls.ts
 

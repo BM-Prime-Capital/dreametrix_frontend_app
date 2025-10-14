@@ -13,7 +13,6 @@ import {
   Mail,
   School,
   User,
-  Calendar,
   MapPin,
   Shield,
   Camera,
@@ -32,11 +31,9 @@ import {
 } from "lucide-react";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
 
 interface UserData {
   id: number;
-  uuid: string;
   email: string;
   first_name: string;
   last_name: string;
@@ -142,7 +139,6 @@ export default function StudentProfile() {
         }
       });
 
-      // Si aucun champ n'a été modifié, ne pas envoyer la requête
       if (!updateData.user && !updateData.profile) {
         setIsEditing(false);
         return;
@@ -291,7 +287,7 @@ export default function StudentProfile() {
           });
         }
       } catch (error) {
-        console.error("Error fetching student profile:", error);
+        console.error("Error fetching Admin profile:", error);
       } finally {
         setIsLoading(false);
       }
@@ -315,7 +311,7 @@ export default function StudentProfile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 w-full">
         <div className="rounded-2xl p-8 mx-4 mt-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-2xl">
           <Skeleton className="h-12 w-64 bg-white/20 rounded-xl" />
         </div>
@@ -342,7 +338,7 @@ export default function StudentProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 w-full">
       {/* Header */}
       <div className="rounded-2xl p-8 mx-4 mt-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-2xl">
         <div className="flex items-center justify-between">
@@ -357,7 +353,7 @@ export default function StudentProfile() {
             </Button>
             <div>
               <h1 className="text-4xl font-extrabold tracking-tight mb-2">
-                STUDENT PROFILE
+                PARENT PROFILE
               </h1>
               <p className="text-blue-100 text-lg opacity-90">
                 Manage your personal and academic information
@@ -379,24 +375,7 @@ export default function StudentProfile() {
       <div className="p-4">
         <div className="max-w-7xl mx-auto">
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {stats.map((stat, index) => (
-              <Card 
-                key={index}
-                className="p-6 rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} text-white shadow-md`}>
-                    <stat.icon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                    <p className="text-sm text-gray-600 font-medium">{stat.label}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+          
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Profile Information Card */}
@@ -607,31 +586,7 @@ export default function StudentProfile() {
                       </p>
                       <p className="text-gray-600 flex items-center gap-2">
                         <School className="h-4 w-4" />
-                        Student ID: {userData?.uuid.slice(0, 15)+"..."}
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="ml-2 p-1 h-7 w-7"
-                          title="Copy Student ID"
-                          onClick={async () => {
-                            if (userData?.uuid) {
-                              await navigator.clipboard.writeText(userData.uuid);
-                              toast.success("Student ID copied to clipboard");
-                            }
-                          }}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4 text-gray-500"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <rect x="9" y="9" width="13" height="13" rx="2" />
-                            <rect x="3" y="3" width="13" height="13" rx="2" />
-                          </svg>
-                        </Button>
+                        Student ID: STU{userData?.id.toString().padStart(6, '0')}
                       </p>
                     </div>
                   </div>
@@ -809,27 +764,7 @@ export default function StudentProfile() {
               </Card>
 
               {/* Quick Actions */}
-              <Card className="p-6 rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                <div className="space-y-3">
-                  {[
-                    { icon: BookOpen, label: "View Grades", action: () => router.push("/student/gradebook") },
-                    { icon: Award, label: "Achievements", action: () => router.push("/student/rewards") },
-                    { icon: Calendar, label: "Attendance", action: () => router.push("/student/attendance") },
-                    // { icon: Target, label: "Set Goals", action: () => console.log("Set Goals") }
-                  ].map((action, index) => (
-                    <Button
-                      key={index}
-                      variant="ghost"
-                      onClick={action.action}
-                      className="w-full justify-start p-3 rounded-xl text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
-                    >
-                      <action.icon className="h-4 w-4 mr-3" />
-                      {action.label}
-                    </Button>
-                  ))}
-                </div>
-              </Card>
+              
             </div>
           </div>
         </div>

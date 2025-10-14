@@ -678,6 +678,13 @@ export default function Seating({
 
         {/* Enhanced Action Bar */}
         <div className="flex flex-wrap gap-4 items-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg mt-2">
+        <CreateArrangementDialog
+            courses={courses}
+            tenantPrimaryDomain={tenantPrimaryDomain}
+            accessToken={accessToken}
+            refreshToken={refreshToken}
+            onSuccess={() => loadArrangements(selectedCourse || undefined)}
+          />
           <Button
             onClick={handleSeatingArrangementAuto}
             className={`flex gap-3 items-center text-lg rounded-xl px-6 py-3 shadow-lg transition-all duration-300 ${
@@ -724,13 +731,7 @@ export default function Seating({
             })) || []}
           />
 
-          <CreateArrangementDialog
-            courses={courses}
-            tenantPrimaryDomain={tenantPrimaryDomain}
-            accessToken={accessToken}
-            refreshToken={refreshToken}
-            onSuccess={() => loadArrangements(selectedCourse || undefined)}
-          />
+         
 
           {/*<Button className="flex gap-3 items-center text-lg bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white rounded-xl px-6 py-3 shadow-lg transition-all duration-300 font-medium">*/}
           {/*  <Image*/}

@@ -433,7 +433,7 @@ export function AddClassDialog({
                 )}
               </select>
 
-              <Select
+              {/* <Select
                 value={`${userData.role === "teacher" ? userData.owner_id : schoolClass.teacher}`}
                 onValueChange={(value) => setSchoolClass({
                   ...schoolClass,
@@ -461,7 +461,7 @@ export function AddClassDialog({
                     )
                   )}
                 </SelectContent>
-              </Select>
+              </Select> */}
             </div>
 
             {schoolClass.grade && (
@@ -568,14 +568,14 @@ export function AddClassDialog({
     </Select>
 
     <Input
-      type="text"
+      type="time"
       value={schedule.start_time}
       onChange={(e) => handleClassDayChange(schedule.id, "start_time", e.target.value)}
       placeholder="09:00 AM"
     />
 
     <Input
-      type="text"
+      type="time"
       value={schedule.end_time}
       onChange={(e) => handleClassDayChange(schedule.id, "end_time", e.target.value)}
       placeholder="01:00 PM"

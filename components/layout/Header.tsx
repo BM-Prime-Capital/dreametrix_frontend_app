@@ -107,15 +107,15 @@ export function Header() {
               
               <DropdownMenuSeparator />
               
-              {/* <DropdownMenuItem 
-                onClick={() => router.push('/profile')}
+              <DropdownMenuItem 
+                onClick={() => router.push('/student/profile')}
                 className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm cursor-pointer"
               >
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-muted text-primary">
                   <User className="h-4 w-4" />
                 </div>
                 <span>My Profile</span>
-              </DropdownMenuItem> */}
+              </DropdownMenuItem>
               
               {/* <DropdownMenuItem className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-muted text-primary">

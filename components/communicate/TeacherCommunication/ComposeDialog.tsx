@@ -315,7 +315,7 @@ export function ComposeDialog({
           </div>
 
           {/* Attach + Schedule */}
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <Button variant="outline" size="sm">
               <Paperclip className="h-4 w-4 mr-1" />
               Attach File
@@ -324,7 +324,7 @@ export function ComposeDialog({
               <Calendar className="h-4 w-4 mr-1" />
               Schedule
             </Button>
-          </div>
+          </div> */}
         </div>
 
         <DialogFooter>

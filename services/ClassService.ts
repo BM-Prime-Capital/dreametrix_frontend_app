@@ -171,6 +171,7 @@ export async function deleteClass(
 ) {
   try {
     const url = `${tenantPrimaryDomain}/classes/${classId}/`;
+    console.log("deleteClass url:", url);
     const response = await fetch(url, {
       method: "DELETE",
       headers: {
