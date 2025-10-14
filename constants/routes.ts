@@ -156,6 +156,13 @@ export const SchoolAdminRoutes = [
     label: "Communication",
   },
 
+  // Profile
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/profile`,
+    icon: menuImages.communicate,
+    label: "PROFILE",
+  },
+
   // Finance 
   // {
   //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/finance`,
@@ -286,6 +293,11 @@ export const TeacherRoutes = [
     label: "REPORT CARD",
   },
   {
+    path: `${userPath.TEACHER_BASE_PATH}/profile`,
+    icon: `/assets/images/teacher/dashboard/profile.svg`,
+    label: "PROFILE",
+  },
+  {
     path: `${userPath.TEACHER_BASE_PATH}/support`,
     icon: menuImages.support,
     label: "SUPPORT",
@@ -339,6 +351,13 @@ export const ParentRoutes = [
     icon: `/assets/images/teacher/dashboard/relationship.svg`,
     label: "RELATIONSHIP",
   },
+  {
+    path: `${userPath.PARENT_BASE_PATH}/profile`,
+    icon: `/assets/images/teacher/dashboard/profile.svg`,
+    label: "PROFILE",
+  },
+
+  
   // {
   //   path: `${userPath.PARENT_BASE_PATH}/communicate`,
   //   icon: menuImages.communicate,
