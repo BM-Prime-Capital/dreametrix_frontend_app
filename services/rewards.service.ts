@@ -1,5 +1,4 @@
 import { RewardsResponse, RewardsQueryParams } from '@/types/rewards';
-import { getBackendUrl } from '@/app/utils/tenant';
 
 export class RewardsApiError extends Error {
   constructor(
@@ -14,10 +13,17 @@ export class RewardsApiError extends Error {
 }
 
 export class RewardsService {
-  private static baseURL = getBackendUrl();
-  
-  static async getStudentRewards(params: RewardsQueryParams = {}, accessToken?: string): Promise<RewardsResponse> {
+  static async getStudentRewards(tenantDomain: string, params: RewardsQueryParams = {}, accessToken?: string): Promise<RewardsResponse> {
     try {
+      // Validate tenant domain
+      if (!tenantDomain || tenantDomain.trim() === '') {
+        throw new RewardsApiError(
+          'Tenant domain not provided. Please login again.',
+          400,
+          { code: 'NO_TENANT' }
+        );
+      }
+
       // Validate access token
       if (!accessToken || accessToken.trim() === '') {
         throw new RewardsApiError(
@@ -28,20 +34,20 @@ export class RewardsService {
       }
 
       const searchParams = new URLSearchParams();
-      
+
       if (params.date) {
         searchParams.append('date', params.date);
       }
-      
+
       if (params.period) {
         searchParams.append('period', params.period);
       }
-      
+
       if (params.class_info) {
         searchParams.append('class_info', params.class_info.toString());
       }
 
-      const url = `${this.baseURL}/rewards/student-reports/student_view/?${searchParams.toString()}`;
+      const url = `https://${tenantDomain}/rewards/student-reports/student_view/?${searchParams.toString()}`;
       if (process.env.NODE_ENV === 'development') {
         console.log("Rewards API URL => ", url);
         console.log("Token length => ", accessToken.length);
@@ -82,11 +88,11 @@ export class RewardsService {
     }
   }
 
-  static async getStudentRewardsByDate(date: string, accessToken?: string): Promise<RewardsResponse> {
-    return this.getStudentRewards({ date }, accessToken);
+  static async getStudentRewardsByDate(tenantDomain: string, date: string, accessToken?: string): Promise<RewardsResponse> {
+    return this.getStudentRewards(tenantDomain, { date }, accessToken);
   }
 
-  static async getStudentRewardsByPeriod(period: string, accessToken?: string): Promise<RewardsResponse> {
-    return this.getStudentRewards({ period }, accessToken);
+  static async getStudentRewardsByPeriod(tenantDomain: string, period: string, accessToken?: string): Promise<RewardsResponse> {
+    return this.getStudentRewards(tenantDomain, { period }, accessToken);
   }
 }

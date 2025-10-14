@@ -1,5 +1,4 @@
 import { CharacterResponse, CharacterQueryParams } from '@/types/character';
-import { getBackendUrl } from '@/app/utils/tenant';
 
 export class CharacterApiError extends Error {
   constructor(
@@ -14,10 +13,17 @@ export class CharacterApiError extends Error {
 }
 
 export class CharacterService {
-  private static baseURL = getBackendUrl();
-  
-  static async getStudentCharacterRatings(params: CharacterQueryParams = {}, accessToken?: string): Promise<CharacterResponse> {
+  static async getStudentCharacterRatings(tenantDomain: string, params: CharacterQueryParams = {}, accessToken?: string): Promise<CharacterResponse> {
     try {
+      // Validate tenant domain
+      if (!tenantDomain || tenantDomain.trim() === '') {
+        throw new CharacterApiError(
+          'Tenant domain not provided. Please login again.',
+          400,
+          { code: 'NO_TENANT' }
+        );
+      }
+
       // Validate access token
       if (!accessToken || accessToken.trim() === '') {
         throw new CharacterApiError(
@@ -28,20 +34,20 @@ export class CharacterService {
       }
 
       const searchParams = new URLSearchParams();
-      
+
       if (params.date) {
         searchParams.append('date', params.date);
       }
-      
+
       if (params.period) {
         searchParams.append('period', params.period);
       }
-      
+
       if (params.class_info) {
         searchParams.append('class_info', params.class_info.toString());
       }
 
-      const url = `${this.baseURL}/characters/character-ratings/student_view/?${searchParams.toString()}`;
+      const url = `https://${tenantDomain}/characters/character-ratings/student_view/?${searchParams.toString()}`;
       if (process.env.NODE_ENV === 'development') {
         console.log("Character API URL => ", url);
         console.log("Token length => ", accessToken.length);
@@ -82,11 +88,11 @@ export class CharacterService {
     }
   }
 
-  static async getCharacterRatingsByDate(date: string, accessToken?: string): Promise<CharacterResponse> {
-    return this.getStudentCharacterRatings({ date }, accessToken);
+  static async getCharacterRatingsByDate(tenantDomain: string, date: string, accessToken?: string): Promise<CharacterResponse> {
+    return this.getStudentCharacterRatings(tenantDomain, { date }, accessToken);
   }
 
-  static async getCharacterRatingsByPeriod(period: string, accessToken?: string): Promise<CharacterResponse> {
-    return this.getStudentCharacterRatings({ period }, accessToken);
+  static async getCharacterRatingsByPeriod(tenantDomain: string, period: string, accessToken?: string): Promise<CharacterResponse> {
+    return this.getStudentCharacterRatings(tenantDomain, { period }, accessToken);
   }
 }

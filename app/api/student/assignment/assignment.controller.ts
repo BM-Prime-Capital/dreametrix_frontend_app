@@ -1,10 +1,7 @@
-import { getBackendBaseUrl } from "@/app/utils/constants";
-import { getTenantDomain } from "@/app/utils/cookies";
+import { getBackendUrl } from "@/app/utils/tenant";
 
-export async function getAssignments(request: Request, token?: string) {
-  const tenantDomain = getTenantDomain(request);
-  if (!tenantDomain) throw new Error('Tenant domain not found');
-  const backendUrl = getBackendBaseUrl(tenantDomain);
+export async function getAssignments(token?: string) {
+  const backendUrl = getBackendUrl();
   const response = await fetch(`${backendUrl}/assessments`, {
     headers: { Authorization: `Bearer ${token}` },
   });

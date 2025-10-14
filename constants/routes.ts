@@ -350,12 +350,12 @@ export const ParentRoutes = [
     icon: `/assets/images/teacher/dashboard/relationship.svg`,
     label: "RELATIONSHIP",
   },
-  {
-    path: `${userPath.PARENT_BASE_PATH}/communicate`,
-    icon: menuImages.communicate,
-    label: "COMMUNICATE",
-    disabled: true
-  },
+  // {
+  //   path: `${userPath.PARENT_BASE_PATH}/communicate`,
+  //   icon: menuImages.communicate,
+  //   label: "COMMUNICATE",
+  //   disabled: true
+  // },
 ];
 
 export const SuperAdminRoutes = [

@@ -50,7 +50,7 @@ export function StudentClassesTable({ onStatsUpdate, selectedSubject = "all-subj
       return;
     }
     try {
-      const res = await getAllClasses(tenantDomain, accessToken); // Passe le token
+      const res = await getAllClasses(accessToken); // Passe le token
 
       if (res && res.data && Array.isArray(res.data.results)) {
         setStudentClasses(res.data.results);

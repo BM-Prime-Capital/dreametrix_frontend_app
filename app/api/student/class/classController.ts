@@ -1,11 +1,8 @@
-import { getBackendBaseUrl } from '@/app/utils/constants';
-import { getTenantDomain } from '@/app/utils/cookies';
+import { getBackendUrl } from '@/app/utils/tenant';
 
 
-export async function getAllClasses(request: Request, token?: string) {
-  const tenantDomain = getTenantDomain(request);
-  if (!tenantDomain) throw new Error('Tenant domain not found');
-  const backendUrl = getBackendBaseUrl(tenantDomain);
+export async function getAllClasses(token?: string) {
+  const backendUrl = getBackendUrl();
   const response = await fetch(`${backendUrl}/classes/`, {
     headers: { Authorization: `Bearer ${token}` }
   });
@@ -19,10 +16,8 @@ export async function getAllClasses(request: Request, token?: string) {
 }
 
 
-export async function getClassById(request: Request, id: number, token?: string) {
-  const tenantDomain = getTenantDomain(request);
-  if (!tenantDomain) throw new Error('Tenant domain not found');
-  const backendUrl = getBackendBaseUrl(tenantDomain);
+export async function getClassById(id: number, token?: string) {
+  const backendUrl = getBackendUrl();
   const response = await fetch(`${backendUrl}/classes/${id}/`, {
     headers: { Authorization: `Bearer ${token}` }
   });

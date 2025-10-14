@@ -1,14 +1,9 @@
-import { getBackendBaseUrl } from '@/app/utils/constants';
-import { getTenantDomain } from '@/app/utils/cookies';
+import { getBackendUrl } from '@/app/utils/tenant';
 import { Student, StudentApiResponse } from './student.model';
 
-export async function getAuthenticatedStudent(request: Request, token?: string): Promise<Student | null> {
+export async function getAuthenticatedStudent(token?: string): Promise<Student | null> {
   console.log("Appel de getAuthenticatedStudent...");
-  const tenantDomain = getTenantDomain(request);
-  if (!tenantDomain) {
-    throw new Error('Tenant domain not found');
-  }
-  const backendUrl = getBackendBaseUrl(tenantDomain);
+  const backendUrl = getBackendUrl();
   const response = await fetch(`${backendUrl}/students/`, {
     headers: { Authorization: `Bearer ${token}`}
   });
