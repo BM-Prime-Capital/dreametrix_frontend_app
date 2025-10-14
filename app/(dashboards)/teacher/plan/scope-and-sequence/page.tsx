@@ -5,10 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, GanttChartSquare, Calculator, BookOpenText, GripVertical } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import type { ScopeAndSequence } from '../../../../../lib/types';
+import type { ScopeAndSequence } from '@/lib/types';
 import PageTitleH1 from '@/components/ui/page-title-h1';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScopeAndSequenceForm } from '@/components/plan/scope-and-sequence-form';
+import { ScopeAndSequenceService } from '@/services/plan-service';
+import { localStorageKey } from '@/constants/global';
 import {
   DndContext,
   closestCenter,
@@ -27,27 +29,6 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-const mockScopeAndSequences: ScopeAndSequence[] = [
-  {
-    id: '1',
-    title: 'Grade 7 Math Full Year Plan',
-    academicYear: '2024-2025',
-    subject: 'Math',
-    gradeLevel: '7th Grade',
-    overview: 'Covers all common core standards for 7th grade math, including ratios, proportions, number system, expressions, equations, geometry, statistics and probability.',
-    standardsAndUnitsByMonth: "August: Unit 1 - Ratios & Proportional Relationships (7.RP.A.1, 7.RP.A.2)\nSeptember: Unit 1 cont., Unit 2 - The Number System (7.NS.A.1)\nOctober: Unit 2 cont. (7.NS.A.2, 7.NS.A.3)\nNovember: Unit 3 - Expressions & Equations (7.EE.A.1, 7.EE.A.2)\nDecember: Unit 3 cont. (7.EE.B.3, 7.EE.B.4)\nJanuary: Unit 4 - Geometry (7.G.A.1, 7.G.A.2)\nFebruary: Unit 4 cont. (7.G.B.4, 7.G.B.6)\nMarch: Unit 5 - Statistics (7.SP.A.1, 7.SP.B.3)\nApril: Unit 6 - Probability (7.SP.C.5, 7.SP.C.7)\nMay: Review and End-of-Year Assessments",
-  },
-  {
-    id: '2',
-    title: '6th Grade ELA Yearly Overview',
-    academicYear: '2024-2025',
-    subject: 'ELA',
-    gradeLevel: '6th Grade',
-    overview: 'Focuses on developing reading comprehension, writing skills (narrative, informative, argumentative), and language conventions across various genres.',
-    standardsAndUnitsByMonth: "Quarter 1: Unit - Narrative Reading & Writing (RL.6.1, W.6.3); Standards: Key Ideas and Details, Craft and Structure in literature; Writing narratives.\nQuarter 2: Unit - Informational Text & Argument (RI.6.1, W.6.1); Standards: Analyzing informational texts, Developing arguments.\nQuarter 3: Unit - Poetry & Figurative Language (RL.6.4, L.6.5); Standards: Understanding poetic structure, Interpreting figurative language.\nQuarter 4: Unit - Research & Presentation (W.6.7, SL.6.4); Standards: Conducting research projects, Presenting findings.",
-  },
-];
-
 function SortableCard({ plan }: { plan: ScopeAndSequence }) {
   const {
     attributes,
@@ -64,6 +45,11 @@ function SortableCard({ plan }: { plan: ScopeAndSequence }) {
     opacity: isDragging ? 0.5 : 1,
   };
 
+  // 🔹 Utiliser les champs de l'API (snake_case) avec fallback vers camelCase
+  const academicYear = plan.academic_year || plan.academicYear || '';
+  const subjectName = plan.subject_name || plan.subject || '';
+  const grade = plan.grade || plan.gradeLevel || '';
+
   return (
     <Card ref={setNodeRef} style={style} className="flex flex-col">
       <CardHeader>
@@ -72,19 +58,19 @@ function SortableCard({ plan }: { plan: ScopeAndSequence }) {
             <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
               <GripVertical className="h-5 w-5 text-gray-400" />
             </div>
-            <CardTitle className="font-headline">
-              {plan.subject === 'Math' ?
-                  <Calculator className="h-5 w-5 text-blue-500" /> :
-              plan.subject === 'ELA' ?
-                  <BookOpenText className="h-5 w-5 text-green-500" /> :
-                  <GanttChartSquare className="h-5 w-5 text-primary" />
+            <CardTitle className="font-headline flex items-center gap-2">
+              {subjectName === 'Math' || subjectName?.includes('Math') ?
+                <Calculator className="h-5 w-5 text-blue-500" /> :
+              subjectName === 'ELA' || subjectName?.includes('ELA') ?
+                <BookOpenText className="h-5 w-5 text-green-500" /> :
+                <GanttChartSquare className="h-5 w-5 text-primary" />
               }
               {plan.title}
             </CardTitle>
           </div>
         </div>
         <CardDescription>
-          {plan.academicYear} - {plan.gradeLevel} {plan.subject}
+          {academicYear} - {grade} {subjectName}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
@@ -93,7 +79,7 @@ function SortableCard({ plan }: { plan: ScopeAndSequence }) {
         </p>
       </CardContent>
       <CardFooter>
-         <Button variant="outline" size="sm" className="w-full" asChild>
+        <Button variant="outline" size="sm" className="w-full" asChild>
           <Link href={`/teacher/plan/scope-and-sequence/${plan.id}`}>View Details</Link>
         </Button>
       </CardFooter>
@@ -102,8 +88,15 @@ function SortableCard({ plan }: { plan: ScopeAndSequence }) {
 }
 
 export default function ScopeAndSequencePage() {
-  const [scopeAndSequences, setScopeAndSequences] = useState<ScopeAndSequence[]>(mockScopeAndSequences);
+  const accessToken: any = typeof window !== 'undefined' ? localStorage.getItem(localStorageKey.ACCESS_TOKEN) : null;
+  const tenantData: any = typeof window !== 'undefined' ? localStorage.getItem(localStorageKey.TENANT_DATA) : null;
+  const { primary_domain } = tenantData ? JSON.parse(tenantData) : { primary_domain: '' };
+  const tenantPrimaryDomain = `https://${primary_domain}`;
+
+  const [scopeAndSequences, setScopeAndSequences] = useState<ScopeAndSequence[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -112,16 +105,32 @@ export default function ScopeAndSequencePage() {
     })
   );
 
+  // 🔹 Récupérer les données réelles depuis l'API
+  const fetchScopeAndSequences = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await ScopeAndSequenceService.list(tenantPrimaryDomain, accessToken);
+      console.log("📋 Scope & Sequences loaded:", data);
+      setScopeAndSequences(data);
+    } catch (err: any) {
+      console.error("❌ Error loading scope & sequences:", err);
+      setError(err.message || "Failed to load scope & sequences");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setScopeAndSequences(mockScopeAndSequences);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+    if (accessToken && tenantPrimaryDomain) {
+      fetchScopeAndSequences();
+    }
+  }, [accessToken, tenantPrimaryDomain]);
 
   const handleSuccess = () => {
     setIsDialogOpen(false);
-    // Optionally refresh the data here
+    // Recharger les données après création
+    fetchScopeAndSequences();
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -190,37 +199,66 @@ export default function ScopeAndSequencePage() {
         </DialogContent>
       </Dialog>
 
-      {scopeAndSequences.length === 0 && (
-         <div className="text-center py-10">
-            <GanttChartSquare className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-2 text-sm font-medium text-muted-foreground">No scope & sequence plans yet</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Get started by creating a new scope & sequence plan.</p>
-            <div className="mt-6">
-                <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                    <Link href="/teacher/plan/scope-and-sequence/create">
-                        <PlusCircle className="mr-2 h-4 w-4" /> Create Scope & Sequence
-                    </Link>
-                </Button>
-            </div>
+      {/* Loading State */}
+      {isLoading && (
+        <div className="text-center py-10">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3e81d4] mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading scope & sequences...</p>
         </div>
       )}
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={scopeAndSequences.map(plan => plan.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {scopeAndSequences.map((plan) => (
-              <SortableCard key={plan.id} plan={plan} />
-            ))}
+      {/* Error State */}
+      {error && !isLoading && (
+        <div className="text-center py-10">
+          <GanttChartSquare className="mx-auto h-12 w-12 text-red-500" />
+          <h3 className="mt-2 text-sm font-medium text-red-600">Error loading scope & sequences</h3>
+          <p className="mt-1 text-sm text-red-500">{error}</p>
+          <Button 
+            onClick={fetchScopeAndSequences} 
+            className="mt-4"
+            variant="outline"
+          >
+            Try Again
+          </Button>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!isLoading && !error && scopeAndSequences.length === 0 && (
+        <div className="text-center py-10">
+          <GanttChartSquare className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-2 text-sm font-medium text-muted-foreground">No scope & sequence plans yet</h3>
+          <p className="mt-1 text-sm text-muted-foreground">Get started by creating a new scope & sequence plan.</p>
+          <div className="mt-6">
+            <Button 
+              onClick={() => setIsDialogOpen(true)}
+              className="bg-[#3e81d4] hover:bg-[#2e71c4] text-white"
+            >
+              <PlusCircle className="mr-2 h-4 w-4" /> Create Scope & Sequence
+            </Button>
           </div>
-        </SortableContext>
-      </DndContext>
+        </div>
+      )}
+
+      {/* Data Loaded */}
+      {!isLoading && !error && scopeAndSequences.length > 0 && (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={scopeAndSequences.map(plan => plan.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {scopeAndSequences.map((plan) => (
+                <SortableCard key={plan.id} plan={plan} />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+      )}
     </div>
   );
 }
