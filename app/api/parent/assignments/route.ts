@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { BACKEND_BASE_URL } from '@/app/utils/constants';
+import { getBackendBaseUrl } from '@/app/utils/constants';
+import { getTenantDomain } from '@/app/utils/cookies';
 
 export const dynamic = "force-dynamic";
 
@@ -8,11 +9,19 @@ export async function GET(request: NextRequest) {
   try {
     // Get the authorization header from the request
     const authHeader = request.headers.get('authorization');
-    
+
     if (!authHeader) {
       return NextResponse.json(
         { error: 'Authorization header is required' },
         { status: 401 }
+      );
+    }
+
+    const tenantDomain = getTenantDomain(request);
+    if (!tenantDomain) {
+      return NextResponse.json(
+        { error: 'Tenant domain not found' },
+        { status: 400 }
       );
     }
 
@@ -25,8 +34,9 @@ export async function GET(request: NextRequest) {
     const dateTo = searchParams.get('date_to');
     const published = searchParams.get('published');
 
+    const backendUrl = getBackendBaseUrl(tenantDomain);
     // Build the URL with query parameters
-    const url = new URL(`${BACKEND_BASE_URL}/assessments`);
+    const url = new URL(`${backendUrl}/assessments`);
     
     if (studentId) url.searchParams.append('student_id', studentId);
     if (classId) url.searchParams.append('class_id', classId);

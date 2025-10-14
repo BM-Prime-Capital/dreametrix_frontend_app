@@ -343,6 +343,7 @@ export const ParentRoutes = [
   //   path: `${userPath.PARENT_BASE_PATH}/communicate`,
   //   icon: menuImages.communicate,
   //   label: "COMMUNICATE",
+  //   disabled: true
   // },
 ];
 

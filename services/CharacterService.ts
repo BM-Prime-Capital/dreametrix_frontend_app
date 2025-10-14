@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BACKEND_BASE_URL } from "@/app/utils/constants";
+import { getBackendUrl } from "@/app/utils/tenant";
 
 // Interface pour les données character student
 export interface StudentCharacterData {
@@ -115,7 +115,7 @@ export async function getStudentCharacterView(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
-  const url = `${BACKEND_BASE_URL}/characters/character-ratings/student_view/`;
+  const url = `${getBackendUrl()}/characters/character-ratings/student_view/`;
 
   try {
     const response = await fetch(url, {
@@ -155,7 +155,7 @@ export async function getParentCharacterView(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
-  const url = `${BACKEND_BASE_URL}/characters/character-ratings/parent_view/`;
+  const url = `${getBackendUrl()}/characters/character-ratings/parent_view/`;
 
   try {
     const response = await fetch(url, {

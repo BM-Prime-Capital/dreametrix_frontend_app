@@ -1,6 +1,6 @@
 "use server";
 
-import { BACKEND_BASE_URL } from "@/app/utils/constants";
+import { getBackendBaseUrl } from "@/app/utils/constants";
 
 // Interface pour la structure de données parent attendance
 export interface ParentAttendanceData {
@@ -44,6 +44,7 @@ export interface ParentAttendanceData {
 }
 
 export async function getParentAttendanceView(
+  tenantDomain: string,
   accessToken: string,
   limit?: number,
   offset?: number
@@ -52,8 +53,9 @@ export async function getParentAttendanceView(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
-  let url = `${BACKEND_BASE_URL}/attendances/parent_view/`;
-  
+  const backendUrl = getBackendBaseUrl(tenantDomain);
+  let url = `${backendUrl}/attendances/parent_view/`;
+  console.log("backendUrl", backendUrl);
   // Ajouter les paramètres de pagination si fournis
   const params = new URLSearchParams();
   if (limit) params.append('limit', limit.toString());
@@ -362,6 +364,7 @@ export async function getAttendanceGeneralView(
 
 // Function to get student attendance view
 export async function getStudentAttendanceView(
+  tenantDomain: string,
   accessToken: string,
   limit?: number,
   offset?: number
@@ -370,7 +373,8 @@ export async function getStudentAttendanceView(
     throw new Error("You are not connected. Please log in again.");
   }
 
-  let url = `${BACKEND_BASE_URL}/attendances/student_view/`;
+  const backendUrl = getBackendBaseUrl(tenantDomain);
+  let url = `${backendUrl}/attendances/student_view/`;
   const params = new URLSearchParams();
   if (limit) params.append('limit', limit.toString());
   if (offset) params.append('offset', offset.toString());

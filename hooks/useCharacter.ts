@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { CharacterResponse, CharacterQueryParams, CharacterRating, CharacterSummary } from '@/types/character';
 import { CharacterService, CharacterApiError } from '@/services/character.service';
+import { useRequestInfo } from './useRequestInfo';
 
 interface UseCharacterState {
   data: CharacterRating[];
@@ -22,6 +23,7 @@ export function useCharacter(
   initialParams: CharacterQueryParams = {},
   accessToken?: string
 ): UseCharacterReturn {
+  const { tenantDomain } = useRequestInfo();
   const [state, setState] = useState<UseCharacterState>({
     data: [],
     loading: true,
@@ -34,9 +36,20 @@ export function useCharacter(
     ...initialParams,
   });
 
-  const fetchCharacterRatings = useCallback(async (queryParams: CharacterQueryParams, token?: string) => {
+  const fetchCharacterRatings = useCallback(async (queryParams: CharacterQueryParams, token?: string, domain?: string) => {
     setState(prev => ({ ...prev, loading: true, error: null }));
-    
+
+    // Validate domain before making API call
+    if (!domain || domain.trim() === '') {
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: 'Tenant domain not found. Please log in again.',
+        data: [],
+      }));
+      return;
+    }
+
     // Validate token before making API call
     if (!token || token.trim() === '') {
       setState(prev => ({
@@ -47,12 +60,12 @@ export function useCharacter(
       }));
       return;
     }
-    
+
     if (process.env.NODE_ENV === 'development') {
       console.log("Character accessToken => ", token);
     }
     try {
-      const response: CharacterResponse = await CharacterService.getStudentCharacterRatings(queryParams, token);
+      const response: CharacterResponse = await CharacterService.getStudentCharacterRatings(domain, queryParams, token);
       
       setState({
         data: response.ratings || [],
@@ -87,35 +100,35 @@ export function useCharacter(
   }, []);
 
   const refetch = useCallback(async () => {
-    await fetchCharacterRatings(params, accessToken);
-  }, [fetchCharacterRatings, params, accessToken]);
+    await fetchCharacterRatings(params, accessToken, tenantDomain);
+  }, [fetchCharacterRatings, params, accessToken, tenantDomain]);
 
 
   const fetchByDate = useCallback(async (date: string) => {
     const newParams = { ...params, date };
     setParams(newParams);
-    await fetchCharacterRatings(newParams, accessToken);
-  }, [fetchCharacterRatings, params, accessToken]);
+    await fetchCharacterRatings(newParams, accessToken, tenantDomain);
+  }, [fetchCharacterRatings, params, accessToken, tenantDomain]);
 
   const fetchByPeriod = useCallback(async (period: string) => {
     const newParams = { ...params, period };
     setParams(newParams);
-    await fetchCharacterRatings(newParams, accessToken);
-  }, [fetchCharacterRatings, params, accessToken]);
+    await fetchCharacterRatings(newParams, accessToken, tenantDomain);
+  }, [fetchCharacterRatings, params, accessToken, tenantDomain]);
 
   const clearError = useCallback(() => {
     setState(prev => ({ ...prev, error: null }));
   }, []);
 
   useEffect(() => {
-    // Only fetch if we have an accessToken
-    if (accessToken && accessToken.trim() !== '') {
-      fetchCharacterRatings(params, accessToken);
+    // Only fetch if we have both accessToken and tenantDomain
+    if (accessToken && accessToken.trim() !== '' && tenantDomain && tenantDomain.trim() !== '') {
+      fetchCharacterRatings(params, accessToken, tenantDomain);
     } else {
-      // Set loading to false if no token available
+      // Set loading to false if no token or domain available
       setState(prev => ({ ...prev, loading: false }));
     }
-  }, [fetchCharacterRatings, params, accessToken]);
+  }, [fetchCharacterRatings, params, accessToken, tenantDomain]);
 
   // Debug logging in development only
   if (process.env.NODE_ENV === 'development') {

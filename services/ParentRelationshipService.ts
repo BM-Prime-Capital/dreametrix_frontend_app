@@ -1,4 +1,4 @@
-import { BACKEND_BASE_URL } from "@/app/utils/constants"
+import { getBackendUrl } from "@/app/utils/tenant"
 
 /**
  * Types for Parent-Student relationship management
@@ -63,7 +63,7 @@ class ParentRelationshipServiceClass {
         student_uuid: studentCode.trim().toUpperCase()
       }
 
-      const response = await fetch(`${BACKEND_BASE_URL}/parents/request-link/`, {
+      const response = await fetch(`${getBackendUrl()}/parents/request-link/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -97,7 +97,7 @@ class ParentRelationshipServiceClass {
     accessToken: string
   ): Promise<ListRequestLinksResponse> {
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/parents/parent/pending-student-links/`, {
+      const response = await fetch(`${getBackendUrl()}/parents/parent/pending-student-links/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -133,7 +133,7 @@ class ParentRelationshipServiceClass {
     accessToken: string
   ): Promise<LinkedStudentsResponse> {
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/parents/parent/linked-students/`, {
+      const response = await fetch(`${getBackendUrl()}/parents/parent/linked-students/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -170,7 +170,7 @@ class ParentRelationshipServiceClass {
     accessToken: string
   ): Promise<CancelRequestResponse> {
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/parent/relationship/cancel-request/${requestId}`, {
+      const response = await fetch(`${getBackendUrl()}/parent/relationship/cancel-request/${requestId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -279,7 +279,7 @@ export async function sendLinkRequest(
   message?: string
 ): Promise<RequestLinkResponse> {
   try {
-    const response = await fetch(`${BACKEND_BASE_URL}/parents/request-link/`, {
+    const response = await fetch(`${getBackendUrl()}/parents/request-link/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -308,7 +308,7 @@ export async function sendLinkRequest(
  */
 export async function getListRequestLink(accessToken: string): Promise<any[]> {
   try {
-    const response = await fetch(`${BACKEND_BASE_URL}/parents/parent/pending-student-links/`, {
+    const response = await fetch(`${getBackendUrl()}/parents/parent/pending-student-links/`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -336,7 +336,7 @@ export async function cancelLinkRequest(
   requestId: number
 ): Promise<void> {
   try {
-    const response = await fetch(`${BACKEND_BASE_URL}/parents/parent/pending-student-links/${requestId}/`, {
+    const response = await fetch(`${getBackendUrl()}/parents/parent/pending-student-links/${requestId}/`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${accessToken}`
@@ -360,7 +360,7 @@ export async function unlinkStudent(
   studentId: number
 ): Promise<void> {
   try {
-    const response = await fetch(`${BACKEND_BASE_URL}/parents/unlink-requests/`, {
+    const response = await fetch(`${getBackendUrl()}/parents/unlink-requests/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

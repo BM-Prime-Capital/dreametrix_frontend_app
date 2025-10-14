@@ -1,9 +1,10 @@
-import { BACKEND_BASE_URL } from '@/app/utils/constants';
+import { getBackendUrl } from '@/app/utils/tenant';
 import { StudentGrade } from './gradebook.model';
 
 export async function getGradebookByClassId(classId: number, token?: string): Promise<StudentGrade[]> {
   console.log(`Appel de getGradebookByClassId pour la classe ID ${classId}...`);
-  const response = await fetch(`${BACKEND_BASE_URL}/gradebooks/${classId}/`, {
+  const backendUrl = getBackendUrl();
+  const response = await fetch(`${backendUrl}/gradebooks/${classId}/`, {
     headers: { Authorization: `Bearer ${token}` }
   });
 
