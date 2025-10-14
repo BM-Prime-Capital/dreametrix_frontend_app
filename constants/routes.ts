@@ -120,6 +120,12 @@ export const SchoolAdminRoutes = [
     icon: menuImages.assignments,
     label: "Classes",
   },
+  // Profile
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/profile`,
+    icon: `/assets/images/teacher/dashboard/profile.svg`,
+    label: "Profile",
+  },
 
   // Subjects
   {
@@ -302,6 +308,12 @@ export const TeacherRoutes = [
     label: "SUPPORT",
     isSecondary: true,
   },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/profile`,
+    icon: `/assets/images/teacher/dashboard/profile.svg`,
+    label: "Profile",
+  }
+
 ];
 
 export const ParentRoutes = [
@@ -349,6 +361,11 @@ export const ParentRoutes = [
     path: `${userPath.PARENT_BASE_PATH}/relationship`,
     icon: `/assets/images/teacher/dashboard/relationship.svg`,
     label: "RELATIONSHIP",
+  },
+  {
+    path: `${userPath.PARENT_BASE_PATH}/profile`,
+    icon: `/assets/images/teacher/dashboard/profile.svg`,
+    label: "Profile",
   },
   {
     path: `${userPath.PARENT_BASE_PATH}/communicate`,
