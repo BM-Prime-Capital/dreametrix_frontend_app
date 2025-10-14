@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BACKEND_BASE_URL } from '@/app/utils/constants';
+import { getBackendUrl } from '@/app/utils/tenant';
 
 // Interface for the API response structure
 interface ApiAssessment {
@@ -75,7 +75,7 @@ export async function getParentAssignments(
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  const url = `${BACKEND_BASE_URL}/parents/children/assessments/`;
+  const url = `${getBackendUrl()}/parents/children/assessments/`;
 
   try {
     const response = await fetch(url, {
@@ -161,7 +161,7 @@ export async function getAssignmentDetails(
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  const url = `${BACKEND_BASE_URL}/assessments/${assignmentId}/`;
+  const url = `${getBackendUrl()}/assessments/${assignmentId}/`;
 
   try {
     const response = await fetch(url, {
@@ -240,7 +240,7 @@ export async function getAssignmentSubmission(
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  const url = `${BACKEND_BASE_URL}/classes/${assignmentId}/submissions/`;
+  const url = `${getBackendUrl()}/classes/${assignmentId}/submissions/`;
 
   try {
     const response = await fetch(url, {

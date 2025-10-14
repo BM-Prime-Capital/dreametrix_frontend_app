@@ -31,7 +31,7 @@ export function StudentClassesTable({ onStatsUpdate, selectedSubject = "all-subj
   const [studentClasses, setStudentClasses] = useState<CourseRead[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null);
-  const { accessToken } = useRequestInfo();
+  const { tenantDomain,accessToken } = useRequestInfo();
   
   // Modal states
   const [studentsModalOpen, setStudentsModalOpen] = useState(false);

@@ -1,5 +1,4 @@
 import { AttendanceResponse, AttendanceQueryParams } from '@/types/attendance';
-import { BACKEND_BASE_URL } from '@/app/utils/constants';
 
 export class AttendanceApiError extends Error {
   constructor(
@@ -14,10 +13,17 @@ export class AttendanceApiError extends Error {
 }
 
 export class AttendanceService {
-  private static baseURL = BACKEND_BASE_URL;
-  
-  static async getStudentAttendance(params: AttendanceQueryParams = {}, accessToken?: string): Promise<AttendanceResponse> {
+  static async getStudentAttendance(tenantDomain: string, params: AttendanceQueryParams = {}, accessToken?: string): Promise<AttendanceResponse> {
     try {
+      // Validate tenant domain
+      if (!tenantDomain || tenantDomain.trim() === '') {
+        throw new AttendanceApiError(
+          'Tenant domain not provided. Please login again.',
+          400,
+          { code: 'NO_TENANT' }
+        );
+      }
+
       // Validate access token
       if (!accessToken || accessToken.trim() === '') {
         throw new AttendanceApiError(
@@ -28,24 +34,24 @@ export class AttendanceService {
       }
 
       const searchParams = new URLSearchParams();
-      
+
       if (params.limit) {
         searchParams.append('limit', params.limit.toString());
       }
-      
+
       if (params.offset) {
         searchParams.append('offset', params.offset.toString());
       }
-      
+
       if (params.date) {
         searchParams.append('date', params.date);
       }
-      
+
       if (params.status) {
         searchParams.append('status', params.status);
       }
 
-      const url = `${this.baseURL}/attendances/student_view/?${searchParams.toString()}`;
+      const url = `https://${tenantDomain}/attendances/student_view/?${searchParams.toString()}`;
       console.log("API URL => ", url);
       console.log("Token length => ", accessToken.length);
       
@@ -84,15 +90,16 @@ export class AttendanceService {
     }
   }
 
-  static async getAttendanceByDate(date: string, accessToken?: string): Promise<AttendanceResponse> {
-    return this.getStudentAttendance({ date }, accessToken);
+  static async getAttendanceByDate(tenantDomain: string, date: string, accessToken?: string): Promise<AttendanceResponse> {
+    return this.getStudentAttendance(tenantDomain, { date }, accessToken);
   }
 
   static async getAttendanceWithPagination(
-    limit: number = 10, 
+    tenantDomain: string,
+    limit: number = 10,
     offset: number = 0,
     accessToken?: string
   ): Promise<AttendanceResponse> {
-    return this.getStudentAttendance({ limit, offset }, accessToken);
+    return this.getStudentAttendance(tenantDomain, { limit, offset }, accessToken);
   }
 }
