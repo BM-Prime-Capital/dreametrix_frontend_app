@@ -31,7 +31,7 @@ export function StudentClassesTable({ onStatsUpdate, selectedSubject = "all-subj
   const [studentClasses, setStudentClasses] = useState<CourseRead[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null);
-  const { accessToken } = useRequestInfo();
+  const { tenantDomain,accessToken } = useRequestInfo();
   
   // Modal states
   const [studentsModalOpen, setStudentsModalOpen] = useState(false);
@@ -50,7 +50,7 @@ export function StudentClassesTable({ onStatsUpdate, selectedSubject = "all-subj
       return;
     }
     try {
-      const res = await getAllClasses(accessToken); // Passe le token
+      const res = await getAllClasses(tenantDomain, accessToken); // Passe le token
 
       if (res && res.data && Array.isArray(res.data.results)) {
         setStudentClasses(res.data.results);
