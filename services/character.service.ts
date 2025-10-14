@@ -1,5 +1,5 @@
 import { CharacterResponse, CharacterQueryParams } from '@/types/character';
-import { BACKEND_BASE_URL } from '@/app/utils/constants';
+import { getBackendUrl } from '@/app/utils/tenant';
 
 export class CharacterApiError extends Error {
   constructor(
@@ -14,7 +14,7 @@ export class CharacterApiError extends Error {
 }
 
 export class CharacterService {
-  private static baseURL = BACKEND_BASE_URL;
+  private static baseURL = getBackendUrl();
   
   static async getStudentCharacterRatings(params: CharacterQueryParams = {}, accessToken?: string): Promise<CharacterResponse> {
     try {

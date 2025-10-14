@@ -88,8 +88,26 @@ export function useLogin() {
       localStorage.setItem(localStorageKey.TENANT_DATA, JSON.stringify(tenantData));
 
       // --- Cookies pour middleware
-      Cookies.set("tenantDomain", data.tenant.primary_domain);
-      Cookies.set(localStorageKey.ACCESS_TOKEN, data.access);
+      Cookies.set("tenantDomain", data.tenant.primary_domain, {
+        expires: 7,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
+      Cookies.set(localStorageKey.ACCESS_TOKEN, data.access, {
+        expires: 7,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
+      Cookies.set(localStorageKey.TENANT_DATA, JSON.stringify(tenantData), {
+        expires: 7,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
+      Cookies.set(localStorageKey.USER_DATA, JSON.stringify(userData), {
+        expires: 7,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
 
       // --- Redux
       dispatch(loginSuccess({ user: userData, tenant: tenantData, token: data.access }));

@@ -16,7 +16,7 @@ import Image from "next/image"
 import { useLoading } from "@/lib/LoadingContext"
 
 export default function ParentAttendancePage() {
-  const { accessToken } = useRequestInfo()
+  const { accessToken, tenantDomain } = useRequestInfo()
   const { stopLoading } = useLoading()
   const [selectedStudent, setSelectedStudent] = useState<string>("all-students")
   const [isReportModalOpen, setIsReportModalOpen] = useState(false)
@@ -43,7 +43,7 @@ export default function ParentAttendancePage() {
     setError(null)
 
     try {
-      const data = await getParentAttendanceView(accessToken)
+      const data = await getParentAttendanceView(tenantDomain, accessToken)
       setAttendanceData(data)
     } catch (error) {
       setError(error instanceof Error ? error.message : "Error loading attendance data")

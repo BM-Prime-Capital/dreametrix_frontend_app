@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BACKEND_BASE_URL } from "@/app/utils/constants";
+import { getBackendUrl } from "@/app/utils/tenant";
 
 // Interface pour les données rewards student
 export interface StudentRewardsData {
@@ -73,7 +73,7 @@ export async function getStudentRewardsView(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
-  const url = `${BACKEND_BASE_URL}/rewards/student-reports/student_view/`;
+  const url = `${getBackendUrl()}/rewards/student-reports/student_view/`;
 
   try {
     const response = await fetch(url, {
@@ -113,7 +113,7 @@ export async function getStudentRewardsDetail(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
-  const url = `${BACKEND_BASE_URL}/rewards/student-reports/${studentId}/student_detail/`;
+  const url = `${getBackendUrl()}/rewards/student-reports/${studentId}/student_detail/`;
 
   try {
     const response = await fetch(url, {
@@ -153,7 +153,7 @@ export async function getParentRewardsView(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
-  const url = `${BACKEND_BASE_URL}/rewards/student-reports/parent_view/`;
+  const url = `${getBackendUrl()}/rewards/student-reports/parent_view/`;
 
   try {
     const response = await fetch(url, {

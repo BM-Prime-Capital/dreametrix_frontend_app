@@ -1,5 +1,5 @@
 import { RewardsResponse, RewardsQueryParams } from '@/types/rewards';
-import { BACKEND_BASE_URL } from '@/app/utils/constants';
+import { getBackendUrl } from '@/app/utils/tenant';
 
 export class RewardsApiError extends Error {
   constructor(
@@ -14,7 +14,7 @@ export class RewardsApiError extends Error {
 }
 
 export class RewardsService {
-  private static baseURL = BACKEND_BASE_URL;
+  private static baseURL = getBackendUrl();
   
   static async getStudentRewards(params: RewardsQueryParams = {}, accessToken?: string): Promise<RewardsResponse> {
     try {

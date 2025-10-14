@@ -1,5 +1,5 @@
 import { AttendanceResponse, AttendanceQueryParams } from '@/types/attendance';
-import { BACKEND_BASE_URL } from '@/app/utils/constants';
+import { getBackendUrl } from '@/app/utils/tenant';
 
 export class AttendanceApiError extends Error {
   constructor(
@@ -14,7 +14,7 @@ export class AttendanceApiError extends Error {
 }
 
 export class AttendanceService {
-  private static baseURL = BACKEND_BASE_URL;
+  private static baseURL = getBackendUrl();
   
   static async getStudentAttendance(params: AttendanceQueryParams = {}, accessToken?: string): Promise<AttendanceResponse> {
     try {

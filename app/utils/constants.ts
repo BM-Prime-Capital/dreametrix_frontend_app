@@ -1,12 +1,13 @@
-import { localStorageKey } from "@/constants/global";
-
-// export const BASE_URL = 'https://saint-agustin.backend-dreametrix.com';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const tenantData: any = localStorage.getItem(localStorageKey.TENANT_DATA);
-
-   
-
-    const { primary_domain } = JSON.parse(tenantData);
-    // const domain = ;
-export const BACKEND_BASE_URL = `https://${primary_domain}`;
+/**
+ * Get the backend base URL dynamically using the tenant domain
+ * This function is primarily for API routes that extract tenant domain from cookies
+ * @param tenantDomain - The tenant's primary domain (e.g., "josue-school")
+ * @returns The full backend URL for the tenant
+ * @throws Error if tenantDomain is not provided
+ */
+export function getBackendBaseUrl(tenantDomain: string): string {
+  if (!tenantDomain) {
+    throw new Error('Tenant domain is required to construct backend URL');
+  }
+  return tenantDomain.startsWith('https://') ? tenantDomain : `https://${tenantDomain}`;
+}
