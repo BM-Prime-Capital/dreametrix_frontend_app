@@ -36,7 +36,7 @@ export default function AllClassFiltersPopUp() {
             onClick={() => setOpen(false)}
           />
 
-          {/* Popup de filtres */}
+          {/* Popup for filters */}
           <div className="fixed top-[calc(12px+var(--header-height))] right-4 z-[1000] w-64 bg-white rounded-lg shadow-lg border p-4">
             <h2 className="font-semibold text-gray-900 pb-3 border-b">
               Filter by
