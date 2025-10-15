@@ -271,7 +271,14 @@ export function AddClassDialog({
 
   useEffect(() => {
     if (open && existingClass) {
-      setSchoolClass(existingClass);
+      console.log("Existing class data:", existingClass);
+      console.log("Existing students:", existingClass.students);
+      
+      // Set the school class with all existing data including students
+      setSchoolClass({
+        ...existingClass,
+        students: existingClass.students || []
+      });
       setClassDays(convertToClassDays(existingClass.hours_and_dates_of_course_schedule));
 
       // Chargez les étudiants si nécessaire
@@ -473,27 +480,41 @@ export function AddClassDialog({
                 {areStudentsLoading ? (
                   <SimpleLoader />
                 ) : students.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
-                    {students.map((student) => (
-                      <div key={student.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`student-${student.id}`}
-                          checked={schoolClass.students.includes(student.id)}
-                          onCheckedChange={(checked) => {
-                            const newStudents = checked
-                              ? [...schoolClass.students, student.id]
-                              : schoolClass.students.filter(id => id !== student.id);
-                            setSchoolClass({
-                              ...schoolClass,
-                              students: newStudents,
-                            });
-                          }}
-                        />
-                        <label htmlFor={`student-${student.id}`} className="text-sm">
-                          {student.firstName} {student.lastName}
-                        </label>
-                      </div>
-                    ))}
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {students.map((student) => {
+                      // Check if student exists in schoolClass.students array (which contains objects with id property)
+                      const studentId = Number(student.id);
+                      const isChecked = schoolClass.students.some(existingStudent => Number(existingStudent.id) === studentId);
+                      console.log(`Student ${student.firstName} ${student.lastName} (ID: ${student.id}) - Checked: ${isChecked}, SchoolClass students:`, schoolClass.students);
+                      return (
+                        <div key={student.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`student-${student.id}`}
+                            checked={isChecked}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                // Add student object to the array
+                                const newStudents = [...schoolClass.students, {id: studentId, full_name: `${student.firstName} ${student.lastName}`}];
+                                setSchoolClass({
+                                  ...schoolClass,
+                                  students: newStudents,
+                                });
+                              } else {
+                                // Remove student from the array
+                                const newStudents = schoolClass.students.filter(existingStudent => Number(existingStudent.id) !== studentId);
+                                setSchoolClass({
+                                  ...schoolClass,
+                                  students: newStudents,
+                                });
+                              }
+                            }}
+                          />
+                          <label htmlFor={`student-${student.id}`} className="text-sm">
+                            {student.firstName} {student.lastName}
+                          </label>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-sm text-gray-500">
