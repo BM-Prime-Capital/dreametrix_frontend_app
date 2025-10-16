@@ -20,12 +20,18 @@ export default function ClassesPage() {
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
             <BookOpen className="h-6 w-6 text-white" />
           </div>
-          <PageTitleH1 title="Classes" className="text-white font-bold text-2xl" />
+          <div>
+            <PageTitleH1 title="Classes" className="text-white font-bold text-2xl"/>
+            <p className="text-blue-100 text-sm mt-1">
+              Manage your classes
+            </p>
+          </div>
+
         </div>
         <div className="flex items-center gap-3">
-          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2">
-            <AllClassFiltersPopUp />
-          </div>
+        {/*<div className="bg-white/10 backdrop-blur-sm rounded-xl p-2">*/}
+        {/*    <AllClassFiltersPopUp />*/}
+        {/*  </div>*/}
         </div>
       </div>
 
@@ -34,12 +40,7 @@ export default function ClassesPage() {
         {/* Action Bar */}
         <div className="flex justify-between items-center mt-2">
           <AddClassDialog setRefreshTime={setRefreshTime} />
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              <span>Manage your classes</span>
-            </div>
-          </div>
+
         </div>
 
         {/* Enhanced Table Card */}

@@ -43,7 +43,7 @@ export function ClassDetailsDialog({
   //   return typeof student === 'number' ? student : student.id;
   // };
 
-  const getStudentsCount = (students: (IStudent | number)[]): number => {
+  const getStudentsCount = (students: (IStudent | number | { id: number; full_name: string })[]): number => {
     return Array.isArray(students) ? students.length : 0;
   };
 
