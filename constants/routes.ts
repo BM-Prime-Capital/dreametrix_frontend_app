@@ -159,8 +159,8 @@ export const SchoolAdminRoutes = [
   // Profile
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/profile`,
-    icon: menuImages.communicate,
-    label: "PROFILE",
+    icon: `/assets/images/teacher/dashboard/profile.svg`,
+    label: "Profile",
   },
 
   // Finance 
