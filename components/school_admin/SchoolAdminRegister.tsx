@@ -867,7 +867,6 @@ useEffect(() => {
                 </PopoverContent>
               </Popover>
               {renderErrorMessage(errors.city, "city")}
-              <p>{formData.city ? formData.city: `${formData.city.length}`}</p>
             </div>
 
             {/* Region */}
