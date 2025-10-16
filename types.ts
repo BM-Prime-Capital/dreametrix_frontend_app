@@ -140,7 +140,7 @@ export interface ISchoolClass {
   description: string;
   grade: string;
   teacher: number;
-  students: number[];
+  students: { id: number; full_name: string }[];
 }
 
 type FileRecord = {
