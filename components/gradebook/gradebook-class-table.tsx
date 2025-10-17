@@ -197,7 +197,7 @@ export function GradebookClassTable({
         assessmentIndex
       );
       if (!submissionId) {
-        console.error("❌ No submission ID found for this assessment:", {
+        console.error("No submission ID found for this assessment:", {
           studentId,
           assessmentType,
           assessmentIndex,
