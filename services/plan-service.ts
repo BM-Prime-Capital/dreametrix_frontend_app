@@ -2,7 +2,7 @@
 // Henock BARAKAEL — Plan & Curriculum Module Service
 // -----------------------------------------------------------------------------
 
-import { BACKEND_BASE_URL } from "@/app/utils/constants";
+import { getBackendUrl } from "@/app/utils/tenant";
 import {
   ScopeAndSequence,
   ScopeSequenceEntry,
@@ -43,8 +43,7 @@ const PLAN_ENDPOINTS = {
 // Helpers communs
 // -----------------------------------------------------------------------------
 function resolveBaseURL(tenantPrimaryDomain?: string): string {
-  const base =
-    (tenantPrimaryDomain && tenantPrimaryDomain.trim()) || BACKEND_BASE_URL;
+  const base = (tenantPrimaryDomain && tenantPrimaryDomain.trim()) || getBackendUrl();
   return base.endsWith("/") ? base.slice(0, -1) : base;
 }
 
