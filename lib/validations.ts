@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export const subjectSchema = z.enum(['ELA', 'Math', 'Science']);
+export const subjectSchema = z.string().min(1, "Subject is required");
+
 export type Subject = z.infer<typeof subjectSchema>;
 
 export const gradeLevelSchema = z.enum([
@@ -59,12 +60,14 @@ export const unitPlanSchema = z.object({
 });
 
 // Schéma pour Lesson Plan
+// In validations.ts - Update the lessonPlanSchema
+// Dans validations.ts
 export const lessonPlanSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(3, "Title must be at least 3 characters"),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
-  subject: subjectSchema,
-  gradeLevel: gradeLevelSchema,
+  subject: z.string().min(1, "Subject is required"),
+  gradeLevel: z.string().min(1, "Grade level is required"),
   unitPlanId: z.string().optional(),
   durationMinutes: z.number().min(5).max(480, "Duration must be between 5-480 minutes"),
   objectives: z.string().min(1, "Objectives are required"),
@@ -76,7 +79,6 @@ export const lessonPlanSchema = z.object({
   homework: z.string().optional(),
   notes: z.string().optional(),
 });
-
 
 
 // Types dérivés des schémas

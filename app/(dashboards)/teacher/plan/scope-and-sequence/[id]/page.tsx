@@ -37,7 +37,7 @@ export default function ScopeAndSequenceDetailPage() {
         console.log("📋 Scope & Sequence details:", data);
         setScopeAndSequence(data);
       } catch (err: any) {
-        console.error("❌ Error loading scope & sequence:", err);
+        console.error("Error loading scope & sequence:", err);
         setError(err.message || "Failed to load scope & sequence");
       } finally {
         setIsLoading(false);

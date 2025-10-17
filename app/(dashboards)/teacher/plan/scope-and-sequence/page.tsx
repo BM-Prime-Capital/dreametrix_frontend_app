@@ -114,7 +114,7 @@ export default function ScopeAndSequencePage() {
       console.log("📋 Scope & Sequences loaded:", data);
       setScopeAndSequences(data);
     } catch (err: any) {
-      console.error("❌ Error loading scope & sequences:", err);
+      console.error("Error loading scope & sequences:", err);
       setError(err.message || "Failed to load scope & sequences");
     } finally {
       setIsLoading(false);

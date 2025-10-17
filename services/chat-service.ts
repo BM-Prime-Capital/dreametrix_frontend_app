@@ -681,7 +681,7 @@ export class ChatRoomService {
 
       return (await response.json()) as ChatRoom;
     } catch (error) {
-      console.error("❌ [ChatRoomService.createChatRoom] Erreur:", error);
+      console.error("[ChatRoomService.createChatRoom] Erreur:", error);
       if (error instanceof ChatApiError) throw error;
       throw new ChatApiError(
         error instanceof Error ? error.message : "Unknown error occurred",

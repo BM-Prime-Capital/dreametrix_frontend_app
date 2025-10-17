@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { SUBJECTS, GRADE_LEVELS, type LessonPlan, type UnitPlan, type Subject, type GradeLevel } from "@/lib/types";
+import { SUBJECTS, GRADE_LEVELS, type LessonPlan, type UnitPlan, type Subject, type GradeLevel, convertLessonPlanToFormData } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { CalendarIcon, Lightbulb, Clock, BookOpen } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -43,47 +43,46 @@ export function LessonPlanForm({ initialData, unitPlans = [], onSubmitSuccess, o
   const { toast } = useToast();
   const [isActivitySuggesterOpen, setIsActivitySuggesterOpen] = useState(false);
 
-  // Fonction pour obtenir les valeurs par défaut avec des valeurs valides
-  const getDefaultValues = (): LessonPlanFormValues => {
-    if (initialData) {
-      return {
-        id: initialData.id || "",
-        title: initialData.title,
-        date: initialData.date,
-        subject: initialData.subject,
-        gradeLevel: initialData.gradeLevel as GradeLevel, 
-        unitPlanId: initialData.unitPlanId || "",
-        durationMinutes: initialData.durationMinutes,
-        objectives: initialData.objectives,
-        standards: initialData.standards,
-        procedures: initialData.procedures,
-        materials: initialData.materials,
-        differentiation: initialData.differentiation || "",
-        assessmentFormative: initialData.assessmentFormative,
-        homework: initialData.homework || "",
-        notes: initialData.notes || "",
-      };
-    }
+  // Use the helper function to get default values
+// Ajoutez ces fonctions helper en haut de votre fichier lesson-plan-form.tsx
+const isValidGradeLevel = (grade: string): grade is GradeLevel => {
+  return GRADE_LEVELS.includes(grade as GradeLevel);
+};
 
-    // Valeurs par défaut avec des valeurs valides pour les enums
-    return {
-      id: "",
-      title: "",
-      date: format(new Date(), "yyyy-MM-dd"),
-      subject: "Math" as Subject, 
-      gradeLevel: "7th Grade" as GradeLevel, 
-      unitPlanId: "",
-      durationMinutes: 45,
-      objectives: "",
-      standards: "",
-      procedures: "",
-      materials: "",
-      differentiation: "",
-      assessmentFormative: "",
-      homework: "",
-      notes: "",
-    };
+const isValidSubject = (subject: string): subject is Subject => {
+  return SUBJECTS.includes(subject as Subject);
+};
+
+const getDefaultValues = (): LessonPlanFormValues => {
+  const formData = convertLessonPlanToFormData(initialData || undefined);
+  
+  // Utiliser les fonctions de validation avec assertion de type
+  const validatedGradeLevel = isValidGradeLevel(formData.gradeLevel) 
+    ? formData.gradeLevel 
+    : "7th Grade";
+
+  const validatedSubject = isValidSubject(formData.subject)
+    ? formData.subject
+    : "Math";
+
+  return {
+    id: formData.id || "",
+    title: formData.title,
+    date: formData.date,
+    subject: validatedSubject,
+    gradeLevel: validatedGradeLevel,
+    unitPlanId: formData.unitPlanId || "",
+    durationMinutes: formData.durationMinutes,
+    objectives: formData.objectives,
+    standards: formData.standards,
+    procedures: formData.procedures,
+    materials: formData.materials,
+    differentiation: formData.differentiation || "",
+    assessmentFormative: formData.assessmentFormative,
+    homework: formData.homework || "",
+    notes: formData.notes || "",
   };
+};
 
   const form = useForm<LessonPlanFormValues>({
     resolver: zodResolver(lessonPlanSchema),
@@ -94,23 +93,42 @@ export function LessonPlanForm({ initialData, unitPlans = [], onSubmitSuccess, o
     try {
       console.log("Lesson Plan submitted:", values);
       
-      // Convertir les données du formulaire en LessonPlan
+      // Convert form data to LessonPlan interface
       const lessonPlanData: LessonPlan = {
+        // Champs de base
         id: initialData?.id || `lesson-${Date.now()}`,
         title: values.title,
         date: values.date,
-        subject: values.subject,
-        gradeLevel: values.gradeLevel,
-        unitPlanId: values.unitPlanId || undefined,
-        durationMinutes: values.durationMinutes,
+        
+        // Champs requis de l'API (snake_case)
+        course: 0, // Vous devrez fournir une valeur appropriée
+        course_name: `${values.subject} - ${values.gradeLevel}`,
+        subject_name: values.subject,
+        grade: values.gradeLevel,
+        duration_minutes: values.durationMinutes,
         objectives: values.objectives,
         standards: values.standards,
         procedures: values.procedures,
         materials: values.materials,
+        assessment_formative: values.assessmentFormative,
+        
+        // Champs optionnels de l'API
+        unit_plan: values.unitPlanId || undefined,
         differentiation: values.differentiation || undefined,
-        assessmentFormative: values.assessmentFormative,
         homework: values.homework || undefined,
         notes: values.notes || undefined,
+        
+        // Champs de métadonnées
+        created_by: 1, // Vous devrez récupérer l'ID de l'utilisateur connecté
+        created_at: initialData?.created_at || new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        
+        // Champs compatibilité (camelCase - optionnels)
+        subject: values.subject as Subject,
+        gradeLevel: values.gradeLevel as GradeLevel,
+        unitPlanId: values.unitPlanId || undefined,
+        durationMinutes: values.durationMinutes,
+        assessmentFormative: values.assessmentFormative,
         createdAt: initialData?.createdAt || new Date(),
         updatedAt: new Date(),
       };

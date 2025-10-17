@@ -8,11 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, BookOpen, Target, Calendar, Link as LinkIcon, X } from "lucide-react";
-import { 
-  GRADE_LEVELS, 
-  NY_STANDARDS, 
-  UnitPlanFormProps, 
+import { BookOpen, Target, Link as LinkIcon, X } from "lucide-react";
+import {
+  NY_STANDARDS,
+  UnitPlanFormProps,
   SUBJECTS,
   type ScopeAndSequence,
   convertUnitPlanToFormData,
@@ -22,35 +21,48 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ClassService, UnitPlanService, ScopeAndSequenceService } from "@/services/plan-service";
 import { localStorageKey } from "@/constants/global";
 
-export function UnitPlanForm({ 
-  initialData, 
-  scopeSequences = [], 
-  onSubmitSuccess 
+export function UnitPlanForm({
+  initialData,
+  scopeSequences = [],
+  onSubmitSuccess
 }: UnitPlanFormProps) {
   const router = useRouter();
-  const accessToken: any = typeof window !== 'undefined' ? localStorage.getItem(localStorageKey.ACCESS_TOKEN) : null;
-  const tenantData: any = typeof window !== 'undefined' ? localStorage.getItem(localStorageKey.TENANT_DATA) : null;
-  const { primary_domain } = tenantData ? JSON.parse(tenantData) : { primary_domain: '' };
+  const accessToken: any =
+    typeof window !== "undefined"
+      ? localStorage.getItem(localStorageKey.ACCESS_TOKEN)
+      : null;
+  const tenantData: any =
+    typeof window !== "undefined"
+      ? localStorage.getItem(localStorageKey.TENANT_DATA)
+      : null;
+  const { primary_domain } = tenantData ? JSON.parse(tenantData) : { primary_domain: "" };
   const tenantPrimaryDomain = `https://${primary_domain}`;
 
   const [classes, setClasses] = useState<{ id: number; subject: string; grade: string }[]>([]);
-  const [availableScopeSequences, setAvailableScopeSequences] = useState<ScopeAndSequence[]>(scopeSequences);
+  const [availableScopeSequences, setAvailableScopeSequences] =
+    useState<ScopeAndSequence[]>(scopeSequences);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Initialiser avec des valeurs par défaut appropriées
-  const [formData, setFormData] = useState<UnitPlanFormData>(() => {
-    const data = convertUnitPlanToFormData(initialData);
-    return {
-      ...data,
-      subject: data.subject || undefined,
-      gradeLevel: data.gradeLevel || undefined,
-      scopeSequenceId: data.scopeSequenceId || undefined,
-    };
-  });
+const [formData, setFormData] = useState<UnitPlanFormData>(() => {
+  const data = convertUnitPlanToFormData(initialData);
+  return {
+    ...data,
+    subject: data.subject || "",
+    gradeLevel: data.gradeLevel || "",
+    scopeSequenceId: data.scopeSequenceId || "",
+    durationWeeks: data.durationWeeks || 3,
+    essentialQuestions: data.essentialQuestions || "",
+    learningObjectives: data.learningObjectives || "",
+    assessmentsFormative: data.assessmentsFormative || "",
+    assessmentsSummative: data.assessmentsSummative || "",
+    pacingCalendar: data.pacingCalendar || "",
+    activities: data.activities || "",
+    materials: data.materials || "",
+    // Assurez-vous que tous les champs requis ont des valeurs par défaut
+  };
+});
 
-  const [selectedStandards, setSelectedStandards] = useState<string[]>(
-    formData.standards || []
-  );
+  const [selectedStandards, setSelectedStandards] = useState<string[]>(formData.standards || []);
 
   // Charger les classes et scope sequences
   useEffect(() => {
@@ -60,7 +72,6 @@ export function UnitPlanForm({
           ClassService.list(tenantPrimaryDomain, accessToken),
           ScopeAndSequenceService.list(tenantPrimaryDomain, accessToken)
         ]);
-        
         setClasses(classesData);
         setAvailableScopeSequences(scopeSequencesData);
       } catch (error) {
@@ -73,108 +84,170 @@ export function UnitPlanForm({
     }
   }, [accessToken, tenantPrimaryDomain]);
 
+  // Après le useEffect qui charge les classes, ajoutez:
+useEffect(() => {
+  console.log("📚 Classes loaded:", classes);
+  console.log("📝 Current form data:", formData);
+  
+  if (formData.subject && formData.gradeLevel) {
+    const matchingClass = classes.find(
+      (cls) =>
+        cls.subject.trim().toLowerCase() === formData.subject?.trim().toLowerCase() &&
+        cls.grade.replace(/Class\s*/i, "").trim() ===
+          formData.gradeLevel?.replace(/Class\s*/i, "").trim()
+    );
+    console.log("🔍 Matching class:", matchingClass);
+  }
+}, [classes, formData.subject, formData.gradeLevel]);
+
   const updateField = (field: keyof UnitPlanFormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleAddStandard = (standard: string) => {
     if (standard && !selectedStandards.includes(standard)) {
       const newStandards = [...selectedStandards, standard];
       setSelectedStandards(newStandards);
-      updateField('standards', newStandards);
+      updateField("standards", newStandards);
     }
   };
 
   const handleRemoveStandard = (standard: string) => {
-    const newStandards = selectedStandards.filter(s => s !== standard);
+    const newStandards = selectedStandards.filter((s) => s !== standard);
     setSelectedStandards(newStandards);
-    updateField('standards', newStandards);
+    updateField("standards", newStandards);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  //  Version corrigée du handleSubmit
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  // Validation des champs requis
+  const requiredFields = [
+    { key: 'title', label: 'Unit Title' },
+    { key: 'subject', label: 'Subject' },
+    { key: 'gradeLevel', label: 'Grade Level' },
+    { key: 'durationWeeks', label: 'Duration' },
+    { key: 'essentialQuestions', label: 'Essential Questions' },
+    { key: 'learningObjectives', label: 'Learning Objectives' },
+    { key: 'assessmentsFormative', label: 'Formative Assessments' },
+    { key: 'assessmentsSummative', label: 'Summative Assessments' },
+    { key: 'pacingCalendar', label: 'Pacing Calendar' },
+    { key: 'activities', label: 'Activities' },
+    { key: 'materials', label: 'Materials' }
+  ];
+  
+  const missingFields = requiredFields.filter(({ key }) => {
+    const value = formData[key as keyof UnitPlanFormData];
+    return !value || (typeof value === 'string' && value.trim() === '');
+  });
+
+  if (missingFields.length > 0) {
+    const fieldNames = missingFields.map(f => f.label).join(', ');
+    alert(`Please fill in all required fields: ${fieldNames}`);
+    return;
+  }
+
+  // Validation des standards
+  if (selectedStandards.length === 0) {
+    alert("Please add at least one NY State Standard");
+    return;
+  }
+
+  // Matching des classes
+  const selectedClass = classes.find((cls) => {
+    const formSubject = formData.subject?.trim().toLowerCase();
+    const formGrade = formData.gradeLevel?.replace(/Class\s*/i, "").trim();
     
-    // Validation
-    if (!formData.title || !formData.subject || !formData.gradeLevel) {
-      alert("Please fill in all required fields");
-      return;
-    }
+    const classSubject = cls.subject.trim().toLowerCase();
+    const classGrade = cls.grade.trim();
+    
+    return classSubject === formSubject && classGrade === formGrade;
+  });
 
-    // Trouver l'ID de la classe correspondante
-    const selectedClass = classes.find(cls => 
-      cls.subject === formData.subject && cls.grade === formData.gradeLevel
-    );
+  if (!selectedClass?.id) {
+    alert("No matching class found for this subject and grade.");
+    return;
+  }
 
-    if (!selectedClass) {
-      alert("Please select a valid subject and grade level combination");
-      return;
-    }
+  try {
+    setIsLoading(true);
 
-    try {
-      setIsLoading(true);
+    //  CORRECTION: Payload direct sans transformation complexe
+    const payload = {
+      title: formData.title,
+      course: Number(selectedClass.id),
+      scope_sequence: formData.scopeSequenceId ? Number(formData.scopeSequenceId) : null,
+      duration_weeks: Number(formData.durationWeeks) || 1,
+      start_date: formData.startDate || null,
+      end_date: formData.endDate || null,
+      big_idea: formData.bigIdea || "",
+      essential_questions: formData.essentialQuestions,
+      standards: selectedStandards.join(", "),
+      learning_objectives: formData.learningObjectives,
+      assessments_formative: formData.assessmentsFormative,
+      assessments_summative: formData.assessmentsSummative,
+      activities: formData.activities,
+      materials: formData.materials,
+      pacing_calendar: formData.pacingCalendar,
+      differentiation_strategies: formData.differentiationStrategies || ""
+    };
 
-      // Préparer les données pour l'API (conversion camelCase → snake_case)
-      const payload = {
-        title: formData.title,
-        course: selectedClass.id,
-        scope_sequence: formData.scopeSequenceId || null,
-        duration_weeks: formData.durationWeeks,
-        start_date: formData.startDate || null,
-        end_date: formData.endDate || null,
-        big_idea: formData.bigIdea || "",
-        essential_questions: formData.essentialQuestions,
-        standards: selectedStandards.join(', '),
-        learning_objectives: formData.learningObjectives,
-        assessments_formative: formData.assessmentsFormative,
-        assessments_summative: formData.assessmentsSummative,
-        activities: formData.activities,
-        materials: formData.materials,
-        pacing_calendar: formData.pacingCalendar,
-        differentiation_strategies: formData.differentiationStrategies || "",
-      };
+    console.log("📤 [handleSubmit] Sending payload to service:", payload);
 
-      console.log("Sending unit plan payload:", payload);
+    //  CORRECTION: Appel direct sans "as any"
+    const result = initialData?.id
+      ? await UnitPlanService.update(tenantPrimaryDomain, accessToken, initialData.id, payload)
+      : await UnitPlanService.create(tenantPrimaryDomain, accessToken, payload);
 
-      let result;
-      if (initialData?.id) {
-        // Mise à jour
-        result = await UnitPlanService.update(
-          tenantPrimaryDomain,
-          accessToken,
-          initialData.id,
-          payload as any
-        );
-      } else {
-        // Création
-        result = await UnitPlanService.create(
-          tenantPrimaryDomain,
-          accessToken,
-          payload as any
-        );
-      }
+    console.log(" Unit Plan saved:", result);
 
-      console.log("Unit Plan saved:", result);
-      
-      if (onSubmitSuccess) {
-        onSubmitSuccess(result);
-      } else {
-        // Redirection par défaut
-        router.push('/teacher/plan/unit-plans');
-      }
-    } catch (error: any) {
-      console.error("Error saving unit plan:", error);
+    onSubmitSuccess?.(result) ?? router.push("/teacher/plan/unit-plans");
+  } catch (error: any) {
+    console.error("Error saving unit plan:", error);
+    
+    if (error.response?.data) {
+      console.error("Error details:", error.response.data);
+      alert(`Error: ${JSON.stringify(error.response.data)}`);
+    } else {
       alert(`Error: ${error.message || "Unknown error"}`);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  } finally {
+    setIsLoading(false);
+  }
+};
 
-  const selectedScopeSequence = availableScopeSequences.find(s => s.id === formData.scopeSequenceId);
+// Ajoutez cet useEffect pour debugger le matching en temps réel
+// Ajoutez ce useEffect pour voir l'état de formData en temps réel
+useEffect(() => {
+  console.log("🔄 FormData updated:", {
+    title: formData.title,
+    subject: formData.subject,
+    gradeLevel: formData.gradeLevel,
+    durationWeeks: formData.durationWeeks,
+    essentialQuestions: formData.essentialQuestions,
+    learningObjectives: formData.learningObjectives,
+    assessmentsFormative: formData.assessmentsFormative,
+    assessmentsSummative: formData.assessmentsSummative,
+    pacingCalendar: formData.pacingCalendar,
+    activities: formData.activities,
+    materials: formData.materials
+  });
+}, [formData]);
 
-  // Filtrer les standards par sujet sélectionné
+  const selectedScopeSequence = availableScopeSequences.find(
+    (s) => s.id === formData.scopeSequenceId
+  );
+
   const filteredStandards = formData.subject
-    ? (NY_STANDARDS[formData.subject as keyof typeof NY_STANDARDS] || []).filter(standard => standard.trim() !== "")
-    : Object.values(NY_STANDARDS).flat().filter(standard => standard.trim() !== "");
+    ? (
+        NY_STANDARDS[
+          formData.subject.toUpperCase() as keyof typeof NY_STANDARDS
+        ] || []
+      ).filter((standard) => standard.trim() !== "")
+    : Object.values(NY_STANDARDS)
+        .flat()
+        .filter((standard) => standard.trim() !== "");
 
   return (
     <form onSubmit={handleSubmit}>
@@ -262,26 +335,24 @@ export function UnitPlanForm({
 
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="gradeLevel">Grade Level *</Label>
-                <Select
-                  value={formData.gradeLevel || undefined}
-                  onValueChange={(value) => updateField('gradeLevel', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select grade" />
-                  </SelectTrigger>
-                <SelectContent>
-                  {[...new Set(classes.map(c => c.grade).filter(g => g && g.trim() !== ""))].map((grade) => (
-                    <SelectItem key={grade} value={grade}>
-                      {grade}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-
-                </Select>
-
-              </div>
+<div className="space-y-2">
+  <Label htmlFor="gradeLevel">Grade Level *</Label>
+  <Select
+    value={formData.gradeLevel || undefined}
+    onValueChange={(value) => updateField('gradeLevel', value)}
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="Select grade" />
+    </SelectTrigger>
+    <SelectContent>
+      {[...new Set(classes.map(c => c.grade).filter(g => g && g.trim() !== ""))].map((grade) => (
+        <SelectItem key={grade} value={grade}>
+          Class {grade} {/*  Affichez "Class 5", "Class 6" etc. */}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+</div>
 
               <div className="space-y-2">
                 <Label htmlFor="duration">Duration (weeks) *</Label>
@@ -319,7 +390,7 @@ export function UnitPlanForm({
             </div>
           </section>
 
-          {/* Section 2: Standards et Objectifs */}
+
           <section>
             <h3 className="text-lg font-semibold mb-4">Standards & Objectives</h3>
             <div className="space-y-4">
@@ -331,15 +402,14 @@ export function UnitPlanForm({
                       <SelectValue placeholder="Add standards..." />
                     </SelectTrigger>
                     <SelectContent>
-                        {filteredStandards
-                          .filter(s => s && s.trim() !== "")
-                          .map(standard => (
-                            <SelectItem key={standard} value={standard}>
-                              {standard}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-
+                      {filteredStandards
+                        .filter(s => s && s.trim() !== "")
+                        .map(standard => (
+                          <SelectItem key={standard} value={standard}>
+                            {standard}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
                   </Select>
                   
                   <div className="flex flex-wrap gap-2">
@@ -373,23 +443,28 @@ export function UnitPlanForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="essentialQuestions">Essential Questions</Label>
+                <Label htmlFor="essentialQuestions">
+                  Essential Questions <span className="text-red-500">*</span>
+                </Label>
                 <Textarea
                   id="essentialQuestions"
-                  value={formData.essentialQuestions || ''}
+                  value={formData.essentialQuestions} //  Pas de fallback empty string
                   onChange={(e) => updateField('essentialQuestions', e.target.value)}
-                  placeholder="How can we use algebra to solve real-world problems? What patterns can we find in mathematical relationships?"
+                  placeholder="How can we use algebra to solve real-world problems?..."
                   rows={3}
+                  required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="learningObjectives">Learning Objectives *</Label>
+                <Label htmlFor="learningObjectives">
+                  Learning Objectives <span className="text-red-500">*</span>
+                </Label>
                 <Textarea
                   id="learningObjectives"
-                  value={formData.learningObjectives || ''}
+                  value={formData.learningObjectives} //  Pas de fallback empty string
                   onChange={(e) => updateField('learningObjectives', e.target.value)}
-                  placeholder="Students will be able to solve linear equations, graph functions, and apply algebraic concepts to real-world problems..."
+                  placeholder="Students will be able to..."
                   rows={4}
                   required
                 />
@@ -397,15 +472,16 @@ export function UnitPlanForm({
             </div>
           </section>
 
-          {/* Section 3: Activités et Ressources */}
           <section>
             <h3 className="text-lg font-semibold mb-4">Activities & Resources</h3>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="activities">Key Activities & Strategies *</Label>
+                <Label htmlFor="activities">
+                  Key Activities & Strategies <span className="text-red-500">*</span>
+                </Label>
                 <Textarea
                   id="activities"
-                  value={formData.activities || ''}
+                  value={formData.activities} //  Pas de fallback empty string
                   onChange={(e) => updateField('activities', e.target.value)}
                   placeholder="Direct instruction on solving equations, collaborative problem-solving activities, real-world application projects, technology integration with graphing calculators..."
                   rows={5}
@@ -414,10 +490,12 @@ export function UnitPlanForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="materials">Materials & Resources *</Label>
+                <Label htmlFor="materials">
+                  Materials & Resources <span className="text-red-500">*</span>
+                </Label>
                 <Textarea
                   id="materials"
-                  value={formData.materials || ''}
+                  value={formData.materials} //  Pas de fallback empty string
                   onChange={(e) => updateField('materials', e.target.value)}
                   placeholder="Textbook Chapter 3, worksheets, graphing calculators, online algebra tools, manipulatives for visual learners..."
                   rows={4}
@@ -427,46 +505,55 @@ export function UnitPlanForm({
             </div>
           </section>
 
-          {/* Section 4: Évaluations */}
+
           <section>
             <h3 className="text-lg font-semibold mb-4">Assessments</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="formativeAssessments">Formative Assessments</Label>
+                <Label htmlFor="formativeAssessments">
+                  Formative Assessments <span className="text-red-500">*</span>
+                </Label>
                 <Textarea
                   id="formativeAssessments"
-                  value={formData.assessmentsFormative || ''}
+                  value={formData.assessmentsFormative} //  Pas de fallback empty string
                   onChange={(e) => updateField('assessmentsFormative', e.target.value)}
                   placeholder="Exit tickets, class discussions, homework assignments, quick checks for understanding..."
                   rows={4}
+                  required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="summativeAssessments">Summative Assessments</Label>
+                <Label htmlFor="summativeAssessments">
+                  Summative Assessments <span className="text-red-500">*</span>
+                </Label>
                 <Textarea
                   id="summativeAssessments"
-                  value={formData.assessmentsSummative || ''}
+                  value={formData.assessmentsSummative} //  Pas de fallback empty string
                   onChange={(e) => updateField('assessmentsSummative', e.target.value)}
                   placeholder="Unit test, final project, presentation, portfolio assessment..."
                   rows={4}
+                  required
                 />
               </div>
             </div>
           </section>
 
-          {/* Section 5: Calendrier et Différenciation */}
+
           <section>
             <h3 className="text-lg font-semibold mb-4">Pacing & Differentiation</h3>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="pacingCalendar">Pacing Calendar</Label>
+                <Label htmlFor="pacingCalendar">
+                  Pacing Calendar <span className="text-red-500">*</span>
+                </Label>
                 <Textarea
                   id="pacingCalendar"
-                  value={formData.pacingCalendar || ''}
+                  value={formData.pacingCalendar} //  Pas de fallback empty string
                   onChange={(e) => updateField('pacingCalendar', e.target.value)}
                   placeholder="Week 1: Introduction to variables and expressions, Week 2: Solving one-step equations, Week 3: Graphing linear equations, Week 4: Real-world applications and review..."
                   rows={4}
+                  required
                 />
               </div>
 
@@ -482,6 +569,7 @@ export function UnitPlanForm({
               </div>
             </div>
           </section>
+
           {/* Boutons de soumission avec style cohérent */}
           <div className="flex justify-end gap-4 pt-6 border-t">
             <Button 

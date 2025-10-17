@@ -313,7 +313,7 @@ export default function DigitalLibrary() {
           matchedGrade = possibleMatches[0];
           console.log("Fuzzy grade match found:", matchedGrade);
         } else {
-          console.log("❌ No grade match found for:", extractedGrade);
+          console.log("No grade match found for:", extractedGrade);
           // Clear pending auto-population and flag
           setPendingAutoPopulation(null);
           setIsAutoPopulating(false);

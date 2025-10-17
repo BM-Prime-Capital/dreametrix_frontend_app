@@ -20,110 +20,77 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SUBJECTS, GRADE_LEVELS } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-
-// Mock data amélioré
-const mockLessonPlans: LessonPlan[] = [
-  {
-    id: '1',
-    title: 'Complementary Angles Practice',
-    date: new Date().toISOString().split('T')[0],
-    subject: 'Math',
-    gradeLevel: '7th Grade',
-    unitPlanId: 'unit1',
-    durationMinutes: 45,
-    objectives: 'SWBAT solve problems involving complementary angles and apply angle relationships in real-world contexts.',
-    standards: 'NY-NGLS.MATH.CONTENT.7.G.B.5',
-    procedures: '1. Review definition of complementary angles. 2. Guided examples on whiteboard. 3. Independent practice worksheet. 4. Exit ticket assessment.',
-    materials: 'Worksheet, protractors, whiteboard, markers, geometric shapes',
-    differentiation: 'Scaffolded worksheets for struggling learners, challenge problems for advanced students',
-    assessmentFormative: 'Collect and review worksheet, exit ticket with 3 problems',
-    homework: 'Textbook problems p. 45-46',
-    notes: 'Focus on real-world applications of angles',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '2',
-    title: 'Introduction to Figurative Language',
-    date: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0],
-    subject: 'ELA',
-    gradeLevel: '6th Grade',
-    unitPlanId: 'unit2',
-    durationMinutes: 50,
-    objectives: 'SWBAT identify examples of similes and metaphors in text and create their own figurative language examples.',
-    standards: 'NY-NGLS.ELA-LITERACY.RL.6.4',
-    procedures: '1. Define simile and metaphor with examples. 2. Group activity: identify examples in short story. 3. Create original examples. 4. Share and discuss.',
-    materials: 'Short story handout, chart paper, markers, figurative language anchor chart',
-    assessmentFormative: 'Exit slip: write one simile and one metaphor',
-    homework: 'Find 3 examples of figurative language in a book you are reading',
-    notes: 'Use visual aids to support ELL students',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-];
-
-const mockUnitPlans: UnitPlan[] = [
-  {
-    id: 'unit1',
-    title: 'Geometry and Angle Relationships',
-    subject: 'Math',
-    gradeLevel: '7th Grade',
-    durationWeeks: 3,
-    essentialQuestions: 'How do angle relationships help us solve real-world problems?',
-    standards: 'NY-NGLS.MATH.CONTENT.7.G.B.5',
-    learningObjectives: 'Understand and apply angle relationships',
-    assessmentsFormative: 'Worksheets, exit tickets',
-    assessmentsSummative: 'Unit test, project',
-    activities: 'Hands-on activities, group work',
-    materials: 'Protractors, worksheets',
-    pacingCalendar: 'Week 1: Basic angles, Week 2: Angle relationships, Week 3: Applications',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: 'unit2',
-    title: 'Literary Analysis and Figurative Language',
-    subject: 'ELA',
-    gradeLevel: '6th Grade',
-    durationWeeks: 2,
-    essentialQuestions: 'How does figurative language enhance storytelling?',
-    standards: 'NY-NGLS.ELA-LITERACY.RL.6.4',
-    learningObjectives: 'Analyze and create figurative language',
-    assessmentsFormative: 'Reading responses, discussions',
-    assessmentsSummative: 'Literary essay',
-    activities: 'Close reading, creative writing',
-    materials: 'Texts, writing materials',
-    pacingCalendar: 'Week 1: Identification, Week 2: Creation',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }
-];
+import { LessonPlanService, UnitPlanService } from '@/services/plan-service';
+import { localStorageKey } from '@/constants/global';
 
 export default function LessonPlansPage() {
   const [lessonPlans, setLessonPlans] = useState<LessonPlan[]>([]);
+  const [unitPlans, setUnitPlans] = useState<UnitPlan[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [currentPlan, setCurrentPlan] = useState<LessonPlan | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [subjectFilter, setSubjectFilter] = useState<string>("all");
   const [gradeFilter, setGradeFilter] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Récupérer le token et les données du tenant
+  const accessToken: any = typeof window !== 'undefined' ? localStorage.getItem(localStorageKey.ACCESS_TOKEN) : null;
+  const tenantData: any = typeof window !== 'undefined' ? localStorage.getItem(localStorageKey.TENANT_DATA) : null;
+  const { primary_domain } = tenantData ? JSON.parse(tenantData) : { primary_domain: '' };
+  const tenantPrimaryDomain = `https://${primary_domain}`;
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLessonPlans(mockLessonPlans);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+    const fetchData = async () => {
+      if (!accessToken || !tenantPrimaryDomain) return;
 
-  const handleSuccess = (plan: LessonPlan) => {
-    if (editingId) {
-      setLessonPlans(prev => prev.map(p => p.id === editingId ? plan : p));
-    } else {
-      setLessonPlans(prev => [...prev, { ...plan, id: `lesson-${Date.now()}` }]);
+      try {
+        setIsLoading(true);
+        const [lessonPlansData, unitPlansData] = await Promise.all([
+          LessonPlanService.list(tenantPrimaryDomain, accessToken),
+          UnitPlanService.list(tenantPrimaryDomain, accessToken)
+        ]);
+        
+        setLessonPlans(lessonPlansData);
+        setUnitPlans(unitPlansData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [accessToken, tenantPrimaryDomain]);
+
+  const handleSuccess = async (plan: LessonPlan) => {
+    try {
+      if (editingId) {
+        // Mettre à jour le lesson plan existant
+        const updatedPlan = await LessonPlanService.update(
+          tenantPrimaryDomain, 
+          accessToken, 
+          editingId, 
+          plan
+        );
+        setLessonPlans(prev => prev.map(p => p.id === editingId ? updatedPlan : p));
+      } else {
+        // Créer un nouveau lesson plan
+        const newPlan = await LessonPlanService.create(
+          tenantPrimaryDomain, 
+          accessToken, 
+          plan
+        );
+        setLessonPlans(prev => [...prev, newPlan]);
+      }
+      
+      setIsDialogOpen(false);
+      setEditingId(null);
+      setCurrentPlan(null);
+    } catch (error) {
+      console.error("Error saving lesson plan:", error);
+      alert("Error saving lesson plan. Please try again.");
     }
-    setIsDialogOpen(false);
-    setEditingId(null);
-    setCurrentPlan(null);
   };
 
   const handleEdit = (clickedLessonPlan: LessonPlan) => {
@@ -143,8 +110,16 @@ export default function LessonPlansPage() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (planId: string) => {
-    setLessonPlans(prev => prev.filter(plan => plan.id !== planId));
+  const handleDelete = async (planId: string) => {
+    if (confirm("Are you sure you want to delete this lesson plan?")) {
+      try {
+        await LessonPlanService.delete(tenantPrimaryDomain, accessToken, planId);
+        setLessonPlans(prev => prev.filter(plan => plan.id !== planId));
+      } catch (error) {
+        console.error("Error deleting lesson plan:", error);
+        alert("Error deleting lesson plan. Please try again.");
+      }
+    }
   };
 
   const getSubjectColor = (subject: string) => {
@@ -156,20 +131,37 @@ export default function LessonPlansPage() {
     }
   };
 
-  const getUnitPlanTitle = (unitPlanId: string) => {
-    const unit = mockUnitPlans.find(u => u.id === unitPlanId);
-    return unit ? unit.title : "No unit linked";
-  };
+const getUnitPlanTitle = (unitPlanId: string | undefined) => {
+  if (!unitPlanId) return "No unit linked";
+  const unit = unitPlans.find(u => u.id === unitPlanId);
+  return unit ? unit.title : "No unit linked";
+};
 
   // Filtrage des lesson plans
-  const filteredLessonPlans = lessonPlans.filter(plan => {
-    const matchesSearch = plan.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         plan.objectives.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSubject = subjectFilter === "all" || plan.subject === subjectFilter;
-    const matchesGrade = gradeFilter === "all" || plan.gradeLevel === gradeFilter;
-    
-    return matchesSearch && matchesSubject && matchesGrade;
-  });
+const filteredLessonPlans = lessonPlans.filter(plan => {
+  const matchesSearch = plan.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       (plan.objectives || "").toLowerCase().includes(searchTerm.toLowerCase());
+  const matchesSubject = subjectFilter === "all" || plan.subject === subjectFilter;
+  const matchesGrade = gradeFilter === "all" || plan.gradeLevel === gradeFilter;
+  
+  return matchesSearch && matchesSubject && matchesGrade;
+});
+
+  if (isLoading) {
+    return (
+      <div className="w-full space-y-8">
+        <header className="bg-[#3e81d4] px-4 py-3 rounded-md">
+          <div className="flex items-center gap-4">
+            <PageTitleH1 title="Lesson Plans" className="text-white" />
+          </div>
+        </header>
+        <div className="text-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3e81d4] mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading lesson plans...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full space-y-8">
@@ -284,7 +276,7 @@ export default function LessonPlansPage() {
             </DialogDescription>
           </DialogHeader>
           <LessonPlanForm 
-            unitPlans={mockUnitPlans} 
+            unitPlans={unitPlans} 
             onSubmitSuccess={handleSuccess} 
             initialData={currentPlan}
             onCancel={() => {
@@ -330,121 +322,131 @@ export default function LessonPlansPage() {
 
       {/* Grille des Lesson Plans */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredLessonPlans.map((plan) => (
-          <Card key={plan.id} className="flex flex-col hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    {plan.subject === 'Math' ?
-                      <Calculator className="h-5 w-5 text-blue-500" /> :
-                      <BookOpenText className="h-5 w-5 text-green-500" />
-                    }
-                    <CardTitle className="font-headline text-lg line-clamp-2">
-                      {plan.title}
-                    </CardTitle>
-                  </div>
-                  <CardDescription>
-                    {format(new Date(plan.date), "PPP")} • {plan.durationMinutes} min
-                  </CardDescription>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleEdit(plan)}>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleDuplicate(plan)}>
-                      <Copy className="mr-2 h-4 w-4" />
-                      Duplicate
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => handleDelete(plan.id)}
-                      className="text-red-600"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                <Badge className={getSubjectColor(plan.subject)}>
-                  {plan.subject}
-                </Badge>
-                <Badge variant="outline">
-                  {plan.gradeLevel}
-                </Badge>
-                {plan.unitPlanId && (
-                  <Badge variant="secondary" className="text-xs">
-                    Unit: {getUnitPlanTitle(plan.unitPlanId)}
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="flex-grow">
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium mb-1">Objectives:</p>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {plan.objectives}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium mb-1">Assessment:</p>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {plan.assessmentFormative}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link href={`/teacher/plan/lesson-plans/${plan.id}`}>
-                  View Details
-                </Link>
+        {filteredLessonPlans.map((plan) => {
+  const duration = plan.durationMinutes || plan.duration_minutes || 0;
+  const subject = plan.subject || plan.subject_name || "";
+  const gradeLevel = plan.gradeLevel || plan.grade || "";
+  const objectives = plan.objectives || "";
+  const assessmentFormative = plan.assessmentFormative || plan.assessment_formative || "";
+  const unitPlanId = plan.unitPlanId || plan.unit_plan;
+
+  return (
+    <Card key={plan.id} className="flex flex-col hover:shadow-lg transition-shadow">
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-start">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              {subject === 'Math' ?
+                <Calculator className="h-5 w-5 text-blue-500" /> :
+                <BookOpenText className="h-5 w-5 text-green-500" />
+              }
+              <CardTitle className="font-headline text-lg line-clamp-2">
+                {plan.title}
+              </CardTitle>
+            </div>
+            <CardDescription>
+              {format(new Date(plan.date), "PPP")} • {duration} min
+            </CardDescription>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreVertical className="h-4 w-4" />
               </Button>
-            </CardFooter>
-          </Card>
-        ))}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleEdit(plan)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDuplicate(plan)}>
+                <Copy className="mr-2 h-4 w-4" />
+                Duplicate
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleDelete(plan.id)}
+                className="text-red-600"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-2">
+          <Badge className={getSubjectColor(subject)}>
+            {subject}
+          </Badge>
+          <Badge variant="outline">
+            {gradeLevel}
+          </Badge>
+          {unitPlanId && (
+            <Badge variant="secondary" className="text-xs">
+              Unit: {getUnitPlanTitle(unitPlanId)}
+            </Badge>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="flex-grow">
+        <div className="space-y-3">
+          <div>
+            <p className="text-sm font-medium mb-1">Objectives:</p>
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {objectives}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm font-medium mb-1">Assessment:</p>
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {assessmentFormative}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Button variant="outline" size="sm" className="w-full" asChild>
+          <Link href={`/teacher/plan/lesson-plans/${plan.id}`}>
+            View Details
+          </Link>
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+        })}
       </div>
 
       {/* Statistiques */}
-      {lessonPlans.length > 0 && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-bold">{lessonPlans.length}</p>
-                <p className="text-sm text-muted-foreground">Total Lessons</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {Math.round(lessonPlans.reduce((acc, plan) => acc + plan.durationMinutes, 0) / 60)}
-                </p>
-                <p className="text-sm text-muted-foreground">Total Hours</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {new Set(lessonPlans.map(plan => plan.subject)).size}
-                </p>
-                <p className="text-sm text-muted-foreground">Subjects</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {new Set(lessonPlans.map(plan => plan.gradeLevel)).size}
-                </p>
-                <p className="text-sm text-muted-foreground">Grade Levels</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+{lessonPlans.length > 0 && (
+  <Card>
+    <CardContent className="p-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+        <div>
+          <p className="text-2xl font-bold">{lessonPlans.length}</p>
+          <p className="text-sm text-muted-foreground">Total Lessons</p>
+        </div>
+        <div>
+          <p className="text-2xl font-bold">
+            {Math.round(lessonPlans.reduce((acc, plan) => 
+              acc + (plan.durationMinutes || plan.duration_minutes || 0), 0) / 60)}
+          </p>
+          <p className="text-sm text-muted-foreground">Total Hours</p>
+        </div>
+        <div>
+          <p className="text-2xl font-bold">
+            {new Set(lessonPlans.map(plan => plan.subject || plan.subject_name || "")).size}
+          </p>
+          <p className="text-sm text-muted-foreground">Subjects</p>
+        </div>
+        <div>
+          <p className="text-2xl font-bold">
+            {new Set(lessonPlans.map(plan => plan.gradeLevel || plan.grade || "")).size}
+          </p>
+          <p className="text-sm text-muted-foreground">Grade Levels</p>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+)}
     </div>
   );
 }

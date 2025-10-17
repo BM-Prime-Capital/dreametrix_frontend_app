@@ -1,6 +1,5 @@
 "use client";
-
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,12 +8,12 @@ import { ArrowLeft, Calendar, BookOpen, Edit, Trash2, Clock, Target, Link as Lin
 import { UnitPlanService } from '@/services/plan-service';
 import { localStorageKey } from '@/constants/global';
 import type { UnitPlan } from '@/lib/types';
+import { RichTextEditor } from '@/components/RichTextEditor';
 
 export default function UnitPlanDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-
   const accessToken: any = typeof window !== 'undefined' ? localStorage.getItem(localStorageKey.ACCESS_TOKEN) : null;
   const tenantData: any = typeof window !== 'undefined' ? localStorage.getItem(localStorageKey.TENANT_DATA) : null;
   const { primary_domain } = tenantData ? JSON.parse(tenantData) : { primary_domain: '' };
@@ -23,6 +22,7 @@ export default function UnitPlanDetailPage() {
   const [unitPlan, setUnitPlan] = useState<UnitPlan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const fetchUnitPlan = async () => {
@@ -32,25 +32,70 @@ export default function UnitPlanDetailPage() {
         const data = await UnitPlanService.get(tenantPrimaryDomain, accessToken, id);
         setUnitPlan(data);
       } catch (err: any) {
-        console.error("❌ Error loading unit plan:", err);
+        console.error("Error loading unit plan:", err);
         setError(err.message || "Failed to load unit plan");
       } finally {
         setIsLoading(false);
       }
     };
-
     if (id && accessToken && tenantPrimaryDomain) {
       fetchUnitPlan();
     }
   }, [id, accessToken, tenantPrimaryDomain]);
 
+  // Handlers avec useCallback pour éviter les re-renders infinis
+  const handleBigIdeaChange = useCallback((value: string) => {
+    setUnitPlan(prev => prev ? {...prev, big_idea: value} : null);
+  }, []);
+
+  const handleEssentialQuestionsChange = useCallback((value: string) => {
+    setUnitPlan(prev => prev ? {...prev, essential_questions: value} : null);
+  }, []);
+
+  const handleLearningObjectivesChange = useCallback((value: string) => {
+    setUnitPlan(prev => prev ? {...prev, learning_objectives: value} : null);
+  }, []);
+
+  const handleActivitiesChange = useCallback((value: string) => {
+    setUnitPlan(prev => prev ? {...prev, activities: value} : null);
+  }, []);
+
+  const handleMaterialsChange = useCallback((value: string) => {
+    setUnitPlan(prev => prev ? {...prev, materials: value} : null);
+  }, []);
+
+  const handleFormativeAssessmentsChange = useCallback((value: string) => {
+    setUnitPlan(prev => prev ? {...prev, assessments_formative: value} : null);
+  }, []);
+
+  const handleSummativeAssessmentsChange = useCallback((value: string) => {
+    setUnitPlan(prev => prev ? {...prev, assessments_summative: value} : null);
+  }, []);
+
+  const handlePacingCalendarChange = useCallback((value: string) => {
+    setUnitPlan(prev => prev ? {...prev, pacing_calendar: value} : null);
+  }, []);
+
+  const handleDifferentiationChange = useCallback((value: string) => {
+    setUnitPlan(prev => prev ? {...prev, differentiation_strategies: value} : null);
+  }, []);
+
+  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setUnitPlan(prev => prev ? {...prev, title: e.target.value} : null);
+  }, []);
+
   const handleBack = () => {
     router.push('/teacher/plan/unit-plans');
   };
 
-  const handleEdit = () => {
-    if (unitPlan) {
-      router.push(`/teacher/plan/unit-plans/${unitPlan.id}/edit`);
+  const handleSave = async () => {
+    try {
+      if (!unitPlan) return;
+      await UnitPlanService.update(tenantPrimaryDomain, accessToken, unitPlan.id, unitPlan);
+      setIsEditing(false);
+    } catch (err: any) {
+      console.error("Error saving unit plan:", err);
+      setError(err.message || "Failed to save unit plan");
     }
   };
 
@@ -99,14 +144,26 @@ export default function UnitPlanDetailPage() {
           <div className="flex items-center gap-4">
             <h1 className="text-3xl font-bold font-headline text-white">Unit Plan Details</h1>
           </div>
-          <Button
-            variant="outline"
-            onClick={handleBack}
-            className="bg-white/20 hover:bg-white/30 text-white border-white"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              className="bg-white/20 hover:bg-white/30 text-white border-white"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+            {!isEditing ? (
+              <Button variant="outline" onClick={() => setIsEditing(true)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={handleSave}>
+                Save
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -124,22 +181,23 @@ export default function UnitPlanDetailPage() {
             <span>{unitPlan.duration_weeks} weeks</span>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleEdit}>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </Button>
-          <Button variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50">
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </Button>
-        </div>
       </div>
 
       {/* Titre et description */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">{unitPlan.title}</CardTitle>
+          <CardTitle className="text-2xl">
+            {isEditing ? (
+              <input
+                type="text"
+                value={unitPlan.title}
+                onChange={handleTitleChange}
+                className="text-2xl font-bold w-full p-2 border rounded"
+              />
+            ) : (
+              unitPlan.title
+            )}
+          </CardTitle>
           {unitPlan.scope_sequence_title && (
             <CardDescription className="flex items-center gap-2">
               <LinkIcon className="h-4 w-4" />
@@ -162,13 +220,29 @@ export default function UnitPlanDetailPage() {
             {unitPlan.big_idea && (
               <div>
                 <h4 className="font-medium mb-2">Big Idea</h4>
-                <p className="text-muted-foreground">{unitPlan.big_idea}</p>
+                {isEditing ? (
+                  <RichTextEditor
+                    value={unitPlan.big_idea}
+                    onChange={handleBigIdeaChange}
+                    placeholder="Describe the big idea..."
+                  />
+                ) : (
+                  <div dangerouslySetInnerHTML={{ __html: unitPlan.big_idea }} />
+                )}
               </div>
             )}
             {unitPlan.essential_questions && (
               <div>
                 <h4 className="font-medium mb-2">Essential Questions</h4>
-                <p className="text-muted-foreground whitespace-pre-wrap">{unitPlan.essential_questions}</p>
+                {isEditing ? (
+                  <RichTextEditor
+                    value={unitPlan.essential_questions}
+                    onChange={handleEssentialQuestionsChange}
+                    placeholder="List the essential questions..."
+                  />
+                ) : (
+                  <div dangerouslySetInnerHTML={{ __html: unitPlan.essential_questions }} />
+                )}
               </div>
             )}
           </CardContent>
@@ -185,7 +259,7 @@ export default function UnitPlanDetailPage() {
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {unitPlan.standards ? (
-                unitPlan.standards.split(', ').map((standard, index) => (
+                unitPlan.standards.split(', ').map((standard: string, index: number) => (
                   <Badge key={index} variant="outline" className="text-xs">
                     {standard}
                   </Badge>
@@ -196,16 +270,21 @@ export default function UnitPlanDetailPage() {
             </div>
           </CardContent>
         </Card>
-
         {/* Learning Objectives */}
         <Card>
           <CardHeader>
             <CardTitle>Learning Objectives</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground whitespace-pre-wrap">
-              {unitPlan.learning_objectives || "No learning objectives specified"}
-            </p>
+            {isEditing ? (
+              <RichTextEditor
+                value={unitPlan.learning_objectives || ""}
+                onChange={handleLearningObjectivesChange}
+                placeholder="List the learning objectives..."
+              />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: unitPlan.learning_objectives || "No learning objectives specified" }} />
+            )}
           </CardContent>
         </Card>
       </div>
@@ -218,21 +297,32 @@ export default function UnitPlanDetailPage() {
             <CardTitle>Activities & Strategies</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground whitespace-pre-wrap">
-              {unitPlan.activities || "No activities specified"}
-            </p>
+            {isEditing ? (
+              <RichTextEditor
+                value={unitPlan.activities || ""}
+                onChange={handleActivitiesChange}
+                placeholder="Describe the activities and strategies..."
+              />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: unitPlan.activities || "No activities specified" }} />
+            )}
           </CardContent>
         </Card>
-
         {/* Materials */}
         <Card>
           <CardHeader>
             <CardTitle>Materials & Resources</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground whitespace-pre-wrap">
-              {unitPlan.materials || "No materials specified"}
-            </p>
+            {isEditing ? (
+              <RichTextEditor
+                value={unitPlan.materials || ""}
+                onChange={handleMaterialsChange}
+                placeholder="List the materials and resources..."
+              />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: unitPlan.materials || "No materials specified" }} />
+            )}
           </CardContent>
         </Card>
       </div>
@@ -246,15 +336,27 @@ export default function UnitPlanDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h4 className="font-medium mb-2">Formative Assessments</h4>
-              <p className="text-muted-foreground whitespace-pre-wrap">
-                {unitPlan.assessments_formative || "No formative assessments specified"}
-              </p>
+              {isEditing ? (
+                <RichTextEditor
+                  value={unitPlan.assessments_formative || ""}
+                  onChange={handleFormativeAssessmentsChange}
+                  placeholder="Describe the formative assessments..."
+                />
+              ) : (
+                <div dangerouslySetInnerHTML={{ __html: unitPlan.assessments_formative || "No formative assessments specified" }} />
+              )}
             </div>
             <div>
               <h4 className="font-medium mb-2">Summative Assessments</h4>
-              <p className="text-muted-foreground whitespace-pre-wrap">
-                {unitPlan.assessments_summative || "No summative assessments specified"}
-              </p>
+              {isEditing ? (
+                <RichTextEditor
+                  value={unitPlan.assessments_summative || ""}
+                  onChange={handleSummativeAssessmentsChange}
+                  placeholder="Describe the summative assessments..."
+                />
+              ) : (
+                <div dangerouslySetInnerHTML={{ __html: unitPlan.assessments_summative || "No summative assessments specified" }} />
+              )}
             </div>
           </div>
         </CardContent>
@@ -270,7 +372,15 @@ export default function UnitPlanDetailPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground whitespace-pre-wrap">{unitPlan.pacing_calendar}</p>
+            {isEditing ? (
+              <RichTextEditor
+                value={unitPlan.pacing_calendar}
+                onChange={handlePacingCalendarChange}
+                placeholder="Describe the pacing calendar..."
+              />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: unitPlan.pacing_calendar }} />
+            )}
           </CardContent>
         </Card>
       )}
@@ -282,7 +392,15 @@ export default function UnitPlanDetailPage() {
             <CardTitle>Differentiation Strategies</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground whitespace-pre-wrap">{unitPlan.differentiation_strategies}</p>
+            {isEditing ? (
+              <RichTextEditor
+                value={unitPlan.differentiation_strategies}
+                onChange={handleDifferentiationChange}
+                placeholder="Describe the differentiation strategies..."
+              />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: unitPlan.differentiation_strategies }} />
+            )}
           </CardContent>
         </Card>
       )}

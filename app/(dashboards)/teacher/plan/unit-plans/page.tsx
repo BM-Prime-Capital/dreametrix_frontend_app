@@ -34,7 +34,7 @@ export default function UnitPlansPage() {
       const data = await UnitPlanService.list(tenantPrimaryDomain, accessToken);
       setUnitPlans(data);
     } catch (err: any) {
-      console.error("❌ Error loading unit plans:", err);
+      console.error("Error loading unit plans:", err);
       setError(err.message || "Failed to load unit plans");
     } finally {
       setIsLoading(false);
