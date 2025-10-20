@@ -252,7 +252,7 @@ export const useSchoolRegistration = () => {
 
   const validateForm = (): boolean => {
     const newErrors = { ...errors }
-    
+
     let isValid = true
     console.log("formData", formData)
     // Required fields validation
@@ -346,6 +346,7 @@ export const useSchoolRegistration = () => {
       })
 
       if (!response.ok) {
+        console.log("response from hook=>,", response)
         throw new Error("Failed to create school")
       }
 
@@ -353,6 +354,7 @@ export const useSchoolRegistration = () => {
       return data
     } catch (error) {
       console.error("Error creating school:", error)
+      console.log("Error creating school:", error)
       throw error
     } finally {
       setIsLoading(false)
