@@ -63,6 +63,23 @@ export async function createClass(
       }
     );
 
+    // Normalize teacher to an ID
+    const teacherId =
+      typeof (classData as any).teacher === "number"
+        ? (classData as any).teacher
+        : (classData as any).teacher?.id;
+
+    // Ensure students is an array of IDs as expected by backend
+    const studentIds = Array.isArray((classData as any).students)
+      ? (classData as any).students
+          .map((student: any) => {
+            if (typeof student === "number") return student;
+            if (student?.id) return student.id;
+            return null;
+          })
+          .filter((id: any) => id !== null)
+      : [];
+
     const data = {
       name:
         classData.name ||
@@ -74,8 +91,8 @@ export async function createClass(
         classData.description ||
         `Class ${classData.grade} - ${classData.subject_in_short}`,
       grade: classData.grade,
-      teacher: classData.teacher,
-      students: classData.students,
+      teacher: teacherId,
+      students: studentIds,
     };
 
     const response = await fetch(url, {

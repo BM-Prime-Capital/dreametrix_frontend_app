@@ -147,8 +147,14 @@ export function AddClassDialog({
     try {
       setIsSubmitting(true);
 
+      // Convert students back to array of IDs for backend payload
+      const studentIds = schoolClass.students.map(student => 
+        typeof student === 'number' ? student : student.id
+      );
+
       const data: ISchoolClass = {
         ...schoolClass,
+        students: studentIds, // Send as array of IDs to backend
         hours_and_dates_of_course_schedule: convertToClassSchedule(classDays),
         name: `Class ${schoolClass.grade} - ${schoolClass.subject_in_short}`,
       };
@@ -271,6 +277,9 @@ export function AddClassDialog({
 
   useEffect(() => {
     if (open && existingClass) {
+      console.log("Opening edit dialog with existing class:", existingClass);
+      console.log("Existing students:", existingClass.students);
+      
       // Set the school class with all existing data including students
       setSchoolClass({
         ...existingClass,
@@ -479,25 +488,41 @@ export function AddClassDialog({
                 ) : students.length > 0 ? (
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {students.map((student) => {
-                      // Check if student exists in schoolClass.students array (which contains objects with id property)
+                      // Check if student exists in schoolClass.students array
                       const studentId = Number(student.id);
-                      const isChecked = schoolClass.students.some(existingStudent => Number(existingStudent.id) === studentId);
+                      const isChecked = schoolClass.students.some(existingStudent => {
+                        const existingId = typeof existingStudent === 'number' 
+                          ? existingStudent 
+                          : existingStudent.id;
+                        return Number(existingId) === studentId;
+                      });
+                      console.log(`Student ${student.firstName} ${student.lastName} (ID: ${studentId}) - Checked: ${isChecked}`);
+                      console.log(`SchoolClass students:`, schoolClass.students);
                       return (
                         <div key={student.id} className="flex items-center space-x-2">
                           <Checkbox
                             id={`student-${student.id}`}
                             checked={isChecked}
                             onCheckedChange={(checked) => {
+                              // Convert current students to object format for consistent handling
+                              const currentStudents = schoolClass.students.map(student => 
+                                typeof student === 'number' 
+                                  ? { id: student, full_name: `Student ${student}` }
+                                  : student
+                              ) as { id: number; full_name: string }[];
+                              
                               if (checked) {
                                 // Add student object to the array
-                                const newStudents = [...schoolClass.students, {id: studentId, full_name: `${student.firstName} ${student.lastName}`}];
+                                const newStudents = [...currentStudents, {id: studentId, full_name: `${student.firstName} ${student.lastName}`}];
                                 setSchoolClass({
                                   ...schoolClass,
                                   students: newStudents,
                                 });
                               } else {
                                 // Remove student from the array
-                                const newStudents = schoolClass.students.filter(existingStudent => Number(existingStudent.id) !== studentId);
+                                const newStudents = currentStudents.filter(existingStudent => 
+                                  Number(existingStudent.id) !== studentId
+                                );
                                 setSchoolClass({
                                   ...schoolClass,
                                   students: newStudents,
