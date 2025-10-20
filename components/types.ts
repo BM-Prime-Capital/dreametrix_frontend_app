@@ -17,7 +17,7 @@ export interface IUser {
     description: string;
     grade: string;
     teacher: ITeacher | number; // Peut être un objet Teacher ou juste l'ID
-    students: { id: number; full_name: string }[]; // Array of student objects with id and full_name
+    students: number[] | { id: number; full_name: string }[]; // Can be array of IDs or student objects
   }
 
   export interface ITeacher {
