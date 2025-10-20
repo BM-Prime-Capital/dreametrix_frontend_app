@@ -277,9 +277,6 @@ export function AddClassDialog({
 
   useEffect(() => {
     if (open && existingClass) {
-      console.log("Opening edit dialog with existing class:", existingClass);
-      console.log("Existing students:", existingClass.students);
-      
       // Set the school class with all existing data including students
       setSchoolClass({
         ...existingClass,
@@ -496,8 +493,6 @@ export function AddClassDialog({
                           : existingStudent.id;
                         return Number(existingId) === studentId;
                       });
-                      console.log(`Student ${student.firstName} ${student.lastName} (ID: ${studentId}) - Checked: ${isChecked}`);
-                      console.log(`SchoolClass students:`, schoolClass.students);
                       return (
                         <div key={student.id} className="flex items-center space-x-2">
                           <Checkbox

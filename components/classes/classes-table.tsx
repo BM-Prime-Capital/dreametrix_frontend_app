@@ -147,7 +147,10 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
               ...row.original,
               teacher: typeof row.original.teacher === 'object' ? row.original.teacher.id : row.original.teacher,
               students: Array.isArray(row.original.students)
-                ? row.original.students.map(id => ({ id, full_name: `Student ${id}` }))
+                ? row.original.students.map((student: any) => {
+                    const studentId = typeof student === 'number' ? student : student.id;
+                    return { id: studentId, full_name: `Student ${studentId}` };
+                  })
                 : []
             }}
           />
@@ -322,7 +325,10 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
       ...selectedClass,
       teacher: typeof selectedClass.teacher === 'object' ? selectedClass.teacher.id : selectedClass.teacher,
       students: Array.isArray(selectedClass.students)
-        ? selectedClass.students.map(id => ({ id, full_name: `Student ${id}` }))
+        ? selectedClass.students.map((student: any) => {
+            const studentId = typeof student === 'number' ? student : student.id;
+            return { id: studentId, full_name: `Student ${studentId}` };
+          })
         : []
     } : null,
     [selectedClass]
@@ -449,7 +455,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
                       <Button variant="ghost" size="sm" className="flex-1 text-blue-600 hover:bg-blue-50 rounded-xl" onClick={() => { setSelectedClassForRoster(classData); setRosterOpen(true); }}>
                         View Roster
                       </Button>
-                      <AddClassDialog setRefreshTime={setRefreshTime} existingClass={{ ...classData, teacher: typeof classData.teacher === 'object' ? classData.teacher.id : classData.teacher, students: Array.isArray(classData.students) ? classData.students.map(id => ({ id, full_name: `Student ${id}` })) : [] }} />
+                      <AddClassDialog setRefreshTime={setRefreshTime} existingClass={{ ...classData, teacher: typeof classData.teacher === 'object' ? classData.teacher.id : classData.teacher, students: Array.isArray(classData.students) ? classData.students.map((student: any) => { const studentId = typeof student === 'number' ? student : student.id; return { id: studentId, full_name: `Student ${studentId}` }; }) : [] }} />
                       <Button variant="ghost" size="sm" className="px-3 text-red-600 hover:bg-red-50 rounded-xl" onClick={() => handleDeleteClass(classData.id)}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </div>
@@ -521,7 +527,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50" onClick={() => { setSelectedClassForRoster(classData); setRosterOpen(true); }}>Roster</Button>
-                        <AddClassDialog setRefreshTime={setRefreshTime} existingClass={{ ...classData, teacher: typeof classData.teacher === 'object' ? classData.teacher.id : classData.teacher, students: Array.isArray(classData.students) ? classData.students.map(id => ({ id, full_name: `Student ${id}` })) : [] }} />
+                        <AddClassDialog setRefreshTime={setRefreshTime} existingClass={{ ...classData, teacher: typeof classData.teacher === 'object' ? classData.teacher.id : classData.teacher, students: Array.isArray(classData.students) ? classData.students.map((student: any) => { const studentId = typeof student === 'number' ? student : student.id; return { id: studentId, full_name: `Student ${studentId}` }; }) : [] }} />
                         <Button variant="ghost" size="sm" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteClass(classData.id)}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </div>
