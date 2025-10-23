@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 interface UserData {
   id: number;
@@ -112,7 +113,8 @@ export default function StudentProfile() {
   });
 
   const router = useRouter();
-  const { tenantDomain, accessToken } = useRequestInfo();
+  const { tenantDomain, accessToken, userId } = useRequestInfo();
+  const { markTaskComplete } = useOnboarding();
 
   const handleUpdateProfile = async () => {
     if (!accessToken || !tenantDomain || !userData) return;
@@ -238,6 +240,10 @@ export default function StudentProfile() {
         new_password: "",
         confirm_password: ""
       });
+
+      // Mark password change task as complete
+      markTaskComplete('change_password');
+      localStorage.setItem(`password_changed_since_first_login_${userId}`, 'true');
 
       // Cacher le formulaire après 3 secondes
       setTimeout(() => {

@@ -73,7 +73,7 @@ export default function RelationshipPage() {
           // No refetch needed for reminder - no data changed
         } else {
           // Show the actual message from the server if it's different
-          toast.success(response.message || successMessage);
+          toast.success('Parent link confirmed successfully');
           refetch();
         }
       } else {

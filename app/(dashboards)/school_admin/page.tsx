@@ -50,7 +50,7 @@ const SchoolAdminDashboard = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Link href="/school_admin/students" className="group">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-200 group-hover:scale-105">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-200 group-hover:scale-105" data-tour="students-card">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-blue-100 rounded-lg">
                 <FiUsers className="w-6 h-6 text-blue-600" />
@@ -63,7 +63,7 @@ const SchoolAdminDashboard = () => {
         </Link>
 
         <Link href="/school_admin/teachers" className="group">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-200 group-hover:scale-105">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-200 group-hover:scale-105" data-tour="teachers-card">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-green-100 rounded-lg">
                 <FiUsers className="w-6 h-6 text-green-600" />
@@ -76,7 +76,7 @@ const SchoolAdminDashboard = () => {
         </Link>
 
         <Link href="/school_admin/classes" className="group">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-200 group-hover:scale-105">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-200 group-hover:scale-105" data-tour="classes-card">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-purple-100 rounded-lg">
                 <FiBook className="w-6 h-6 text-purple-600" />
