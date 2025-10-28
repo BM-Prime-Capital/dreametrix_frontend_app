@@ -208,6 +208,12 @@ export const TeacherRoutes = [
     exact: true
   },
   {
+    path: `${userPath.TEACHER_BASE_PATH}/students`,
+    icon: menuImages.seating,
+    label: "Students",
+    
+  },
+  {
     path: `${userPath.TEACHER_BASE_PATH}/classes`,
     icon: menuImages.classes,
     label: "CLASSES",
