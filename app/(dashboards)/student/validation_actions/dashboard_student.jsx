@@ -12,45 +12,45 @@ export default function DashboardStudent() {
   const handleConfirm = async () => {
     try {
       await confirmLink(Number(parentId))
-      setMessage("Lien confirmé.")
+      setMessage("Link confirmed successfully.")
     } catch {
-      setMessage("Erreur lors de la confirmation.")
+      setMessage("Error confirming link.")
     }
   }
 
   const handleUnlink = async () => {
     try {
       await requestUnlink(Number(unlinkParentId))
-      setMessage("Demande de déliaison envoyée.")
+      setMessage("Unlink request sent successfully.")
     } catch {
-      setMessage("Erreur lors de la demande.")
+      setMessage("Error sending unlink request.")
     }
   }
 
   return (
     <div className="max-w-lg mx-auto p-4 space-y-6">
-      <h2 className="text-xl font-bold">Espace Élève</h2>
+      <h2 className="text-xl font-bold">Student Dashboard</h2>
 
       <div className="space-y-2">
-        <h3>Confirmer un lien parental</h3>
+        <h3>Confirm Parental Link</h3>
         <input
           value={parentId}
           onChange={(e) => setParentId(e.target.value)}
           className="border p-2 w-full"
-          placeholder="ID du parent"
+          placeholder="Parent ID"
         />
-        <Button onClick={handleConfirm}>Confirmer le lien</Button>
+        <Button onClick={handleConfirm}>Confirm Link</Button>
       </div>
 
       <div className="space-y-2">
-        <h3>Demander une déliaison</h3>
+        <h3>Request Unlink</h3>
         <input
           value={unlinkParentId}
           onChange={(e) => setUnlinkParentId(e.target.value)}
           className="border p-2 w-full"
-          placeholder="ID du parent à délier"
+          placeholder="Parent ID to unlink"
         />
-        <Button onClick={handleUnlink}>Demander déliaison</Button>
+        <Button onClick={handleUnlink}>Request Unlink</Button>
       </div>
 
       {message && <div className="text-green-600 text-sm">{message}</div>}
