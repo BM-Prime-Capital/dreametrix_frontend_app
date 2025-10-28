@@ -194,7 +194,8 @@ export default function StudentProfile() {
   const validatePassword = (password: string): string | null => {
     if (!password) return "Password is required";
     if (password.length < 8) return "Password must be at least 8 characters long";
-    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(password)) {
+    
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(password)) {
       return "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character";
     }
     return null;
