@@ -36,7 +36,7 @@ export const schoolAdminTourSteps: OnboardingStep[] = [
     target: '[data-tour="profile-menu"]',
     content: 'Access your profile settings here. You can update your information, change your password, and manage your account preferences.',
     title: 'Profile & Settings',
-    placement: 'bottom',
+    placement: 'right',
   },
   {
     target: 'body',

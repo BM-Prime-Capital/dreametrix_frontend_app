@@ -19,6 +19,7 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
 
   return (
     <div 
+      data-tour="sidebar"
       className={cn(
         "fixed left-0 top-0 h-screen transition-all duration-500 ease-in-out flex flex-col z-40",
         "bg-gradient-to-b from-white via-slate-50/80 to-gray-100/60",
@@ -89,6 +90,7 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
                   ]
                 )}
                 title={isCollapsed ? `${route.label}${isDisabled ? ' (Disabled)' : ''}` : undefined}
+                data-tour={`${route.label.toLowerCase().replace(/ /g, '-')}-menu`}
               >
                 <div className={cn(
                   "flex items-center justify-center w-6 h-6 transition-all duration-300 flex-shrink-0",

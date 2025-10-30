@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -12,11 +14,10 @@ import { schoolAdminTourSteps } from "@/constants/onboarding/schoolAdminTour";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 
 function SchoolAdminLayoutContent({ children }: { children: React.ReactNode }) {
-  const { userId } = useRequestInfo();
   
   return (
     <div className="flex flex-col lg:flex-row gap-6">
-      <Card className="w-full lg:w-[200px] h-fit" data-tour="sidebar">
+      <Card className="w-full lg:w-[200px] h-fit" >
         <Sidebar routes={SchoolAdminRoutes} />
       </Card>
       <div className="flex-1">

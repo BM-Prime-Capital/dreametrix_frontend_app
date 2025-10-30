@@ -40,6 +40,7 @@ export interface OnboardingState {
   hasCompletedOnboarding: boolean;
   hasCompletedTour: boolean;
   isFirstLogin: boolean;
+  isTourRunning: boolean;
   tasks: MandatoryTask[];
   completedTasks: string[];
   tourSteps: OnboardingStep[];
@@ -55,6 +56,7 @@ export interface OnboardingContextType {
   resetOnboarding: () => void;
   startTour: () => void;
   skipTour: () => void;
+  stopTour: () => void;
   getRemainingTasks: () => MandatoryTask[];
   getCompletedTasks: () => MandatoryTask[];
   getProgressPercentage: () => number;

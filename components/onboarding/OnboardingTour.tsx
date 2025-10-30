@@ -18,31 +18,64 @@ export function OnboardingTour({
   onComplete, 
   onSkip 
 }: OnboardingTourProps) {
-  const { markTourComplete, skipTour } = useOnboarding();
+  const { state, markTourComplete, skipTour, stopTour } = useOnboarding();
   const [isRunning, setIsRunning] = useState(run);
+  const [hasStarted, setHasStarted] = useState(false);
 
   useEffect(() => {
-    setIsRunning(run);
-  }, [run]);
+    // Use context state if available, otherwise use prop
+    if (state) {
+      // Only start the tour if it's supposed to run and hasn't started yet
+      if (state.isTourRunning && !hasStarted) {
+        const timer = setTimeout(() => {
+          console.log('Starting tour, setting running state to true');
+          setIsRunning(true);
+          setHasStarted(true);
+        }, 500);
+        return () => clearTimeout(timer);
+      } else if (!state.isTourRunning && hasStarted) {
+        console.log('Tour stopped by context, setting running state to false');
+        setIsRunning(false);
+        setHasStarted(false);
+      }
+    } else {
+      setIsRunning(run);
+    }
+  }, [run, state, hasStarted]);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, type } = data;
+    const { status, type, index, action } = data;
 
-    if (([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND] as string[]).includes(type)) {
-      // Update state to re-render our component
+    console.log('Tour callback:', { status, type, index, action });
+
+    if (type === EVENTS.TARGET_NOT_FOUND) {
+      // If target is not found, continue to next step or finish tour
+      console.warn(`Tour target not found for step ${index}, continuing to next step`);
+      console.log('Available elements with data-tour:', document.querySelectorAll('[data-tour]'));
+      
+      // If this is the last step and target not found, finish the tour
+      if (index === steps.length - 1) {
+        stopTour();
+        onComplete?.();
+      }
+      return;
+    }
+
+    // Handle tour completion
+    if (([STATUS.FINISHED, STATUS.SKIPPED] as string[]).includes(status)) {
+      console.log('Tour finished or skipped:', status);
       setIsRunning(false);
-    } else if (([STATUS.FINISHED, STATUS.SKIPPED] as string[]).includes(status)) {
-      // Need to set our running state to false, so we can restart if we click start again.
-      setIsRunning(false);
+      setHasStarted(false);
       
       if (status === STATUS.FINISHED) {
-        markTourComplete();
+        stopTour();
         onComplete?.();
       } else if (status === STATUS.SKIPPED) {
         skipTour();
         onSkip?.();
       }
     }
+    // Don't handle EVENTS.STEP_AFTER - let the tour continue naturally
   };
 
   const tourConfig: TourConfig = {
@@ -59,8 +92,6 @@ export function OnboardingTour({
         spotlightShadow: '0 0 20px rgba(37, 99, 235, 0.3)',
         beaconSize: 40,
         zIndex: 1000,
-        arrowColor: '#2563eb',
-        width: 400,
       },
     },
   };
@@ -80,7 +111,7 @@ export function OnboardingTour({
       floaterProps={{
         disableAnimation: true,
       }}
-      tooltipComponent={({ tooltipProps, primaryProps, backProps, skipProps, closeProps, index, size, step, isLastStep, tooltip }) => (
+      tooltipComponent={({ tooltipProps, primaryProps, backProps, skipProps, closeProps, index, size, step, isLastStep }) => (
         <div
           {...tooltipProps}
           className="bg-white rounded-lg shadow-lg border border-gray-200 p-6 max-w-sm"

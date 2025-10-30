@@ -40,6 +40,7 @@ export function OnboardingProvider({ children, userId, userRole }: OnboardingPro
           hasCompletedOnboarding: false,
           hasCompletedTour: false,
           isFirstLogin: !hasLoggedInBefore,
+          isTourRunning: !hasLoggedInBefore, // Start tour automatically on first login
           tasks: getDefaultTasksForRole(userRole),
           completedTasks: [],
           tourSteps: [],
@@ -136,11 +137,46 @@ export function OnboardingProvider({ children, userId, userRole }: OnboardingPro
   };
 
   const startTour = () => {
-    // This will be handled by the OnboardingTour component
+    if (!state) return;
+    
+    setState(prevState => {
+      if (!prevState) return prevState;
+      
+      return {
+        ...prevState,
+        isTourRunning: true,
+        lastUpdated: new Date().toISOString()
+      };
+    });
   };
 
   const skipTour = () => {
-    markTourComplete();
+    if (!state) return;
+    
+    setState(prevState => {
+      if (!prevState) return prevState;
+      
+      return {
+        ...prevState,
+        isTourRunning: false,
+        hasCompletedTour: true,
+        lastUpdated: new Date().toISOString()
+      };
+    });
+  };
+
+  const stopTour = () => {
+    if (!state) return;
+    
+    setState(prevState => {
+      if (!prevState) return prevState;
+      
+      return {
+        ...prevState,
+        isTourRunning: false,
+        lastUpdated: new Date().toISOString()
+      };
+    });
   };
 
   const getRemainingTasks = (): MandatoryTask[] => {
@@ -173,6 +209,7 @@ export function OnboardingProvider({ children, userId, userRole }: OnboardingPro
     resetOnboarding,
     startTour,
     skipTour,
+    stopTour,
     getRemainingTasks,
     getCompletedTasks,
     getProgressPercentage,
@@ -204,7 +241,7 @@ function getDefaultTasksForRole(role: UserRole): MandatoryTask[] {
       completed: false,
       action: {
         type: 'navigate',
-        target: '/profile',
+        target: `/${role}/profile`,
         label: 'Go to Profile'
       },
       priority: 'high'
@@ -262,3 +299,4 @@ function getDefaultTasksForRole(role: UserRole): MandatoryTask[] {
       return commonTasks;
   }
 }
+

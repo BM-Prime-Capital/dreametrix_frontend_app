@@ -17,7 +17,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <Sidebar routes={TeacherRoutes} data-tour="sidebar" />
+      <Sidebar routes={TeacherRoutes} />
 
       <div
         className={`transition-all duration-500 ${
@@ -28,7 +28,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         {children}
         <OnboardingTour 
           steps={teacherTourSteps}
-          run={false}
         />
       </div>
     </>

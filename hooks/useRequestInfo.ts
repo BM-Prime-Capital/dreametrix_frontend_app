@@ -3,10 +3,11 @@
 import { localStorageKey } from "@/constants/global";
 import { useEffect, useState, useMemo } from "react";
 
-export function useRequestInfo() {
+function useRequestInfo() {
   const [accessToken, setAccessToken] = useState<string>("");
   const [refreshToken, setRefreshToken] = useState<string>("");
   const [tenantDomain, setTenantDomain] = useState<string>("");
+  const [userId, setUserId] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -17,8 +18,11 @@ export function useRequestInfo() {
         const refreshToken =
           localStorage.getItem(localStorageKey.REFRESH_TOKEN) || "";
         const tenantData = localStorage.getItem(localStorageKey.TENANT_DATA);
+        const userData = localStorage.getItem(localStorageKey.USER_DATA);
 
         let domain = "";
+        let userIdValue = "";
+        
         if (tenantData) {
           const parsedData = JSON.parse(tenantData);
           domain = parsedData.primary_domain
@@ -26,16 +30,23 @@ export function useRequestInfo() {
             : "";
         }
 
+        if (userData) {
+          const parsedUserData = JSON.parse(userData);
+          userIdValue = parsedUserData.id?.toString() || "";
+        }
+
         setAccessToken(accessToken);
         setRefreshToken(refreshToken);
         setTenantDomain(domain);
+        setUserId(userIdValue);
         setIsLoading(false);
         
         // Debug logging
         console.log("useRequestInfo - Token loaded:", {
           hasToken: !!accessToken,
           tokenLength: accessToken.length,
-          hasDomain: !!domain
+          hasDomain: !!domain,
+          hasUserId: !!userIdValue
         });
         
       } catch (error) {
@@ -50,8 +61,12 @@ export function useRequestInfo() {
       accessToken,
       refreshToken,
       tenantDomain,
+      userId,
       isLoading,
     }),
-    [accessToken, refreshToken, tenantDomain, isLoading]
+    [accessToken, refreshToken, tenantDomain, userId, isLoading]
   );
 }
+
+export { useRequestInfo };
+export default useRequestInfo;
