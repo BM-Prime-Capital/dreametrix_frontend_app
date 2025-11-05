@@ -5,7 +5,7 @@ export function getTheDayOfTheWeek(n: number) {
 }
 
 export function convertToClassDays(
-  obj: Record<string, { start_time: string; end_time: string }>
+  obj: Record<string, { start_time: string; end_time: string } | { start_time: string; end_time: string }[]>
 ) {
   const data: {
     id: number;
@@ -14,13 +14,23 @@ export function convertToClassDays(
     end_time: string;
   }[] = [];
 
+  const toHHmm = (t: string | undefined) => {
+    if (!t) return "";
+    // Accept HH:mm or HH:mm:ss
+    const trimmed = t.trim();
+    if (/^\d{1,2}:\d{2}:\d{2}$/.test(trimmed)) return trimmed.slice(0, 5);
+    return trimmed;
+  };
+
   Object.entries(obj).forEach(([key, value]) => {
-    console.log(`${key}: ${value}`);
-    data.push({
-      id: data.length + 1,
-      day: key + "",
-      start_time: value.start_time,
-      end_time: value.end_time,
+    const slots = Array.isArray(value) ? value : [value];
+    slots.forEach((slot) => {
+      data.push({
+        id: data.length + 1,
+        day: key + "",
+        start_time: toHHmm(slot.start_time),
+        end_time: toHHmm(slot.end_time),
+      });
     });
   });
 

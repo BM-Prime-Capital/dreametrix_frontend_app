@@ -55,6 +55,8 @@ import { generalImages } from "@/constants/images";
 import { Assignment, MiniCourse } from "@/types";
 import { SubmissionsPopup } from "./SubmissionsPopup";
 import { EditAssignmentDialog } from "./EditAssignmentDialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useToast } from "@/components/ui/use-toast";
 
 const globalFilterFn: FilterFn<Assignment> = (row, columnId, filterValue) => {
   const value = row.getValue(columnId);
@@ -84,6 +86,7 @@ interface AssignmentsTableProps {
 
 export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  const { toast } = useToast();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
@@ -103,6 +106,7 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
   );
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'card' | 'table'>('table');
+  const [pendingDelete, setPendingDelete] = useState<Assignment | null>(null);
 
   // Load assignments function
   const loadAssignments = async () => {
@@ -241,27 +245,24 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
     setIsEditDialogOpen(true);
   };
 
-  const handleDeleteAssignment = async (assignment: Assignment) => {
-    // Show confirmation dialog
-    const confirmed = window.confirm(
-      `Are you sure you want to delete the assignment "${assignment.name}"? This action cannot be undone.`
-    );
+  const handleDeleteAssignment = (assignment: Assignment) => {
+    setPendingDelete(assignment);
+  };
 
-    if (!confirmed) return;
-
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
     try {
       await deleteAssignment(
-        assignment.id,
+        pendingDelete.id,
         tenantDomain,
         accessToken,
-        //refreshToken
       );
-
-      // Reload assignments list
+      toast({ title: "Assignment deleted", description: `"${pendingDelete.name}" has been removed.` });
+      setPendingDelete(null);
       await loadAssignments();
     } catch (error) {
       console.error("Error deleting assignment:", error);
-      alert("Failed to delete assignment. Please try again.");
+      toast({ title: "Failed to delete assignment", description: error instanceof Error ? error.message : "An unexpected error occurred.", variant: "destructive" });
     }
   };
 
@@ -423,21 +424,53 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
       return;
     }
 
-    const csvContent = [
-      Object.keys(dataToExport[0]).join(","),
-      ...dataToExport.map((item: Assignment) => Object.values(item).join(",")),
-    ].join("\n");
+    const escapeCsv = (value: unknown): string => {
+      const str = value === null || value === undefined ? "" : String(value);
+      // Escape quotes by doubling them and wrap in quotes to protect commas/newlines
+      return `"${str.replace(/"/g, '""')}"`;
+    };
+
+    const headers = [
+      "Name",
+      "Course",
+      "Type",
+      "Due Date",
+      "Weight",
+      "Status",
+      "Submissions",
+      "Average Grade",
+    ];
+
+    const rows = dataToExport.map((a: Assignment) => [
+      escapeCsv(a.name),
+      escapeCsv(a.course?.name || ""),
+      escapeCsv(a.kind || ""),
+      escapeCsv(new Date(a.due_date).toLocaleDateString()),
+      escapeCsv(a.weight ? `${Number(a.weight).toFixed(1)}%` : ""),
+      escapeCsv(a.published ? "Published" : "Draft"),
+      escapeCsv(typeof a.submissions_count === 'number' ? a.submissions_count : ''),
+      escapeCsv(
+        typeof a.average_grade === 'number' && !isNaN(a.average_grade)
+          ? `${a.average_grade.toFixed(1)}%`
+          : ''
+      ),
+    ].join(","));
+
+    const csvContent = [headers.join(","), ...rows].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", "assignments.csv");
+    link.setAttribute(
+      "download",
+      `teacher-assignments_${new Date().toISOString().split('T')[0]}.csv`
+    );
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url); // Clean up the URL
+    URL.revokeObjectURL(url);
   };
 
   if (isLoading) return <Loader />;
@@ -855,6 +888,24 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
         }}
         onUpdate={handleAssignmentUpdate}
       />
+
+      {/* Delete Confirmation Modal */}
+      <AlertDialog open={!!pendingDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Assignment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{pendingDelete?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

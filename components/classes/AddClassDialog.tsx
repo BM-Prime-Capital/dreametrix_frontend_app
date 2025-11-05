@@ -30,6 +30,7 @@ import SimpleLoader from "../ui/simple-loader";
 // import AlertMessage from "../ui/alert-message";
 import { Checkbox } from "@/components/ui/checkbox";
 import Swal from "sweetalert2";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ClassDay {
   id: number;
@@ -69,6 +70,7 @@ export function AddClassDialog({
   existingClass?: typeof schoolClassInit;
 }) {
   const [open, setOpen] = useState(false);
+  const { toast } = useToast();
   const { list: teachers } = useList(getTeachers);
   const { list: subjects, isLoading: areSubjectsLoading } = useList(getSubjects);
   const [grades, setGrades] = useState<string[]>([]);
@@ -135,14 +137,6 @@ export function AddClassDialog({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-      // Afficher l'alerte de chargement
-      const loadingAlert = Swal.fire({
-        title: 'Processing...',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
 
     try {
       setIsSubmitting(true);
@@ -152,6 +146,20 @@ export function AddClassDialog({
         typeof student === 'number' ? student : student.id
       );
 
+      // Validation: require at least one student for new class creation
+      if (!existingClass && studentIds.length === 0) {
+        await Swal.close();
+        setIsSubmitting(false);
+        toast({
+          title: 'Students required',
+          description: 'Please select at least one student before creating a class.',
+          variant: 'destructive',
+        });
+        const el = document.getElementById('students-section');
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
       const data: ISchoolClass = {
         ...schoolClass,
         students: studentIds, // Send as array of IDs to backend
@@ -159,8 +167,17 @@ export function AddClassDialog({
         name: `Class ${schoolClass.grade} - ${schoolClass.subject_in_short}`,
       };
 
+      // Show loading only after validations pass (do not await)
+      Swal.fire({
+        title: 'Processing...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
       const rep = existingClass
-        ? await updateClass(data, tenantDomain, accessToken, refreshToken)
+        ? await updateClass(data as any, tenantDomain, accessToken, refreshToken)
         : await createClass(data, tenantDomain, accessToken, refreshToken);
 
       if (!rep) {
@@ -430,6 +447,8 @@ export function AddClassDialog({
                     students: [],
                   });
                 }}
+                aria-label="Select Grade"
+                title="Select Grade"
                 required
               >
                 <option disabled value="">Select Grade</option>
@@ -480,7 +499,7 @@ export function AddClassDialog({
             </div>
 
             {schoolClass.grade && (
-              <div className="border rounded-lg p-4 space-y-4">
+              <div id="students-section" className="border rounded-lg p-4 space-y-4">
                 <label className="text-sm font-medium text-gray-700">
                   Students (Grade {schoolClass.grade})
                 </label>

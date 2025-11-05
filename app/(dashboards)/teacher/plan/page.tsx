@@ -97,9 +97,15 @@ export default function PlansPage() {
             <CardFooter>
               <Button
                 asChild
-                className={`w-full text-white ${tool.color === "blue" ? "bg-blue-600 hover:bg-blue-700" : tool.color === "yellow" ? "bg-yellow-600 hover:bg-yellow-700" : "bg-green-600 hover:bg-green-700"}`}
+                className={`w-full ${
+                  tool.color === "blue"
+                    ? "text-blue-700 border border-blue-300 bg-white hover:bg-blue-50"
+                    : tool.color === "yellow"
+                    ? "text-yellow-700 border border-yellow-300 bg-white hover:bg-yellow-50"
+                    : "text-green-700 border border-green-300 bg-white hover:bg-green-50"
+                }`}
               >
-                <Link href={tool.href} className="flex items-center justify-center text-white">
+                <Link href={tool.href} className="flex items-center justify-center">
                   <span>{tool.cta}</span>
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
