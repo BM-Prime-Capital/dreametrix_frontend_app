@@ -9,7 +9,7 @@ export async function getSchoolCreationRequests(
   }
 
   console.log("accessToken", accessToken)
-  const url = `https://backend-dreametrix.com/school-requests/`;
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/school-requests/`;
 
   try {
     const response = await fetch(url, {
@@ -44,7 +44,7 @@ export async function getAllSchools(
       throw new Error("You are not logged in. Please log in again.");
     }
   
-    const url = `https://backend-dreametrix.com/schools/`;
+    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/schools/`;
     console.log("url", url)
   
     try {
@@ -83,7 +83,7 @@ export async function getAllUSOfficialSchools(
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  const url = `https://backend-dreametrix.com/resources/us-schools/?page=${page}`;
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/resources/us-schools/?page=${page}`;
   console.log("url", url)
 
   try {
@@ -126,7 +126,7 @@ export async function searchUSOfficialSchools(
     throw new Error("Search query cannot be empty.");
   }
 
-  const url = `https://backend-dreametrix.com/resources/school-search/search/?q=${encodeURIComponent(query.trim())}`;
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/resources/school-search/search/?q=${encodeURIComponent(query.trim())}`;
   console.log("Searching schools at URL:", url);
 
   try {
@@ -163,7 +163,7 @@ export async function createUSOfficialSchool(
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  const url = `https://backend-dreametrix.com/resources/us-schools/`;
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/resources/us-schools/`;
   console.log("Creating school at URL:", url);
   console.log("School data:", schoolData);
 
@@ -206,7 +206,7 @@ export async function deleteUSOfficialSchool(
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  const url = `https://backend-dreametrix.com/resources/us-schools/${schoolId}/`;
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/resources/us-schools/${schoolId}/`;
   console.log("Deleting school at URL:", url);
 
   try {
@@ -251,7 +251,7 @@ export async function updateUSOfficialSchool(
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  const url = `https://backend-dreametrix.com/resources/us-schools/${schoolId}/`;
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/resources/us-schools/${schoolId}/`;
   console.log("Updating school at URL:", url);
   console.log("School data:", schoolData);
 
@@ -294,7 +294,7 @@ export async function getAllCharacters(
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  const url = `https://backend-dreametrix.com/utilities/character-list/`;
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/utilities/character-list/`;
   console.log("url", url)
 
   try {
@@ -338,7 +338,7 @@ export async function createCharacter(
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  const url = `https://backend-dreametrix.com/utilities/character-list/`;
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/utilities/character-list/`;
   console.log("Creating character at URL:", url);
   console.log("Character data:", characterData);
 
@@ -384,7 +384,7 @@ export async function updateCharacter(
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  const url = `https://backend-dreametrix.com/utilities/character-list/${characterId}/`;
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/utilities/character-list/${characterId}/`;
   console.log("Updating character at URL:", url);
   console.log("Character data:", characterData);
 
@@ -426,7 +426,7 @@ export async function deleteCharacter(
     throw new Error("You are not logged in. Please log in again.");
   }
 
-  const url = `https://backend-dreametrix.com/utilities/character-list/${characterId}/`;
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/utilities/character-list/${characterId}/`;
   console.log("Deleting character at URL:", url);
 
   try {

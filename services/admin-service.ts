@@ -250,7 +250,7 @@ export const changePassword = async (
     newPassword: string,
     confirmPassword: string
   ): Promise<any> => {
-    const BASE_URL ="https://backend-dreametrix.com";
+    const BASE_URL =`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}`;
     const response = await fetch(`${BASE_URL}/accounts/change-password/`, {
       method: "POST",
       headers: {
