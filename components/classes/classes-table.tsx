@@ -40,9 +40,24 @@ import { ClassDetailsDialog } from "./ClassDetailsDialog";
 import { Class } from "@/types";
 import { getStudents } from "@/services/student-service";
 
-const globalFilterFn: FilterFn<Class> = (row, columnId, filterValue) => {
-  const value = row.getValue(columnId);
-  return String(value).toLowerCase().includes(filterValue.toLowerCase());
+const globalFilterFn: FilterFn<Class> = (row, _columnId, filterValue) => {
+  const query = String(filterValue ?? '').toLowerCase();
+  if (!query) return true;
+
+  const cls = row.original as Class;
+  const teacherName = typeof cls.teacher === 'object' ? cls.teacher.full_name : '';
+
+  const haystack = [
+    cls.name,
+    (cls as any).subject_in_all_letter,
+    (cls as any).subject_in_short,
+    String((cls as any).grade ?? ''),
+    teacherName,
+  ]
+    .filter(Boolean)
+    .map((v) => String(v).toLowerCase());
+
+  return haystack.some((text) => text.includes(query));
 };
 
 export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: string, setRefreshTime: (time: string) => void }) {
@@ -61,15 +76,17 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
 
   const transformClassData = useCallback((classData: Class): { id: number; name: string; students: Student[] } => {
     const mapName = (id: number) => {
-      const match = allStudents.find((st) => Number(st.id) === Number(id));
-      return match?.full_name || `Student ${id}`;
+      for (const s of allStudents as Student[]) {
+        if (Number(s.id) === Number(id)) return s.full_name;
+      }
+      return `Student ${id}`;
     };
     return {
       id: classData.id,
       name: classData.name,
       students: Array.isArray(classData.students)
-        ? classData.students.map((s) => {
-            const id = typeof s === 'number' ? s : s.id;
+        ? (classData.students as any[]).map((s: any) => {
+            const id: number = typeof s === 'number' ? s : (s?.id as number);
             return { id, full_name: typeof s === 'number' ? mapName(id) : (s as any).full_name || mapName(id) };
           })
         : []
@@ -154,7 +171,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
               students: Array.isArray(row.original.students)
                 ? row.original.students.map((student: any) => {
                     const studentId = typeof student === 'number' ? student : student.id;
-                    const match = allStudents.find((st) => Number(st.id) === Number(studentId));
+                    const match = (allStudents as Student[]).find((st: Student) => Number(st.id) === Number(studentId));
                     return { id: studentId, full_name: match?.full_name || `Student ${studentId}` };
                   })
                 : []
