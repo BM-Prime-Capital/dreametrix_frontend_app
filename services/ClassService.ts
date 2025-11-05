@@ -123,7 +123,31 @@ export async function updateClass(
   refreshToken: string
 ) {
   try {
-    // Vérifier et formater les étudiants
+    // Helper to normalize time to HH:mm:ss
+    const normalizeTime = (time: string | undefined): string | undefined => {
+      if (!time) return undefined;
+      // Accept values like "09:00" or "09:00:00" or with AM/PM
+      const trimmed = time.trim();
+      // If contains AM/PM, convert to 24h
+      const ampmMatch = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      if (ampmMatch) {
+        let hours = parseInt(ampmMatch[1], 10);
+        const minutes = ampmMatch[2];
+        const period = ampmMatch[3].toUpperCase();
+        if (period === "PM" && hours < 12) hours += 12;
+        if (period === "AM" && hours === 12) hours = 0;
+        return `${hours.toString().padStart(2, "0")}:${minutes}:00`;
+      }
+      // If HH:mm
+      const hhmm = trimmed.match(/^\d{1,2}:\d{2}$/);
+      if (hhmm) return `${trimmed}:00`;
+      // If HH:mm:ss assume valid
+      const hhmmss = trimmed.match(/^\d{1,2}:\d{2}:\d{2}$/);
+      if (hhmmss) return trimmed;
+      return trimmed; // fallback without alteration
+    };
+
+    // Map students to IDs (allow empty array)
     const students = Array.isArray(classData.students)
       ? classData.students
           .map((student: any) => {
@@ -134,7 +158,7 @@ export async function updateClass(
           .filter((id: any) => id !== null)
       : [];
 
-    // Vérifier le teacher
+    // Normalize teacher to ID
     const teacher =
       typeof classData.teacher === "number"
         ? classData.teacher
@@ -144,8 +168,28 @@ export async function updateClass(
       throw new Error("Teacher ID is required");
     }
 
+    // Normalize schedule structure and times
+    const formattedSchedule: ClassSchedule = {};
+    if (classData.hours_and_dates_of_course_schedule && typeof classData.hours_and_dates_of_course_schedule === "object") {
+      Object.entries(classData.hours_and_dates_of_course_schedule).forEach(([day, schedules]) => {
+        const scheduleArray = Array.isArray(schedules) ? schedules : [schedules];
+        formattedSchedule[day] = scheduleArray
+          .filter((s: any) => s)
+          .map((s: any) => ({
+            date: s.date || new Date().toISOString().split("T")[0],
+            start_time: normalizeTime(s.start_time) as string,
+            end_time: normalizeTime(s.end_time) as string,
+          }));
+      });
+    }
+
     const data = {
-      ...classData,
+      name: classData.name,
+      subject_in_all_letter: classData.subject_in_all_letter,
+      subject_in_short: classData.subject_in_short,
+      hours_and_dates_of_course_schedule: formattedSchedule,
+      description: classData.description,
+      grade: classData.grade,
       teacher: teacher,
       students: students,
     };
@@ -163,14 +207,30 @@ export async function updateClass(
     });
 
     if (!response.ok) {
-      const errorData = await response.json(); // Utilisez .json() au lieu de .text()
+      const errorData = await response.json();
       console.error("PUT Class Failed - Detailed Error:", {
         status: response.status,
         statusText: response.statusText,
         url: response.url,
         error: errorData,
       });
-      throw new Error(JSON.stringify(errorData));
+      // Extract first friendly message
+      let friendly = "Failed to update class.";
+      if (errorData && typeof errorData === "object") {
+        // Look for common fields
+        const firstKey = Object.keys(errorData)[0];
+        const firstVal = firstKey ? errorData[firstKey] : null;
+        if (Array.isArray(firstVal) && firstVal.length > 0 && typeof firstVal[0] === "string") {
+          friendly = firstVal[0];
+        } else if (typeof errorData.detail === "string") {
+          friendly = errorData.detail;
+        }
+        // Specific friendly copy for empty students when grade has none
+        if ((String(friendly).toLowerCase().includes("student") && String(friendly).toLowerCase().includes("none"))|| String(friendly).toLowerCase().includes("this list may")) {
+          friendly = "No students available for this grade. Add students or choose another grade.";
+        }
+      }
+      throw new Error(friendly);
     }
 
     return await response.json();

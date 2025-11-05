@@ -60,16 +60,21 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
   const [viewMode, setViewMode] = useState<'card' | 'table' | 'list'>('table');
 
   const transformClassData = useCallback((classData: Class): { id: number; name: string; students: Student[] } => {
+    const mapName = (id: number) => {
+      const match = allStudents.find((st) => Number(st.id) === Number(id));
+      return match?.full_name || `Student ${id}`;
+    };
     return {
       id: classData.id,
       name: classData.name,
       students: Array.isArray(classData.students)
-        ? classData.students.map(s => typeof s === 'number'
-            ? { id: s, full_name: `Student ${s}` }
-            : s)
+        ? classData.students.map((s) => {
+            const id = typeof s === 'number' ? s : s.id;
+            return { id, full_name: typeof s === 'number' ? mapName(id) : (s as any).full_name || mapName(id) };
+          })
         : []
     };
-  }, []);
+  }, [allStudents]);
 
   const teacherColors = [
     'bg-blue-100 text-blue-800',
@@ -149,7 +154,8 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
               students: Array.isArray(row.original.students)
                 ? row.original.students.map((student: any) => {
                     const studentId = typeof student === 'number' ? student : student.id;
-                    return { id: studentId, full_name: `Student ${studentId}` };
+                    const match = allStudents.find((st) => Number(st.id) === Number(studentId));
+                    return { id: studentId, full_name: match?.full_name || `Student ${studentId}` };
                   })
                 : []
             }}
@@ -592,6 +598,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
         refreshToken={refreshToken}
         open={rosterOpen}
         onOpenChange={setRosterOpen}
+        onSaved={() => setRefreshTime(Date.now().toString())}
       />
     </div>
   );
