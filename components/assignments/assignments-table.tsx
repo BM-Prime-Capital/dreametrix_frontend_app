@@ -430,6 +430,29 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
       return `"${str.replace(/"/g, '""')}"`;
     };
 
+    const formatDate = (dateStr: string | undefined): string => {
+      if (!dateStr) return "";
+      try {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return dateStr;
+        return date.toISOString().split("T")[0]; // YYYY-MM-DD format
+      } catch {
+        return dateStr;
+      }
+    };
+
+    const formatWeight = (weight: string | number | undefined): string => {
+      if (weight === null || weight === undefined || weight === "") return "";
+      const num = typeof weight === "string" ? parseFloat(weight) : weight;
+      if (isNaN(num)) return String(weight);
+      return `${num.toFixed(1)}%`;
+    };
+
+    const formatGrade = (grade: number | undefined | null): string => {
+      if (grade === null || grade === undefined || isNaN(grade)) return "";
+      return `${grade.toFixed(1)}%`;
+    };
+
     const headers = [
       "Name",
       "Course",
@@ -444,16 +467,12 @@ export function AssignmentsTable({ onViewAssignment }: AssignmentsTableProps) {
     const rows = dataToExport.map((a: Assignment) => [
       escapeCsv(a.name),
       escapeCsv(a.course?.name || ""),
-      escapeCsv(a.kind || ""),
-      escapeCsv(new Date(a.due_date).toLocaleDateString()),
-      escapeCsv(a.weight ? `${Number(a.weight).toFixed(1)}%` : ""),
+      escapeCsv((a.kind || "").charAt(0).toUpperCase() + (a.kind || "").slice(1)),
+      escapeCsv(formatDate(a.due_date)),
+      escapeCsv(formatWeight(a.weight)),
       escapeCsv(a.published ? "Published" : "Draft"),
-      escapeCsv(typeof a.submissions_count === 'number' ? a.submissions_count : ''),
-      escapeCsv(
-        typeof a.average_grade === 'number' && !isNaN(a.average_grade)
-          ? `${a.average_grade.toFixed(1)}%`
-          : ''
-      ),
+      escapeCsv((a as any).submissions_count ?? ""),
+      escapeCsv(formatGrade((a as any).average_grade)),
     ].join(","));
 
     const csvContent = [headers.join(","), ...rows].join("\n");
