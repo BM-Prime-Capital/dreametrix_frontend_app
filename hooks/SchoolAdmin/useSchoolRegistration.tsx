@@ -337,9 +337,9 @@ export const useSchoolRegistration = () => {
       // const credentials = btoa(`${username}:${password}`)
       // const authHeader = `Basic ${credentials}`
 
-      const response = await fetch("https://backend-dreametrix.com/school-requests/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/school-requests/`, {
         method: "POST",
-        headers: {
+        headers: {  
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),

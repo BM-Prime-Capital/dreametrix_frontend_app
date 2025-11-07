@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { createAssignment } from "@/services/AssignmentService";
@@ -19,6 +19,7 @@ import { Loader } from "../ui/loader";
 import { Class } from "@/types";
 import { useRouter } from "next/navigation";
 import { BookOpen } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 type FormData = {
   name: string;
@@ -38,6 +39,7 @@ export function AddAssignmentDialog({ open, onOpenChange }: AddAssignmentDialogP
   const { tenantDomain, accessToken } = useRequestInfo();
   const router = useRouter();
   const [internalOpen, setInternalOpen] = useState(false);
+  const { toast } = useToast();
   
   // Use external open prop if provided, otherwise use internal state
   const isOpen = open !== undefined ? open : internalOpen;
@@ -60,11 +62,24 @@ export function AddAssignmentDialog({ open, onOpenChange }: AddAssignmentDialogP
 
   const { list: classes, isLoading: classesLoading } = useList(getClasses);
 
+  const today = useMemo(() => new Date().toISOString().split("T")[0], []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      // Validate due date not in the past
+      if (!formData.due_date || formData.due_date < today) {
+        toast({
+          title: "Invalid deadline",
+          description: "The due date cannot be in the past.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       const form = new FormData();
       form.append("name", formData.name);
       form.append("course", formData.course);
@@ -77,6 +92,14 @@ export function AddAssignmentDialog({ open, onOpenChange }: AddAssignmentDialogP
 
       handleOpenChange(false);
       window.location.reload();
+    } catch (error) {
+      console.error("Create assignment failed:", error);
+      toast({
+        title: "Failed to create assignment",
+        description:
+          error instanceof Error ? error.message : "An unexpected error occurred.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -198,6 +221,7 @@ export function AddAssignmentDialog({ open, onOpenChange }: AddAssignmentDialogP
               className="w-full focus:ring-2 focus:ring-[#3e81d4]"
               value={formData.due_date}
               onChange={(e) => handleChange("due_date", e.target.value)}
+              min={today}
               required
             />
           </div>
