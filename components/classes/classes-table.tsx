@@ -13,7 +13,7 @@ import {
   type VisibilityState,
   type FilterFn
 } from "@tanstack/react-table";
-import {  Trash2, ChevronDown, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import {  Trash2, ChevronDown, Search, ChevronLeft, ChevronRight, Download, Users } from "lucide-react";
 import { ClassRosterDialog } from "./roster-management";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,101 +83,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
     return teacherColors[index % teacherColors.length];
   };
 
-
-  const columns = useMemo<ColumnDef<Class>[]>(() => [
-    {
-      accessorKey: "name",
-      header: "Class",
-      cell: ({ row }) => (
-        <button 
-          className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-3 py-1 text-sm font-medium hover:bg-[#3e81d4]/20 transition-colors"
-          onClick={() => {
-            setSelectedClassForRoster(row.original);
-            setRosterOpen(true);
-          }}
-        >
-          {row.getValue("name")}
-        </button>
-      ),
-    },
-    {
-      accessorKey: "subject_in_short",
-      header: "Subject",
-    },
-    {
-      accessorKey: "grade",
-      header: "Grade",
-      cell: ({ row }) => (
-        <span className="px-2.5 py-1 bg-[#3e81d4]/10 text-[#3e81d4] rounded-full text-xs font-medium">
-          {row.getValue("grade")}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "teacher",
-      header: "Teacher",
-      cell: ({ row }) => {
-        const teacher = row.original.teacher;
-        const teacherName = typeof teacher === 'object' ? teacher.full_name : 'Unknown';
-        const initials = teacherName.split(' ')
-          .filter(part => part.length > 0)
-          .map(part => part[0].toUpperCase())
-          .join('')
-          .substring(0, 2);
-        
-        return (
-          <div className="flex items-center gap-2">
-            <div className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium ${getTeacherColor(row.index)}`}>
-              {initials || '??'}
-            </div>
-            <span className="text-sm text-gray-700">{teacherName}</span>
-          </div>
-        );
-      },
-    },
-    {
-      id: "actions",
-      header: "Actions",
-      enableHiding: false,
-      cell: ({ row }) => (
-        <div className="flex gap-2 justify-center">
-          <AddClassDialog 
-            setRefreshTime={setRefreshTime} 
-            existingClass={{
-              ...row.original,
-              teacher: typeof row.original.teacher === 'object' ? row.original.teacher.id : row.original.teacher
-            }} 
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 hover:bg-[#3e81d4]/10"
-            onClick={() => handleDeleteClass(row.original.id)}
-          >
-            <Trash2 className="h-3.5 w-3.5 text-[#3e81d4]" />
-          </Button>
-        </div>
-      ),
-    },
-  ], [setRefreshTime]);
-
-  const table = useReactTable({
-    data: allClasses,
-    columns,
-    filterFns: { global: globalFilterFn },
-    globalFilterFn,
-    onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    state: { sorting, globalFilter, columnVisibility },
-  });
-
   const handleDeleteClass = useCallback(async (classId: number) => {
-    
     console.log("handleDeleteClass tenantDomain:", tenantDomain);
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -255,6 +161,110 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
       }
     }
   }, [tenantDomain, accessToken, refreshToken, setRefreshTime]);
+
+  const columns = useMemo<ColumnDef<Class>[]>(() => [
+    {
+      accessorKey: "name",
+      header: "Class",
+      cell: ({ row }) => (
+        <button 
+          className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-3 py-1 text-sm font-medium hover:bg-[#3e81d4]/20 transition-colors"
+          onClick={() => {
+            setSelectedClassForRoster(row.original);
+            setRosterOpen(true);
+          }}
+        >
+          {row.getValue("name")}
+        </button>
+      ),
+    },
+    {
+      accessorKey: "subject_in_short",
+      header: "Subject",
+    },
+    {
+      accessorKey: "grade",
+      header: "Grade",
+      cell: ({ row }) => (
+        <span className="px-2.5 py-1 bg-[#3e81d4]/10 text-[#3e81d4] rounded-full text-xs font-medium">
+          {row.getValue("grade")}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "teacher",
+      header: "Teacher",
+      cell: ({ row }) => {
+        const teacher = row.original.teacher;
+        const teacherName = typeof teacher === 'object' ? teacher.full_name : 'Unknown';
+        const initials = teacherName.split(' ')
+          .filter(part => part.length > 0)
+          .map(part => part[0].toUpperCase())
+          .join('')
+          .substring(0, 2);
+        
+        return (
+          <div className="flex items-center gap-2">
+            <div className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium ${getTeacherColor(row.index)}`}>
+              {initials || '??'}
+            </div>
+            <span className="text-sm text-gray-700">{teacherName}</span>
+          </div>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      enableHiding: false,
+      cell: ({ row }) => (
+        <div className="flex gap-2 justify-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 hover:bg-blue-50"
+            onClick={() => {
+              setSelectedClassForRoster(row.original);
+              setRosterOpen(true);
+            }}
+            title="View Roster"
+          >
+            <Users className="h-3.5 w-3.5 text-[#3e81d4]" />
+          </Button>
+          <AddClassDialog 
+            setRefreshTime={setRefreshTime} 
+            existingClass={{
+              ...row.original,
+              teacher: typeof row.original.teacher === 'object' ? row.original.teacher.id : row.original.teacher
+            }} 
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 hover:bg-[#3e81d4]/10"
+            onClick={() => handleDeleteClass(row.original.id)}
+          >
+            <Trash2 className="h-3.5 w-3.5 text-[#3e81d4]" />
+          </Button>
+        </div>
+      ),
+    },
+  ], [setRefreshTime, handleDeleteClass, setSelectedClassForRoster, setRosterOpen]);
+
+  const table = useReactTable({
+    data: allClasses,
+    columns,
+    filterFns: { global: globalFilterFn },
+    globalFilterFn,
+    onSortingChange: setSorting,
+    onGlobalFilterChange: setGlobalFilter,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    state: { sorting, globalFilter, columnVisibility },
+  });
 
   const handleExport = useCallback(() => {
     if (allClasses.length === 0) return;
