@@ -254,15 +254,39 @@ export async function deleteClass(
       },
     });
 
-    const responseData = await response.json(); // Toujours parser la réponse JSON
+    const hasBody =
+      response.status !== 204 &&
+      response.headers.get("Content-Length") !== "0" &&
+      response.headers.get("content-type")?.includes("application/json");
+    const responseData = hasBody ? await response.json() : null;
 
     if (!response.ok) {
       console.error("DELETE Class Failed:", response.status, responseData);
-      throw new Error(responseData.message || "Failed to delete class");
+      const message =
+        (responseData &&
+          typeof responseData === "object" &&
+          "message" in responseData &&
+          typeof responseData.message === "string" &&
+          responseData.message) ||
+        "Failed to delete class";
+      throw new Error(message);
     }
 
     // Retourner true si le message indique un succès
-    return responseData.message === "Class deleted successfully.";
+    if (responseData && typeof responseData === "object") {
+      if ("success" in responseData && responseData.success === true) {
+        return true;
+      }
+      if (
+        "message" in responseData &&
+        responseData.message === "Class deleted successfully."
+      ) {
+        return true;
+      }
+    }
+
+    // Si l'API renvoie un 204 ou aucun message explicite, considérer la suppression comme réussie
+    return true;
   } catch (error) {
     console.error("Error deleting class:", error);
     throw error;
