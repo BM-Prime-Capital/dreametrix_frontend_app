@@ -1,4 +1,4 @@
-import { BACKEND_BASE_URL } from '@/app/utils/constants';
+import { getBackendUrl } from '@/app/utils/tenant';
 
 export interface ParentChild {
   id: number;
@@ -34,7 +34,7 @@ export async function getParentChildren(
 
   try {
     // Get classes by child to extract children names
-    const url = `${BACKEND_BASE_URL}/classes/by_child/`;
+    const url = `${getBackendUrl()}/classes/by_child/`;
     const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -89,7 +89,7 @@ export async function getAvailableSubjects(
 
   try {
     // Get all classes to extract unique subjects
-    const url = `${BACKEND_BASE_URL}/classes/`;
+    const url = `${getBackendUrl()}/classes/`;
     const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -152,7 +152,7 @@ export async function getAvailableLevels(
 
   try {
     // Get all classes to extract unique levels
-    const url = `${BACKEND_BASE_URL}/classes/`;
+    const url = `${getBackendUrl()}/classes/`;
     const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${accessToken}`,

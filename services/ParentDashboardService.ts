@@ -1,4 +1,4 @@
-import { BACKEND_BASE_URL } from "@/app/utils/constants"
+import { getBackendUrl } from "@/app/utils/tenant"
 import { MockParentDashboardService } from "./MockParentDashboardService"
 
 /**
@@ -110,7 +110,7 @@ class ParentDashboardServiceClass {
     accessToken: string
   ): Promise<ParentDashboardData> {
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/parents/dashboard/`, {
+      const response = await fetch(`${getBackendUrl()}/parents/dashboard/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

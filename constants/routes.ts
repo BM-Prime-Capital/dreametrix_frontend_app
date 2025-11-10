@@ -122,27 +122,24 @@ export const SchoolAdminRoutes = [
   },
 
   // Subjects
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/subjects`,
-    icon: menuImages.libraryBooks,
-    label: "Subjects",
-    disabled: true,
-  },
+  // {
+  //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/subjects`,
+  //   icon: menuImages.libraryBooks,
+  //   label: "Subjects",
+  // },
 
   // Timetable
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/timetable`,
-    icon: menuImages.calendar,
-    label: "Timetable",
-    disabled: true,
-  },
+  // {
+  //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/timetable`,
+  //   icon: menuImages.calendar,
+  //   label: "Timetable",
+  // },
 
   // Grades
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/grades`,
     icon: menuImages.grading,
     label: "Grades",
-    disabled: true,
   },
 
   // Attendance
@@ -150,7 +147,6 @@ export const SchoolAdminRoutes = [
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/attendance`,
     icon: menuImages.attendance,
     label: "Attendance",
-    disabled: true,
   },
 
   // Communication
@@ -158,50 +154,50 @@ export const SchoolAdminRoutes = [
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/communicate`,
     icon: menuImages.communicate,
     label: "Communication",
-    disabled: true,
+  },
 
+  // Profile
+  {
+    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/profile`,
+    icon: `/assets/images/teacher/dashboard/profile.svg`,
+    label: "Profile",
   },
 
   // Finance 
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/finance`,
-    icon: menuImages.payments,
-    label: "Finance",
-    disabled: true,
-  },
+  // {
+  //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/finance`,
+  //   icon: menuImages.payments,
+  //   label: "Finance",
+  // },
 
   // Library 
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/library`,
-    icon: menuImages.libraryBooks,
-    label: "Library",
-    disabled: true,
-  },
+  // {
+  //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/library`,
+  //   icon: menuImages.libraryBooks,
+  //   label: "Library",
+  // },
 
   // Reports 
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/reports`,
-    icon: menuImages.analytics,
-    label: "Reports",
-    disabled: true,
-  },
+  // {
+  //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/reports`,
+  //   icon: menuImages.analytics,
+  //   label: "Reports",
+  // },
 
   // Transport
-  {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/transports`,
-    icon: menuImages.transport,
-    label: "Transport",
-    disabled: true,
-  },
+  // {
+  //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/transports`,
+  //   icon: menuImages.transport,
+  //   label: "Transport",
+  // },
 
    // Settings
-   {
-    path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/settings`,
-    icon: menuImages.settings,
-    label: "Settings",
-    isSecondary: true,
-    disabled: true,
-  },
+   // {
+   //  path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/settings`,
+   //  icon: menuImages.settings,
+   //  label: "Settings",
+   //  isSecondary: true,
+   // },
 ];
 
 export const TeacherRoutes = [
@@ -210,6 +206,12 @@ export const TeacherRoutes = [
     icon: generalImages.home,
     label: "HOME",
     exact: true
+  },
+  {
+    path: `${userPath.TEACHER_BASE_PATH}/students`,
+    icon: menuImages.seating,
+    label: "Students",
+    
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/classes`,
@@ -297,6 +299,11 @@ export const TeacherRoutes = [
     label: "REPORT CARD",
   },
   {
+    path: `${userPath.TEACHER_BASE_PATH}/profile`,
+    icon: `/assets/images/teacher/dashboard/profile.svg`,
+    label: "PROFILE",
+  },
+  {
     path: `${userPath.TEACHER_BASE_PATH}/support`,
     icon: menuImages.support,
     label: "SUPPORT",
@@ -351,11 +358,18 @@ export const ParentRoutes = [
     label: "RELATIONSHIP",
   },
   {
-    path: `${userPath.PARENT_BASE_PATH}/communicate`,
-    icon: menuImages.communicate,
-    label: "COMMUNICATE",
-    disabled: true
+    path: `${userPath.PARENT_BASE_PATH}/profile`,
+    icon: `/assets/images/teacher/dashboard/profile.svg`,
+    label: "PROFILE",
   },
+
+  
+  // {
+  //   path: `${userPath.PARENT_BASE_PATH}/communicate`,
+  //   icon: menuImages.communicate,
+  //   label: "COMMUNICATE",
+  //   disabled: true
+  // },
 ];
 
 export const SuperAdminRoutes = [

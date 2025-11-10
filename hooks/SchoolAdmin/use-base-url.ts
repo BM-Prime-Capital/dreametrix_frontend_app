@@ -13,7 +13,11 @@ export function useBaseUrl() {
       if (tenantData) {
         const { primary_domain } = JSON.parse(tenantData)
         if (primary_domain) {
-          setBaseUrl(`https://${primary_domain}`)
+          if (primary_domain.includes("localhost")) {
+            setBaseUrl(primary_domain)
+          } else {
+            setBaseUrl(`https://${primary_domain}`)
+          }
         } else {
           setError("Domaine principal non trouvé. Veuillez vous reconnecter.")
         }

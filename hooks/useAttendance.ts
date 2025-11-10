@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AttendanceResponse, AttendanceQueryParams, AttendanceRecord } from '@/types/attendance';
 import { AttendanceService, AttendanceApiError } from '@/services/attendance.service';
+import { useRequestInfo } from './useRequestInfo';
 
 interface UseAttendanceState {
   data: AttendanceRecord[];
@@ -25,6 +26,7 @@ export function useAttendance(
   initialParams: AttendanceQueryParams = {},
   accessToken?: string
 ): UseAttendanceReturn {
+  const { tenantDomain } = useRequestInfo();
   const [state, setState] = useState<UseAttendanceState>({
     data: [],
     loading: true,
@@ -41,9 +43,20 @@ export function useAttendance(
     ...initialParams,
   });
 
-  const fetchAttendance = useCallback(async (queryParams: AttendanceQueryParams, token?: string) => {
+  const fetchAttendance = useCallback(async (queryParams: AttendanceQueryParams, token?: string, domain?: string) => {
     setState(prev => ({ ...prev, loading: true, error: null }));
-    
+
+    // Validate domain before making API call
+    if (!domain || domain.trim() === '') {
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: 'Tenant domain not found. Please log in again.',
+        data: [],
+      }));
+      return;
+    }
+
     // Validate token before making API call
     if (!token || token.trim() === '') {
       setState(prev => ({
@@ -54,10 +67,10 @@ export function useAttendance(
       }));
       return;
     }
-    
+
     console.log("accessToken => ", token);
     try {
-      const response: AttendanceResponse = await AttendanceService.getStudentAttendance(queryParams, token);
+      const response: AttendanceResponse = await AttendanceService.getStudentAttendance(domain, queryParams, token);
       
       const currentPage = Math.floor((queryParams.offset || 0) / (queryParams.limit || DEFAULT_PAGE_SIZE)) + 1;
       
@@ -93,35 +106,35 @@ export function useAttendance(
   }, []);
 
   const refetch = useCallback(async () => {
-    await fetchAttendance(params, accessToken);
-  }, [fetchAttendance, params, accessToken]);
+    await fetchAttendance(params, accessToken, tenantDomain);
+  }, [fetchAttendance, params, accessToken, tenantDomain]);
 
   const fetchPage = useCallback(async (page: number) => {
     const newOffset = (page - 1) * (params.limit || DEFAULT_PAGE_SIZE);
     const newParams = { ...params, offset: newOffset };
     setParams(newParams);
-    await fetchAttendance(newParams, accessToken);
-  }, [fetchAttendance, params, accessToken]);
+    await fetchAttendance(newParams, accessToken, tenantDomain);
+  }, [fetchAttendance, params, accessToken, tenantDomain]);
 
   const fetchByDate = useCallback(async (date: string) => {
     const newParams = { ...params, date, offset: 0 };
     setParams(newParams);
-    await fetchAttendance(newParams, accessToken);
-  }, [fetchAttendance, params, accessToken]);
+    await fetchAttendance(newParams, accessToken, tenantDomain);
+  }, [fetchAttendance, params, accessToken, tenantDomain]);
 
   const clearError = useCallback(() => {
     setState(prev => ({ ...prev, error: null }));
   }, []);
 
   useEffect(() => {
-    // Only fetch if we have an accessToken
-    if (accessToken && accessToken.trim() !== '') {
-      fetchAttendance(params, accessToken);
+    // Only fetch if we have both accessToken and tenantDomain
+    if (accessToken && accessToken.trim() !== '' && tenantDomain && tenantDomain.trim() !== '') {
+      fetchAttendance(params, accessToken, tenantDomain);
     } else {
-      // Set loading to false if no token available
+      // Set loading to false if no token or domain available
       setState(prev => ({ ...prev, loading: false }));
     }
-  }, [fetchAttendance, params, accessToken]);
+  }, [fetchAttendance, params, accessToken, tenantDomain]);
 
 
   return {

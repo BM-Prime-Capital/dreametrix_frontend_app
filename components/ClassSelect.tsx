@@ -79,10 +79,13 @@ export default function ClassSelect({
       value={selectedClass?.id?.toString() || ""}
       onChange={(e) => handleClassChange(e.target.value)}
       className={`text-white bg-bgPurple font-bold p-1 rounded-md ${className}`}
+      style={{
+        color: 'white', // Selected text color
+      }}
     >
-      <option value={""}>All Classes</option>
+      <option value={""} style={{ color: 'black' }}>All Classes</option>
       {classes.map((classEl: any, index) => (
-        <option key={index} value={classEl.id?.toString()}>
+        <option key={index} value={classEl.id?.toString()} style={{ color: 'black' }}>
           {classEl.name}
         </option>
       ))}

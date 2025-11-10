@@ -1,4 +1,4 @@
-import { BACKEND_BASE_URL } from "@/app/utils/constants"
+import { getBackendUrl } from "@/app/utils/tenant"
 
 // Interfaces réutilisées du StudentGradebookService
 export interface StudentClass {
@@ -83,7 +83,7 @@ export interface GradebookData {
 // Fetch full parent children structure including courses
 export async function getParentChildren(accessToken: string): Promise<ParentChild[]> {
   try {
-    const response = await fetch(`${BACKEND_BASE_URL}/gradebooks/parent/children/`, {
+    const response = await fetch(`${getBackendUrl()}/gradebooks/parent/children/`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -108,7 +108,7 @@ export async function getParentChildren(accessToken: string): Promise<ParentChil
  */
 export async function getLinkedStudents(accessToken: string): Promise<LinkedStudent[]> {
   try {
-    const response = await fetch(`${BACKEND_BASE_URL}/gradebooks/parent/children/`, {
+    const response = await fetch(`${getBackendUrl()}/gradebooks/parent/children/`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -148,7 +148,7 @@ export async function getStudentClassesForParent(
 ): Promise<StudentClass[]> {
   try {
     // Fetch all children data
-    const response = await fetch(`${BACKEND_BASE_URL}/gradebooks/parent/children/`, {
+    const response = await fetch(`${getBackendUrl()}/gradebooks/parent/children/`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -196,7 +196,7 @@ export async function getStudentClassGradebookForParent(
   accessToken: string
 ): Promise<StudentGradebookDetail[]> {
   try {
-    const url = `${BACKEND_BASE_URL}/gradebooks/parent/children/${studentId}/classes/${classId}/`
+    const url = `${getBackendUrl()}/gradebooks/parent/children/${studentId}/classes/${classId}/`
 
     const response = await fetch(url, {
       method: 'GET',

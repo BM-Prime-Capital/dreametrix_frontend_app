@@ -205,9 +205,9 @@ export default function StudentDashboard() {
 
   const loadAttendanceData = async () => {
     try {
-      if (accessToken) {
+      if (tenantDomain && accessToken) {
         console.log("Loading attendance with accessToken present:", !!accessToken);
-        const data = await getStudentAttendanceView(accessToken);
+        const data = await getStudentAttendanceView(tenantDomain, accessToken);
         setAttendanceData(data);
       }
     } catch (error) {

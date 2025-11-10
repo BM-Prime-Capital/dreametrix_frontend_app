@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BACKEND_BASE_URL } from '@/app/utils/constants';
+import { getBackendUrl } from '@/app/utils/tenant';
 
 // Interface pour les données brutes de l'API
 interface ApiClass {
@@ -85,7 +85,7 @@ export async function getParentClasses(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
-  const url = `${BACKEND_BASE_URL}/parents/children/courses/`;
+  const url = `${getBackendUrl()}/parents/children/courses/`;
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -196,7 +196,7 @@ export async function getParentClassDetails(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
-  const url = `${BACKEND_BASE_URL}/classes/${classId}/`;
+  const url = `${getBackendUrl()}/classes/${classId}/`;
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -283,7 +283,7 @@ export async function getParentClassesByChild(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
-  const url = `${BACKEND_BASE_URL}/classes/by_child/?child_id=${childId}`;
+  const url = `${getBackendUrl()}/classes/by_child/?child_id=${childId}`;
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,

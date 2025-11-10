@@ -113,7 +113,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
   const { formData, errors, isLoading, handleInputChange, handleSubmit } =
     useSchoolRegistration();
 
-  // Multi-step states
+  // Multistep states
   const [currentStep, setCurrentStep] = useState<RegistrationStep>(
     RegistrationStep.SEARCH
   );
@@ -137,7 +137,7 @@ export default function SchoolAdminRegister({}: RegisterProps) {
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
   const [openCityPopover, setOpenCityPopover] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null); 
+  const [apiError, setApiError] = useState<string | null>(null);
 
   // Select school from search results
   const handleSchoolSelect = (school: SchoolDisplay) => {
@@ -196,13 +196,18 @@ useEffect(() => {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
 
-      const citiesData = await fetchCitiesByState(normalizedState);
-      
-      const uniqueCities = [...new Set(citiesData)].sort();
-      setCities(uniqueCities);
+      console.log("Normalized state ===>", normalizedState )
 
-      if (formData.city && !uniqueCities.includes(formData.city)) {
-        handleInputChange("city", "");
+      const citiesData = await fetchCitiesByState(normalizedState);
+
+      const uniqueCities = [...new Set(citiesData)].sort();
+      const citiesInLower = citiesData.map(city=> city.toLowerCase())
+
+
+      setCities(citiesInLower);
+
+      if (formData.city && !citiesInLower.includes(formData.city.toLowerCase())) {
+        handleInputChange("city", formData.city);
       }
     } catch (error) {
       console.error("Cities loading error:", error);
@@ -212,17 +217,17 @@ useEffect(() => {
       setLoadingCities(false);
     }
   };
-  
+
   loadCities();
 }, [formData.state, currentStep]);
 
   // Validation function for required fields
   const isFormValid = () => {
     const requiredFields = [
-      'name', 'school_email', 'administrator_email', 'phone', 
+      'name', 'school_email', 'administrator_email', 'phone',
       'state', 'city', 'address', 'country'
     ];
-    
+
     const isValid = requiredFields.every(field => {
       const value = formData[field as keyof typeof formData];
       return value && value.toString().trim() !== '';
@@ -240,10 +245,10 @@ useEffect(() => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setApiError(null);
-    
+
     console.log("✅ onSubmit called");
     console.log("📝 Form data:", formData);
-    
+
     if (!isFormValid()) {
       console.log("❌ Form validation failed - missing required fields");
       setApiError("Please fill in all required fields");
@@ -251,7 +256,7 @@ useEffect(() => {
     }
 
     console.log("✅ Form is valid, proceeding with submission...");
-    
+
     try {
       console.log("🔄 Calling handleSubmit...");
       const result = await handleSubmit();
@@ -266,7 +271,9 @@ useEffect(() => {
       }
     } catch (error: any) {
       console.error("❌ Registration failed:", error);
-      
+
+      console.log("Error", error)
+
       if (error.response?.data?.message) {
         setApiError(error.response.data.message);
       } else if (error.message) {
@@ -405,7 +412,7 @@ useEffect(() => {
             </Button>
           </div>
         )}
-        
+
       </div>
     </div>
   );
@@ -513,10 +520,10 @@ useEffect(() => {
         <h2 className="text-2xl font-bold text-gray-900">
           Registration Submitted Successfully!
         </h2>
-        
+
         <div className="bg-green-50 border border-green-200 rounded-lg p-6 max-w-md mx-auto">
           <p className="text-green-800 text-sm leading-relaxed">
-            Your school registration request has been submitted successfully. 
+            Your school registration request has been submitted successfully.
             You will receive an email regarding the status of your request shortly.
           </p>
         </div>
@@ -587,7 +594,7 @@ useEffect(() => {
             <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
             <div>
               <p className="font-medium text-red-800">Registration Error</p>
-              <p className="text-sm text-red-700 mt-1">{apiError} : Please change the administrator email.</p>
+              <p className="text-sm text-red-700 mt-1">{apiError}</p>
             </div>
           </div>
         )}
@@ -728,8 +735,8 @@ useEffect(() => {
                 </div>
               </div>
               {/* Hidden country field that's actually connected to form state */}
-              <input 
-                type="hidden" 
+              <input
+                type="hidden"
                 value={formData.country || "USA"}
                 onChange={(e) => handleInputChange("country", e.target.value)}
               />

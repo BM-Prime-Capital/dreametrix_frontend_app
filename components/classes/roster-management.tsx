@@ -49,6 +49,7 @@ interface ClassRosterDialogProps {
   studentList: any;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSaved?: () => void;
   tenantPrimaryDomain: string;
   accessToken: string;
   refreshToken: string;
@@ -58,6 +59,7 @@ export function ClassRosterDialog({
   classData, 
   open, 
   onOpenChange, 
+  onSaved,
   studentList,
   tenantPrimaryDomain,
   accessToken,
@@ -247,6 +249,7 @@ export function ClassRosterDialog({
       setHasChanges(false);
       setShowSaveConfirm(false);
       onOpenChange(false);
+      if (onSaved) onSaved();
     } catch (error) {
       console.error("Error saving changes:", error);
       toast({

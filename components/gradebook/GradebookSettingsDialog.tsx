@@ -80,7 +80,7 @@ export function GradebookSettingsDialog({
         });
       }
     } catch (err) {
-      console.error("❌ Error loading assessment weights:", err);
+      console.error("Error loading assessment weights:", err);
       setError(
         err instanceof Error ? err.message : "Failed to load assessment weights"
       );
@@ -115,7 +115,7 @@ export function GradebookSettingsDialog({
       console.log("Assessment weights saved successfully");
       setOpen(false);
     } catch (err) {
-      console.error("❌ Error saving assessment weights:", err);
+      console.error("Error saving assessment weights:", err);
       setError(
         err instanceof Error ? err.message : "Failed to save assessment weights"
       );

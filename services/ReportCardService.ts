@@ -1,4 +1,4 @@
-import { BACKEND_BASE_URL } from "@/app/utils/constants";
+import { getBackendUrl } from "@/app/utils/tenant";
 
 // Interfaces pour les données report card
 export interface StudentInfo {
@@ -157,7 +157,7 @@ export async function getStudentReportCard(
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
 
-  const url = `${BACKEND_BASE_URL}/students/${studentId}/report_card/`;
+  const url = `${getBackendUrl()}/students/${studentId}/report_card/`;
 
   try {
     const response = await fetch(url, {

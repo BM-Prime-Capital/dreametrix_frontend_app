@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +33,7 @@ import {
   Globe,
   GraduationCap,
 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface EditAssignmentDialogProps {
   assignment: Assignment | null;
@@ -56,6 +57,7 @@ export function EditAssignmentDialog({
   onUpdate,
 }: EditAssignmentDialogProps) {
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(false);
   const [courses, setCourses] = useState<MiniCourse[]>([]);
@@ -113,6 +115,8 @@ export function EditAssignmentDialog({
     }
   }, [assignment]);
 
+  const today = useMemo(() => new Date().toISOString().split("T")[0], []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -121,6 +125,17 @@ export function EditAssignmentDialog({
     setIsLoading(true);
 
     try {
+      // Validate due date not in the past
+      if (!formData.due_date || formData.due_date < today) {
+        toast({
+          title: "Invalid deadline",
+          description: "The due date cannot be in the past.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       // Create FormData object to handle file upload
       const formDataWithFile = new FormData();
       formDataWithFile.append("name", formData.name);
@@ -149,10 +164,19 @@ export function EditAssignmentDialog({
       };
 
       onUpdate(updatedAssignmentWithCourse);
+      toast({
+        title: "Assignment updated",
+        description: "Your changes have been saved successfully.",
+      });
       handleClose();
     } catch (error) {
       console.error("Error updating assignment:", error);
-      alert("Failed to update assignment. Please try again.");
+      toast({
+        title: "Failed to update assignment",
+        description:
+          error instanceof Error ? error.message : "An unexpected error occurred.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -269,6 +293,7 @@ export function EditAssignmentDialog({
                 type="date"
                 value={formData.due_date}
                 onChange={(e) => handleInputChange("due_date", e.target.value)}
+                min={today}
                 required
                 className="h-12 text-base border-2 border-gray-200 focus:border-[#3e81d4] focus:ring-2 focus:ring-[#3e81d4]/20 rounded-lg transition-all duration-200"
               />

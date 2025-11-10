@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,49 +21,61 @@ export default function ActivitySuggesterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!subject || !gradeLevel || !lessonObjective) {
-      toast({
-        title: "Missing Information",
-        description: "Please provide subject, grade level, and lesson objective.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setIsLoading(true);
-    setSuggestions([]);
-    try {
-      const input: SuggestActivitiesInput = {
-        lessonObjective,
-        subject,
-        gradeLevel: parseInt(gradeLevel.match(/\d+/)?.toString() || "0") || 7,
-      };
-      const result = await suggestActivities(input);
-      setSuggestions(result.suggestedActivities);
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  // Validation plus stricte avec vérification de gradeLevel
+  if (!subject || !gradeLevel || !lessonObjective.trim()) {
+    toast({
+      title: "Missing Information",
+      description: "Please provide subject, grade level, and lesson objective.",
+      variant: "destructive",
+    });
+    return;
+  }
 
-      if (result.suggestedActivities.length === 0) {
-        toast({
-          title: "No Suggestions Found",
-          description: "The AI couldn't find specific suggestions. Try rephrasing your objective.",
-        });
-      } else {
-        toast({
-          title: "Suggestions Generated!",
-          description: "Review the suggested activities below.",
-        });
-      }
-    } catch (error) {
-      console.error("Error suggesting activities:", error);
+  // S'assurer que subject est un Subject valide
+  const validSubject = SUBJECTS.includes(subject as any) ? subject as "ELA" | "Math" : "Math";
+  
+  // Extraire le niveau de grade de manière sécurisée
+  const gradeMatch = gradeLevel.match(/\d+/);
+  const gradeNumber = gradeMatch ? parseInt(gradeMatch[0]) : 7;
+  
+  setIsLoading(true);
+  setSuggestions([]);
+  
+  try {
+    const input: SuggestActivitiesInput = {
+      lessonObjective: lessonObjective.trim(),
+      subject: validSubject,
+      gradeLevel: gradeNumber,
+    };
+    
+    const result = await suggestActivities(input);
+    setSuggestions(result.suggestedActivities);
+
+    if (result.suggestedActivities.length === 0) {
       toast({
-        title: "Error",
-        description: "Failed to get activity suggestions. Please try again.",
-        variant: "destructive",
+        title: "No Suggestions Found",
+        description: "The AI couldn't find specific suggestions. Try rephrasing your objective.",
       });
-    } finally {
-      setIsLoading(false);
+    } else {
+      toast({
+        title: "Suggestions Generated!",
+        description: "Review the suggested activities below.",
+      });
     }
-  };
+  } catch (error) {
+    console.error("Error suggesting activities:", error);
+    toast({
+      title: "Error",
+      description: "Failed to get activity suggestions. Please try again.",
+      variant: "destructive",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const copySuggestions = async () => {
     try {
@@ -85,7 +96,7 @@ export default function ActivitySuggesterPage() {
 
   return (
     <div className="space-y-6 bg-gray-50 min-h-screen p-6">
-      {/* Header Section - Conservé comme avant */}
+      {/* Header Section */}
       <header className="bg-[#3e81d4] px-6 py-4 rounded-md shadow">
         <div className="flex items-center gap-4">
           <Lightbulb className="h-8 w-8 text-white" />
@@ -98,8 +109,7 @@ export default function ActivitySuggesterPage() {
         </div>
       </header>
 
-            {/* Back Button - Below header */}
-
+      {/* Back Button */}
       <div className="w-full px-0 py-2 bg-gray-100 border-b">
         <Button
           variant="outline"
@@ -124,7 +134,7 @@ export default function ActivitySuggesterPage() {
         </Button>
       </div>
 
-      {/* Main Content - Redesign */}
+      {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
         {/* Input Card */}
         <Card className="lg:col-span-2 border-0 shadow-lg bg-white">
@@ -143,8 +153,12 @@ export default function ActivitySuggesterPage() {
             <CardContent className="space-y-6 pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="suggester-subject" className="text-gray-700">Subject</Label>
-                  <Select value={subject} onValueChange={(value) => setSubject(value as Subject)}>
+                  <Label htmlFor="suggester-subject" className="text-gray-700">Subject *</Label>
+                  <Select 
+                    value={subject} 
+                    onValueChange={(value) => setSubject(value as Subject)}
+                    required
+                  >
                     <SelectTrigger id="suggester-subject" className="h-12 border-gray-300 hover:border-blue-300">
                       <SelectValue placeholder="Select subject" />
                     </SelectTrigger>
@@ -156,8 +170,12 @@ export default function ActivitySuggesterPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="suggester-grade" className="text-gray-700">Grade Level</Label>
-                  <Select value={gradeLevel} onValueChange={setGradeLevel}>
+                  <Label htmlFor="suggester-grade" className="text-gray-700">Grade Level *</Label>
+                  <Select 
+                    value={gradeLevel} 
+                    onValueChange={setGradeLevel}
+                    required
+                  >
                     <SelectTrigger id="suggester-grade" className="h-12 border-gray-300 hover:border-blue-300">
                       <SelectValue placeholder="Select grade" />
                     </SelectTrigger>
@@ -170,7 +188,7 @@ export default function ActivitySuggesterPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="suggester-objective" className="text-gray-700">Lesson Objective</Label>
+                <Label htmlFor="suggester-objective" className="text-gray-700">Lesson Objective *</Label>
                 <Textarea
                   id="suggester-objective"
                   placeholder="e.g., Students will be able to identify three types of rocks and their characteristics."
@@ -178,14 +196,15 @@ export default function ActivitySuggesterPage() {
                   onChange={(e) => setLessonObjective(e.target.value)}
                   rows={5}
                   className="min-h-[120px] border-gray-300 hover:border-blue-300 focus:border-blue-400"
+                  required
                 />
               </div>
             </CardContent>
             <CardFooter className="pt-0">
               <Button
                 type="submit"
-                disabled={isLoading}
-                className="w-full h-12 text-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-md"
+                disabled={isLoading || !subject || !gradeLevel || !lessonObjective.trim()}
+                className="w-full h-12 text-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />

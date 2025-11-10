@@ -1,4 +1,4 @@
-const BASE_URL = "https://backend-dreametrix.com/";
+const BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/`;
 
 export interface ForgotPasswordRequest {
   email: string;

@@ -1,8 +1,9 @@
-import { BACKEND_BASE_URL } from '@/app/utils/constants';
+import { getBackendUrl } from '@/app/utils/tenant';
 
 
 export async function getAllClasses(token?: string) {
-  const response = await fetch(`${BACKEND_BASE_URL}/classes/`, {
+  const backendUrl = getBackendUrl();
+  const response = await fetch(`${backendUrl}/classes/`, {
     headers: { Authorization: `Bearer ${token}` }
   });
 
@@ -16,7 +17,8 @@ export async function getAllClasses(token?: string) {
 
 
 export async function getClassById(id: number, token?: string) {
-  const response = await fetch(`${BACKEND_BASE_URL}/classes/${id}/`, {
+  const backendUrl = getBackendUrl();
+  const response = await fetch(`${backendUrl}/classes/${id}/`, {
     headers: { Authorization: `Bearer ${token}` }
   });
 

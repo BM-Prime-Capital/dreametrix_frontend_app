@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { RewardsResponse, RewardsQueryParams, RewardStudent } from '@/types/rewards';
 import { RewardsService, RewardsApiError } from '@/services/rewards.service';
+import { useRequestInfo } from './useRequestInfo';
 
 interface UseRewardsState {
   data: RewardStudent | null;
@@ -19,6 +20,7 @@ export function useRewards(
   initialParams: RewardsQueryParams = {},
   accessToken?: string
 ): UseRewardsReturn {
+  const { tenantDomain } = useRequestInfo();
   const [state, setState] = useState<UseRewardsState>({
     data: null,
     loading: true,
@@ -29,9 +31,20 @@ export function useRewards(
     ...initialParams,
   });
 
-  const fetchStudentRewards = useCallback(async (queryParams: RewardsQueryParams, token?: string) => {
+  const fetchStudentRewards = useCallback(async (queryParams: RewardsQueryParams, token?: string, domain?: string) => {
     setState(prev => ({ ...prev, loading: true, error: null }));
-    
+
+    // Validate domain before making API call
+    if (!domain || domain.trim() === '') {
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: 'Tenant domain not found. Please log in again.',
+        data: null,
+      }));
+      return;
+    }
+
     // Validate token before making API call
     if (!token || token.trim() === '') {
       setState(prev => ({
@@ -42,12 +55,12 @@ export function useRewards(
       }));
       return;
     }
-    
+
     if (process.env.NODE_ENV === 'development') {
       console.log("Rewards accessToken => ", token);
     }
     try {
-      const response: RewardsResponse = await RewardsService.getStudentRewards(queryParams, token);
+      const response: RewardsResponse = await RewardsService.getStudentRewards(domain, queryParams, token);
       
       setState({
         data: response.student,
@@ -77,34 +90,34 @@ export function useRewards(
   }, []);
 
   const refetch = useCallback(async () => {
-    await fetchStudentRewards(params, accessToken);
-  }, [fetchStudentRewards, params, accessToken]);
+    await fetchStudentRewards(params, accessToken, tenantDomain);
+  }, [fetchStudentRewards, params, accessToken, tenantDomain]);
 
   const fetchByDate = useCallback(async (date: string) => {
     const newParams = { ...params, date };
     setParams(newParams);
-    await fetchStudentRewards(newParams, accessToken);
-  }, [fetchStudentRewards, params, accessToken]);
+    await fetchStudentRewards(newParams, accessToken, tenantDomain);
+  }, [fetchStudentRewards, params, accessToken, tenantDomain]);
 
   const fetchByPeriod = useCallback(async (period: string) => {
     const newParams = { ...params, period };
     setParams(newParams);
-    await fetchStudentRewards(newParams, accessToken);
-  }, [fetchStudentRewards, params, accessToken]);
+    await fetchStudentRewards(newParams, accessToken, tenantDomain);
+  }, [fetchStudentRewards, params, accessToken, tenantDomain]);
 
   const clearError = useCallback(() => {
     setState(prev => ({ ...prev, error: null }));
   }, []);
 
   useEffect(() => {
-    // Only fetch if we have an accessToken
-    if (accessToken && accessToken.trim() !== '') {
-      fetchStudentRewards(params, accessToken);
+    // Only fetch if we have both accessToken and tenantDomain
+    if (accessToken && accessToken.trim() !== '' && tenantDomain && tenantDomain.trim() !== '') {
+      fetchStudentRewards(params, accessToken, tenantDomain);
     } else {
-      // Set loading to false if no token available
+      // Set loading to false if no token or domain available
       setState(prev => ({ ...prev, loading: false }));
     }
-  }, [fetchStudentRewards, params, accessToken]);
+  }, [fetchStudentRewards, params, accessToken, tenantDomain]);
 
   // Debug logging in development only
   useEffect(() => {

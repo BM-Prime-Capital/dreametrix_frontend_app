@@ -12,7 +12,7 @@ import {
   ChatMessagesResponse,
   ChatRoomsResponse,
 } from "@/types/chat";
-import { BACKEND_BASE_URL } from "@/app/utils/constants";
+import { getBackendUrl } from "@/app/utils/tenant";
 
 // -----------------------------------------------------------------------------------------
 // Erreur API uniforme
@@ -52,7 +52,7 @@ const CHAT_ENDPOINTS = {
  * Retourne la base URL effective.
  */
 function resolveBaseURL(tenantPrimaryDomain?: string): string {
-  const base = (tenantPrimaryDomain && tenantPrimaryDomain.trim()) || BACKEND_BASE_URL;
+  const base = (tenantPrimaryDomain && tenantPrimaryDomain.trim()) || getBackendUrl();
   return base.endsWith("/") ? base.slice(0, -1) : base;
 }
 
@@ -681,7 +681,7 @@ export class ChatRoomService {
 
       return (await response.json()) as ChatRoom;
     } catch (error) {
-      console.error("❌ [ChatRoomService.createChatRoom] Erreur:", error);
+      console.error("[ChatRoomService.createChatRoom] Erreur:", error);
       if (error instanceof ChatApiError) throw error;
       throw new ChatApiError(
         error instanceof Error ? error.message : "Unknown error occurred",
