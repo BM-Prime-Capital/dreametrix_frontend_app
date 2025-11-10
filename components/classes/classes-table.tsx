@@ -40,9 +40,24 @@ import { ClassDetailsDialog } from "./ClassDetailsDialog";
 import { Class } from "@/types";
 import { getStudents } from "@/services/student-service";
 
-const globalFilterFn: FilterFn<Class> = (row, columnId, filterValue) => {
-  const value = row.getValue(columnId);
-  return String(value).toLowerCase().includes(filterValue.toLowerCase());
+const globalFilterFn: FilterFn<Class> = (row, _columnId, filterValue) => {
+  const query = String(filterValue ?? '').toLowerCase();
+  if (!query) return true;
+
+  const cls = row.original as Class;
+  const teacherName = typeof cls.teacher === 'object' ? cls.teacher.full_name : '';
+
+  const haystack = [
+    cls.name,
+    (cls as any).subject_in_all_letter,
+    (cls as any).subject_in_short,
+    String((cls as any).grade ?? ''),
+    teacherName,
+  ]
+    .filter(Boolean)
+    .map((v) => String(v).toLowerCase());
+
+  return haystack.some((text) => text.includes(query));
 };
 
 export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: string, setRefreshTime: (time: string) => void }) {
@@ -60,25 +75,32 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
   const [viewMode, setViewMode] = useState<'card' | 'table' | 'list'>('table');
 
   const transformClassData = useCallback((classData: Class): { id: number; name: string; students: Student[] } => {
+    const mapName = (id: number) => {
+      for (const s of allStudents as Student[]) {
+        if (Number(s.id) === Number(id)) return s.full_name;
+      }
+      return `Student ${id}`;
+    };
     return {
       id: classData.id,
       name: classData.name,
-      students: Array.isArray(classData.students) 
-        ? classData.students.map(s => typeof s === 'number' 
-            ? { id: s, full_name: `Student ${s}` } 
-            : s)
+      students: Array.isArray(classData.students)
+        ? (classData.students as any[]).map((s: any) => {
+            const id: number = typeof s === 'number' ? s : (s?.id as number);
+            return { id, full_name: typeof s === 'number' ? mapName(id) : (s as any).full_name || mapName(id) };
+          })
         : []
     };
-  }, []);
+  }, [allStudents]);
 
   const teacherColors = [
-    'bg-blue-100 text-blue-800', 
+    'bg-blue-100 text-blue-800',
     'bg-green-100 text-green-800',
     'bg-yellow-100 text-yellow-800',
     'bg-purple-100 text-purple-800',
     'bg-pink-100 text-pink-800',
   ];
-  
+
   const getTeacherColor = (index: number) => {
     return teacherColors[index % teacherColors.length];
   };
@@ -89,7 +111,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
       accessorKey: "name",
       header: "Class",
       cell: ({ row }) => (
-        <button 
+        <button
           className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-3 py-1 text-sm font-medium hover:bg-[#3e81d4]/20 transition-colors"
           onClick={() => {
             setSelectedClassForRoster(row.original);
@@ -124,7 +146,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
           .map(part => part[0].toUpperCase())
           .join('')
           .substring(0, 2);
-        
+
         return (
           <div className="flex items-center gap-2">
             <div className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium ${getTeacherColor(row.index)}`}>
@@ -141,12 +163,19 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
       enableHiding: false,
       cell: ({ row }) => (
         <div className="flex gap-2 justify-center">
-          <AddClassDialog 
-            setRefreshTime={setRefreshTime} 
+          <AddClassDialog
+            setRefreshTime={setRefreshTime}
             existingClass={{
               ...row.original,
-              teacher: typeof row.original.teacher === 'object' ? row.original.teacher.id : row.original.teacher
-            }} 
+              teacher: typeof row.original.teacher === 'object' ? row.original.teacher.id : row.original.teacher,
+              students: Array.isArray(row.original.students)
+                ? row.original.students.map((student: any) => {
+                    const studentId = typeof student === 'number' ? student : student.id;
+                    const match = (allStudents as Student[]).find((st: Student) => Number(st.id) === Number(studentId));
+                    return { id: studentId, full_name: match?.full_name || `Student ${studentId}` };
+                  })
+                : []
+            }}
           />
           <Button
             variant="ghost"
@@ -177,7 +206,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
   });
 
   const handleDeleteClass = useCallback(async (classId: number) => {
-    
+
     console.log("handleDeleteClass tenantDomain:", tenantDomain);
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -202,22 +231,22 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
         no-repeat
       `
     });
-  
+
     if (result.isConfirmed) {
       try {
         setIsLoading(true);
-       
+
         const success = await deleteClass(
           classId,
           tenantDomain,
           accessToken,
           refreshToken
         );
-        
+
         if (success) {
           const updatedClasses = await getClasses(tenantDomain, accessToken, refreshToken);
           setAllClasses(updatedClasses);
-          
+
           await Swal.fire({
             title: 'Deleted!',
             text: 'Class has been deleted.',
@@ -258,12 +287,12 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
 
   const handleExport = useCallback(() => {
     if (allClasses.length === 0) return;
-    
+
     const csvContent = [
       Object.keys(allClasses[0]).join(','),
       ...allClasses.map(item => Object.values(item).join(','))
     ].join('\n');
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -304,25 +333,31 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
 
   useEffect(() => {
     let isMounted = true;
-    
+
     if (isMounted) {
       loadClassesAndStudents();
     }
-  
+
     return () => {
       isMounted = false;
     };
   }, [refreshTime, loadClassesAndStudents]);
 
-  const classDetailsData = useMemo(() => 
+  const classDetailsData = useMemo(() =>
     selectedClass ? {
       ...selectedClass,
-      teacher: typeof selectedClass.teacher === 'object' ? selectedClass.teacher.id : selectedClass.teacher
+      teacher: typeof selectedClass.teacher === 'object' ? selectedClass.teacher.id : selectedClass.teacher,
+      students: Array.isArray(selectedClass.students)
+        ? selectedClass.students.map((student: any) => {
+            const studentId = typeof student === 'number' ? student : student.id;
+            return { id: studentId, full_name: `Student ${studentId}` };
+          })
+        : []
     } : null,
     [selectedClass]
   );
 
-  const classRosterData = useMemo(() => 
+  const classRosterData = useMemo(() =>
     selectedClassForRoster ? transformClassData(selectedClassForRoster) : null,
     [selectedClassForRoster, transformClassData]
   );
@@ -344,23 +379,23 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
         <div className="relative w-full md:w-auto md:flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search classes by name, subject, or teacher..."
+            placeholder="Search classes by class, name, subject, or grade..."
             value={globalFilter ?? ''}
             onChange={handleGlobalFilterChange}
             className="pl-10 w-full md:w-[400px] h-11 rounded-xl border-gray-300"
           />
         </div>
-        
+
         <div className="flex items-center gap-3">
-          <Button 
+          <Button
             onClick={handleExport}
-            variant="outline" 
+            variant="outline"
             className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200 rounded-xl px-4 py-2"
           >
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="bg-gray-50 text-gray-700 hover:bg-gray-100 border-gray-200 rounded-xl px-4 py-2">
@@ -368,20 +403,20 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuCheckboxItem 
-                checked={viewMode === 'card'} 
+              <DropdownMenuCheckboxItem
+                checked={viewMode === 'card'}
                 onCheckedChange={() => setViewMode('card')}
               >
                 Card View
               </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem 
-                checked={viewMode === 'table'} 
+              <DropdownMenuCheckboxItem
+                checked={viewMode === 'table'}
                 onCheckedChange={() => setViewMode('table')}
               >
                 Table View
               </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem 
-                checked={viewMode === 'list'} 
+              <DropdownMenuCheckboxItem
+                checked={viewMode === 'list'}
                 onCheckedChange={() => setViewMode('list')}
               >
                 List View
@@ -402,7 +437,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
                 const teacher = typeof classData.teacher === 'object' ? classData.teacher : null;
                 const teacherName = teacher?.full_name || 'Unassigned';
                 const studentCount = Array.isArray(classData.students) ? classData.students.length : 0;
-                
+
                 return (
                   <div key={row.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 overflow-hidden group">
                     <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4 text-white">
@@ -443,7 +478,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
                       <Button variant="ghost" size="sm" className="flex-1 text-blue-600 hover:bg-blue-50 rounded-xl" onClick={() => { setSelectedClassForRoster(classData); setRosterOpen(true); }}>
                         View Roster
                       </Button>
-                      <AddClassDialog setRefreshTime={setRefreshTime} existingClass={{ ...classData, teacher: typeof classData.teacher === 'object' ? classData.teacher.id : classData.teacher }} />
+                      <AddClassDialog setRefreshTime={setRefreshTime} existingClass={{ ...classData, teacher: typeof classData.teacher === 'object' ? classData.teacher.id : classData.teacher, students: Array.isArray(classData.students) ? classData.students.map((student: any) => { const studentId = typeof student === 'number' ? student : student.id; return { id: studentId, full_name: `Student ${studentId}` }; }) : [] }} />
                       <Button variant="ghost" size="sm" className="px-3 text-red-600 hover:bg-red-50 rounded-xl" onClick={() => handleDeleteClass(classData.id)}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </div>
@@ -490,7 +525,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
                 const teacher = typeof classData.teacher === 'object' ? classData.teacher : null;
                 const teacherName = teacher?.full_name || 'Unassigned';
                 const studentCount = Array.isArray(classData.students) ? classData.students.length : 0;
-                
+
                 return (
                   <div key={row.id} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-all duration-200">
                     <div className="flex items-center justify-between">
@@ -515,7 +550,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50" onClick={() => { setSelectedClassForRoster(classData); setRosterOpen(true); }}>Roster</Button>
-                        <AddClassDialog setRefreshTime={setRefreshTime} existingClass={{ ...classData, teacher: typeof classData.teacher === 'object' ? classData.teacher.id : classData.teacher }} />
+                        <AddClassDialog setRefreshTime={setRefreshTime} existingClass={{ ...classData, teacher: typeof classData.teacher === 'object' ? classData.teacher.id : classData.teacher, students: Array.isArray(classData.students) ? classData.students.map((student: any) => { const studentId = typeof student === 'number' ? student : student.id; return { id: studentId, full_name: `Student ${studentId}` }; }) : [] }} />
                         <Button variant="ghost" size="sm" className="text-red-600 hover:bg-red-50" onClick={() => handleDeleteClass(classData.id)}><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </div>
@@ -580,6 +615,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
         refreshToken={refreshToken}
         open={rosterOpen}
         onOpenChange={setRosterOpen}
+        onSaved={() => setRefreshTime(Date.now().toString())}
       />
     </div>
   );

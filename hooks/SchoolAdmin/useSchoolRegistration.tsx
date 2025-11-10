@@ -252,7 +252,7 @@ export const useSchoolRegistration = () => {
 
   const validateForm = (): boolean => {
     const newErrors = { ...errors }
-    
+
     let isValid = true
     console.log("formData", formData)
     // Required fields validation
@@ -337,15 +337,16 @@ export const useSchoolRegistration = () => {
       // const credentials = btoa(`${username}:${password}`)
       // const authHeader = `Basic ${credentials}`
 
-      const response = await fetch("https://backend-dreametrix.com/school-requests/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/school-requests/`, {
         method: "POST",
-        headers: {
+        headers: {  
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       })
 
       if (!response.ok) {
+        console.log("response from hook=>,", response)
         throw new Error("Failed to create school")
       }
 
@@ -353,6 +354,7 @@ export const useSchoolRegistration = () => {
       return data
     } catch (error) {
       console.error("Error creating school:", error)
+      console.log("Error creating school:", error)
       throw error
     } finally {
       setIsLoading(false)

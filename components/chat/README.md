@@ -184,4 +184,4 @@ Pour toute question ou problème, consultez :
 
 ---
 
-**Module développé avec succès et prêt pour la production** ✅
+**Module développé avec succès et prêt pour la production** 

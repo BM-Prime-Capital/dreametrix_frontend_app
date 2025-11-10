@@ -30,7 +30,7 @@ export const useChatNotifications = () => {
         case "announcement_sent":
           return "📢";
         case "message_sent":
-          return "✅";
+          return "";
         case "error":
           return "❌";
         default:

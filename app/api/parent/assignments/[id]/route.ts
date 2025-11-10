@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { BACKEND_BASE_URL } from '@/app/utils/constants';
+import { getBackendBaseUrl } from '@/app/utils/constants';
+import { getTenantDomain } from '@/app/utils/cookies';
 
 export async function GET(
   request: NextRequest,
@@ -8,7 +9,7 @@ export async function GET(
   try {
     // Get the authorization header from the request
     const authHeader = request.headers.get('authorization');
-    
+
     if (!authHeader) {
       return NextResponse.json(
         { error: 'Authorization header is required' },
@@ -16,10 +17,19 @@ export async function GET(
       );
     }
 
+    const tenantDomain = getTenantDomain(request);
+    if (!tenantDomain) {
+      return NextResponse.json(
+        { error: 'Tenant domain not found' },
+        { status: 400 }
+      );
+    }
+
     const assignmentId = params.id;
+    const backendUrl = getBackendBaseUrl(tenantDomain);
 
     // Make the request to the backend
-    const response = await fetch(`${BACKEND_BASE_URL}/assessments/${assignmentId}/`, {
+    const response = await fetch(`${backendUrl}/assessments/${assignmentId}/`, {
       method: 'GET',
       headers: {
         'Authorization': authHeader,

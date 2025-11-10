@@ -22,7 +22,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { suggestActivities, type SuggestActivitiesInput } from "@/ai/flows/activity-suggestion-tool";
-// Update the import path below if your types are located elsewhere, e.g. "@/types" or "../lib/types"
 import { SUBJECTS, GRADE_LEVELS, type Subject } from "../../lib/types";
 import { Loader2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -58,6 +57,21 @@ export function ActivitySuggesterDialog({
     setSuggestions([]); // Clear previous suggestions when dialog reopens or props change
   }, [isOpen, initialSubject, initialGradeLevel, initialLessonObjective]);
 
+  // Fonction helper pour valider et convertir le subject
+  const validateSubject = (subject: Subject | undefined): "ELA" | "Math" => {
+    if (subject === "ELA" || subject === "Math") {
+      return subject;
+    }
+    return "Math"; // Valeur par défaut
+  };
+
+  // Fonction helper pour extraire le niveau de grade
+  const extractGradeLevel = (gradeLevel: string | undefined): number => {
+    if (!gradeLevel) return 7;
+    const gradeMatch = gradeLevel.match(/\d+/);
+    return gradeMatch ? parseInt(gradeMatch[0]) : 7;
+  };
+
   const handleSubmit = async () => {
     if (!subject || !gradeLevel || !lessonObjective) {
       toast({
@@ -67,23 +81,24 @@ export function ActivitySuggesterDialog({
       });
       return;
     }
+    
     setIsLoading(true);
     setSuggestions([]);
+    
     try {
       const input: SuggestActivitiesInput = {
         lessonObjective,
-        subject,
-        // The AI flow expects gradeLevel as number. We need to parse it.
-        // For simplicity, let's assume gradeLevel string contains a number (e.g., "7th Grade" -> 7)
-        // This is a naive parsing and should be robust in a real app.
-        gradeLevel: parseInt(gradeLevel.match(/\d+/)?.toString() || "0") || 7, // Default to 7 if parsing fails
+        subject: validateSubject(subject), // Utiliser la fonction de validation
+        gradeLevel: extractGradeLevel(gradeLevel), // Utiliser la fonction d'extraction
       };
+      
       const result = await suggestActivities(input);
       setSuggestions(result.suggestedActivities);
+      
       if (result.suggestedActivities.length === 0) {
         toast({
-            title: "No Suggestions Found",
-            description: "The AI couldn't find specific suggestions. Try rephrasing your objective.",
+          title: "No Suggestions Found",
+          description: "The AI couldn't find specific suggestions. Try rephrasing your objective.",
         });
       }
     } catch (error) {
@@ -109,12 +124,14 @@ export function ActivitySuggesterDialog({
     }
   };
 
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 font-headline"><Sparkles className="h-5 w-5 text-primary" />AI Activity Suggester</DialogTitle>
+          <DialogTitle className="flex items-center gap-2 font-headline">
+            <Sparkles className="h-5 w-5 text-primary" />
+            AI Activity Suggester
+          </DialogTitle>
           <DialogDescription>
             Get AI-powered suggestions for engaging activities based on your lesson details.
           </DialogDescription>
@@ -158,7 +175,11 @@ export function ActivitySuggesterDialog({
               rows={3}
             />
           </div>
-          <Button onClick={handleSubmit} disabled={isLoading} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+          <Button 
+            onClick={handleSubmit} 
+            disabled={isLoading || !subject || !gradeLevel || !lessonObjective.trim()}
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50"
+          >
             {isLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -183,7 +204,9 @@ export function ActivitySuggesterDialog({
         <DialogFooter className="gap-2 sm:gap-0">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           {suggestions.length > 0 && (
-            <Button onClick={handleAddSuggestions} className="bg-accent hover:bg-accent/90 text-accent-foreground">Add to Lesson Plan</Button>
+            <Button onClick={handleAddSuggestions} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+              Add to Lesson Plan
+            </Button>
           )}
         </DialogFooter>
       </DialogContent>

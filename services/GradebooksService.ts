@@ -103,7 +103,7 @@ export async function updateStudentGrade(
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("❌ Backend error:", errorData);
+      console.error("Backend error:", errorData);
 
       if (response.status === 403) {
         throw new Error("You don't have permission to update grades.");
@@ -126,7 +126,7 @@ export async function updateStudentGrade(
       data: data,
     };
   } catch (error) {
-    console.error("❌ Network error updating grade:", error);
+    console.error("Network error updating grade:", error);
     throw error;
   }
 }
@@ -180,7 +180,7 @@ export async function saveVoiceRecording(
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("❌ Backend error:", errorData);
+      console.error("Backend error:", errorData);
 
       if (response.status === 403) {
         throw new Error("You don't have permission to save voice recordings.");
@@ -205,7 +205,7 @@ export async function saveVoiceRecording(
       voice_notes_url: data.voice_notes, // Return the voice_notes URL from the response
     };
   } catch (error) {
-    console.error("❌ Network error saving voice recording:", error);
+    console.error("Network error saving voice recording:", error);
     throw error;
   }
 }

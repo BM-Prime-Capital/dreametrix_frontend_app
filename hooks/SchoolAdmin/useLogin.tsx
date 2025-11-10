@@ -47,7 +47,7 @@ export function useLogin() {
     setError(null);
 
     try {
-      const response = await fetch("https://backend-dreametrix.com/accounts/login/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/accounts/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
@@ -88,8 +88,26 @@ export function useLogin() {
       localStorage.setItem(localStorageKey.TENANT_DATA, JSON.stringify(tenantData));
 
       // --- Cookies pour middleware
-      Cookies.set("tenantDomain", data.tenant.primary_domain);
-      Cookies.set(localStorageKey.ACCESS_TOKEN, data.access);
+      Cookies.set("tenantDomain", data.tenant.primary_domain, {
+        expires: 7,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
+      Cookies.set(localStorageKey.ACCESS_TOKEN, data.access, {
+        expires: 7,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
+      Cookies.set(localStorageKey.TENANT_DATA, JSON.stringify(tenantData), {
+        expires: 7,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
+      Cookies.set(localStorageKey.USER_DATA, JSON.stringify(userData), {
+        expires: 7,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
 
       // --- Redux
       dispatch(loginSuccess({ user: userData, tenant: tenantData, token: data.access }));

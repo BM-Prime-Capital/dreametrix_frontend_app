@@ -10,11 +10,30 @@ interface ClassSchedule {
   [key: string]: ScheduleItem[];
 }
 
+// Normalize time strings to HH:mm:ss; supports "HH:mm", "HH:mm:ss", and "h:mm AM/PM"
+const normalizeTimeString = (time: string | undefined): string | undefined => {
+  if (!time) return undefined;
+  const trimmed = time.trim();
+  const ampmMatch = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (ampmMatch) {
+    let hours = parseInt(ampmMatch[1], 10);
+    const minutes = ampmMatch[2];
+    const period = ampmMatch[3].toUpperCase();
+    if (period === "PM" && hours < 12) hours += 12;
+    if (period === "AM" && hours === 12) hours = 0;
+    return `${hours.toString().padStart(2, "0")}:${minutes}:00`;
+  }
+  if (/^\d{1,2}:\d{2}$/.test(trimmed)) return `${trimmed}:00`;
+  if (/^\d{1,2}:\d{2}:\d{2}$/.test(trimmed)) return trimmed;
+  return trimmed;
+};
+
 export async function getClasses(
   tenantPrimaryDomain: string,
   accessToken: string,
-  refreshToken: string
+  _refreshToken: string
 ) {
+  void _refreshToken;
   if (!accessToken) {
     throw new Error("Vous n'êtes pas connecté. Veuillez vous reconnecter.");
   }
@@ -39,29 +58,42 @@ export async function getClasses(
   return data.results;
 }
 
+type LooseSchedule = Partial<ScheduleItem> & { date?: string };
+
+type StudentInput = number | { id: number };
+
 export async function createClass(
   classData: ISchoolClass,
   tenantPrimaryDomain: string,
   accessToken: string,
-  refreshToken: string
+  _refreshToken: string
 ) {
+  void _refreshToken;
   try {
     const url = `${tenantPrimaryDomain}/classes/`;
 
     // Format schedule data
     const formattedSchedule: ClassSchedule = {};
-    Object.entries(classData.hours_and_dates_of_course_schedule).forEach(
-      ([day, schedules]) => {
-        const scheduleArray = Array.isArray(schedules)
-          ? schedules
-          : [schedules];
-        formattedSchedule[day] = scheduleArray.map((schedule: any) => ({
-          date: schedule.date || new Date().toISOString().split("T")[0],
-          start_time: schedule.start_time,
-          end_time: schedule.end_time,
-        }));
-      }
-    );
+    const scheduleMap = classData
+      .hours_and_dates_of_course_schedule as unknown as Record<string, LooseSchedule | LooseSchedule[]>;
+    Object.entries(scheduleMap).forEach(([day, schedules]) => {
+      const scheduleArray = Array.isArray(schedules) ? schedules : [schedules];
+      formattedSchedule[day] = scheduleArray.map((schedule) => ({
+        date: schedule.date || new Date().toISOString().split("T")[0],
+        start_time: normalizeTimeString(schedule.start_time) as string,
+        end_time: normalizeTimeString(schedule.end_time) as string,
+      }));
+    });
+
+    // Normalize teacher to an ID
+    const teacherField: number | { id: number } | undefined = (classData as unknown as { teacher?: number | { id: number } }).teacher;
+    const teacherId = typeof teacherField === "number" ? teacherField : teacherField?.id;
+
+    // Ensure students is an array of IDs as expected by backend
+    const rawStudents = (classData as unknown as { students?: StudentInput[] }).students ?? [];
+    const studentIds = rawStudents
+      .map((student) => (typeof student === "number" ? student : student.id))
+      .filter((id): id is number => typeof id === "number");
 
     const data = {
       name:
@@ -74,8 +106,8 @@ export async function createClass(
         classData.description ||
         `Class ${classData.grade} - ${classData.subject_in_short}`,
       grade: classData.grade,
-      teacher: classData.teacher,
-      students: classData.students,
+      teacher: teacherId,
+      students: studentIds,
     };
 
     const response = await fetch(url, {
@@ -100,35 +132,60 @@ export async function createClass(
 }
 
 export async function updateClass(
-  classData: any,
+  classData: ISchoolClass & { id: number },
   tenantPrimaryDomain: string,
   accessToken: string,
-  refreshToken: string
+  _refreshToken: string
 ) {
+  void _refreshToken;
   try {
-    // Vérifier et formater les étudiants
+    // Helper to normalize time to HH:mm:ss
+    const normalizeTime = normalizeTimeString;
+
+    // Map students to IDs (allow empty array)
     const students = Array.isArray(classData.students)
-      ? classData.students
-          .map((student: any) => {
-            if (typeof student === "number") return student;
-            if (student?.id) return student.id;
-            return null;
-          })
-          .filter((id: any) => id !== null)
+      ? (classData.students as StudentInput[])
+          .map((student) => (typeof student === "number" ? student : student.id))
+          .filter((id): id is number => typeof id === "number")
       : [];
 
-    // Vérifier le teacher
-    const teacher =
-      typeof classData.teacher === "number"
-        ? classData.teacher
-        : classData.teacher?.id;
+    // Normalize teacher to ID
+    let teacher: number | undefined;
+    const teacherRaw: unknown = (classData as unknown as { teacher?: number | { id: number } }).teacher;
+    if (typeof teacherRaw === "number") {
+      teacher = teacherRaw;
+    } else if (teacherRaw && typeof (teacherRaw as { id?: unknown }).id === "number") {
+      teacher = (teacherRaw as { id: number }).id;
+    }
 
     if (!teacher) {
       throw new Error("Teacher ID is required");
     }
 
+    // Normalize schedule structure and times
+    const formattedSchedule: ClassSchedule = {};
+    const updateScheduleMap = classData
+      .hours_and_dates_of_course_schedule as unknown as Record<string, LooseSchedule | LooseSchedule[]>;
+    if (updateScheduleMap && typeof updateScheduleMap === "object") {
+      Object.entries(updateScheduleMap).forEach(([day, schedules]) => {
+        const scheduleArray = Array.isArray(schedules) ? schedules : [schedules];
+        formattedSchedule[day] = scheduleArray
+          .filter((s) => Boolean(s))
+          .map((s) => ({
+            date: s.date || new Date().toISOString().split("T")[0],
+            start_time: normalizeTime(s.start_time) as string,
+            end_time: normalizeTime(s.end_time) as string,
+          }));
+      });
+    }
+
     const data = {
-      ...classData,
+      name: classData.name,
+      subject_in_all_letter: classData.subject_in_all_letter,
+      subject_in_short: classData.subject_in_short,
+      hours_and_dates_of_course_schedule: formattedSchedule,
+      description: classData.description,
+      grade: classData.grade,
       teacher: teacher,
       students: students,
     };
@@ -146,14 +203,30 @@ export async function updateClass(
     });
 
     if (!response.ok) {
-      const errorData = await response.json(); // Utilisez .json() au lieu de .text()
+      const errorData = await response.json();
       console.error("PUT Class Failed - Detailed Error:", {
         status: response.status,
         statusText: response.statusText,
         url: response.url,
         error: errorData,
       });
-      throw new Error(JSON.stringify(errorData));
+      // Extract first friendly message
+      let friendly = "Failed to update class.";
+      if (errorData && typeof errorData === "object") {
+        // Look for common fields
+        const firstKey = Object.keys(errorData)[0];
+        const firstVal = firstKey ? errorData[firstKey] : null;
+        if (Array.isArray(firstVal) && firstVal.length > 0 && typeof firstVal[0] === "string") {
+          friendly = firstVal[0];
+        } else if (typeof errorData.detail === "string") {
+          friendly = errorData.detail;
+        }
+        // Specific friendly copy for empty students when grade has none
+        if ((String(friendly).toLowerCase().includes("student") && String(friendly).toLowerCase().includes("none"))|| String(friendly).toLowerCase().includes("this list may")) {
+          friendly = "No students available for this grade. Add students or choose another grade.";
+        }
+      }
+      throw new Error(friendly);
     }
 
     return await response.json();
@@ -167,8 +240,9 @@ export async function deleteClass(
   classId: number,
   tenantPrimaryDomain: string,
   accessToken: string,
-  refreshToken: string
+  _refreshToken: string
 ) {
+  void _refreshToken;
   try {
     const url = `${tenantPrimaryDomain}/classes/${classId}/`;
     console.log("deleteClass url:", url);
