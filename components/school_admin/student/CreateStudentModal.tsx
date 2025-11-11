@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { FiX, FiUser, FiMail, FiBook } from 'react-icons/fi';
 import { useBaseUrl } from '@/hooks/SchoolAdmin/use-base-url';
-import { localStorageKey } from '@/constants/global';
+import {ALL_GRADES, localStorageKey} from '@/constants/global';
 import { toast } from 'react-toastify';
 
 interface CreateStudentModalProps {
@@ -28,7 +28,7 @@ const CreateStudentModal = ({ isOpen, onClose, onSuccess }: CreateStudentModalPr
     setIsSubmitting(true);
     try {
       const accessToken = localStorage.getItem(localStorageKey.ACCESS_TOKEN);
-      
+
       const response = await fetch(`${baseUrl}/school-admin/create-user/`, {
         method: 'POST',
         headers: {
@@ -141,9 +141,14 @@ const CreateStudentModal = ({ isOpen, onClose, onSuccess }: CreateStudentModalPr
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select Grade</option>
-                {Array.from({ length: 12 }, (_, i) => i + 1).map(grade => (
-                  <option key={grade} value={grade}>Grade {grade}</option>
-                ))}
+
+                {
+                  ALL_GRADES.map((grade) => (
+                        <option key={grade} value={grade.toString()}>
+                          Grade {grade}
+                        </option>
+                    ))
+                }
               </select>
             </div>
           </div>
