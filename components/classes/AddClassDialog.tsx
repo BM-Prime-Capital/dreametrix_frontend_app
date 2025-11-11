@@ -146,13 +146,13 @@ export function AddClassDialog({
         typeof student === 'number' ? student : student.id
       );
 
-      // Validation: require at least one student for new class creation
-      if (!existingClass && studentIds.length === 0) {
+      // Validation: require at least one student for both creation and update
+      if (studentIds.length === 0) {
         await Swal.close();
         setIsSubmitting(false);
         toast({
           title: 'Students required',
-          description: 'Please select at least one student before creating a class.',
+          description: 'Please select at least one student before saving the class.',
           variant: 'destructive',
         });
         const el = document.getElementById('students-section');
