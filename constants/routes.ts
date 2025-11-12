@@ -61,7 +61,7 @@ export const StudentRoutes = [
     icon: `/assets/images/teacher/dashboard/relationship.svg`,
     label: "RELATIONSHIP",
   },
-  
+
   // Routes secondaires (affichées en bas du sidebar)
   {
     path: `${userPath.STUDENT_BASE_PATH}/profile`,
@@ -91,13 +91,14 @@ export const SchoolAdminRoutes = [
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}`,
     icon: generalImages.home,
     label: "Dashboard",
+    exact: true,
   },
   // Students
   {
     path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/students`,
     icon: menuImages.seating,
     label: "Students",
-    
+
   },
 
   // Teachers
@@ -163,21 +164,21 @@ export const SchoolAdminRoutes = [
     label: "Profile",
   },
 
-  // Finance 
+  // Finance
   // {
   //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/finance`,
   //   icon: menuImages.payments,
   //   label: "Finance",
   // },
 
-  // Library 
+  // Library
   // {
   //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/library`,
   //   icon: menuImages.libraryBooks,
   //   label: "Library",
   // },
 
-  // Reports 
+  // Reports
   // {
   //   path: `${userPath.SCHOOL_ADMIN_BASE_PATH}/reports`,
   //   icon: menuImages.analytics,
@@ -210,8 +211,8 @@ export const TeacherRoutes = [
   {
     path: `${userPath.TEACHER_BASE_PATH}/students`,
     icon: menuImages.seating,
-    label: "Students",
-    
+    label: "STUDENTS",
+
   },
   {
     path: `${userPath.TEACHER_BASE_PATH}/classes`,
@@ -363,7 +364,7 @@ export const ParentRoutes = [
     label: "PROFILE",
   },
 
-  
+
   // {
   //   path: `${userPath.PARENT_BASE_PATH}/communicate`,
   //   icon: menuImages.communicate,
@@ -381,7 +382,7 @@ export const SuperAdminRoutes = [
     disabled: true,
   },
 
-  
+
   // Schools Management
   {
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/schools`,
@@ -396,17 +397,17 @@ export const SuperAdminRoutes = [
       label: "Characters",
       disabled: false,
     },
-  
+
   // Districts Management
   {
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/districts`,
     icon: menuImages.district,
     label: "Districts",
     disabled: true,
-     
-    
+
+
   },
-  
+
   // Users Management
   {
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/users`,
@@ -414,7 +415,7 @@ export const SuperAdminRoutes = [
     label: "Users",
     disabled: true,
   },
-  
+
   // Templates
   {
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/templates`,
@@ -422,7 +423,7 @@ export const SuperAdminRoutes = [
     label: "Templates",
     disabled: true,
   },
-  
+
   // Audit Logs
   {
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/audit-logs`,
@@ -430,7 +431,7 @@ export const SuperAdminRoutes = [
     label: "Audit Logs",
     disabled: true,
   },
-  
+
   // Subscription Management
   {
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/subscriptions`,
@@ -438,7 +439,7 @@ export const SuperAdminRoutes = [
     label: "Subscriptions",
     disabled: true,
   },
-  
+
   // Support Tickets
   {
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/support`,
@@ -447,9 +448,9 @@ export const SuperAdminRoutes = [
     isSecondary: true,
     disabled: true,
   },
-  
 
-  
+
+
   // Notifications
   {
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/notifications`,
@@ -457,7 +458,7 @@ export const SuperAdminRoutes = [
     label: "Notifications",
     disabled: true,
   },
-  
+
   // Backup & Restore
   {
     path: `${userPath.SUPER_ADMIN_BASE_PATH}/backup`,
