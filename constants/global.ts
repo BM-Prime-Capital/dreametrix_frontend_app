@@ -7,6 +7,8 @@ export const attendanceLabel = {
   HALF_DAY: "half_day",
 };
 
+export const ALL_GRADES = [3, 4, 5, 6, 7, 8]
+
 export const studentClassCharacters = [
   "Integrity",
   "Grit",
