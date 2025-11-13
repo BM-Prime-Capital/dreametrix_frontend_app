@@ -41,7 +41,7 @@ export function useSchoolRequests() {
       const authHeader = `Basic ${credentials}`
 
       console.log("Fetch Request Details:", {
-        url: "https://backend-dreametrix.com/school-requests/",
+        url: `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/school-requests/`,
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -54,7 +54,7 @@ export function useSchoolRequests() {
       })
       console.log(credentials)
 
-      const response = await fetch("https://backend-dreametrix.com/school-requests/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/school-requests/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -93,7 +93,7 @@ export function useSchoolRequests() {
       const authHeader = `Basic ${credentials}`
 
       console.log("Update Request Details:", {
-        url: `https://backend-dreametrix.com/school-requests/${id}/`,
+        url: `${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/school-requests/${id}/`,
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -106,7 +106,7 @@ export function useSchoolRequests() {
         payload,
       })
 
-      const response = await fetch(`https://backend-dreametrix.com/school-requests/${id}/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/school-requests/${id}/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

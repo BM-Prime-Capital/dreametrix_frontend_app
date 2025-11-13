@@ -118,7 +118,7 @@ export default function StudentProfile() {
 
   const handleUpdateProfile = async () => {
     if (!accessToken || !tenantDomain || !userData) return;
-
+  
     try {
       setIsUpdating(true);
       
@@ -127,35 +127,30 @@ export default function StudentProfile() {
       editableFields.user_fields.forEach(field => {
         if (formData[field as keyof typeof formData] !== undefined && 
             formData[field as keyof typeof formData] !== userData[field as keyof UserData]) {
-          if (!updateData.user) updateData.user = {};
-          updateData.user[field] = formData[field as keyof typeof formData];
+          updateData[field] = formData[field as keyof typeof formData];
         }
       });
-
-      // Champs profile éditables
+  
       editableFields.profile_fields.forEach(field => {
         if (formData[field as keyof typeof formData] !== undefined && 
             formData[field as keyof typeof formData] !== profileData?.[field as keyof ProfileData]) {
-          if (!updateData.profile) updateData.profile = {};
-          updateData.profile[field] = formData[field as keyof typeof formData];
+          updateData[field] = formData[field as keyof typeof formData];
         }
       });
-
-      // Si aucun champ n'a été modifié, ne pas envoyer la requête
-      if (!updateData.user && !updateData.profile) {
+  
+      if (Object.keys(updateData).length === 0) {
         setIsEditing(false);
         return;
       }
-
+  
       const result = await updateStudentProfile(accessToken, tenantDomain, updateData);
       
       if (result.success) {
-        // Mettre à jour les données locales
-        if (updateData.user && userData) {
-          setUserData({ ...userData, ...updateData.user });
+        if (userData) {
+          setUserData({ ...userData, ...updateData });
         }
-        if (updateData.profile && profileData) {
-          setProfileData({ ...profileData, ...updateData.profile });
+        if (profileData) {
+          setProfileData({ ...profileData, ...updateData });
         }
         setIsEditing(false);
       }
@@ -168,7 +163,6 @@ export default function StudentProfile() {
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    // Réinitialiser les données du formulaire
     if (userData && profileData) {
       setFormData({
         ...userData,
@@ -184,7 +178,6 @@ export default function StudentProfile() {
     }));
   };
 
-  // Fonctions pour le changement de mot de passe
   const handlePasswordChange = (field: keyof ChangePasswordData, value: string) => {
     setPasswordData(prev => ({
       ...prev,
@@ -205,7 +198,6 @@ export default function StudentProfile() {
   const handleChangePassword = async () => {
     if (!accessToken || !tenantDomain) return;
 
-    // Validation
     if (!passwordData.current_password) {
       setPasswordError("Current password is required");
       return;
@@ -287,7 +279,6 @@ export default function StudentProfile() {
           setProfileData(apiData.data.profile);
           setEditableFields(apiData.editable_fields);
           
-          // Initialiser les données du formulaire
           setFormData({
             ...apiData.data.user,
             ...apiData.data.profile

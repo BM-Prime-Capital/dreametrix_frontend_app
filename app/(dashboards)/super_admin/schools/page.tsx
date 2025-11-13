@@ -375,7 +375,7 @@ export default function SchoolsPage() {
 
       if (schoolRequest) {
 
-        const response = await fetch(`https://backend-dreametrix.com/school-requests/${requestId}/`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/school-requests/${requestId}/`, {
           method: "PUT",
           // headers: {
           //   "Content-Type": "application/json",

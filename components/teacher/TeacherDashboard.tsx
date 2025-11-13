@@ -22,10 +22,10 @@ export default function TeacherDashboard() {
 
   const { list: classes } = useList(getClasses);
   const { list: assignments } = useList(getAssignments);
-  
+
   // Extract unique subjects from classes
   const [subjects, setSubjects] = useState<string[]>([]);
-  
+
   useEffect(() => {
     if (classes && classes.length > 0) {
       const uniqueSubjects = [...new Set(classes.map((cls: any) => cls.subject || ""))]
@@ -89,7 +89,7 @@ export default function TeacherDashboard() {
   };
 
   useEffect(() => {
-    console.log("classes ok ==> ", classes);
+
     localStorage.setItem(localStorageKey.ALL_CLASSES, JSON.stringify(classes));
   }, [classes]);
 
@@ -139,7 +139,7 @@ export default function TeacherDashboard() {
               </div>
             </div>
           </Card>
-          
+
           <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-slate-100 rounded-xl">
@@ -153,7 +153,7 @@ export default function TeacherDashboard() {
               </div>
             </div>
           </Card>
-          
+
           <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-slate-100 rounded-xl">
@@ -167,7 +167,7 @@ export default function TeacherDashboard() {
               </div>
             </div>
           </Card>
-          
+
           <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-lg border-0">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-slate-100 rounded-xl">
@@ -215,7 +215,7 @@ export default function TeacherDashboard() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-3 p-4 bg-white/60 rounded-xl">
                 <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
                 <div>
@@ -223,7 +223,7 @@ export default function TeacherDashboard() {
                   <p className="text-sm text-gray-600 mt-1">Class 5 - Math & Science exams tomorrow</p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-3 p-4 bg-white/60 rounded-xl">
                 <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
                 <div>
@@ -244,7 +244,7 @@ export default function TeacherDashboard() {
               </div>
               <PageTitleH2 title="Quick Actions" className="text-gray-800" />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               {[
                 { icon: "📝", title: "Create Assignment", desc: "New homework or task", onClick: handleCreateAssignment },
@@ -254,8 +254,8 @@ export default function TeacherDashboard() {
                 { icon: "🎯", title: "Test Prep", desc: "Practice questions", onClick: handleTestPrep },
                 { icon: "⭐", title: "Give Rewards", desc: "Student recognition", onClick: handleGiveRewards }
               ].map((action, index) => (
-                <button 
-                  key={index} 
+                <button
+                  key={index}
                   onClick={action.onClick}
                   className="p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors text-left cursor-pointer"
                 >
@@ -279,7 +279,7 @@ export default function TeacherDashboard() {
             </div>
             <PageTitleH2 title="Quick Settings" className="text-gray-800" />
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <label className="block text-sm font-semibold text-gray-700">Teaching Subjects</label>
@@ -307,7 +307,7 @@ export default function TeacherDashboard() {
                 </div>
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <label className="block text-sm font-semibold text-gray-700">Feedback Duration (minutes)</label>
               <div className="flex items-center justify-center">

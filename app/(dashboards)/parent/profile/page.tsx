@@ -116,43 +116,43 @@ export default function StudentProfile() {
 
   const handleUpdateProfile = async () => {
     if (!accessToken || !tenantDomain || !userData) return;
-
+  
     try {
       setIsUpdating(true);
       
       const updateData: any = {};
       
+      // Champs user éditables
       editableFields.user_fields.forEach(field => {
         if (formData[field as keyof typeof formData] !== undefined && 
             formData[field as keyof typeof formData] !== userData[field as keyof UserData]) {
-          if (!updateData.user) updateData.user = {};
-          updateData.user[field] = formData[field as keyof typeof formData];
+          updateData[field] = formData[field as keyof typeof formData];
         }
       });
-
+  
       // Champs profile éditables
       editableFields.profile_fields.forEach(field => {
         if (formData[field as keyof typeof formData] !== undefined && 
             formData[field as keyof typeof formData] !== profileData?.[field as keyof ProfileData]) {
-          if (!updateData.profile) updateData.profile = {};
-          updateData.profile[field] = formData[field as keyof typeof formData];
+          updateData[field] = formData[field as keyof typeof formData];
         }
       });
-
-      if (!updateData.user && !updateData.profile) {
+  
+      // Si aucun champ n'a été modifié, ne pas envoyer la requête
+      if (Object.keys(updateData).length === 0) {
         setIsEditing(false);
         return;
       }
-
+  
       const result = await updateStudentProfile(accessToken, tenantDomain, updateData);
       
       if (result.success) {
         // Mettre à jour les données locales
-        if (updateData.user && userData) {
-          setUserData({ ...userData, ...updateData.user });
+        if (userData) {
+          setUserData({ ...userData, ...updateData });
         }
-        if (updateData.profile && profileData) {
-          setProfileData({ ...profileData, ...updateData.profile });
+        if (profileData) {
+          setProfileData({ ...profileData, ...updateData });
         }
         setIsEditing(false);
       }

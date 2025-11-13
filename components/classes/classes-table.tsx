@@ -13,7 +13,7 @@ import {
   type VisibilityState,
   type FilterFn
 } from "@tanstack/react-table";
-import {  Trash2, ChevronDown, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import {  Trash2, ChevronDown, Search, ChevronLeft, ChevronRight, Download, Users } from "lucide-react";
 import { ClassRosterDialog } from "./roster-management";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,9 +40,24 @@ import { ClassDetailsDialog } from "./ClassDetailsDialog";
 import { Class } from "@/types";
 import { getStudents } from "@/services/student-service";
 
-const globalFilterFn: FilterFn<Class> = (row, columnId, filterValue) => {
-  const value = row.getValue(columnId);
-  return String(value).toLowerCase().includes(filterValue.toLowerCase());
+const globalFilterFn: FilterFn<Class> = (row, _columnId, filterValue) => {
+  const query = String(filterValue ?? '').toLowerCase();
+  if (!query) return true;
+
+  const cls = row.original as Class;
+  const teacherName = typeof cls.teacher === 'object' ? cls.teacher.full_name : '';
+
+  const haystack = [
+    cls.name,
+    (cls as any).subject_in_all_letter,
+    (cls as any).subject_in_short,
+    String((cls as any).grade ?? ''),
+    teacherName,
+  ]
+    .filter(Boolean)
+    .map((v) => String(v).toLowerCase());
+
+  return haystack.some((text) => text.includes(query));
 };
 
 export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: string, setRefreshTime: (time: string) => void }) {
@@ -60,36 +75,113 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
   const [viewMode, setViewMode] = useState<'card' | 'table' | 'list'>('table');
 
   const transformClassData = useCallback((classData: Class): { id: number; name: string; students: Student[] } => {
+    const mapName = (id: number) => {
+      for (const s of allStudents as Student[]) {
+        if (Number(s.id) === Number(id)) return s.full_name;
+      }
+      return `Student ${id}`;
+    };
     return {
       id: classData.id,
       name: classData.name,
       students: Array.isArray(classData.students)
-        ? classData.students.map(s => typeof s === 'number'
-            ? { id: s, full_name: `Student ${s}` }
-            : s)
+        ? (classData.students as any[]).map((s: any) => {
+            const id: number = typeof s === 'number' ? s : (s?.id as number);
+            return { id, full_name: typeof s === 'number' ? mapName(id) : (s as any).full_name || mapName(id) };
+          })
         : []
     };
-  }, []);
+  }, [allStudents]);
 
-  const teacherColors = [
-    'bg-blue-100 text-blue-800',
-    'bg-green-100 text-green-800',
-    'bg-yellow-100 text-yellow-800',
-    'bg-purple-100 text-purple-800',
-    'bg-pink-100 text-pink-800',
-  ];
+  const handleDeleteClass = useCallback(async (classId: number) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+      customClass: {
+        title: 'text-lg font-semibold',
+        htmlContainer: 'text-sm',
+        confirmButton: 'text-sm',
+        cancelButton: 'text-sm'
+      },
+      buttonsStyling: true,
+      backdrop: `
+        rgba(0,0,0,0.4)
+        url("/images/nyan-cat.gif")
+        left top
+        no-repeat
+      `
+    });
 
-  const getTeacherColor = (index: number) => {
-    return teacherColors[index % teacherColors.length];
-  };
+    if (result.isConfirmed) {
+      try {
+        setIsLoading(true);
 
+        await deleteClass(
+          classId,
+          tenantDomain,
+          accessToken,
+          refreshToken
+        );
 
-  const columns = useMemo<ColumnDef<Class>[]>(() => [
+        // Si on arrive ici, la suppression a réussi (pas d'exception levée)
+        // Rafraîchir la liste des classes
+        const updatedClasses = await getClasses(tenantDomain, accessToken, refreshToken);
+        setAllClasses(updatedClasses);
+
+        await Swal.fire({
+          title: 'Deleted!',
+          text: 'Class has been deleted.',
+          icon: 'success',
+          customClass: {
+            title: 'text-lg font-semibold',
+            htmlContainer: 'text-sm'
+          }
+        });
+        
+        // Déclencher le refresh
+        setRefreshTime(Date.now().toString());
+      } catch (error) {
+        console.error("Error deleting class:", error);
+        await Swal.fire({
+          title: 'Error!',
+          text: error instanceof Error ? error.message : 'Failed to delete class. Please try again.',
+          icon: 'error',
+          customClass: {
+            title: 'text-lg font-semibold',
+            htmlContainer: 'text-sm'
+          }
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [tenantDomain, accessToken, refreshToken, setRefreshTime]);
+
+  const columns = useMemo<ColumnDef<Class>[]>(() => {
+    const teacherColors = [
+      'bg-blue-100 text-blue-800',
+      'bg-green-100 text-green-800',
+      'bg-yellow-100 text-yellow-800',
+      'bg-purple-100 text-purple-800',
+      'bg-pink-100 text-pink-800',
+    ];
+
+    const getTeacherColor = (index: number) => {
+      return teacherColors[index % teacherColors.length];
+    };
+
+    return [
     {
       accessorKey: "name",
       header: "Class",
       cell: ({ row }) => (
-        <button
+        <button 
           className="bg-[#3e81d4]/10 text-[#3e81d4] rounded-full px-3 py-1 text-sm font-medium hover:bg-[#3e81d4]/20 transition-colors"
           onClick={() => {
             setSelectedClassForRoster(row.original);
@@ -124,7 +216,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
           .map(part => part[0].toUpperCase())
           .join('')
           .substring(0, 2);
-
+        
         return (
           <div className="flex items-center gap-2">
             <div className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium ${getTeacherColor(row.index)}`}>
@@ -136,23 +228,70 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
       },
     },
     {
+      id: "roster",
+      header: () => <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Roster</span>,
+      enableHiding: false,
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="flex justify-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 hover:bg-blue-50"
+            onClick={() => {
+              setSelectedClassForRoster(row.original);
+              setRosterOpen(true);
+            }}
+            title="View Roster"
+            aria-label={`View roster for ${row.original.name}`}
+          >
+            <Users className="h-3.5 w-3.5 text-[#3e81d4]" />
+          </Button>
+        </div>
+      ),
+    },
+    {
       id: "actions",
-      header: "Actions",
+      header: () => <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span>,
       enableHiding: false,
       cell: ({ row }) => (
         <div className="flex gap-2 justify-center">
-          <AddClassDialog
-            setRefreshTime={setRefreshTime}
+          <AddClassDialog 
+            setRefreshTime={setRefreshTime} 
             existingClass={{
               ...row.original,
               teacher: typeof row.original.teacher === 'object' ? row.original.teacher.id : row.original.teacher,
               students: Array.isArray(row.original.students)
-                ? row.original.students.map((student: any) => {
-                    const studentId = typeof student === 'number' ? student : student.id;
-                    return { id: studentId, full_name: `Student ${studentId}` };
+                ? row.original.students.map((student: unknown) => {
+                    if (!student) return null;
+                    if (typeof student === "number") {
+                      const match = (allStudents as Student[]).find(
+                        (st) => Number(st.id) === Number(student)
+                      );
+                      return {
+                        id: student,
+                        full_name: match?.full_name ?? `Student ${student}`,
+                      };
+                    }
+                    if (
+                      typeof student === "object" &&
+                      "id" in (student as { id?: unknown })
+                    ) {
+                      const typedStudent = student as { id: number; full_name?: string };
+                      return {
+                        id: typedStudent.id,
+                        full_name:
+                          typedStudent.full_name ??
+                          (allStudents.find(
+                            (st) => Number(st.id) === Number(typedStudent.id)
+                          )?.full_name ?? `Student ${typedStudent.id}`),
+                      };
+                    }
+                    return null;
                   })
+                  .filter((entry): entry is { id: number; full_name: string } => Boolean(entry))
                 : []
-            }}
+            }} 
           />
           <Button
             variant="ghost"
@@ -165,7 +304,8 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
         </div>
       ),
     },
-  ], [setRefreshTime]);
+    ];
+  }, [setRefreshTime, handleDeleteClass, setSelectedClassForRoster, setRosterOpen, allStudents]);
 
   const table = useReactTable({
     data: allClasses,
@@ -181,86 +321,6 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
     onColumnVisibilityChange: setColumnVisibility,
     state: { sorting, globalFilter, columnVisibility },
   });
-
-  const handleDeleteClass = useCallback(async (classId: number) => {
-
-    console.log("handleDeleteClass tenantDomain:", tenantDomain);
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel',
-      customClass: {
-        title: 'text-lg font-semibold',
-        htmlContainer: 'text-sm',
-        confirmButton: 'text-sm',
-        cancelButton: 'text-sm'
-      },
-      buttonsStyling: true,
-      backdrop: `
-        rgba(0,0,0,0.4)
-        url("/images/nyan-cat.gif")
-        left top
-        no-repeat
-      `
-    });
-
-    if (result.isConfirmed) {
-      try {
-        setIsLoading(true);
-
-        const success = await deleteClass(
-          classId,
-          tenantDomain,
-          accessToken,
-          refreshToken
-        );
-
-        if (success) {
-          const updatedClasses = await getClasses(tenantDomain, accessToken, refreshToken);
-          setAllClasses(updatedClasses);
-
-          await Swal.fire({
-            title: 'Deleted!',
-            text: 'Class has been deleted.',
-            icon: 'success',
-            customClass: {
-              title: 'text-lg font-semibold',
-              htmlContainer: 'text-sm'
-            }
-          });
-          setRefreshTime(Date.now().toString());
-        } else {
-          await Swal.fire({
-            title: 'Failed!',
-            text: 'Failed to delete class.',
-            icon: 'error',
-            customClass: {
-              title: 'text-lg font-semibold',
-              htmlContainer: 'text-sm'
-            }
-          });
-        }
-      } catch (error) {
-        console.error("Error deleting class:", error);
-        await Swal.fire({
-          title: 'Error!',
-          text: error instanceof Error ? error.message : 'Unknown error',
-          icon: 'error',
-          customClass: {
-            title: 'text-lg font-semibold',
-            htmlContainer: 'text-sm'
-          }
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  }, [tenantDomain, accessToken, refreshToken, setRefreshTime]);
 
   const handleExport = useCallback(() => {
     if (allClasses.length === 0) return;
@@ -592,6 +652,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
         refreshToken={refreshToken}
         open={rosterOpen}
         onOpenChange={setRosterOpen}
+        onSaved={() => setRefreshTime(Date.now().toString())}
       />
     </div>
   );

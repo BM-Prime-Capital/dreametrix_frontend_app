@@ -47,7 +47,7 @@ export function useLogin() {
     setError(null);
 
     try {
-      const response = await fetch("https://backend-dreametrix.com/accounts/login/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "https://backend-dreametrix.com"}/accounts/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),

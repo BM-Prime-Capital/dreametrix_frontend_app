@@ -3,7 +3,6 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { confirmLink, requestUnlink } from "@/services/students/student"
 
-
 export default function ParentLinkMenu() {
   const [parentId, setParentId] = useState("")
   const [unlinkParentId, setUnlinkParentId] = useState("")
@@ -12,45 +11,45 @@ export default function ParentLinkMenu() {
   const handleConfirm = async () => {
     try {
       await confirmLink(Number(parentId))
-      setMessage("Lien confirmé.")
+      setMessage("Link confirmed successfully.")
     } catch {
-      setMessage("Erreur lors de la confirmation.")
+      setMessage("Error confirming link.")
     }
   }
 
   const handleUnlink = async () => {
     try {
       await requestUnlink(Number(unlinkParentId))
-      setMessage("Demande de déliaison envoyée.")
+      setMessage("Unlink request sent successfully.")
     } catch {
-      setMessage("Erreur lors de la demande.")
+      setMessage("Error sending unlink request.")
     }
   }
 
   return (
     <div className="space-y-6 p-4 rounded-lg border bg-white shadow-md">
-      <h2 className="text-lg font-semibold text-gray-800">Espace Élève : Lien Parental</h2>
+      <h2 className="text-lg font-semibold text-gray-800">Student Space: Parental Link</h2>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Confirmer un lien parental</label>
+        <label className="text-sm font-medium">Confirm Parental Link</label>
         <input
           value={parentId}
           onChange={(e) => setParentId(e.target.value)}
           className="border p-2 w-full rounded"
-          placeholder="ID du parent"
+          placeholder="Parent ID"
         />
-        <Button onClick={handleConfirm}>Confirmer le lien</Button>
+        <Button onClick={handleConfirm}>Confirm Link</Button>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Demander une déliaison</label>
+        <label className="text-sm font-medium">Request Unlink</label>
         <input
           value={unlinkParentId}
           onChange={(e) => setUnlinkParentId(e.target.value)}
           className="border p-2 w-full rounded"
-          placeholder="ID du parent à délier"
+          placeholder="Parent ID to unlink"
         />
-        <Button onClick={handleUnlink} variant="destructive">Demander déliaison</Button>
+        <Button onClick={handleUnlink} variant="destructive">Request Unlink</Button>
       </div>
 
       {message && <div className="text-green-600 text-sm">{message}</div>}
