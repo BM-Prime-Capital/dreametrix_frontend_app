@@ -71,6 +71,8 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
             const isActive = isMenuItemActive(route, pathname);
             const isDisabled = route.disabled;
             
+            const tourId = route.label.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            
             const routeContent = (
               <div
                 className={cn(
@@ -90,7 +92,6 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
                   ]
                 )}
                 title={isCollapsed ? `${route.label}${isDisabled ? ' (Disabled)' : ''}` : undefined}
-                data-tour={`${route.label.toLowerCase().replace(/ /g, '-')}-menu`}
               >
                 <div className={cn(
                   "flex items-center justify-center w-6 h-6 transition-all duration-300 flex-shrink-0",
@@ -149,13 +150,18 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
             }
 
             return (
-              <Link
+              <div
                 key={route.path}
-                href={route.path}
-                className="block"
+                data-tour={`${tourId}-menu`}
+                className="w-full relative"
               >
-                {routeContent}
-              </Link>
+                <Link
+                  href={route.path}
+                  className="block w-full"
+                >
+                  {routeContent}
+                </Link>
+              </div>
             );
           })}
         </div>

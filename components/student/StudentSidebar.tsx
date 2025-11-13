@@ -70,11 +70,13 @@ export function StudentSidebar({ routes }: { routes: MenuRoute[] }) {
         <div className="p-4 space-y-2">
           {routes.map((route) => {
             const isActive = isMenuItemActive(route, pathname);
+            const tourId = route.label.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
             return (
               <Link
                 key={route.path}
                 href={route.path}
+                data-tour={`${tourId}-menu`}
                 className={cn(
                   "group flex items-center gap-4 px-4 py-3 text-sm rounded-2xl transition-all duration-300 relative",
                   "hover:bg-gradient-to-r hover:from-blue-50/80 hover:to-purple-50/80",

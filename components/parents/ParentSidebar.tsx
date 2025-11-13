@@ -41,12 +41,14 @@ export function ParentSidebar({ routes }: { routes: MenuRoute[] }) {
         {routes.map((route) => {
           const isActive = pathname === route.path
           const iconSrc = typeof route.icon === 'string' ? route.icon : ""
+          const tourId = route.label.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
           return (
             <Link
               key={route.path}
               href={route.path}
               onClick={() => handleLinkClick(route.path)}
+              data-tour={`${tourId}-menu`}
               className={cn(
                 "flex flex-shrink-0 items-center gap-3 p-4 text-sm rounded-xl whitespace-nowrap transition-all duration-300",
                 "hover:bg-gradient-to-r hover:from-[#25AAE1]/15 hover:to-[#1D8CB3]/15 hover:text-[#25AAE1] hover:shadow-md",

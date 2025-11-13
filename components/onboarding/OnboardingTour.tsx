@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Joyride, { CallBackProps, STATUS, EVENTS } from 'react-joyride';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { OnboardingStep, TourConfig } from '@/types/onboarding';
@@ -21,6 +21,7 @@ export function OnboardingTour({
   const { state, markTourComplete, skipTour, stopTour } = useOnboarding();
   const [isRunning, setIsRunning] = useState(run);
   const [hasStarted, setHasStarted] = useState(false);
+  const currentStepIndexRef = useRef<number>(-1);
 
   useEffect(() => {
     // Use context state if available, otherwise use prop
@@ -43,6 +44,40 @@ export function OnboardingTour({
     }
   }, [run, state, hasStarted]);
 
+  // Monitor spotlight position only on scroll/resize when tour is running
+  useEffect(() => {
+    if (!isRunning) return;
+
+    const repositionSpotlight = () => {
+      const spotlight = document.querySelector('.react-joyride__spotlight') as HTMLElement;
+      if (spotlight && currentStepIndexRef.current >= 0) {
+        const currentStep = steps[currentStepIndexRef.current];
+        if (currentStep?.target && currentStep.target !== 'body') {
+          const target = document.querySelector(currentStep.target) as HTMLElement;
+          if (target) {
+            const rect = target.getBoundingClientRect();
+            
+            spotlight.style.position = 'fixed';
+            spotlight.style.left = `${rect.left}px`;
+            spotlight.style.top = `${rect.top}px`;
+            spotlight.style.width = `${rect.width}px`;
+            spotlight.style.height = `${rect.height}px`;
+            spotlight.style.transition = 'none';
+          }
+        }
+      }
+    };
+
+    // Only reposition on scroll or resize, not continuously
+    window.addEventListener('scroll', repositionSpotlight, true);
+    window.addEventListener('resize', repositionSpotlight);
+
+    return () => {
+      window.removeEventListener('scroll', repositionSpotlight, true);
+      window.removeEventListener('resize', repositionSpotlight);
+    };
+  }, [isRunning, steps]);
+
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { status, type, index, action } = data;
 
@@ -59,6 +94,32 @@ export function OnboardingTour({
         onComplete?.();
       }
       return;
+    }
+
+    // Force spotlight repositioning after step change
+    if ((type === EVENTS.STEP_AFTER || type === EVENTS.TOOLTIP) && data.step?.target && data.step.target !== 'body') {
+      currentStepIndexRef.current = index;
+      // Single immediate repositioning attempt
+      requestAnimationFrame(() => {
+        const spotlight = document.querySelector('.react-joyride__spotlight') as HTMLElement;
+        const target = document.querySelector(data.step!.target) as HTMLElement;
+        
+        if (spotlight && target) {
+          const rect = target.getBoundingClientRect();
+          
+          // Use exact bounding box
+          spotlight.style.position = 'fixed';
+          spotlight.style.left = `${rect.left}px`;
+          spotlight.style.top = `${rect.top}px`;
+          spotlight.style.width = `${rect.width}px`;
+          spotlight.style.height = `${rect.height}px`;
+          spotlight.style.boxSizing = 'border-box';
+          spotlight.style.margin = '0';
+          spotlight.style.padding = '0';
+          spotlight.style.borderRadius = '0.5rem';
+          spotlight.style.transition = 'none'; // Disable transitions for instant positioning
+        }
+      });
     }
 
     // Handle tour completion
@@ -101,6 +162,10 @@ export function OnboardingTour({
       {...tourConfig}
       callback={handleJoyrideCallback}
       run={isRunning}
+      disableScrolling={false}
+      disableScrollParentFix={true}
+      scrollOffset={20}
+      scrollToFirstStep={true}
       locale={{
         back: 'Back',
         close: 'Close',

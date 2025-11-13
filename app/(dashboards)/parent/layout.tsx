@@ -14,6 +14,9 @@ import { useParentRelationship } from "@/hooks/useParentRelationship"
 import { Loader2 } from "lucide-react"
 import { ProtectedRoute } from "@/components/Support/ProtectedRoute"
 import { userTypeEnum } from "@/constants/userConstants"
+import { OnboardingProvider } from "@/lib/OnboardingContext"
+import { OnboardingTour } from "@/components/onboarding/OnboardingTour"
+import { parentTourSteps } from "@/constants/onboarding/parentTour"
 
 function ParentDashboardContent({ children }: { children: React.ReactNode }) {
   const { showSpinner } = useLoading()
@@ -67,6 +70,9 @@ function ParentDashboardContent({ children }: { children: React.ReactNode }) {
 
       <main className="flex-1 bg-background">
         {children}
+        <OnboardingTour 
+          steps={parentTourSteps}
+        />
       </main>
 
       {/* Smart loading overlay */}
@@ -84,12 +90,16 @@ export default function ParentDashboardLayout({
 }: {
   children: React.ReactNode
 }) {
+  const { userId } = useRequestInfo();
+  
   return (
     <ProtectedRoute allowedUserTypes={[userTypeEnum.PARENT]}>
     <LoadingProvider>
-      <ParentDashboardContent>
-        {children}
-      </ParentDashboardContent>
+      <OnboardingProvider userId={userId || ''} userRole="parent">
+        <ParentDashboardContent>
+          {children}
+        </ParentDashboardContent>
+      </OnboardingProvider>
     </LoadingProvider>
     </ProtectedRoute>
   )
