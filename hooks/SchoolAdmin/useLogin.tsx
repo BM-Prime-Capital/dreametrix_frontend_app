@@ -87,6 +87,14 @@ export function useLogin() {
       localStorage.setItem(localStorageKey.USER_DATA, JSON.stringify(userData));
       localStorage.setItem(localStorageKey.TENANT_DATA, JSON.stringify(tenantData));
 
+      // --- First login detection
+      const hasLoggedInBeforeKey = `has_logged_in_before_${userData.id}`;
+      const hasLoggedInBefore = localStorage.getItem(hasLoggedInBeforeKey) === 'true';
+      
+      if (!hasLoggedInBefore) {
+        localStorage.setItem(hasLoggedInBeforeKey, 'true');
+      }
+
       // --- Cookies pour middleware
       Cookies.set("tenantDomain", data.tenant.primary_domain, {
         expires: 7,
