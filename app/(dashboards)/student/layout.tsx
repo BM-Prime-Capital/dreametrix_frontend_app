@@ -11,6 +11,7 @@ import { OnboardingProvider } from "@/lib/OnboardingContext";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 import { studentTourSteps } from "@/constants/onboarding/studentTour";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
+import { MandatoryTasksBanner } from "@/components/onboarding/MandatoryTasksBanner";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
@@ -21,6 +22,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       <div
         className={`transition-all duration-500 ${isCollapsed ? "ml-16" : "ml-64"} w-full`}
       >
+        <MandatoryTasksBanner className="mb-6" />
         {children}
         <OnboardingTour 
           steps={studentTourSteps}
