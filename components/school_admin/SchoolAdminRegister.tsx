@@ -666,36 +666,6 @@ useEffect(() => {
               {renderErrorMessage(errors.school_email, "school-email")}
             </div>
 
-            {/* Administrator Email */}
-            {/*<div className="space-y-1.5">*/}
-            {/*  <label htmlFor="admin-email" className="block text-sm font-medium text-gray-700">*/}
-            {/*    Administrator Email <span className="text-red-500" aria-label="required">*</span>*/}
-            {/*  </label>*/}
-            {/*  <div className={cn(*/}
-            {/*    "relative flex items-center border rounded-lg transition-all",*/}
-            {/*    errors.administrator_email*/}
-            {/*      ? "border-red-500 ring-2 ring-red-100"*/}
-            {/*      : "border-gray-300 focus-within:border-[#25AAE1] focus-within:ring-2 focus-within:ring-[#25AAE1]/20"*/}
-            {/*  )}>*/}
-            {/*    <Mail*/}
-            {/*      className="absolute left-3 h-5 w-5 text-gray-400 pointer-events-none"*/}
-            {/*      aria-hidden="true"*/}
-            {/*    />*/}
-            {/*    <input*/}
-            {/*      id="admin-email"*/}
-            {/*      type="email"*/}
-            {/*      value={formData.administrator_email}*/}
-            {/*      onChange={(e) => handleInputChange("administrator_email", e.target.value)}*/}
-            {/*      placeholder="Enter administrator email"*/}
-            {/*      className="h-12 pl-11 pr-4 w-full bg-transparent focus:outline-none rounded-lg"*/}
-            {/*      disabled={isLoading}*/}
-            {/*      aria-invalid={!!errors.administrator_email}*/}
-            {/*      aria-describedby={errors.administrator_email ? "admin-email-error" : undefined}*/}
-            {/*      required*/}
-            {/*    />*/}
-            {/*  </div>*/}
-            {/*  {renderErrorMessage(errors.administrator_email, "admin-email")}*/}
-            {/*</div>*/}
 
             {/* Phone */}
             <div className="space-y-1.5">
