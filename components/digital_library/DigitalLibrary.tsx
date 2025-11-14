@@ -473,7 +473,7 @@ export default function DigitalLibrary() {
         accessToken,
         refreshToken
       );
-      setGrades(gradeData || []); // Fallback à un tableau vide si gradeData est null/undefined
+      setGrades(gradeData || []); // Fallback to an empty array if GradeData is null/undefined
 
       // Enhanced classes filtering with better handling for loading states
       console.log("📚 Starting Subject selection - Classes filtering:", {
