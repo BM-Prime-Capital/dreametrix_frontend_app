@@ -31,6 +31,7 @@ import SimpleLoader from "../ui/simple-loader";
 import { Checkbox } from "@/components/ui/checkbox";
 import Swal from "sweetalert2";
 import { useToast } from "@/components/ui/use-toast";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 interface ClassDay {
   id: number;
@@ -79,6 +80,7 @@ export function AddClassDialog({
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { markTaskComplete } = useOnboarding();
   // const [message, setMessage] = useState<{
   //   content: string;
   //   color: string;
@@ -199,6 +201,13 @@ export function AddClassDialog({
       } else {
         await Swal.close();
         setOpen(false); // Close the update modal
+        setOpen(false); // Fermer le modal de mise à jour
+        
+        // Mark class creation task as complete for new classes
+        if (!existingClass) {
+          markTaskComplete('teacher_create_class');
+        }
+        
         await Swal.fire({
           title: 'Success!',
           text: existingClass
