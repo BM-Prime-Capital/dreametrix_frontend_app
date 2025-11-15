@@ -21,7 +21,7 @@ import {
 import {  ISchoolClass} from "@/types";
 import { useList } from "@/hooks/useList";
 import { getTeachers } from "@/services/TeacherService";
-import { dayOfTheWeek, localStorageKey } from "@/constants/global";
+import {ALL_GRADES, dayOfTheWeek, localStorageKey} from "@/constants/global";
 import { createClass, updateClass } from "@/services/ClassService";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { getGrades, getSubjects } from "@/services/DigitalLibraryService";
@@ -31,6 +31,7 @@ import SimpleLoader from "../ui/simple-loader";
 import { Checkbox } from "@/components/ui/checkbox";
 import Swal from "sweetalert2";
 import { useToast } from "@/components/ui/use-toast";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 interface ClassDay {
   id: number;
@@ -79,6 +80,7 @@ export function AddClassDialog({
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { markTaskComplete } = useOnboarding();
   // const [message, setMessage] = useState<{
   //   content: string;
   //   color: string;
@@ -142,7 +144,7 @@ export function AddClassDialog({
       setIsSubmitting(true);
 
       // Convert students back to array of IDs for backend payload
-      const studentIds = schoolClass.students.map(student => 
+      const studentIds = schoolClass.students.map(student =>
         typeof student === 'number' ? student : student.id
       );
 
@@ -198,7 +200,14 @@ export function AddClassDialog({
         });
       } else {
         await Swal.close();
+        setOpen(false); // Close the update modal
         setOpen(false); // Fermer le modal de mise à jour
+        
+        // Mark class creation task as complete for new classes
+        if (!existingClass) {
+          markTaskComplete('teacher_create_class');
+        }
+        
         await Swal.fire({
           title: 'Success!',
           text: existingClass
@@ -329,7 +338,7 @@ export function AddClassDialog({
             tenantDomain,
             accessToken,
             refreshToken
-          ) || []; // Ajout d'une fallback value
+          ) || []; //  Add a fallback value
           setGrades(grades);
         } catch (error) {
           console.error("Error loading grades:", error);
@@ -459,7 +468,7 @@ export function AddClassDialog({
                     </option>
                   ))
                 ) : (
-                  [3, 4, 5, 6, 7, 8].map((grade) => (
+                    ALL_GRADES.map((grade) => (
                     <option key={grade} value={grade.toString()}>
                       Grade {grade}
                     </option>
@@ -512,8 +521,8 @@ export function AddClassDialog({
                       // Check if student exists in schoolClass.students array
                       const studentId = Number(student.id);
                       const isChecked = schoolClass.students.some(existingStudent => {
-                        const existingId = typeof existingStudent === 'number' 
-                          ? existingStudent 
+                        const existingId = typeof existingStudent === 'number'
+                          ? existingStudent
                           : existingStudent.id;
                         return Number(existingId) === studentId;
                       });
@@ -524,12 +533,12 @@ export function AddClassDialog({
                             checked={isChecked}
                             onCheckedChange={(checked) => {
                               // Convert current students to object format for consistent handling
-                              const currentStudents = schoolClass.students.map(student => 
-                                typeof student === 'number' 
+                              const currentStudents = schoolClass.students.map(student =>
+                                typeof student === 'number'
                                   ? { id: student, full_name: `Student ${student}` }
                                   : student
                               ) as { id: number; full_name: string }[];
-                              
+
                               if (checked) {
                                 // Add student object to the array
                                 const newStudents = [...currentStudents, {id: studentId, full_name: `${student.firstName} ${student.lastName}`}];
@@ -539,7 +548,7 @@ export function AddClassDialog({
                                 });
                               } else {
                                 // Remove student from the array
-                                const newStudents = currentStudents.filter(existingStudent => 
+                                const newStudents = currentStudents.filter(existingStudent =>
                                   Number(existingStudent.id) !== studentId
                                 );
                                 setSchoolClass({

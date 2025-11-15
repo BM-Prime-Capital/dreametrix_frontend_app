@@ -549,3 +549,15 @@ td {
   transform: scale(1.1);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
+/* Fix for react-joyride spotlight positioning */
+.react-joyride__spotlight {
+  position: fixed !important;
+  box-sizing: border-box !important;
+  border-radius: 0.5rem !important;
+}
+
+/* Ensure spotlight uses correct positioning calculation */
+.react-joyride__spotlight-wrapper {
+  position: fixed !important;
+}

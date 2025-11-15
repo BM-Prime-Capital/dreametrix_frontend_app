@@ -2,7 +2,6 @@
 
 import type React from "react"
 import { usePathname } from "next/navigation"
-import { Card } from "@/components/ui/card"
 import { ParentSidebar } from "@/components/parents/ParentSidebar"
 import { ParentRoutes } from "@/constants/routes"
 import { SidebarProvider } from "@/lib/SidebarContext"
@@ -14,6 +13,10 @@ import { useParentRelationship } from "@/hooks/useParentRelationship"
 import { Loader2 } from "lucide-react"
 import { ProtectedRoute } from "@/components/Support/ProtectedRoute"
 import { userTypeEnum } from "@/constants/userConstants"
+import { OnboardingProvider } from "@/lib/OnboardingContext"
+import { OnboardingTour } from "@/components/onboarding/OnboardingTour"
+import { parentTourSteps } from "@/constants/onboarding/parentTour"
+import { MandatoryTasksBanner } from "@/components/onboarding/MandatoryTasksBanner"
 
 function ParentDashboardContent({ children }: { children: React.ReactNode }) {
   const { showSpinner } = useLoading()
@@ -66,7 +69,11 @@ function ParentDashboardContent({ children }: { children: React.ReactNode }) {
       </SidebarProvider>
 
       <main className="flex-1 bg-background">
+        <MandatoryTasksBanner className="mb-6" />
         {children}
+        <OnboardingTour 
+          steps={parentTourSteps}
+        />
       </main>
 
       {/* Smart loading overlay */}
@@ -84,12 +91,16 @@ export default function ParentDashboardLayout({
 }: {
   children: React.ReactNode
 }) {
+  const { userId } = useRequestInfo();
+  
   return (
     <ProtectedRoute allowedUserTypes={[userTypeEnum.PARENT]}>
     <LoadingProvider>
-      <ParentDashboardContent>
-        {children}
-      </ParentDashboardContent>
+      <OnboardingProvider userId={userId || ''} userRole="parent">
+        <ParentDashboardContent>
+          {children}
+        </ParentDashboardContent>
+      </OnboardingProvider>
     </LoadingProvider>
     </ProtectedRoute>
   )
