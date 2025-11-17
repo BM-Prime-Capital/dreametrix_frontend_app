@@ -10,9 +10,10 @@ interface CreateStudentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  taskId?: string;
 }
 
-const CreateStudentModal = ({ isOpen, onClose, onSuccess }: CreateStudentModalProps) => {
+const CreateStudentModal = ({ isOpen, onClose, onSuccess, taskId = 'school_admin_create_student' }: CreateStudentModalProps) => {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -51,7 +52,7 @@ const CreateStudentModal = ({ isOpen, onClose, onSuccess }: CreateStudentModalPr
       }
 
       toast.success('Student created successfully!');
-      markTaskComplete('school_admin_create_student');
+      markTaskComplete(taskId);
       onSuccess();
       onClose();
       setFormData({ first_name: '', last_name: '', email: '', grade: '' });

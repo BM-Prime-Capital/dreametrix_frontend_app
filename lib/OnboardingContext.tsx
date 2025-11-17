@@ -282,6 +282,18 @@ function getDefaultTasksForRole(role: UserRole): MandatoryTask[] {
       return [
         ...commonTasks,
         {
+          id: 'teacher_add_student',
+          title: 'Add a Student',
+          description: 'Create at least one student profile before setting up classes',
+          completed: false,
+          action: {
+            type: 'navigate',
+            target: '/teacher/students',
+            label: 'Go to Students'
+          },
+          priority: 'high'
+        },
+        {
           id: 'teacher_create_class',
           title: 'Create a Class',
           description: 'Set up your first class for teaching',
