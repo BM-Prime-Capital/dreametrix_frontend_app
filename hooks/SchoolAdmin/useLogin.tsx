@@ -116,7 +116,7 @@ export function useLogin() {
       });
 
       // --- Redux
-      dispatch(loginSuccess({ user: userData, tenant: tenantData, token: data.access }));
+      dispatch(loginSuccess({ user: userData, tenant: tenantData, token: data.access, schoolData: data.tenant }));
 
       // --- Redirection en fonction du rôle
       switch (data.user.role) {
