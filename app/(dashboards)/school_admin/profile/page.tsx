@@ -27,7 +27,10 @@ import {
   Eye,
   EyeOff,
   Key,
-  AlertTriangle
+  AlertTriangle,
+  X,
+  Upload,
+  Image
 } from "lucide-react";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -85,6 +88,224 @@ interface ChangePasswordData {
   confirm_password: string;
 }
 
+// Composant modal pour l'édition de la photo de profil
+interface EditProfilePictureModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  currentPicture: string | null;
+  onPictureUpdate: (pictureUrl: string) => void;
+  userName: string;
+}
+
+function EditProfilePictureModal({ 
+  isOpen, 
+  onClose, 
+  currentPicture, 
+  onPictureUpdate,
+  userName 
+}: EditProfilePictureModalProps) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+
+  const handleFileSelect = (file: File) => {
+    if (file && file.type.startsWith('image/')) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFileSelect(file);
+    }
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    const files = e.dataTransfer.files;
+    if (files && files[0]) {
+      handleFileSelect(files[0]);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+
+    setIsUploading(true);
+    
+    // Simuler un upload (à remplacer par votre logique d'upload réelle)
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Générer une URL temporaire pour la preview
+      const temporaryUrl = previewUrl;
+      
+      if (temporaryUrl) {
+        onPictureUpdate(temporaryUrl);
+        onClose();
+      }
+    } catch (error) {
+      console.error("Error uploading picture:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const removePicture = () => {
+    onPictureUpdate("");
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Camera className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">Update Profile Picture</h3>
+              <p className="text-gray-600 text-sm">Upload a new profile photo</p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 p-2 rounded-lg"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Current Picture Preview */}
+          <div className="text-center">
+            <p className="text-sm font-medium text-gray-700 mb-4">Current Picture</p>
+            <Avatar className="h-20 w-20 mx-auto border-2 border-gray-300">
+              <AvatarImage src={currentPicture || "/placeholder.svg"} />
+              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                {userName.split(' ').map(n => n[0]).join('')}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+
+          {/* Upload Area */}
+          <div
+            className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all duration-200 ${
+              dragActive 
+                ? "border-blue-500 bg-blue-50" 
+                : "border-gray-300 bg-gray-50 hover:border-gray-400"
+            }`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+          >
+            <input
+              type="file"
+              id="profile-picture"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            
+            {previewUrl ? (
+              <div className="space-y-4">
+                <div className="relative inline-block">
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="h-32 w-32 rounded-full object-cover border-4 border-white shadow-lg mx-auto"
+                  />
+                </div>
+                <p className="text-sm text-gray-600">Preview of your new profile picture</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-4 bg-white rounded-full w-16 h-16 mx-auto shadow-sm">
+                  <Image className="h-8 w-8 text-gray-400 mx-auto" />
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-gray-900 mb-2">
+                    Drag and drop your photo
+                  </p>
+                  <p className="text-gray-600 text-sm mb-4">
+                    or click to browse files
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    JPG, PNG, WEBP - Max 5MB
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <label
+              htmlFor="profile-picture"
+              className="cursor-pointer inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold mt-4 hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
+            >
+              <Upload className="h-4 w-4" />
+              Choose File
+            </label>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4">
+            <Button
+              onClick={handleUpload}
+              disabled={!selectedFile || isUploading}
+              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 h-12 rounded-xl text-white font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isUploading ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              {isUploading ? "Uploading..." : "Update Picture"}
+            </Button>
+            
+            {currentPicture && (
+              <Button
+                variant="outline"
+                onClick={removePicture}
+                disabled={isUploading}
+                className="h-12 rounded-xl border-red-300 text-red-600 hover:bg-red-50 font-semibold px-4"
+              >
+                Remove
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function StudentProfile() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -112,6 +333,8 @@ export default function StudentProfile() {
     confirm: false
   });
 
+  const [showEditPicture, setShowEditPicture] = useState(false);
+
   const router = useRouter();
   const { tenantDomain, accessToken, userId } = useRequestInfo();
   const { markTaskComplete } = useOnboarding();
@@ -124,7 +347,7 @@ export default function StudentProfile() {
       
       const updateData: any = {};
       
-      // Champs user éditables
+      // Editable user fields
       editableFields.user_fields.forEach(field => {
         if (formData[field as keyof typeof formData] !== undefined && 
             formData[field as keyof typeof formData] !== userData[field as keyof UserData]) {
@@ -132,7 +355,7 @@ export default function StudentProfile() {
         }
       });
   
-      // Champs profile éditables
+      // Editable profile fields
       editableFields.profile_fields.forEach(field => {
         if (formData[field as keyof typeof formData] !== undefined && 
             formData[field as keyof typeof formData] !== profileData?.[field as keyof ProfileData]) {
@@ -140,7 +363,7 @@ export default function StudentProfile() {
         }
       });
   
-      // Si aucun champ n'a été modifié, ne pas envoyer la requête
+      // Don't send request if no fields were modified
       if (Object.keys(updateData).length === 0) {
         setIsEditing(false);
         return;
@@ -149,7 +372,7 @@ export default function StudentProfile() {
       const result = await updateStudentProfile(accessToken, tenantDomain, updateData);
       
       if (result.success) {
-        // Mettre à jour les données locales
+        // Update local data
         if (userData) {
           setUserData({ ...userData, ...updateData });
         }
@@ -167,7 +390,7 @@ export default function StudentProfile() {
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    // Réinitialiser les données du formulaire
+    // Reset form data
     if (userData && profileData) {
       setFormData({
         ...userData,
@@ -183,7 +406,19 @@ export default function StudentProfile() {
     }));
   };
 
-  // Fonctions pour le changement de mot de passe
+  // Profile picture update handler
+  const handlePictureUpdate = (pictureUrl: string) => {
+    if (userData) {
+      const updatedUserData = { ...userData, picture: pictureUrl };
+      setUserData(updatedUserData);
+      setFormData(prev => ({ ...prev, picture: pictureUrl }));
+      
+      // Here you would typically call your API to update the picture
+      console.log("Updating profile picture to:", pictureUrl);
+    }
+  };
+
+  // Password change functions
   const handlePasswordChange = (field: keyof ChangePasswordData, value: string) => {
     setPasswordData(prev => ({
       ...prev,
@@ -241,11 +476,7 @@ export default function StudentProfile() {
         confirm_password: ""
       });
 
-      // Mark password change task as complete
-      markTaskComplete('change_password');
-      localStorage.setItem(`password_changed_since_first_login_${userId}`, 'true');
-
-      // Cacher le formulaire après 3 secondes
+      // Hide form after 3 seconds
       setTimeout(() => {
         setShowChangePassword(false);
         setPasswordSuccess(false);
@@ -287,7 +518,7 @@ export default function StudentProfile() {
           setProfileData(apiData.data.profile);
           setEditableFields(apiData.editable_fields);
           
-          // Initialiser les données du formulaire
+          // Initialize form data
           setFormData({
             ...apiData.data.user,
             ...apiData.data.profile
@@ -429,7 +660,7 @@ export default function StudentProfile() {
                   </div>
                 </div>
 
-                {/* Modal de changement de mot de passe */}
+                {/* Change Password Modal */}
                 {showChangePassword && (
                   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
@@ -566,6 +797,15 @@ export default function StudentProfile() {
                   </div>
                 )}
 
+                {/* Profile Picture Edit Modal */}
+                <EditProfilePictureModal
+                  isOpen={showEditPicture}
+                  onClose={() => setShowEditPicture(false)}
+                  currentPicture={userData?.picture || null}
+                  onPictureUpdate={handlePictureUpdate}
+                  userName={userData?.full_name || "User"}
+                />
+
                 <div className="space-y-8">
                   {/* Avatar Section */}
                   <div className="flex items-center gap-6 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border border-blue-200">
@@ -579,7 +819,8 @@ export default function StudentProfile() {
                       {isEditing && isFieldEditable('picture', 'user') && (
                         <Button
                           size="sm"
-                          className="absolute -bottom-2 -right-2 rounded-full p-2 bg-white border shadow-lg hover:shadow-xl"
+                          onClick={() => setShowEditPicture(true)}
+                          className="absolute -bottom-2 -right-2 rounded-full p-2 bg-white border shadow-lg hover:shadow-xl transition-all duration-200"
                         >
                           <Camera className="h-4 w-4 text-blue-600" />
                         </Button>
@@ -591,10 +832,6 @@ export default function StudentProfile() {
                         <Mail className="h-4 w-4" />
                         {userData?.email}
                       </p>
-                      {/* <p className="text-gray-600 flex items-center gap-2">
-                        <School className="h-4 w-4" />
-                        Student ID: STU{userData?.id.toString().padStart(6, '0')}
-                      </p> */}
                     </div>
                   </div>
 

@@ -20,13 +20,11 @@ import { cn } from "@/utils/tailwind"
 import DreaMetrixLogo from "../ui/dreametrix-logo"
 import UserAvatar from "../ui/user-avatar"
 import { Button } from "../ui/button"
-// import { Input } from "../ui/input"
-
 
 export function Header() {
   const router = useRouter()
 
-  const getUserData = (): { full_name: string,  role:string } => {
+  const getUserData = (): { full_name: string, role: string } => {
     if (typeof window === 'undefined') return { full_name: "Guest", role: "Guest" }
 
     try {
@@ -41,7 +39,36 @@ export function Header() {
     }
   }
 
+  const getSchoolData = (): { name: string, hasLogo: boolean } => {
+    if (typeof window === 'undefined') return { name: "School", hasLogo: false }
+    
+    try {
+      // Récupérer les données de l'école depuis le localStorage
+      const schoolData = localStorage.getItem(localStorageKey?.SCHOOL_DATA)
+      if (schoolData) {
+        const parsedData = JSON.parse(schoolData)
+        const name = parsedData.name || "School"
+        const hasLogo = parsedData.has_logo || parsedData.logo_url || false
+        return { name, hasLogo }
+      }
+      
+      // Fallback: essayer de récupérer depuis les données utilisateur
+      const userData = localStorage.getItem(localStorageKey.USER_DATA)
+      if (userData) {
+        const parsedUserData = JSON.parse(userData)
+        const schoolName = parsedUserData.school_name || "School"
+        return { name: schoolName, hasLogo: false }
+      }
+      
+      return { name: "School", hasLogo: false }
+    } catch (error) {
+      console.error("Error parsing school data:", error)
+      return { name: "School", hasLogo: false }
+    }
+  }
+
   const { full_name, role } = getUserData()
+  const { name: schoolName, hasLogo } = getSchoolData()
 
   const handleLogout = () => {
     Cookies.remove("tenantDomain")
@@ -65,7 +92,7 @@ export function Header() {
           <DreaMetrixLogo height={28} />
         </div>
 
-        {/* Search and user actions */}
+        {/* Profil utilisateur à l'extrême droite */}
         <div className="flex items-center gap-4 flex-1 justify-end">
           {/* Search */}
           {/* <div className="hidden md:block relative w-full max-w-[240px] lg:max-w-[280px]">
