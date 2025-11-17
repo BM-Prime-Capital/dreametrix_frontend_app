@@ -55,7 +55,7 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
       )}>
         {!isCollapsed && (
           <h2 className="font-bold text-xl bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
-            DreaMetrix
+            {/* DreaMetrix */}
           </h2>
         )}
         {isCollapsed && (
@@ -173,9 +173,9 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
         "flex items-center justify-center"
       )}>
         {!isCollapsed && (
-          <div className="flex justify-center mb-6 w-[80px]">
-            <DreaMetrixLogo />
-          </div>
+          <div className="text-xs text-gray-500 text-center">
+            Powered by DreaMetrix
+        </div>
         )}
       </div>
     </div>

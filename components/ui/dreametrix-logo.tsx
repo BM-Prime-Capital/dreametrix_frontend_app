@@ -1,6 +1,6 @@
 import { generalImages } from "@/constants/images";
 import Image from "next/image";
-import Link from "next/link";
+//import Link from "next/link";
 import React from "react";
 
 function DreaMetrixLogo({
@@ -12,7 +12,7 @@ function DreaMetrixLogo({
   className?: string;
 }) {
   return (
-    <Link href={"/"}>
+    // <Link href={"/"}>
       <Image
         src={generalImages.dreaMetrixLogo}
         alt="Dreametrix Logo"
@@ -21,7 +21,7 @@ function DreaMetrixLogo({
         priority
         className="w-32 sm:w-[150px]"
       />
-    </Link>
+    // </Link>
   );
 }
 

@@ -59,9 +59,7 @@ export function useLogin() {
       }
 
       const data: LoginResponse = await response.json();
-      console.log("LoginData =>", data);
 
-      // --- Préparer les données utilisateur
       const userData: User = {
         id: data.user.id,
         owner_id: data.user.owner_id,
@@ -121,7 +119,6 @@ export function useLogin() {
       dispatch(loginSuccess({ user: userData, tenant: tenantData, token: data.access }));
 
       // --- Redirection en fonction du rôle
-      console.log("userRole.dara", data.user.role)
       switch (data.user.role) {
         
         case "school_admin":

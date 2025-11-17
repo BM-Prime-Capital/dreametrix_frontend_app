@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -30,11 +30,13 @@ import {
   AlertTriangle,
   X,
   Upload,
-  Image
+  Image,
+  Crop
 } from "lucide-react";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useOnboarding } from "@/hooks/useOnboarding";
+import Cropper from "react-cropper";
+import "cropperjs/dist/cropper.css";
 
 interface UserData {
   id: number;
@@ -93,7 +95,7 @@ interface EditProfilePictureModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentPicture: string | null;
-  onPictureUpdate: (pictureUrl: string) => void;
+  onPictureUpdate: (pictureBase64: string) => void;
   userName: string;
 }
 
@@ -108,13 +110,20 @@ function EditProfilePictureModal({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [showCropper, setShowCropper] = useState(false);
+  const [croppedImage, setCroppedImage] = useState<string | null>(null);
+  
+  const cropperRef = useRef<HTMLImageElement>(null);
 
   const handleFileSelect = (file: File) => {
     if (file && file.type.startsWith('image/')) {
       setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
-        setPreviewUrl(e.target?.result as string);
+        const imageUrl = e.target?.result as string;
+        setPreviewUrl(imageUrl);
+        setShowCropper(true);
+        setCroppedImage(null);
       };
       reader.readAsDataURL(file);
     }
@@ -148,30 +157,69 @@ function EditProfilePictureModal({
     }
   };
 
+  const getCroppedImage = (): Promise<string> => {
+    return new Promise((resolve) => {
+      const imageElement: any = cropperRef?.current;
+      const cropper: any = imageElement?.cropper;
+      
+      if (cropper) {
+        const canvas = cropper.getCroppedCanvas({
+          width: 300,
+          height: 300,
+          fillColor: '#fff',
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: 'high'
+        });
+        
+        resolve(canvas.toDataURL('image/jpeg', 0.9));
+      } else {
+        resolve(previewUrl || '');
+      }
+    });
+  };
+
+  const handleCrop = async () => {
+    const croppedImageUrl = await getCroppedImage();
+    setCroppedImage(croppedImageUrl);
+    setShowCropper(false);
+  };
+
+  const handleCancelCrop = () => {
+    setShowCropper(false);
+    setPreviewUrl(null);
+    setSelectedFile(null);
+    setCroppedImage(null);
+  };
+
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    const imageToUpload = croppedImage || previewUrl;
+    
+    if (!imageToUpload) return;
 
     setIsUploading(true);
     
-    // Simuler un upload (à remplacer par votre logique d'upload réelle)
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Extract only base64 part (without data:image/... prefix)
+      const base64Data = imageToUpload.split(',')[1];
       
-      // Générer une URL temporaire pour la preview
-      const temporaryUrl = previewUrl;
+      // Pass base64 data to parent
+      onPictureUpdate(base64Data);
+      onClose();
       
-      if (temporaryUrl) {
-        onPictureUpdate(temporaryUrl);
-        onClose();
-      }
+      // Reset state
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      setShowCropper(false);
+      setCroppedImage(null);
     } catch (error) {
-      console.error("Error uploading picture:", error);
+      console.error("Error processing picture:", error);
     } finally {
       setIsUploading(false);
     }
   };
 
   const removePicture = () => {
+    // To remove picture, pass empty string
     onPictureUpdate("");
     onClose();
   };
@@ -180,7 +228,7 @@ function EditProfilePictureModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+      <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
@@ -188,8 +236,12 @@ function EditProfilePictureModal({
               <Camera className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900">Update Profile Picture</h3>
-              <p className="text-gray-600 text-sm">Upload a new profile photo</p>
+              <h3 className="text-xl font-bold text-gray-900">
+                {showCropper ? 'Crop Image' : 'Update Profile Picture'}
+              </h3>
+              <p className="text-gray-600 text-sm">
+                {showCropper ? 'Adjust your photo cropping' : 'Upload a new profile photo'}
+              </p>
             </div>
           </div>
           <Button
@@ -203,108 +255,173 @@ function EditProfilePictureModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Current Picture Preview */}
-          <div className="text-center">
-            <p className="text-sm font-medium text-gray-700 mb-4">Current Picture</p>
-            <Avatar className="h-20 w-20 mx-auto border-2 border-gray-300">
-              <AvatarImage src={currentPicture || "/placeholder.svg"} />
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
-                {userName.split(' ').map(n => n[0]).join('')}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-
-          {/* Upload Area */}
-          <div
-            className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all duration-200 ${
-              dragActive 
-                ? "border-blue-500 bg-blue-50" 
-                : "border-gray-300 bg-gray-50 hover:border-gray-400"
-            }`}
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
-          >
-            <input
-              type="file"
-              id="profile-picture"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-            
-            {previewUrl ? (
-              <div className="space-y-4">
-                <div className="relative inline-block">
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="h-32 w-32 rounded-full object-cover border-4 border-white shadow-lg mx-auto"
+        <div className="p-6 space-y-6 overflow-y-auto max-h-[60vh]">
+          {showCropper ? (
+            // Crop mode
+            <div className="space-y-6">
+              <div className="text-center">
+                <p className="text-sm font-medium text-gray-700 mb-4">Crop your image</p>
+                <div className="relative bg-gray-100 rounded-lg overflow-hidden max-h-[400px]">
+                  <Cropper
+                    ref={cropperRef}
+                    src={previewUrl || ''}
+                    style={{ height: 400, width: '100%' }}
+                    aspectRatio={1}
+                    guides={true}
+                    background={false}
+                    responsive={true}
+                    autoCropArea={1}
+                    checkOrientation={false}
+                    viewMode={1}
                   />
                 </div>
-                <p className="text-sm text-gray-600">Preview of your new profile picture</p>
               </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="p-4 bg-white rounded-full w-16 h-16 mx-auto shadow-sm">
-                  <Image className="h-8 w-8 text-gray-400 mx-auto" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold text-gray-900 mb-2">
-                    Drag and drop your photo
-                  </p>
-                  <p className="text-gray-600 text-sm mb-4">
-                    or click to browse files
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    JPG, PNG, WEBP - Max 5MB
-                  </p>
-                </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={handleCrop}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 h-12 rounded-xl text-white font-semibold shadow-lg"
+                >
+                  <Crop className="h-4 w-4 mr-2" />
+                  Confirm Crop
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleCancelCrop}
+                  className="h-12 rounded-xl border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold px-4"
+                >
+                  Cancel
+                </Button>
               </div>
-            )}
+            </div>
+          ) : (
+            // Normal mode - upload or preview
+            <>
+              {/* Current Picture Preview */}
+              <div className="text-center">
+                <p className="text-sm font-medium text-gray-700 mb-4">Current Picture</p>
+                <Avatar className="h-20 w-20 mx-auto border-2 border-gray-300">
+                  <AvatarImage src={currentPicture || "/placeholder.svg"} />
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                    {userName.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
 
-            <label
-              htmlFor="profile-picture"
-              className="cursor-pointer inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold mt-4 hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
-            >
-              <Upload className="h-4 w-4" />
-              Choose File
-            </label>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
-            <Button
-              onClick={handleUpload}
-              disabled={!selectedFile || isUploading}
-              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 h-12 rounded-xl text-white font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isUploading ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4 mr-2" />
-              )}
-              {isUploading ? "Uploading..." : "Update Picture"}
-            </Button>
-            
-            {currentPicture && (
-              <Button
-                variant="outline"
-                onClick={removePicture}
-                disabled={isUploading}
-                className="h-12 rounded-xl border-red-300 text-red-600 hover:bg-red-50 font-semibold px-4"
+              {/* Upload Area */}
+              <div
+                className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all duration-200 ${
+                  dragActive 
+                    ? "border-blue-500 bg-blue-50" 
+                    : "border-gray-300 bg-gray-50 hover:border-gray-400"
+                }`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
               >
-                Remove
-              </Button>
-            )}
-          </div>
+                <input
+                  type="file"
+                  id="profile-picture"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                
+                {croppedImage ? (
+                  <div className="space-y-4">
+                    <div className="relative inline-block">
+                      <img
+                        src={croppedImage}
+                        alt="Cropped preview"
+                        className="h-32 w-32 rounded-full object-cover border-4 border-white shadow-lg mx-auto"
+                      />
+                    </div>
+                    <p className="text-sm text-gray-600">Preview of your new profile picture</p>
+                  </div>
+                ) : previewUrl ? (
+                  <div className="space-y-4">
+                    <div className="relative inline-block">
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="h-32 w-32 rounded-full object-cover border-4 border-white shadow-lg mx-auto"
+                      />
+                    </div>
+                    <p className="text-sm text-gray-600">Image selected - click Crop&quot; to adjust</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-white rounded-full w-16 h-16 mx-auto shadow-sm">
+                      <Image className="h-8 w-8 text-gray-400 mx-auto" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold text-gray-900 mb-2">
+                        Drag and drop your photo
+                      </p>
+                      <p className="text-gray-600 text-sm mb-4">
+                        or click to browse files
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        JPG, PNG, WEBP - Max 5MB
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <label
+                  htmlFor="profile-picture"
+                  className="cursor-pointer inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold mt-4 hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                >
+                  <Upload className="h-4 w-4" />
+                  Choose File
+                </label>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={handleUpload}
+                  disabled={!selectedFile || isUploading}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 h-12 rounded-xl text-white font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isUploading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  {isUploading ? "Uploading..." : "Update Picture"}
+                </Button>
+                
+                {previewUrl && !croppedImage && (
+                  <Button
+                    onClick={() => setShowCropper(true)}
+                    className="h-12 rounded-xl bg-green-600 text-white hover:bg-green-700 font-semibold px-4"
+                  >
+                    <Crop className="h-4 w-4 mr-2" />
+                    Crop
+                  </Button>
+                )}
+                
+                {currentPicture && (
+                  <Button
+                    variant="outline"
+                    onClick={removePicture}
+                    disabled={isUploading}
+                    className="h-12 rounded-xl border-red-300 text-red-600 hover:bg-red-50 font-semibold px-4"
+                  >
+                    Remove
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
   );
 }
+
 
 export default function StudentProfile() {
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -336,8 +453,7 @@ export default function StudentProfile() {
   const [showEditPicture, setShowEditPicture] = useState(false);
 
   const router = useRouter();
-  const { tenantDomain, accessToken, userId } = useRequestInfo();
-  const { markTaskComplete } = useOnboarding();
+  const { tenantDomain, accessToken } = useRequestInfo();
 
   const handleUpdateProfile = async () => {
     if (!accessToken || !tenantDomain || !userData) return;
@@ -407,14 +523,37 @@ export default function StudentProfile() {
   };
 
   // Profile picture update handler
-  const handlePictureUpdate = (pictureUrl: string) => {
-    if (userData) {
-      const updatedUserData = { ...userData, picture: pictureUrl };
-      setUserData(updatedUserData);
-      setFormData(prev => ({ ...prev, picture: pictureUrl }));
+  const handlePictureUpdate = async (pictureBase64: string) => {
+    if (!accessToken || !tenantDomain || !userData) return;
+
+    try {
+      setIsUpdating(true);
       
-      // Here you would typically call your API to update the picture
-      console.log("Updating profile picture to:", pictureUrl);
+      // Préparer les données pour la mise à jour
+      const updateData: any = {
+        user: {
+          picture: pictureBase64 // Envoyer les données base64
+        }
+      };
+
+      const result = await updateStudentProfile(accessToken, tenantDomain, updateData);
+      
+      if (result.success) {
+        // Mettre à jour l'URL de l'image localement
+        const pictureUrl = pictureBase64 
+          ? `data:image/jpeg;base64,${pictureBase64}`
+          : null;
+      
+        const updatedUserData = { ...userData, picture: pictureUrl };
+        setUserData(updatedUserData);
+        setFormData(prev => ({ ...prev, picture: pictureUrl }));
+        
+        console.log("Profile picture updated successfully");
+      }
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -613,7 +752,21 @@ export default function StudentProfile() {
       <div className="p-4">
         <div className="max-w-7xl mx-auto">
           {/* Stats Cards */}
-          
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {stats.map((stat, index) => (
+              <Card key={index} className="p-6 rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 bg-gradient-to-br ${stat.color} rounded-xl shadow-md`}>
+                    <stat.icon className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                    <p className="text-gray-600 text-sm">{stat.label}</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Profile Information Card */}
@@ -1008,7 +1161,26 @@ export default function StudentProfile() {
               </Card>
 
               {/* Quick Actions */}
-              
+              <Card className="p-6 rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-xl">
+                <div className="flex items-center gap-3 mb-4">
+                  <School className="h-6 w-6 text-blue-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
+                </div>
+                <div className="space-y-3">
+                  <Button variant="outline" className="w-full justify-start h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50">
+                    <BookOpen className="h-4 w-4 mr-3" />
+                    View Courses
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50">
+                    <Award className="h-4 w-4 mr-3" />
+                    My Achievements
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50">
+                    <Target className="h-4 w-4 mr-3" />
+                    Set Goals
+                  </Button>
+                </div>
+              </Card>
             </div>
           </div>
         </div>
