@@ -18,7 +18,7 @@ export function OnboardingTour({
   onComplete, 
   onSkip 
 }: OnboardingTourProps) {
-  const { state, markTourComplete, skipTour, stopTour } = useOnboarding();
+  const { state, skipTour, stopTour } = useOnboarding();
   const [isRunning, setIsRunning] = useState(run);
   const [hasStarted, setHasStarted] = useState(false);
   const currentStepIndexRef = useRef<number>(-1);
@@ -49,14 +49,20 @@ export function OnboardingTour({
     if (!isRunning) return;
 
     const repositionSpotlight = () => {
-      const spotlight = document.querySelector('.react-joyride__spotlight') as HTMLElement;
+      const spotlight = document.querySelector('.react-joyride__spotlight') as HTMLElement | null;
       if (spotlight && currentStepIndexRef.current >= 0) {
         const currentStep = steps[currentStepIndexRef.current];
-        if (currentStep?.target && currentStep.target !== 'body') {
-          const target = document.querySelector(currentStep.target) as HTMLElement;
-          if (target) {
-            const rect = target.getBoundingClientRect();
-            
+        const currentTarget = currentStep?.target;
+        if (currentTarget) {
+          const targetElement =
+            typeof currentTarget === 'string'
+              ? currentTarget === 'body'
+                ? null
+                : (document.querySelector(currentTarget) as HTMLElement | null)
+              : currentTarget;
+
+          if (targetElement) {
+            const rect = targetElement.getBoundingClientRect();
             spotlight.style.position = 'fixed';
             spotlight.style.left = `${rect.left}px`;
             spotlight.style.top = `${rect.top}px`;
@@ -97,15 +103,23 @@ export function OnboardingTour({
     }
 
     // Force spotlight repositioning after step change
-    if ((type === EVENTS.STEP_AFTER || type === EVENTS.TOOLTIP) && data.step?.target && data.step.target !== 'body') {
+    if ((type === EVENTS.STEP_AFTER || type === EVENTS.TOOLTIP) && data.step?.target) {
       currentStepIndexRef.current = index;
       // Single immediate repositioning attempt
       requestAnimationFrame(() => {
-        const spotlight = document.querySelector('.react-joyride__spotlight') as HTMLElement;
-        const target = document.querySelector(data.step!.target) as HTMLElement;
-        
-        if (spotlight && target) {
-          const rect = target.getBoundingClientRect();
+        const spotlight = document.querySelector('.react-joyride__spotlight') as HTMLElement | null;
+        if (!spotlight) return;
+
+        const stepTarget = data.step?.target;
+        const targetElement =
+          typeof stepTarget === 'string'
+            ? stepTarget === 'body'
+              ? null
+              : (document.querySelector(stepTarget) as HTMLElement | null)
+            : stepTarget ?? null;
+
+        if (targetElement) {
+          const rect = targetElement.getBoundingClientRect();
           
           // Use exact bounding box
           spotlight.style.position = 'fixed';
@@ -176,7 +190,7 @@ export function OnboardingTour({
       floaterProps={{
         disableAnimation: true,
       }}
-      tooltipComponent={({ tooltipProps, primaryProps, backProps, skipProps, closeProps, index, size, step, isLastStep }) => (
+      tooltipComponent={({ tooltipProps, primaryProps, backProps, skipProps, index, size, step, isLastStep }) => (
         <div
           {...tooltipProps}
           className="bg-white rounded-lg shadow-lg border border-gray-200 p-6 max-w-sm"
