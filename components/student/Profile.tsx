@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,6 @@ import {
   Mail,
   School,
   User,
-  Calendar,
   MapPin,
   Shield,
   Camera,
@@ -28,15 +27,19 @@ import {
   Eye,
   EyeOff,
   Key,
-  AlertTriangle
+  AlertTriangle,
+  X,
+  Upload,
+  Image,
+  Crop
 } from "lucide-react";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
+import Cropper from "react-cropper";
+import "cropperjs/dist/cropper.css";
 
 interface UserData {
   id: number;
-  uuid: string;
   email: string;
   first_name: string;
   last_name: string;
@@ -87,6 +90,339 @@ interface ChangePasswordData {
   confirm_password: string;
 }
 
+// Composant modal pour l'édition de la photo de profil
+interface EditProfilePictureModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  currentPicture: string | null;
+  onPictureUpdate: (pictureBase64: string) => void;
+  userName: string;
+}
+
+function EditProfilePictureModal({ 
+  isOpen, 
+  onClose, 
+  currentPicture, 
+  onPictureUpdate,
+  userName 
+}: EditProfilePictureModalProps) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const [showCropper, setShowCropper] = useState(false);
+  const [croppedImage, setCroppedImage] = useState<string | null>(null);
+  
+  const cropperRef = useRef<HTMLImageElement>(null);
+
+  const handleFileSelect = (file: File) => {
+    if (file && file.type.startsWith('image/')) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageUrl = e.target?.result as string;
+        setPreviewUrl(imageUrl);
+        setShowCropper(true);
+        setCroppedImage(null);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFileSelect(file);
+    }
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    const files = e.dataTransfer.files;
+    if (files && files[0]) {
+      handleFileSelect(files[0]);
+    }
+  };
+
+  const getCroppedImage = (): Promise<string> => {
+    return new Promise((resolve) => {
+      const imageElement: any = cropperRef?.current;
+      const cropper: any = imageElement?.cropper;
+      
+      if (cropper) {
+        const canvas = cropper.getCroppedCanvas({
+          width: 300,
+          height: 300,
+          fillColor: '#fff',
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: 'high'
+        });
+        
+        resolve(canvas.toDataURL('image/jpeg', 0.9));
+      } else {
+        resolve(previewUrl || '');
+      }
+    });
+  };
+
+  const handleCrop = async () => {
+    const croppedImageUrl = await getCroppedImage();
+    setCroppedImage(croppedImageUrl);
+    setShowCropper(false);
+  };
+
+  const handleCancelCrop = () => {
+    setShowCropper(false);
+    setPreviewUrl(null);
+    setSelectedFile(null);
+    setCroppedImage(null);
+  };
+
+  const handleUpload = async () => {
+    const imageToUpload = croppedImage || previewUrl;
+    
+    if (!imageToUpload) return;
+
+    setIsUploading(true);
+    
+    try {
+      // Extract only base64 part (without data:image/... prefix)
+      const base64Data = imageToUpload.split(',')[1];
+      
+      // Pass base64 data to parent
+      onPictureUpdate(base64Data);
+      onClose();
+      
+      // Reset state
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      setShowCropper(false);
+      setCroppedImage(null);
+    } catch (error) {
+      console.error("Error processing picture:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const removePicture = () => {
+    // To remove picture, pass empty string
+    onPictureUpdate("");
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Camera className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">
+                {showCropper ? 'Crop Image' : 'Update Profile Picture'}
+              </h3>
+              <p className="text-gray-600 text-sm">
+                {showCropper ? 'Adjust your photo cropping' : 'Upload a new profile photo'}
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 p-2 rounded-lg"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6 overflow-y-auto max-h-[60vh]">
+          {showCropper ? (
+            // Crop mode
+            <div className="space-y-6">
+              <div className="text-center">
+                <p className="text-sm font-medium text-gray-700 mb-4">Crop your image</p>
+                <div className="relative bg-gray-100 rounded-lg overflow-hidden max-h-[400px]">
+                  <Cropper
+                    ref={cropperRef}
+                    src={previewUrl || ''}
+                    style={{ height: 400, width: '100%' }}
+                    aspectRatio={1}
+                    guides={true}
+                    background={false}
+                    responsive={true}
+                    autoCropArea={1}
+                    checkOrientation={false}
+                    viewMode={1}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={handleCrop}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 h-12 rounded-xl text-white font-semibold shadow-lg"
+                >
+                  <Crop className="h-4 w-4 mr-2" />
+                  Confirm Crop
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleCancelCrop}
+                  className="h-12 rounded-xl border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold px-4"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            // Normal mode - upload or preview
+            <>
+              {/* Current Picture Preview */}
+              <div className="text-center">
+                <p className="text-sm font-medium text-gray-700 mb-4">Current Picture</p>
+                <Avatar className="h-20 w-20 mx-auto border-2 border-gray-300">
+                  <AvatarImage src={currentPicture || "/placeholder.svg"} />
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                    {userName.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+
+              {/* Upload Area */}
+              <div
+                className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all duration-200 ${
+                  dragActive 
+                    ? "border-blue-500 bg-blue-50" 
+                    : "border-gray-300 bg-gray-50 hover:border-gray-400"
+                }`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+              >
+                <input
+                  type="file"
+                  id="profile-picture"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                
+                {croppedImage ? (
+                  <div className="space-y-4">
+                    <div className="relative inline-block">
+                      <img
+                        src={croppedImage}
+                        alt="Cropped preview"
+                        className="h-32 w-32 rounded-full object-cover border-4 border-white shadow-lg mx-auto"
+                      />
+                    </div>
+                    <p className="text-sm text-gray-600">Preview of your new profile picture</p>
+                  </div>
+                ) : previewUrl ? (
+                  <div className="space-y-4">
+                    <div className="relative inline-block">
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="h-32 w-32 rounded-full object-cover border-4 border-white shadow-lg mx-auto"
+                      />
+                    </div>
+                    <p className="text-sm text-gray-600">Image selected - click Crop&quot; to adjust</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-white rounded-full w-16 h-16 mx-auto shadow-sm">
+                      <Image className="h-8 w-8 text-gray-400 mx-auto" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold text-gray-900 mb-2">
+                        Drag and drop your photo
+                      </p>
+                      <p className="text-gray-600 text-sm mb-4">
+                        or click to browse files
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        JPG, PNG, WEBP - Max 5MB
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <label
+                  htmlFor="profile-picture"
+                  className="cursor-pointer inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold mt-4 hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                >
+                  <Upload className="h-4 w-4" />
+                  Choose File
+                </label>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={handleUpload}
+                  disabled={!selectedFile || isUploading}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 h-12 rounded-xl text-white font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isUploading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  {isUploading ? "Uploading..." : "Update Picture"}
+                </Button>
+                
+                {previewUrl && !croppedImage && (
+                  <Button
+                    onClick={() => setShowCropper(true)}
+                    className="h-12 rounded-xl bg-green-600 text-white hover:bg-green-700 font-semibold px-4"
+                  >
+                    <Crop className="h-4 w-4 mr-2" />
+                    Crop
+                  </Button>
+                )}
+                
+                {currentPicture && (
+                  <Button
+                    variant="outline"
+                    onClick={removePicture}
+                    disabled={isUploading}
+                    className="h-12 rounded-xl border-red-300 text-red-600 hover:bg-red-50 font-semibold px-4"
+                  >
+                    Remove
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 export default function StudentProfile() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -114,6 +450,8 @@ export default function StudentProfile() {
     confirm: false
   });
 
+  const [showEditPicture, setShowEditPicture] = useState(false);
+
   const router = useRouter();
   const { tenantDomain, accessToken } = useRequestInfo();
 
@@ -125,6 +463,7 @@ export default function StudentProfile() {
       
       const updateData: any = {};
       
+      // Editable user fields
       editableFields.user_fields.forEach(field => {
         if (formData[field as keyof typeof formData] !== undefined && 
             formData[field as keyof typeof formData] !== userData[field as keyof UserData]) {
@@ -132,6 +471,7 @@ export default function StudentProfile() {
         }
       });
   
+      // Editable profile fields
       editableFields.profile_fields.forEach(field => {
         if (formData[field as keyof typeof formData] !== undefined && 
             formData[field as keyof typeof formData] !== profileData?.[field as keyof ProfileData]) {
@@ -139,6 +479,7 @@ export default function StudentProfile() {
         }
       });
   
+      // Don't send request if no fields were modified
       if (Object.keys(updateData).length === 0) {
         setIsEditing(false);
         return;
@@ -147,6 +488,7 @@ export default function StudentProfile() {
       const result = await updateStudentProfile(accessToken, tenantDomain, updateData);
       
       if (result.success) {
+        // Update local data
         if (userData) {
           setUserData({ ...userData, ...updateData });
         }
@@ -164,6 +506,7 @@ export default function StudentProfile() {
 
   const handleCancelEdit = () => {
     setIsEditing(false);
+    // Reset form data
     if (userData && profileData) {
       setFormData({
         ...userData,
@@ -179,6 +522,42 @@ export default function StudentProfile() {
     }));
   };
 
+  // Profile picture update handler
+  const handlePictureUpdate = async (pictureBase64: string) => {
+    if (!accessToken || !tenantDomain || !userData) return;
+
+    try {
+      setIsUpdating(true);
+      
+      // Préparer les données pour la mise à jour
+      const updateData: any = {
+        user: {
+          picture: pictureBase64 // Envoyer les données base64
+        }
+      };
+
+      const result = await updateStudentProfile(accessToken, tenantDomain, updateData);
+      
+      if (result.success) {
+        // Mettre à jour l'URL de l'image localement
+        const pictureUrl = pictureBase64 
+          ? `data:image/jpeg;base64,${pictureBase64}`
+          : null;
+      
+        const updatedUserData = { ...userData, picture: pictureUrl };
+        setUserData(updatedUserData);
+        setFormData(prev => ({ ...prev, picture: pictureUrl }));
+        
+        console.log("Profile picture updated successfully");
+      }
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Password change functions
   const handlePasswordChange = (field: keyof ChangePasswordData, value: string) => {
     setPasswordData(prev => ({
       ...prev,
@@ -190,7 +569,8 @@ export default function StudentProfile() {
   const validatePassword = (password: string): string | null => {
     if (!password) return "Password is required";
     if (password.length < 8) return "Password must be at least 8 characters long";
-    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(password)) {
+    
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(password)) {
       return "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character";
     }
     return null;
@@ -199,6 +579,7 @@ export default function StudentProfile() {
   const handleChangePassword = async () => {
     if (!accessToken || !tenantDomain) return;
 
+    // Validation
     if (!passwordData.current_password) {
       setPasswordError("Current password is required");
       return;
@@ -234,6 +615,7 @@ export default function StudentProfile() {
         confirm_password: ""
       });
 
+      // Hide form after 3 seconds
       setTimeout(() => {
         setShowChangePassword(false);
         setPasswordSuccess(false);
@@ -275,13 +657,14 @@ export default function StudentProfile() {
           setProfileData(apiData.data.profile);
           setEditableFields(apiData.editable_fields);
           
+          // Initialize form data
           setFormData({
             ...apiData.data.user,
             ...apiData.data.profile
           });
         }
       } catch (error) {
-        console.error("Error fetching student profile:", error);
+        console.error("Error fetching Student profile:", error);
       } finally {
         setIsLoading(false);
       }
@@ -305,7 +688,7 @@ export default function StudentProfile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 w-full">
         <div className="rounded-2xl p-8 mx-4 mt-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-2xl">
           <Skeleton className="h-12 w-64 bg-white/20 rounded-xl" />
         </div>
@@ -332,7 +715,7 @@ export default function StudentProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 w-full">
       {/* Header */}
       <div className="rounded-2xl p-8 mx-4 mt-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-2xl">
         <div className="flex items-center justify-between">
@@ -371,17 +754,14 @@ export default function StudentProfile() {
           {/* Stats Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {stats.map((stat, index) => (
-              <Card 
-                key={index}
-                className="p-6 rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
-              >
+              <Card key={index} className="p-6 rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
                 <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} text-white shadow-md`}>
-                    <stat.icon className="h-6 w-6" />
+                  <div className={`p-3 bg-gradient-to-br ${stat.color} rounded-xl shadow-md`}>
+                    <stat.icon className="h-6 w-6 text-white" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                    <p className="text-sm text-gray-600 font-medium">{stat.label}</p>
+                    <p className="text-gray-600 text-sm">{stat.label}</p>
                   </div>
                 </div>
               </Card>
@@ -433,7 +813,7 @@ export default function StudentProfile() {
                   </div>
                 </div>
 
-                {/* Modal de changement de mot de passe */}
+                {/* Change Password Modal */}
                 {showChangePassword && (
                   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
@@ -570,6 +950,15 @@ export default function StudentProfile() {
                   </div>
                 )}
 
+                {/* Profile Picture Edit Modal */}
+                <EditProfilePictureModal
+                  isOpen={showEditPicture}
+                  onClose={() => setShowEditPicture(false)}
+                  currentPicture={userData?.picture || null}
+                  onPictureUpdate={handlePictureUpdate}
+                  userName={userData?.full_name || "User"}
+                />
+
                 <div className="space-y-8">
                   {/* Avatar Section */}
                   <div className="flex items-center gap-6 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border border-blue-200">
@@ -583,7 +972,8 @@ export default function StudentProfile() {
                       {isEditing && isFieldEditable('picture', 'user') && (
                         <Button
                           size="sm"
-                          className="absolute -bottom-2 -right-2 rounded-full p-2 bg-white border shadow-lg hover:shadow-xl"
+                          onClick={() => setShowEditPicture(true)}
+                          className="absolute -bottom-2 -right-2 rounded-full p-2 bg-white border shadow-lg hover:shadow-xl transition-all duration-200"
                         >
                           <Camera className="h-4 w-4 text-blue-600" />
                         </Button>
@@ -594,34 +984,6 @@ export default function StudentProfile() {
                       <p className="text-gray-600 mb-1 flex items-center gap-2">
                         <Mail className="h-4 w-4" />
                         {userData?.email}
-                      </p>
-                      <p className="text-gray-600 flex items-center gap-2">
-                        <School className="h-4 w-4" />
-                        Student ID: {userData?.uuid.slice(0, 15)+"..."}
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="ml-2 p-1 h-7 w-7"
-                          title="Copy Student ID"
-                          onClick={async () => {
-                            if (userData?.uuid) {
-                              await navigator.clipboard.writeText(userData.uuid);
-                              toast.success("Student ID copied to clipboard");
-                            }
-                          }}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4 text-gray-500"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <rect x="9" y="9" width="13" height="13" rx="2" />
-                            <rect x="3" y="3" width="13" height="13" rx="2" />
-                          </svg>
-                        </Button>
                       </p>
                     </div>
                   </div>
@@ -800,24 +1162,23 @@ export default function StudentProfile() {
 
               {/* Quick Actions */}
               <Card className="p-6 rounded-2xl border-0 bg-white/80 backdrop-blur-sm shadow-xl">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                <div className="flex items-center gap-3 mb-4">
+                  <School className="h-6 w-6 text-blue-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
+                </div>
                 <div className="space-y-3">
-                  {[
-                    { icon: BookOpen, label: "View Grades", action: () => router.push("/student/gradebook") },
-                    { icon: Award, label: "Achievements", action: () => router.push("/student/rewards") },
-                    { icon: Calendar, label: "Attendance", action: () => router.push("/student/attendance") },
-                    // { icon: Target, label: "Set Goals", action: () => console.log("Set Goals") }
-                  ].map((action, index) => (
-                    <Button
-                      key={index}
-                      variant="ghost"
-                      onClick={action.action}
-                      className="w-full justify-start p-3 rounded-xl text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
-                    >
-                      <action.icon className="h-4 w-4 mr-3" />
-                      {action.label}
-                    </Button>
-                  ))}
+                  <Button variant="outline" className="w-full justify-start h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50">
+                    <BookOpen className="h-4 w-4 mr-3" />
+                    View Courses
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50">
+                    <Award className="h-4 w-4 mr-3" />
+                    My Achievements
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50">
+                    <Target className="h-4 w-4 mr-3" />
+                    Set Goals
+                  </Button>
                 </div>
               </Card>
             </div>
