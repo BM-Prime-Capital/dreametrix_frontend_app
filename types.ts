@@ -274,3 +274,4 @@ export type SchoolFilters = {
   minStudents?: number;
   maxStudents?: number;
 };
+
