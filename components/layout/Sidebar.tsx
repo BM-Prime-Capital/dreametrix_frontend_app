@@ -10,40 +10,12 @@ import { ScrollArea } from "../ui/scroll-area";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../ui/button";
 import { useSidebar } from "@/lib/SidebarContext";
-import { useRequestInfo } from "@/hooks/useRequestInfo";
+import DreaMetrixLogo from "../ui/dreametrix-logo";
 
 export function Sidebar({ routes }: { routes: MenuRoute[] }) {
   console.log("routes", routes)
   const pathname = usePathname();
   const { isCollapsed, setIsCollapsed } = useSidebar();
-  const { schoolData } = useRequestInfo();
-
-  const getSchoolInfo = () => {
-    if (!schoolData) {
-      return { 
-        name: "École", 
-        hasLogo: false,
-        logoUrl: null
-      }
-    }
-
-    try {
-      const name = schoolData.name || "École";
-      const hasLogo = schoolData.has_logo || schoolData.logo_url || false;
-      const logoUrl = schoolData.logo_url || null;
-      
-      return { name, hasLogo, logoUrl };
-    } catch (error) {
-      console.error("Error parsing school data:", error);
-      return { 
-        name: "École", 
-        hasLogo: false,
-        logoUrl: null
-      };
-    }
-  }
-
-  const { name: schoolName, hasLogo, logoUrl } = getSchoolInfo();
 
   return (
     <div 
@@ -83,22 +55,12 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
       )}>
         {!isCollapsed && (
           <h2 className="font-bold text-xl bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
-            {/* DreaMetrix */}
+            DreaMetrix
           </h2>
         )}
         {isCollapsed && (
           <div className="w-10 h-10 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg">
-            {hasLogo && logoUrl ? (
-              <img
-                src={logoUrl}
-                alt={`Logo ${schoolName}`}
-                className="h-8 w-8 rounded-full object-cover"
-              />
-            ) : (
-              <span className="text-white font-bold text-lg">
-                {schoolName.charAt(0).toUpperCase()}
-              </span>
-            )}
+            <span className="text-white font-bold text-lg">D</span>
           </div>
         )}
       </div>
@@ -211,9 +173,9 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
         "flex items-center justify-center"
       )}>
         {!isCollapsed && (
-          <div className="text-xs text-gray-500 text-center">
+          <div className="flex justify-center mb-6 w-[80px]">
             Powered by DreaMetrix
-        </div>
+          </div>
         )}
       </div>
     </div>
