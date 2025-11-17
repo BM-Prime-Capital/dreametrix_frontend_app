@@ -22,6 +22,163 @@ export function OnboardingTour({
   const [isRunning, setIsRunning] = useState(run);
   const [hasStarted, setHasStarted] = useState(false);
   const currentStepIndexRef = useRef<number>(-1);
+  const scrollContainerRef = useRef<HTMLElement | null>(null);
+  const scrollListenerRef = useRef<((event: Event) => void) | null>(null);
+
+  const detachScrollListener = () => {
+    if (scrollContainerRef.current && scrollListenerRef.current) {
+      scrollContainerRef.current.removeEventListener('scroll', scrollListenerRef.current);
+    }
+    scrollContainerRef.current = null;
+    scrollListenerRef.current = null;
+  };
+
+  const resolveTargetElement = (target?: string | HTMLElement) => {
+    if (!target) return null;
+    if (typeof target === 'string') {
+      if (target === 'body') return null;
+      return document.querySelector(target) as HTMLElement | null;
+    }
+    return target;
+  };
+
+  const getScrollContainer = (targetElement: HTMLElement) => {
+    const scrollAreaViewport = targetElement.closest('[data-radix-scroll-area-viewport]') as HTMLElement | null;
+    if (scrollAreaViewport) return scrollAreaViewport;
+
+    let parent = targetElement.parentElement;
+    while (parent && parent !== document.body) {
+      const { overflowY } = window.getComputedStyle(parent);
+      if (overflowY === 'auto' || overflowY === 'scroll') {
+        return parent;
+      }
+      parent = parent.parentElement;
+    }
+    return null;
+  };
+
+  const isTargetWithinViewport = (targetElement: HTMLElement, container: HTMLElement | null, padding = 48) => {
+    const rect = targetElement.getBoundingClientRect();
+    if (!container) {
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      return rect.top >= padding && rect.bottom <= viewportHeight - padding;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    return (
+      rect.top >= containerRect.top + padding &&
+      rect.bottom <= containerRect.bottom - padding
+    );
+  };
+
+  const scrollTargetIntoView = (
+    targetElement: HTMLElement,
+    container: HTMLElement | null
+  ) => {
+    if (isTargetWithinViewport(targetElement, container)) {
+      return Promise.resolve();
+    }
+
+    if (container) {
+      targetElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest',
+      });
+    } else {
+      const rect = targetElement.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      const centeredOffset = rect.top + window.scrollY - Math.max((viewportHeight - rect.height) / 2, 0);
+      window.scrollTo({
+        top: Math.max(centeredOffset, 0),
+        behavior: 'smooth',
+      });
+    }
+
+    return new Promise<void>((resolve) => {
+      let checks = 0;
+      const maxChecks = 30;
+
+      const verifyVisibility = () => {
+        if (
+          isTargetWithinViewport(targetElement, container, 24) ||
+          checks >= maxChecks
+        ) {
+          setTimeout(() => resolve(), 100);
+          return;
+        }
+
+        checks += 1;
+        requestAnimationFrame(verifyVisibility);
+      };
+
+      requestAnimationFrame(verifyVisibility);
+    });
+  };
+
+  const waitForScrollIdle = (container: HTMLElement | Window | Document) => {
+    return new Promise<void>((resolve) => {
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+      const handleScroll = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          detach();
+          resolve();
+        }, 80);
+      };
+
+      const detach = () => {
+        if (container instanceof Window || container instanceof Document) {
+          window.removeEventListener('scroll', handleScroll, true);
+        } else {
+          container.removeEventListener('scroll', handleScroll);
+        }
+      };
+
+      if (container instanceof Window || container instanceof Document) {
+        window.addEventListener('scroll', handleScroll, true);
+      } else {
+        container.addEventListener('scroll', handleScroll, { passive: true });
+      }
+
+      handleScroll();
+    });
+  };
+
+  const updateSpotlightForTarget = (targetElement: HTMLElement) => {
+    const spotlight = document.querySelector('.react-joyride__spotlight') as HTMLElement | null;
+    if (!spotlight) return;
+
+    const rect = targetElement.getBoundingClientRect();
+    spotlight.style.position = 'fixed';
+    spotlight.style.left = `${rect.left}px`;
+    spotlight.style.top = `${rect.top}px`;
+    spotlight.style.width = `${rect.width}px`;
+    spotlight.style.height = `${rect.height}px`;
+    spotlight.style.boxSizing = 'border-box';
+    spotlight.style.margin = '0';
+    spotlight.style.padding = '0';
+    spotlight.style.borderRadius = '0.5rem';
+    spotlight.style.transition = 'none';
+  };
+
+  const attachScrollListenerForTarget = (targetElement: HTMLElement, container: HTMLElement | null) => {
+    detachScrollListener();
+    if (!container) return;
+
+    const handler = () => {
+      if (!document.body.contains(targetElement)) {
+        detachScrollListener();
+        return;
+      }
+      updateSpotlightForTarget(targetElement);
+    };
+
+    container.addEventListener('scroll', handler, { passive: true });
+    scrollContainerRef.current = container;
+    scrollListenerRef.current = handler;
+  };
 
   useEffect(() => {
     // Use context state if available, otherwise use prop
@@ -42,36 +199,24 @@ export function OnboardingTour({
     } else {
       setIsRunning(run);
     }
+    return () => {
+      detachScrollListener();
+    };
   }, [run, state, hasStarted]);
 
   // Monitor spotlight position only on scroll/resize when tour is running
   useEffect(() => {
-    if (!isRunning) return;
+    if (!isRunning) {
+      detachScrollListener();
+      return;
+    }
 
     const repositionSpotlight = () => {
-      const spotlight = document.querySelector('.react-joyride__spotlight') as HTMLElement | null;
-      if (spotlight && currentStepIndexRef.current >= 0) {
-        const currentStep = steps[currentStepIndexRef.current];
-        const currentTarget = currentStep?.target;
-        if (currentTarget) {
-          const targetElement =
-            typeof currentTarget === 'string'
-              ? currentTarget === 'body'
-                ? null
-                : (document.querySelector(currentTarget) as HTMLElement | null)
-              : currentTarget;
-
-          if (targetElement) {
-            const rect = targetElement.getBoundingClientRect();
-            spotlight.style.position = 'fixed';
-            spotlight.style.left = `${rect.left}px`;
-            spotlight.style.top = `${rect.top}px`;
-            spotlight.style.width = `${rect.width}px`;
-            spotlight.style.height = `${rect.height}px`;
-            spotlight.style.transition = 'none';
-          }
-        }
-      }
+      if (currentStepIndexRef.current < 0) return;
+      const currentStep = steps[currentStepIndexRef.current];
+      const targetElement = resolveTargetElement(currentStep?.target);
+      if (!targetElement) return;
+      updateSpotlightForTarget(targetElement);
     };
 
     // Only reposition on scroll or resize, not continuously
@@ -84,7 +229,29 @@ export function OnboardingTour({
     };
   }, [isRunning, steps]);
 
-  const handleJoyrideCallback = (data: CallBackProps) => {
+  const resolveStepTarget = (data: CallBackProps) => {
+    let targetIndex = data.index ?? 0;
+
+    if (data.type === EVENTS.STEP_AFTER) {
+      if (data.action === 'next') {
+        targetIndex = Math.min(targetIndex + 1, steps.length - 1);
+      } else if (data.action === 'prev') {
+        targetIndex = Math.max(targetIndex - 1, 0);
+      }
+    }
+
+    const stepConfig = steps[targetIndex];
+    if (!stepConfig?.target || stepConfig.target === 'body') {
+      return null;
+    }
+
+    return {
+      targetIndex,
+      target: stepConfig.target,
+    };
+  };
+
+  const handleJoyrideCallback = async (data: CallBackProps) => {
     const { status, type, index, action } = data;
 
     console.log('Tour callback:', { status, type, index, action });
@@ -102,37 +269,29 @@ export function OnboardingTour({
       return;
     }
 
-    // Force spotlight repositioning after step change
-    if ((type === EVENTS.STEP_AFTER || type === EVENTS.TOOLTIP) && data.step?.target) {
-      currentStepIndexRef.current = index;
-      // Single immediate repositioning attempt
+    const shouldHandleStepChange =
+      type === EVENTS.STEP_AFTER ||
+      type === EVENTS.TOOLTIP ||
+      type === EVENTS.STEP_BEFORE;
+
+    if (shouldHandleStepChange) {
+      const stepInfo = resolveStepTarget(data);
+      if (!stepInfo) return;
+
+      currentStepIndexRef.current = stepInfo.targetIndex;
+      const targetElement = resolveTargetElement(stepInfo.target);
+      if (!targetElement) return;
+
+      const container = getScrollContainer(targetElement);
+      attachScrollListenerForTarget(targetElement, container);
+
+      await scrollTargetIntoView(targetElement, container);
+      await waitForScrollIdle(container || window);
+
       requestAnimationFrame(() => {
-        const spotlight = document.querySelector('.react-joyride__spotlight') as HTMLElement | null;
-        if (!spotlight) return;
-
-        const stepTarget = data.step?.target;
-        const targetElement =
-          typeof stepTarget === 'string'
-            ? stepTarget === 'body'
-              ? null
-              : (document.querySelector(stepTarget) as HTMLElement | null)
-            : stepTarget ?? null;
-
-        if (targetElement) {
-          const rect = targetElement.getBoundingClientRect();
-          
-          // Use exact bounding box
-          spotlight.style.position = 'fixed';
-          spotlight.style.left = `${rect.left}px`;
-          spotlight.style.top = `${rect.top}px`;
-          spotlight.style.width = `${rect.width}px`;
-          spotlight.style.height = `${rect.height}px`;
-          spotlight.style.boxSizing = 'border-box';
-          spotlight.style.margin = '0';
-          spotlight.style.padding = '0';
-          spotlight.style.borderRadius = '0.5rem';
-          spotlight.style.transition = 'none'; // Disable transitions for instant positioning
-        }
+        requestAnimationFrame(() => {
+          updateSpotlightForTarget(targetElement);
+        });
       });
     }
 
@@ -176,9 +335,9 @@ export function OnboardingTour({
       {...tourConfig}
       callback={handleJoyrideCallback}
       run={isRunning}
-      disableScrolling={false}
+      disableScrolling={true}
       disableScrollParentFix={true}
-      scrollOffset={20}
+      scrollOffset={0}
       scrollToFirstStep={true}
       locale={{
         back: 'Back',
