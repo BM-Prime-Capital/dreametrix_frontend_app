@@ -12,7 +12,8 @@ import {
   Clock, 
   AlertCircle,
   X,
-  Play
+  Play,
+  RotateCcw
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -26,7 +27,8 @@ export function MandatoryTasksBanner({ className = "" }: MandatoryTasksBannerPro
     isLoading, 
     getRemainingTasks, 
     getProgressPercentage,
-    startTour 
+    startTour,
+    resetOnboarding
   } = useOnboarding();
   
   const [isExpanded, setIsExpanded] = useState(true);
@@ -49,6 +51,12 @@ export function MandatoryTasksBanner({ className = "" }: MandatoryTasksBannerPro
 
   const handleDismiss = () => {
     setIsDismissed(true);
+  };
+
+  const handleResetTasks = () => {
+    const confirmed = window.confirm('This will reset all onboarding tasks. Continue?');
+    if (!confirmed) return;
+    resetOnboarding();
   };
 
   const getPriorityColor = (priority: string) => {
@@ -108,6 +116,16 @@ export function MandatoryTasksBanner({ className = "" }: MandatoryTasksBannerPro
             >
               <Play className="h-4 w-4 mr-1" />
               Take Tour
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleResetTasks}
+              className="text-gray-500 hover:text-gray-700"
+              title="Reset onboarding tasks"
+              aria-label="Reset onboarding tasks"
+            >
+              <RotateCcw className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"

@@ -122,18 +122,20 @@ export function OnboardingProvider({ children, userId, userRole }: OnboardingPro
     const storageKey = `onboarding_state_${userId}`;
     localStorage.removeItem(storageKey);
     
-    setState(prevState => {
-      if (!prevState) return prevState;
+    // setState(prevState => {
+    //   if (!prevState) return prevState;
 
-      return {
-        ...prevState,
-        hasCompletedOnboarding: false,
-        hasCompletedTour: false,
-        completedTasks: [],
-        tasks: getDefaultTasksForRole(userRole),
-        lastUpdated: new Date().toISOString()
-      };
-    });
+    //   return {
+    //     ...prevState,
+    //     hasCompletedOnboarding: false,
+    //     hasCompletedTour: false,
+    //     completedTasks: [],
+    //     tasks: getDefaultTasksForRole(userRole),
+    //     lastUpdated: new Date().toISOString()
+    //   };
+    // });
+    window.location.reload();
+
   };
 
   const startTour = () => {
