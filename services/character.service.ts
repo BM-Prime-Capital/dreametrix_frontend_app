@@ -1,3 +1,4 @@
+import { getBackendBaseUrl } from '@/app/utils/constants';
 import { CharacterResponse, CharacterQueryParams } from '@/types/character';
 
 export class CharacterApiError extends Error {
@@ -47,7 +48,7 @@ export class CharacterService {
         searchParams.append('class_info', params.class_info.toString());
       }
 
-      const url = `https://${tenantDomain}/characters/character-ratings/student_view/?${searchParams.toString()}`;
+      const url = `${getBackendBaseUrl(tenantDomain)}/characters/character-ratings/student_view/?${searchParams.toString()}`;
       if (process.env.NODE_ENV === 'development') {
         console.log("Character API URL => ", url);
         console.log("Token length => ", accessToken.length);

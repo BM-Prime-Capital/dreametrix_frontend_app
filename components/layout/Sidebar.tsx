@@ -19,6 +19,7 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
 
   return (
     <div 
+      data-tour="sidebar"
       className={cn(
         "fixed left-0 top-0 h-screen transition-all duration-500 ease-in-out flex flex-col z-40",
         "bg-gradient-to-b from-white via-slate-50/80 to-gray-100/60",
@@ -69,6 +70,8 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
           {routes.map((route) => {
             const isActive = isMenuItemActive(route, pathname);
             const isDisabled = route.disabled;
+            
+            const tourId = route.label.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
             
             const routeContent = (
               <div
@@ -147,13 +150,18 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
             }
 
             return (
-              <Link
+              <div
                 key={route.path}
-                href={route.path}
-                className="block"
+                data-tour={`${tourId}-menu`}
+                className="w-full relative"
               >
-                {routeContent}
-              </Link>
+                <Link
+                  href={route.path}
+                  className="block w-full"
+                >
+                  {routeContent}
+                </Link>
+              </div>
             );
           })}
         </div>
@@ -165,8 +173,8 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
         "flex items-center justify-center"
       )}>
         {!isCollapsed && (
-          <div className="flex justify-center mb-6 w-[80px]">
-            <DreaMetrixLogo />
+          <div className="flex justify-center mb-6 text-xs text-gray-500">
+            Powered by DreaMetrix
           </div>
         )}
       </div>

@@ -325,10 +325,139 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
   const handleExport = useCallback(() => {
     if (allClasses.length === 0) return;
 
-    const csvContent = [
-      Object.keys(allClasses[0]).join(','),
-      ...allClasses.map(item => Object.values(item).join(','))
-    ].join('\n');
+    // Helper function to escape CSV values
+    const escapeCsv = (value: unknown): string => {
+      if (value === null || value === undefined) return '';
+      if (typeof value === 'string') {
+        // Escape quotes and wrap in quotes if contains comma, newline, or quote
+        const escaped = value.replace(/"/g, '""');
+        if (escaped.includes(',') || escaped.includes('\n') || escaped.includes('"')) {
+          return `"${escaped}"`;
+        }
+        return escaped;
+      }
+      return String(value);
+    };
+
+    // Helper function to format schedule
+    const formatSchedule = (schedule: unknown): string => {
+      if (!schedule || typeof schedule !== 'object') return '';
+      
+      try {
+        const scheduleObj = schedule as Record<string, Array<{
+          date?: string;
+          start_time?: string;
+          end_time?: string;
+        }>>;
+        
+        const scheduleParts: string[] = [];
+        
+        // Sort days for consistent output
+        const days = Object.keys(scheduleObj).sort();
+        
+        for (const day of days) {
+          const daySchedules = scheduleObj[day];
+          if (Array.isArray(daySchedules) && daySchedules.length > 0) {
+            for (const item of daySchedules) {
+              const date = item.date || '';
+              const startTime = item.start_time || '';
+              const endTime = item.end_time || '';
+              
+              if (startTime && endTime) {
+                const timeRange = `${startTime}-${endTime}`;
+                if (date) {
+                  scheduleParts.push(`${day}: ${timeRange} (${date})`);
+                } else {
+                  scheduleParts.push(`${day}: ${timeRange}`);
+                }
+              } else if (date) {
+                scheduleParts.push(`${day}: ${date}`);
+              } else {
+                scheduleParts.push(day);
+              }
+            }
+          }
+        }
+        
+        return scheduleParts.length > 0 ? scheduleParts.join('; ') : '';
+      } catch {
+        // Fallback to JSON if parsing fails
+        try {
+          return JSON.stringify(schedule);
+        } catch {
+          return String(schedule);
+        }
+      }
+    };
+
+    // Helper function to format teacher
+    const formatTeacher = (teacher: unknown): string => {
+      if (!teacher) return '';
+      if (typeof teacher === 'number') return String(teacher);
+      if (typeof teacher === 'object' && teacher !== null) {
+        const teacherObj = teacher as { id?: number; full_name?: string };
+        if (teacherObj.full_name) {
+          return `${teacherObj.full_name} (ID: ${teacherObj.id || 'N/A'})`;
+        }
+        return String(teacherObj.id || '');
+      }
+      return String(teacher);
+    };
+
+    // Helper function to format students
+    const formatStudents = (students: unknown): string => {
+      if (!students) return '';
+      if (!Array.isArray(students)) return '';
+      
+      return students.map((student) => {
+        if (typeof student === 'number') {
+          // Find student name from allStudents
+          const found = allStudents.find(s => Number(s.id) === Number(student));
+          return found ? `${found.full_name} (ID: ${student})` : `Student ${student}`;
+        }
+        if (typeof student === 'object' && student !== null) {
+          const studentObj = student as { id?: number; full_name?: string };
+          return studentObj.full_name 
+            ? `${studentObj.full_name} (ID: ${studentObj.id || 'N/A'})`
+            : `Student ${studentObj.id || 'N/A'}`;
+        }
+        return String(student);
+      }).join('; ');
+    };
+
+    // Define CSV headers
+    const headers = [
+      'id',
+      'name',
+      'subject_in_all_letter',
+      'subject_in_short',
+      'hours_and_dates_of_course_schedule',
+      'description',
+      'grade',
+      'created_at',
+      'updated_at',
+      'teacher',
+      'students'
+    ];
+
+    // Create CSV rows
+    const rows = allClasses.map((classItem) => {
+      return [
+        escapeCsv(classItem.id),
+        escapeCsv(classItem.name),
+        escapeCsv((classItem as any).subject_in_all_letter || ''),
+        escapeCsv((classItem as any).subject_in_short || ''),
+        escapeCsv(formatSchedule((classItem as any).hours_and_dates_of_course_schedule)),
+        escapeCsv(classItem.description || ''),
+        escapeCsv(classItem.grade || ''),
+        escapeCsv((classItem as any).created_at || ''),
+        escapeCsv((classItem as any).updated_at || ''),
+        escapeCsv(formatTeacher(classItem.teacher)),
+        escapeCsv(formatStudents(classItem.students))
+      ].join(',');
+    });
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -339,7 +468,8 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }, [allClasses]);
+    URL.revokeObjectURL(url);
+  }, [allClasses, allStudents]);
 
   const handleGlobalFilterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setGlobalFilter(e.target.value);

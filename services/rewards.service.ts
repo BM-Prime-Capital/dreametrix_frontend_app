@@ -1,3 +1,4 @@
+import { getBackendBaseUrl } from '@/app/utils/constants';
 import { RewardsResponse, RewardsQueryParams } from '@/types/rewards';
 
 export class RewardsApiError extends Error {
@@ -47,7 +48,7 @@ export class RewardsService {
         searchParams.append('class_info', params.class_info.toString());
       }
 
-      const url = `https://${tenantDomain}/rewards/student-reports/student_view/?${searchParams.toString()}`;
+      const url = `${getBackendBaseUrl(tenantDomain)}/rewards/student-reports/student_view/?${searchParams.toString()}`;
       if (process.env.NODE_ENV === 'development') {
         console.log("Rewards API URL => ", url);
         console.log("Token length => ", accessToken.length);

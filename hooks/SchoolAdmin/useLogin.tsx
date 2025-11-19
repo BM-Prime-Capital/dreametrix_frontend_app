@@ -59,9 +59,7 @@ export function useLogin() {
       }
 
       const data: LoginResponse = await response.json();
-      console.log("LoginData =>", data);
 
-      // --- Préparer les données utilisateur
       const userData: User = {
         id: data.user.id,
         owner_id: data.user.owner_id,
@@ -87,6 +85,14 @@ export function useLogin() {
       localStorage.setItem(localStorageKey.USER_DATA, JSON.stringify(userData));
       localStorage.setItem(localStorageKey.TENANT_DATA, JSON.stringify(tenantData));
 
+      // --- First login detection
+      const hasLoggedInBeforeKey = `has_logged_in_before_${userData.id}`;
+      const hasLoggedInBefore = localStorage.getItem(hasLoggedInBeforeKey) === 'true';
+      
+      if (!hasLoggedInBefore) {
+        localStorage.setItem(hasLoggedInBeforeKey, 'true');
+      }
+
       // --- Cookies pour middleware
       Cookies.set("tenantDomain", data.tenant.primary_domain, {
         expires: 7,
@@ -110,10 +116,9 @@ export function useLogin() {
       });
 
       // --- Redux
-      dispatch(loginSuccess({ user: userData, tenant: tenantData, token: data.access }));
+      dispatch(loginSuccess({ user: userData, tenant: tenantData, token: data.access, schoolData: data.tenant }));
 
       // --- Redirection en fonction du rôle
-      console.log("userRole.dara", data.user.role)
       switch (data.user.role) {
         
         case "school_admin":

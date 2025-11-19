@@ -4,14 +4,16 @@ import { FiX, FiUser, FiMail, FiBook } from 'react-icons/fi';
 import { useBaseUrl } from '@/hooks/SchoolAdmin/use-base-url';
 import {ALL_GRADES, localStorageKey} from '@/constants/global';
 import { toast } from 'react-toastify';
+import { useOnboarding } from '@/hooks/useOnboarding';
 
 interface CreateStudentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  taskId?: string;
 }
 
-const CreateStudentModal = ({ isOpen, onClose, onSuccess }: CreateStudentModalProps) => {
+const CreateStudentModal = ({ isOpen, onClose, onSuccess, taskId = 'school_admin_create_student' }: CreateStudentModalProps) => {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -20,6 +22,7 @@ const CreateStudentModal = ({ isOpen, onClose, onSuccess }: CreateStudentModalPr
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { baseUrl } = useBaseUrl();
+  const { markTaskComplete } = useOnboarding();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +52,7 @@ const CreateStudentModal = ({ isOpen, onClose, onSuccess }: CreateStudentModalPr
       }
 
       toast.success('Student created successfully!');
+      markTaskComplete(taskId);
       onSuccess();
       onClose();
       setFormData({ first_name: '', last_name: '', email: '', grade: '' });

@@ -34,7 +34,11 @@ const getAvatarColor = (name: string) => {
   return avatarColors[charCode % avatarColors.length];
 };
 
-const StudentsListPage = () => {
+interface StudentsDashProps {
+  studentCreationTaskId?: string;
+}
+
+const StudentsListPage = ({ studentCreationTaskId = 'school_admin_create_student' }: StudentsDashProps) => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -438,6 +442,7 @@ const StudentsListPage = () => {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSuccess={refetch}
+        taskId={studentCreationTaskId}
       />
     </div>
   );

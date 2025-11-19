@@ -1,3 +1,4 @@
+import { getBackendBaseUrl } from '@/app/utils/constants';
 import { AttendanceResponse, AttendanceQueryParams } from '@/types/attendance';
 
 export class AttendanceApiError extends Error {
@@ -51,7 +52,7 @@ export class AttendanceService {
         searchParams.append('status', params.status);
       }
 
-      const url = `https://${tenantDomain}/attendances/student_view/?${searchParams.toString()}`;
+      const url = `${getBackendBaseUrl(tenantDomain)}/attendances/student_view/?${searchParams.toString()}`;
       console.log("API URL => ", url);
       console.log("Token length => ", accessToken.length);
       
