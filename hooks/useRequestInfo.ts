@@ -1,14 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { localStorageKey } from "@/constants/global";
 import { useEffect, useState, useMemo } from "react";
 
-function useRequestInfo() {
+export function useRequestInfo() {
   const [accessToken, setAccessToken] = useState<string>("");
   const [refreshToken, setRefreshToken] = useState<string>("");
   const [tenantDomain, setTenantDomain] = useState<string>("");
-  const [userId, setUserId] = useState<string>("");
+  const [schoolData, setSchoolData] = useState<any>(null); 
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [userId, setUserId] = useState<string>("");
+
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -21,6 +24,7 @@ function useRequestInfo() {
         const userData = localStorage.getItem(localStorageKey.USER_DATA);
 
         let domain = "";
+        let schoolData = null;
         let userIdValue = "";
         
         if (tenantData) {
@@ -28,6 +32,8 @@ function useRequestInfo() {
           domain =`${(parsedData.primary_domain.startsWith('http') ?  parsedData.primary_domain : `https://${parsedData.primary_domain}`)}`
           
          
+         
+          schoolData = parsedData; 
         }
 
         if (userData) {
@@ -38,16 +44,9 @@ function useRequestInfo() {
         setAccessToken(accessToken);
         setRefreshToken(refreshToken);
         setTenantDomain(domain);
+        setSchoolData(schoolData); 
         setUserId(userIdValue);
         setIsLoading(false);
-        
-        // Debug logging
-        console.log("useRequestInfo - Token loaded:", {
-          hasToken: !!accessToken,
-          tokenLength: accessToken.length,
-          hasDomain: !!domain,
-          hasUserId: !!userIdValue
-        });
         
       } catch (error) {
         console.error("Error reading from localStorage:", error);
@@ -61,12 +60,10 @@ function useRequestInfo() {
       accessToken,
       refreshToken,
       tenantDomain,
+      schoolData,
       userId,
       isLoading,
     }),
-    [accessToken, refreshToken, tenantDomain, userId, isLoading]
+    [accessToken, refreshToken, tenantDomain, schoolData,userId, isLoading]
   );
 }
-
-export { useRequestInfo };
-export default useRequestInfo;

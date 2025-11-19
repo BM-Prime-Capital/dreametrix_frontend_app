@@ -99,11 +99,9 @@ export const useUSSchools = (accessToken: string) => {
 
     try {
       const response: USSchoolsResponse = await getAllUSOfficialSchools(accessToken, page);
-      console.log("response ====>", response);
-      
       setSchools(response.results || []);
       setTotalCount(response.count || 0);
-      setTotalPages(Math.ceil((response.count || 0) / 20)); // Assuming 20 items per page
+      setTotalPages(Math.ceil((response.count || 0) / 20));
       setCurrentPage(page);
     } catch (err: unknown) {
       console.error("Error loading US schools:", err);

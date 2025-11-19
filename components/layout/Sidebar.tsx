@@ -173,8 +173,8 @@ export function Sidebar({ routes }: { routes: MenuRoute[] }) {
         "flex items-center justify-center"
       )}>
         {!isCollapsed && (
-          <div className="flex justify-center mb-6 w-[80px]">
-            <DreaMetrixLogo />
+          <div className="flex justify-center mb-6 text-xs text-gray-500">
+            Powered by DreaMetrix
           </div>
         )}
       </div>
