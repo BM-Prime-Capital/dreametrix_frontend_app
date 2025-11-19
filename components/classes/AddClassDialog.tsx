@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil,  } from "lucide-react";
+import { Pencil, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Select,
@@ -29,6 +29,7 @@ import { convertToClassDays, convertToClassSchedule } from "@/utils/global";
 import SimpleLoader from "../ui/simple-loader";
 // import AlertMessage from "../ui/alert-message";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import Swal from "sweetalert2";
 import { useToast } from "@/components/ui/use-toast";
 import { useOnboarding } from "@/hooks/useOnboarding";
@@ -445,7 +446,31 @@ export function AddClassDialog({
                 })}
                 required
               />
+            </div>
 
+            {/* Warning about Digital Library subject requirements */}
+            <Alert className="bg-amber-50 border-amber-200 text-amber-800">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <div>
+                <AlertTitle className="text-amber-900 font-semibold">
+                  Digital Library Availability
+                </AlertTitle>
+                <AlertDescription className="text-amber-800 mt-1">
+                  <p className="text-sm leading-relaxed">
+                    <strong>Only</strong> the following subjects are available in the <strong>Digital Library</strong>:
+                  </p>
+                  <ul className="mt-2 ml-4 space-y-1 list-disc">
+                    <li className="text-sm font-mono font-semibold">Math</li>
+                    <li className="text-sm font-mono font-semibold">ELA</li>
+                  </ul>
+                  <p className="text-sm mt-2 text-amber-700">
+                    ⚠️ The subject name must be spelled <strong>exactly</strong> as shown above (case-sensitive).
+                  </p>
+                </AlertDescription>
+              </div>
+            </Alert>
+
+            <div className="grid grid-cols-2 gap-4 py-4">
               <select
                 className="px-2 py-1 bg-white rounded-lg border"
                 value={schoolClass.grade}
