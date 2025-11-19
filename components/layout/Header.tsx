@@ -2,6 +2,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import Cookies from "js-cookie"
 import {  
   ChevronDown, 
   LogOut,
@@ -29,6 +30,7 @@ import { Button } from "../ui/button"
 import { useRequestInfo } from "@/hooks/useRequestInfo"
 import Cropper from "react-cropper"
 import "cropperjs/dist/cropper.css"
+import { useRouter } from "next/navigation"
 
 interface EditSchoolLogoModalProps {
   isOpen: boolean;
@@ -153,6 +155,8 @@ function EditSchoolLogoModal({
       setIsUploading(false);
     }
   };
+
+
 
   const removeLogo = () => {
     // To remove logo, pass empty string
@@ -375,6 +379,7 @@ const getSchoolInitials = (schoolName: string): string => {
 };
 
 export function Header() {
+  const router = useRouter()
   const { schoolData } = useRequestInfo()
   const [isLogoHovered, setIsLogoHovered] = useState(false)
   const [showEditLogo, setShowEditLogo] = useState(false)
@@ -419,6 +424,13 @@ export function Header() {
     if (isSchoolAdmin) {
       setShowEditLogo(true)
     }
+  }
+
+  const handleLogout = () => {
+    Cookies.remove("tenantDomain")
+    Cookies.remove(localStorageKey.ACCESS_TOKEN)
+    localStorage.clear()
+    router.push("/")
   }
 
   const handleLogoUpdate = async (logoBase64: string) => {
@@ -520,12 +532,13 @@ export function Header() {
                 
                 <DropdownMenuSeparator />
                 
-                <DropdownMenuItem 
-                  className={cn(
-                    "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm",
-                    "text-destructive hover:bg-destructive-muted focus:bg-destructive-muted"
-                  )}
-                >
+                <DropdownMenuItem
+                onClick={handleLogout}
+                className={cn(
+                  "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm",
+                  "text-destructive hover:bg-destructive-muted focus:bg-destructive-muted data-[highlighted]:!text-red-600 hover:cursor-pointer"
+                )}
+              >
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-destructive-muted text-destructive">
                     <LogOut className="h-4 w-4" />
                   </div>
