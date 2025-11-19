@@ -456,7 +456,7 @@ export function Header() {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/5"></div>
         
-        <div className="relative pl-4 flex h-16 items-center justify-between gap-4 z-10">
+        <div className="relative px-4 flex h-16 items-center justify-between gap-4 z-10">
           
           <div className="flex items-center gap-3 flex-1">
             <div className="flex items-center gap-2">
