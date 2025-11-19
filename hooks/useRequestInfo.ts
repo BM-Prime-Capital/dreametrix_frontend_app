@@ -29,8 +29,13 @@ export function useRequestInfo() {
         
         if (tenantData) {
           const parsedData = JSON.parse(tenantData);
-          domain =`${(parsedData.primary_domain.startsWith('http') ?  parsedData.primary_domain : `https://${parsedData.primary_domain}`)}`
-          
+       try {
+           domain =`${(parsedData.primary_domain.startsWith('http') ?  parsedData.primary_domain : `https://${parsedData.primary_domain}`)}`
+         
+       } catch (error) {
+        console.error("Error parsing tenant data:", error);
+        domain=parsedData.primary_domain
+       }  
          
          
           schoolData = parsedData; 

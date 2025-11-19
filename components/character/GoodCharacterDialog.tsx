@@ -25,7 +25,7 @@ const GoodCharacterDialog = React.memo(
   }) => {
     const [open, setOpen] = useState(false);
     const currentClass = JSON.parse(
-      localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
+      localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)??'{}'
     );
     const characterList: {
       id: number;

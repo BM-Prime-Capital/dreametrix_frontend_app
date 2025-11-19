@@ -32,7 +32,7 @@ export default function ChildStudyView({ changeView }: ChildStudyViewProps) {
   const { tenantDomain: tenantPrimaryDomain, accessToken, refreshToken } = useRequestInfo();
   //const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
   const currentClass = JSON.parse(
-    localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
+    localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)??'{}'
   );
   
   const [isLoading, setIsLoading] = useState(false);

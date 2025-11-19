@@ -47,7 +47,7 @@ export default function AttendanceFocusedView({
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
   const { id: currentClassId } = JSON.parse(
-    localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
+    localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)??'{}'
   );
 
   useEffect(() => {
