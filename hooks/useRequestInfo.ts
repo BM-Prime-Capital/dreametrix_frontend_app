@@ -25,9 +25,9 @@ function useRequestInfo() {
         
         if (tenantData) {
           const parsedData = JSON.parse(tenantData);
-          domain = parsedData.primary_domain
-            ? `https://${parsedData.primary_domain}`
-            : "";
+          domain =`${(parsedData.primary_domain.startsWith('http') ?  parsedData.primary_domain : `https://${parsedData.primary_domain}`)}`
+          
+         
         }
 
         if (userData) {
