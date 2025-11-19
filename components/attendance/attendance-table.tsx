@@ -87,7 +87,7 @@ export function AttendanceTable({
   const { tenantDomain, accessToken, refreshToken } = useRequestInfo();
   const userData = JSON.parse(localStorage.getItem(localStorageKey.USER_DATA)!);
   const { id: currentClassId } = JSON.parse(
-    localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
+    localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)??'{}'
   );
   const [isUpdating, setIsUpdating] = useState(false);
   const [updatingStudentId, setUpdatingStudentId] = useState<number | null>(null);

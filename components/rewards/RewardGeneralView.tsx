@@ -60,7 +60,7 @@ export default function RewardsGeneralView({
     refreshToken,
   } = useRequestInfo();
   const currentClass = JSON.parse(
-    localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)!
+    localStorage.getItem(localStorageKey.CURRENT_SELECTED_CLASS)??'{}'
   );
 
   const [isLoading, setIsLoading] = useState(false);
