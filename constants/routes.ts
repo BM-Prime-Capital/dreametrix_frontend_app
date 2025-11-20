@@ -2,11 +2,12 @@ import { generalImages, menuImages } from "./images";
 import { userPath } from "./userConstants";
 
 export const StudentRoutes = [
-  // Routes principales
+  // Main routes
   {
     path: `${userPath.STUDENT_BASE_PATH}`,
     icon: generalImages.home,
     label: "HOME",
+    exact: true,
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/classes`,
@@ -18,7 +19,7 @@ export const StudentRoutes = [
     path: `${userPath.STUDENT_BASE_PATH}/assignments`,
     icon: menuImages.assignments,
     label: "ASSIGNMENTS",
-    badge: 3, // Exemple de badge
+    //badge: 3, // Badge example
   },
   {
     path: `${userPath.STUDENT_BASE_PATH}/gradebook`,
