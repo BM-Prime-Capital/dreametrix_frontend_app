@@ -39,6 +39,7 @@ import Swal from 'sweetalert2';
 import { ClassDetailsDialog } from "./ClassDetailsDialog";
 import { Class } from "@/types";
 import { getStudents } from "@/services/student-service";
+import { localStorageKey } from "@/constants/global";
 
 const globalFilterFn: FilterFn<Class> = (row, _columnId, filterValue) => {
   const query = String(filterValue ?? '').toLowerCase();
@@ -132,6 +133,12 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
         // Si on arrive ici, la suppression a réussi (pas d'exception levée)
         // Rafraîchir la liste des classes
         const updatedClasses = await getClasses(tenantDomain, accessToken, refreshToken);
+  try {
+      localStorage.setItem(localStorageKey.ALL_CLASSES, JSON.stringify(updatedClasses));
+  } catch (error) {
+    console.error("Error saving classes to localStorage:", error);
+  }
+        
         setAllClasses(updatedClasses);
 
         await Swal.fire({

@@ -985,7 +985,7 @@ export default function DigitalLibrary() {
     } catch (error) {
       console.log(error)
       setError(
-        "There is a server or internet issue, please try again, if this persits, contact you admin."
+        "There is a server or internet issue, please try again, if this persits, contact your admin."
       );
     }
 
