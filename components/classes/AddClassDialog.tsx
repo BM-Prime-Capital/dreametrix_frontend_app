@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {  ISchoolClass} from "@/types";
+import {  ISchoolClass, Class } from "@/types";
 import { useList } from "@/hooks/useList";
 import { getTeachers } from "@/services/TeacherService";
 import {ALL_GRADES, dayOfTheWeek, localStorageKey} from "@/constants/global";
@@ -138,6 +138,38 @@ export function AddClassDialog({
     // setMessage(null);
   };
 
+  const updateClassesCache = (updatedClass: Class, isNew: boolean) => {
+    if (typeof window === "undefined" || !updatedClass?.id) return;
+    try {
+      const stored = window.localStorage.getItem(localStorageKey.ALL_CLASSES);
+      const parsed: Class[] = stored ? JSON.parse(stored) : [];
+      let updatedList: Class[];
+
+      if (isNew) {
+        const exists = parsed.some(cls => cls.id === updatedClass.id);
+        updatedList = exists
+          ? parsed.map(cls => (cls.id === updatedClass.id ? updatedClass : cls))
+          : [...parsed, updatedClass];
+      } else {
+        let replaced = false;
+        updatedList = parsed.map(cls => {
+          if (cls.id === updatedClass.id) {
+            replaced = true;
+            return updatedClass;
+          }
+          return cls;
+        });
+        if (!replaced) {
+          updatedList = [...updatedList, updatedClass];
+        }
+      }
+
+      window.localStorage.setItem(localStorageKey.ALL_CLASSES, JSON.stringify(updatedList));
+    } catch (error) {
+      console.error("Error updating local classes cache:", error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -209,6 +241,10 @@ export function AddClassDialog({
           markTaskComplete('teacher_create_class');
         }
         
+        if (rep) {
+          updateClassesCache(rep as Class, !existingClass);
+        }
+
         await Swal.fire({
           title: 'Success!',
           text: existingClass

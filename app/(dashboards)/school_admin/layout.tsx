@@ -25,7 +25,6 @@ function SchoolAdminLayoutContent({ children }: { children: React.ReactNode }) {
         {children}
         <OnboardingTour 
           steps={schoolAdminTourSteps}
-          run={false}
         />
       </div>
     </div>

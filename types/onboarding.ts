@@ -43,7 +43,6 @@ export interface OnboardingState {
   isTourRunning: boolean;
   tasks: MandatoryTask[];
   completedTasks: string[];
-  tourSteps: OnboardingStep[];
   lastUpdated: string;
 }
 

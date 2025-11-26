@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   flexRender,
@@ -59,6 +61,15 @@ const globalFilterFn: FilterFn<Class> = (row, _columnId, filterValue) => {
     .map((v) => String(v).toLowerCase());
 
   return haystack.some((text) => text.includes(query));
+};
+
+const persistClassesToLocalStorage = (classes: Class[]) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(localStorageKey.ALL_CLASSES, JSON.stringify(classes));
+  } catch (error) {
+    console.error("Error saving classes to localStorage:", error);
+  }
 };
 
 export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: string, setRefreshTime: (time: string) => void }) {
@@ -133,12 +144,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
         // Si on arrive ici, la suppression a réussi (pas d'exception levée)
         // Rafraîchir la liste des classes
         const updatedClasses = await getClasses(tenantDomain, accessToken, refreshToken);
-  try {
-      localStorage.setItem(localStorageKey.ALL_CLASSES, JSON.stringify(updatedClasses));
-  } catch (error) {
-    console.error("Error saving classes to localStorage:", error);
-  }
-        
+        persistClassesToLocalStorage(updatedClasses);
         setAllClasses(updatedClasses);
 
         await Swal.fire({
@@ -492,6 +498,7 @@ export function ClassesTable({ refreshTime, setRefreshTime }: { refreshTime: str
         ]);
         setAllClasses(classes);
         setAllStudents(students);
+        persistClassesToLocalStorage(classes);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
         await Swal.fire(

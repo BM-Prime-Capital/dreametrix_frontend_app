@@ -2,10 +2,12 @@
 import { useRouter } from 'next/navigation';
 import { useState, useRef } from 'react';
 import { FiSearch, FiUpload, FiChevronRight, FiUser, FiMail, FiAlertCircle, FiAward, FiClock, FiDownload, FiFileText, FiPlus } from 'react-icons/fi';
+import * as XLSX from "xlsx";
 import { useTeachers } from '@/hooks/SchoolAdmin/use-teachers';
 import { useBaseUrl } from '@/hooks/SchoolAdmin/use-base-url';
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { toast } from 'react-toastify';
+import { parseExcelUsers } from '@/services/UserBulkUploadService';
 import CreateTeacherModal from './CreateTeacherModal';
 
 const avatarColors = [
@@ -60,19 +62,24 @@ const TeachersList = () => {
   const handleUpload = async () => {
     if (!selectedFile || !baseUrl) return;
 
-    setIsUploading(true);
-    const formData = new FormData();
-    formData.append('excel_file', selectedFile);
-
     try {
+      setIsUploading(true);
+      const users = await parseExcelUsers(selectedFile, "teacher");
+
+      if (!users.length) {
+        toast.error('No valid teacher rows found in the file.');
+        return;
+      }
+
       const accessToken = localStorage.getItem('accessToken');
       
       const response = await fetch(`${baseUrl}/school-admin/upload-users/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
         },
-        body: formData,
+        body: JSON.stringify({ users }),
       });
 
       if (!response.ok) {
@@ -111,22 +118,19 @@ const TeachersList = () => {
   // };
 
 const downloadTemplate = () => {
-  // Format CORRECT pour l'importation
+  // Format CORRECT pour l'importation (teachers + students) en Excel
   const headers = ['first_name', 'last_name', 'email', 'role', 'grade_levels', 'subjects'];
   const sampleTeacher = ['John', 'Smith', 'john.smith@email.com', 'teacher', '10,11', 'Mathematics'];
   const sampleStudent = ['Jane', 'Doe', 'jane.doe@email.com', 'student', '9', ''];
-  
-  let csvContent = headers.join(',') + '\n';
-  csvContent += sampleTeacher.join(',') + '\n';
-  csvContent += sampleStudent.join(',') + '\n';
-  
-  const blob = new Blob([csvContent], { type: 'text/csv' });
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'users_import_template.csv';
-  a.click();
-  window.URL.revokeObjectURL(url);
+
+  const worksheet = XLSX.utils.aoa_to_sheet([
+    headers,
+    sampleTeacher,
+    sampleStudent,
+  ]);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+  XLSX.writeFile(workbook, "users_import_template.xlsx");
   toast.success('Template downloaded successfully!');
 };
 

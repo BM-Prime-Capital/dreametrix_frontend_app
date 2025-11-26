@@ -34,6 +34,7 @@ import {
   Crop
 } from "lucide-react";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { Skeleton } from "@/components/ui/skeleton";
 import Cropper from "react-cropper";
 import "cropperjs/dist/cropper.css";
@@ -454,6 +455,7 @@ export default function StudentProfile() {
 
   const router = useRouter();
   const { tenantDomain, accessToken } = useRequestInfo();
+  const { markTaskComplete } = useOnboarding();
 
   const handleUpdateProfile = async () => {
     if (!accessToken || !tenantDomain || !userData) return;
@@ -609,6 +611,7 @@ export default function StudentProfile() {
       );
 
       setPasswordSuccess(true);
+      markTaskComplete("change_password");
       setPasswordData({
         current_password: "",
         new_password: "",

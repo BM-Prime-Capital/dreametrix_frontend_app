@@ -941,7 +941,7 @@ export default function DigitalLibrary() {
           selected_class: selected_class,
           generate_answer_sheet: digitalLibrarySheet.generateAnswerSheet,
           include_answer_key: digitalLibrarySheet.includeAnswerKey,
-          teacher_name: userData.username,
+          teacher_name: userData.full_name,
           student_id: [1, 2],
           assignment_type: "Exam",
           number_of_questions: Number.parseInt(
