@@ -33,14 +33,17 @@ const Ruler: React.FC<RulerProps> = ({
   const [unit, setUnit] = useState<"cm" | "in" | "px">("cm");
   const [showMeasurements, setShowMeasurements] = useState(true);
   const rulerRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const [isLocked, setIsLocked] = useState(false);
   const [isTransparent, setIsTransparent] = useState(false);
   const [rotation, setRotation] = useState(initialRotation);
   const magneticSnap = true; // always snap rotation to clean increments
   const zoom = 1; // fixed zoom for simple physical look
+  const [hoverPosition, setHoverPosition] = useState<number | null>(null);
+  const [hoverValue, setHoverValue] = useState<number | null>(null);
   const [isCompact, setIsCompact] = useState(false);
-  const [rulerLength, setRulerLength] = useState(600); // Enhanced length control
-  const [rulerHeight, setRulerHeight] = useState(70); // Default thinner ruler height
+  const [rulerLength, setRulerLength] = useState(700); // Enhanced length control
+  const [rulerHeight, setRulerHeight] = useState(80); // Default thinner ruler height
   const [showControls, setShowControls] = useState(false); // Toggle controls visibility - closed by default
 
   const rulerBodyPadding = 3;
@@ -196,6 +199,7 @@ const Ruler: React.FC<RulerProps> = ({
           for (let j = 1; j < 1 / minorUnitValue; j++) {
             const minorPosition = position + j * minorUnitValue * pixelsPerUnit;
             if (minorPosition < drawableLength - 1) {
+              const isMidBetweenMajor = j % 5 === 0; // e.g. 0.5 cm when minor step = 0.1
               marks.push(
                 <div
                   key={`minor-${i}-${j}`}
@@ -204,23 +208,25 @@ const Ruler: React.FC<RulerProps> = ({
                     ...(isHorizontal
                       ? {
                           left: `${minorPosition}px`,
-                          top: "25%",
-                          height: "50%",
+                          top: isMidBetweenMajor ? "18%" : "30%",
+                          height: isMidBetweenMajor ? "64%" : "40%",
                           width: "2px",
                         }
                       : {
                           top: `${minorPosition}px`,
-                          left: "25%",
-                          width: "50%",
+                          left: isMidBetweenMajor ? "18%" : "30%",
+                          width: isMidBetweenMajor ? "64%" : "40%",
                           height: "2px",
                         }),
                     background:
-                      j % 5 === 0
+                      isMidBetweenMajor
                         ? "linear-gradient(180deg, #4b5563 0%, #111827 60%, #4b5563 100%)"
-                        : "linear-gradient(180deg, #9ca3af 0%, #4b5563 60%, #9ca3af 100%)",
+                        : "linear-gradient(180deg, #d1d5db 0%, #9ca3af 60%, #e5e7eb 100%)",
                     borderRadius: "1px",
                     boxShadow:
-                      "inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.3)",
+                      isMidBetweenMajor
+                        ? "inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.35)"
+                        : "inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.25)",
                   }}
                 />
               );
@@ -228,6 +234,27 @@ const Ruler: React.FC<RulerProps> = ({
           }
         }
       }
+    }
+    // Center reference line
+    if (drawableLength > 0) {
+      const centerPosition = drawableLength / 2;
+      marks.push(
+        <div
+          key="center-reference"
+          className="absolute"
+          style={{
+            left: `${centerPosition}px`,
+            top: "0",
+            height: "100%",
+            width: "2px",
+            background:
+              "linear-gradient(180deg, rgba(239,68,68,0.7) 0%, rgba(185,28,28,0.9) 60%, rgba(239,68,68,0.7) 100%)",
+            boxShadow: "0 0 4px rgba(248,113,113,0.6)",
+            opacity: 0.5,
+            pointerEvents: "none",
+          }}
+        />
+      );
     }
     return marks;
   };
@@ -325,8 +352,65 @@ const Ruler: React.FC<RulerProps> = ({
               background: "linear-gradient(180deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%)",
               boxShadow: "inset 0 0 2px rgba(0, 0, 0, 0.1)"
             }}
+            ref={bodyRef}
+            onMouseMove={(e) => {
+              if (!bodyRef.current) return;
+              const rect = bodyRef.current.getBoundingClientRect();
+              const x = e.clientX - rect.left - rulerBodyPadding;
+              if (x < 0 || x > rect.width - rulerBodyPadding * 2) {
+                setHoverPosition(null);
+                setHoverValue(null);
+                return;
+              }
+              const value = x / pixelsPerUnit;
+              setHoverPosition(x + rulerBodyPadding);
+              setHoverValue(value);
+            }}
+            onMouseLeave={() => {
+              setHoverPosition(null);
+              setHoverValue(null);
+            }}
           >
-            <div className="relative w-full h-full">{renderMarks()}</div>
+            <div className="relative w-full h-full">
+              {renderMarks()}
+              {/* Hover measurement helper */}
+              {hoverPosition !== null && hoverValue !== null && (
+                <>
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: hoverPosition,
+                      top: 0,
+                      height: "100%",
+                      width: "1px",
+                      background: "rgba(59,130,246,0.9)",
+                      boxShadow: "0 0 4px rgba(59,130,246,0.6)",
+                      pointerEvents: "none",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: hoverPosition + 4,
+                      top: 4,
+                      fontSize: "10px",
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                      background: "rgba(15,23,42,0.9)",
+                      color: "#f9fafb",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.25)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {unit === "cm"
+                      ? `${hoverValue.toFixed(1)} cm`
+                      : unit === "in"
+                      ? `${hoverValue.toFixed(2)} in`
+                      : `${Math.round(hoverValue)} px`}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Toggle Controls Button */}
