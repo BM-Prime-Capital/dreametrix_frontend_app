@@ -1872,7 +1872,7 @@ export default function DigitalLibrary() {
                 grade: digitalLibrarySheet.grade,
                 questionType: digitalLibrarySheet.questionType,
                 numberOfQuestions: digitalLibrarySheet.noOfQuestions,
-                teacherName: userData?.username,
+                teacherName: userData?.full_name,
                 assignmentName: assignmentContext?.assignmentName || undefined,
                 dueDate: assignmentContext?.dueDate || undefined,
                 isPublished: assignmentContext?.published === "true" || false,
