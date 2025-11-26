@@ -95,13 +95,13 @@ const GoodCharacterDialog = React.memo(
       }));
     };
 
-    // Handle Select All change
-    const handleSelectAllChange = () => {
-      const newCheckedState = !selectAll;
-      setCheckedItems(
-        Object.fromEntries(allItems.map((item) => [item, newCheckedState]))
-      );
-    };
+    // Handle Select All change - REMOVED
+    // const handleSelectAllChange = () => {
+    //   const newCheckedState = !selectAll;
+    //   setCheckedItems(
+    //     Object.fromEntries(allItems.map((item) => [item, newCheckedState]))
+    //   );
+    // };
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -163,7 +163,7 @@ const GoodCharacterDialog = React.memo(
             <Image src={teacherImages.up} width={20} height={20} alt="up" />
           </span>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden">
+        <DialogContent className="sm:max-w-[800px] max-h-[95vh] overflow-hidden">
           <form className="flex flex-col h-full" onSubmit={handleSubmit}>
             {/* Enhanced Header */}
             <div className="bg-gradient-to-r from-green-500 to-emerald-600 -m-6 mb-6 p-6 text-white">
@@ -236,28 +236,9 @@ const GoodCharacterDialog = React.memo(
               
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                 <div className="space-y-4">
-                  {!isReadOnly && (
-                    <label className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors">
-                      <input
-                        className="hidden"
-                        type="checkbox"
-                        checked={selectAll}
-                        onChange={handleSelectAllChange}
-                      />
-                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                        selectAll ? 'bg-green-500 border-green-500' : 'border-gray-300'
-                      }`}>
-                        {selectAll && (
-                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </div>
-                      <span className="font-medium text-gray-700">Select All Traits</span>
-                    </label>
-                  )}
+                  {/* Select All option removed */}
 
-                  <div className="max-h-64 overflow-y-auto space-y-2 pr-2">
+                  <div className="grid grid-cols-3 gap-3 max-h-64 overflow-y-auto">
                     {allItems.map((item, index) => (
                       <label key={index} className={`flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 transition-all duration-200 ${
                         !isReadOnly ? 'cursor-pointer hover:bg-green-50 hover:border-green-200' : 'opacity-60'
@@ -278,7 +259,7 @@ const GoodCharacterDialog = React.memo(
                             </svg>
                           )}
                         </div>
-                        <span className={`font-medium ${isReadOnly ? 'text-gray-500' : 'text-gray-700'}`}>
+                        <span className={`font-medium text-sm ${isReadOnly ? 'text-gray-500' : 'text-gray-700'}`}>
                           {item}
                         </span>
                       </label>
