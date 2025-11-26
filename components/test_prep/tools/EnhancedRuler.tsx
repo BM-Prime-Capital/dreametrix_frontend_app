@@ -1,31 +1,16 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useState, useRef, useMemo } from "react";
 import Draggable from "react-draggable";
 import {
   X,
-  MoveHorizontal,
-  MoveVertical,
   Eye,
   EyeOff,
   Lock,
   Unlock,
   Layers,
-  RefreshCw,
   RotateCw,
   RotateCcw,
   Compass,
-  CornerDownLeft,
-  ZoomIn,
-  ZoomOut,
-  Grid3X3,
-  Target,
   Settings,
-  Magnet,
   Plus,
   Minus,
   Minimize2,
@@ -43,40 +28,22 @@ const Ruler: React.FC<RulerProps> = ({
   initialPosition,
   initialRotation = 0,
 }) => {
-  const [isHorizontal, setIsHorizontal] = useState(true);
+  // Ruler is always rendered horizontally; rotation handles other angles
+  const isHorizontal = true;
   const [unit, setUnit] = useState<"cm" | "in" | "px">("cm");
   const [showMeasurements, setShowMeasurements] = useState(true);
-  const [bodySize, setBodySize] = useState({ width: 0, height: 0 });
-  const bodyRef = useRef<HTMLDivElement>(null);
   const rulerRef = useRef<HTMLDivElement>(null);
   const [isLocked, setIsLocked] = useState(false);
   const [isTransparent, setIsTransparent] = useState(false);
   const [rotation, setRotation] = useState(initialRotation);
-  const [isRotating, setIsRotating] = useState(false);
-  const [showRotationControls, setShowRotationControls] = useState(false);
-  const [startAngle, setStartAngle] = useState(0);
-  const [customAngle, setCustomAngle] = useState("");
-  const [magneticSnap, setMagneticSnap] = useState(false);
-  const [showGrid, setShowGrid] = useState(false);
-  const [zoom, setZoom] = useState(1);
-  const [showAdvancedControls, setShowAdvancedControls] = useState(false);
+  const magneticSnap = true; // always snap rotation to clean increments
+  const zoom = 1; // fixed zoom for simple physical look
   const [isCompact, setIsCompact] = useState(false);
   const [rulerLength, setRulerLength] = useState(600); // Enhanced length control
-  const [rulerHeight, setRulerHeight] = useState(80); // Enhanced height control
+  const [rulerHeight, setRulerHeight] = useState(70); // Default thinner ruler height
   const [showControls, setShowControls] = useState(false); // Toggle controls visibility - closed by default
 
   const rulerBodyPadding = 3;
-
-  // Normalize angle to 0-360 range
-  const normalizeAngle = (angle: number): number => {
-    const normalized = angle % 360;
-    return normalized < 0 ? normalized + 360 : normalized;
-  };
-
-  // Format angle for display
-  const formatAngle = (angle: number): string => {
-    return `${Math.round(normalizeAngle(angle))}°`;
-  };
 
   const toggleUnit = () => {
     if (isLocked) return;
@@ -94,12 +61,6 @@ const Ruler: React.FC<RulerProps> = ({
 
   const toggleLock = () => setIsLocked(!isLocked);
   const toggleTransparency = () => setIsTransparent(!isTransparent);
-  const toggleRotationControls = () =>
-    setShowRotationControls(!showRotationControls);
-  const toggleAdvancedControls = () =>
-    setShowAdvancedControls(!showAdvancedControls);
-  const toggleMagneticSnap = () => setMagneticSnap(!magneticSnap);
-  const toggleGrid = () => setShowGrid(!showGrid);
   const toggleCompact = () => setIsCompact(!isCompact);
   const toggleControls = () => setShowControls(!showControls);
 
@@ -128,143 +89,9 @@ const Ruler: React.FC<RulerProps> = ({
     });
   };
 
-  const snapToAngle = (angle: number) => {
-    if (isLocked) return;
-    setRotation(angle);
-  };
-
-  const setCustomAngleValue = () => {
-    if (isLocked || !customAngle) return;
-    const angle = parseFloat(customAngle);
-    if (!isNaN(angle)) {
-      setRotation(angle);
-      setCustomAngle("");
-    }
-  };
-
   const snapToNearestIncrement = (angle: number, increment: number = 15) => {
     return Math.round(angle / increment) * increment;
   };
-
-  const adjustZoom = (delta: number) => {
-    setZoom((prev) => Math.max(0.5, Math.min(2, prev + delta)));
-  };
-
-  const calculateAngle = (
-    centerX: number,
-    centerY: number,
-    mouseX: number,
-    mouseY: number
-  ) => {
-    return (Math.atan2(mouseY - centerY, mouseX - centerX) * 180) / Math.PI;
-  };
-
-  // Enhanced rotation handling from simple ruler with requestAnimationFrame
-  const handleRotationStart = useCallback(
-    (
-      e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
-    ) => {
-      if (isLocked || !rulerRef.current) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-      setIsRotating(true);
-
-      const rulerRect = rulerRef.current.getBoundingClientRect();
-      const centerX = rulerRect.left + rulerRect.width / 2;
-      const centerY = rulerRect.top + rulerRect.height / 2;
-
-      let clientX, clientY;
-      if (e.nativeEvent instanceof MouseEvent) {
-        clientX = e.nativeEvent.clientX;
-        clientY = e.nativeEvent.clientY;
-      } else if (
-        e.nativeEvent instanceof TouchEvent &&
-        e.nativeEvent.touches[0]
-      ) {
-        clientX = e.nativeEvent.touches[0].clientX;
-        clientY = e.nativeEvent.touches[0].clientY;
-      } else {
-        return;
-      }
-
-      const initialAngle = calculateAngle(centerX, centerY, clientX, clientY);
-      setStartAngle(initialAngle - rotation);
-    },
-    [isLocked, rulerRef, rotation]
-  );
-
-  const handleRotationMove = useCallback(
-    (e: MouseEvent | TouchEvent) => {
-      if (!isRotating || !rulerRef.current) return;
-
-      e.preventDefault();
-
-      const rulerRect = rulerRef.current.getBoundingClientRect();
-      const centerX = rulerRect.left + rulerRect.width / 2;
-      const centerY = rulerRect.top + rulerRect.height / 2;
-
-      let clientX, clientY;
-      if (e instanceof MouseEvent) {
-        clientX = e.clientX;
-        clientY = e.clientY;
-      } else if (e instanceof TouchEvent && e.touches[0]) {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-      } else {
-        return;
-      }
-
-      const currentAngle = calculateAngle(centerX, centerY, clientX, clientY);
-      const newRotation = currentAngle - startAngle;
-      const finalRotation = magneticSnap
-        ? snapToNearestIncrement(newRotation)
-        : newRotation;
-
-      // Use requestAnimationFrame for smoother rotation
-      requestAnimationFrame(() => {
-        setRotation(finalRotation);
-      });
-    },
-    [isRotating, rulerRef, startAngle, magneticSnap]
-  );
-
-  const handleRotationEnd = useCallback(() => {
-    setIsRotating(false);
-  }, []);
-
-  useEffect(() => {
-    if (isRotating) {
-      const handleMove = (e: Event) =>
-        handleRotationMove(e as MouseEvent | TouchEvent);
-      const handleEnd = () => handleRotationEnd();
-
-      document.addEventListener("mousemove", handleMove);
-      document.addEventListener("mouseup", handleEnd);
-      document.addEventListener("touchmove", handleMove, { passive: false });
-      document.addEventListener("touchend", handleEnd);
-      document.body.style.userSelect = "none";
-
-      return () => {
-        document.removeEventListener("mousemove", handleMove);
-        document.removeEventListener("mouseup", handleEnd);
-        document.removeEventListener("touchmove", handleMove);
-        document.removeEventListener("touchend", handleEnd);
-        document.body.style.userSelect = "";
-      };
-    } else {
-      document.body.style.userSelect = "";
-    }
-  }, [isRotating, handleRotationMove, handleRotationEnd]);
-
-  useEffect(() => {
-    if (bodyRef.current) {
-      setBodySize({
-        width: bodyRef.current.offsetWidth,
-        height: bodyRef.current.offsetHeight,
-      });
-    }
-  }, [isHorizontal, unit, bodyRef.current, isCompact, rulerLength]);
 
   // Use rulerLength instead of bodySize for dynamic length
   const length = isHorizontal ? rulerLength : rulerLength;
@@ -272,26 +99,24 @@ const Ruler: React.FC<RulerProps> = ({
   let pixelsPerUnit: number;
   let majorUnitValue: number;
   let minorUnitValue: number;
-  let subMinorUnitValue: number;
   let unitLabel: string;
 
   if (unit === "cm") {
     pixelsPerUnit = 37.8;
     majorUnitValue = 1;
-    minorUnitValue = 0.5;
-    subMinorUnitValue = 0.1;
+    // 0.1 cm spacing to show 10 graduations between each centimeter
+    minorUnitValue = 0.1;
     unitLabel = "CM";
   } else if (unit === "in") {
     pixelsPerUnit = 96;
     majorUnitValue = 1;
-    minorUnitValue = 0.25;
-    subMinorUnitValue = 0.125;
+    // 1/8 inch spacing to show more graduations between each inch
+    minorUnitValue = 0.125;
     unitLabel = "IN";
   } else {
     pixelsPerUnit = 1;
     majorUnitValue = 100;
     minorUnitValue = 50;
-    subMinorUnitValue = 10;
     unitLabel = "PX";
   }
 
@@ -312,7 +137,7 @@ const Ruler: React.FC<RulerProps> = ({
       const position = i * majorUnitValue * pixelsPerUnit;
       if (position > drawableLength + 1) break;
 
-      // Enhanced major marks with modern styling
+      // Major marks styled like etched metal
       marks.push(
         <div
           key={`major-${i}`}
@@ -332,10 +157,10 @@ const Ruler: React.FC<RulerProps> = ({
                   height: "3px",
                 }),
             background:
-              "linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%)",
-            borderRadius: "2px",
+              "linear-gradient(180deg, #4b5563 0%, #111827 40%, #4b5563 100%)",
+            borderRadius: "1px",
             boxShadow:
-              "0 2px 4px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1)",
+              "inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.4)",
           }}
         >
           {showMeasurements && i * majorUnitValue > 0 && (
@@ -343,16 +168,11 @@ const Ruler: React.FC<RulerProps> = ({
               style={{
                 position: "absolute",
                 fontSize: "12px",
-                fontWeight: "700",
-                color: "#1f2937",
-                background:
-                  "linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.95) 100%)",
-                padding: "2px 6px",
-                borderRadius: "5px",
-                boxShadow:
-                  "0 2px 6px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6)",
-                border: "1px solid rgba(0,0,0,0.06)",
-                backdropFilter: "blur(6px)",
+                fontWeight: "600",
+                letterSpacing: "0.02em",
+                color: "#111827",
+                textShadow:
+                  "0 1px 0 rgba(255,255,255,0.7), 0 -1px 0 rgba(0,0,0,0.4)",
                 whiteSpace: "nowrap",
                 ...(isHorizontal
                   ? { top: "4px", left: "4px", transform: "none" }
@@ -396,52 +216,14 @@ const Ruler: React.FC<RulerProps> = ({
                         }),
                     background:
                       j % 5 === 0
-                        ? "linear-gradient(135deg, #4b5563 0%, #6b7280 100%)"
-                        : "linear-gradient(135deg, #9ca3af 0%, #d1d5db 100%)",
+                        ? "linear-gradient(180deg, #4b5563 0%, #111827 60%, #4b5563 100%)"
+                        : "linear-gradient(180deg, #9ca3af 0%, #4b5563 60%, #9ca3af 100%)",
                     borderRadius: "1px",
                     boxShadow:
-                      j % 5 === 0
-                        ? "0 1px 2px rgba(0,0,0,0.1)"
-                        : "0 1px 1px rgba(0,0,0,0.05)",
+                      "inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.3)",
                   }}
                 />
               );
-
-              // Add half-unit labels for better readability
-              if (j === 5 && showMeasurements) {
-                marks.push(
-                  <div
-                    key={`half-${i}-${j}`}
-                    style={{
-                      position: "absolute",
-                      fontSize: "10px",
-                      fontWeight: "600",
-                      color: "#6b7280",
-                      background:
-                        "linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(248,250,252,0.88) 100%)",
-                      padding: "1px 4px",
-                      borderRadius: "3px",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-                      whiteSpace: "nowrap",
-                      ...(isHorizontal
-                        ? {
-                            top: `${minorPosition}px`,
-                            left: "100%",
-                            transform: "translateY(-50%)",
-                            marginLeft: "2px",
-                          }
-                        : {
-                            left: `${minorPosition}px`,
-                            top: "100%",
-                            transform: "translateX(-50%)",
-                            marginTop: "2px",
-                          }),
-                    }}
-                  >
-                    {i + 0.5}
-                  </div>
-                );
-              }
             }
           }
         }
@@ -464,7 +246,7 @@ const Ruler: React.FC<RulerProps> = ({
     <Draggable
       handle=".ruler-draggable"
       defaultPosition={initialPosition || { x: 150, y: 150 }}
-      disabled={isLocked || isRotating}
+      disabled={isLocked}
       nodeRef={rulerRef}
     >
       <div
@@ -472,82 +254,54 @@ const Ruler: React.FC<RulerProps> = ({
         style={{
           cursor: isLocked
             ? "not-allowed"
-            : isRotating
-            ? "grabbing"
             : "default",
           zIndex: 9999,
           position: "absolute",
         }}
       >
-        {/* Conteneur interne pour la rotation et le zoom */}
+        {/* Inner container for rotation and zoom */}
         <div
-          className={`ruler-draggable bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-slate-300 shadow-2xl flex ${
+          className={`ruler-draggable flex ${
             isHorizontal ? "flex-row" : "flex-col"
-          } rounded-xl overflow-visible group ${
+          } overflow-visible group ${
             isTransparent ? "opacity-60" : "opacity-100"
-          } backdrop-blur-sm ${
-            isLocked ? "cursor-not-allowed" : "cursor-move"
-          }`}
+          } ${isLocked ? "cursor-not-allowed" : "cursor-move"}`}
           style={{
             ...rulerSize,
             transform: `rotate(${rotation}deg) scale(${zoom})`,
             transformOrigin: "center center",
-            transition: isRotating
-              ? "none"
-              : "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            boxShadow:
-              "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)",
+            transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            // Metallic silver/gray appearance with realistic shadows and slight brushed texture
+            background:
+              "linear-gradient(135deg, #e5e7eb 0%, #d1d5db 25%, #9ca3af 50%, #d1d5db 75%, #e5e7eb 100%)",
+            border: "1px solid #6b7280",
+            borderRadius: "4px",
+            boxShadow: `
+              0 4px 8px rgba(0, 0, 0, 0.2),
+              0 2px 4px rgba(0, 0, 0, 0.15),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3),
+              inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+              0 0 0 1px rgba(0, 0, 0, 0.05)
+            `,
           }}
         >
-          {/* Enhanced Rotation Handle */}
-          {!isRotating && (
-            <div
-              onMouseDown={handleRotationStart}
-              onTouchStart={handleRotationStart}
-              style={{
-                position: "absolute",
-                top: isHorizontal ? "-50px" : "calc(50% - 25px)",
-                left: isHorizontal ? "calc(50% - 25px)" : "-50px",
-                cursor: isRotating ? "grabbing" : "grab",
-                zIndex: 10001,
-                width: "50px",
-                height: "50px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-              className={`rotation-handle rounded-full border-3 transition-all duration-300 hover:scale-110 ${
-                magneticSnap
-                  ? "bg-gradient-to-br from-emerald-400 to-emerald-600 border-emerald-300 shadow-emerald-500/25"
-                  : "bg-gradient-to-br from-blue-400 to-blue-600 border-blue-300 shadow-blue-500/25"
-              } shadow-xl backdrop-blur-sm`}
-              title={`Rotation: ${formatAngle(rotation)}${
-                magneticSnap ? " (Snap Mode)" : ""
-              }`}
-            >
-              <RefreshCw
-                size={24}
-                className="text-white drop-shadow-sm"
-                style={{
-                  transform: `rotate(${rotation}deg)`,
-                  transformOrigin: "center",
-                  filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))",
-                }}
-              />
-            </div>
-          )}
-
           {/* Simplified Header - Only Unit Control */}
           <div
-            className={`ruler-header bg-gradient-to-br from-slate-600 to-slate-700 p-3 flex items-center justify-center text-xs ${
+            className={`ruler-header p-3 flex items-center justify-center text-xs ${
               isHorizontal ? "w-16 h-full flex-col" : "h-16 w-full flex-row"
-            } rounded-l-xl overflow-hidden`}
-            style={{ zIndex: 10000 }}
+            } overflow-hidden`}
+            style={{ 
+              zIndex: 10000,
+              background: "linear-gradient(135deg, #4b5563 0%, #374151 50%, #4b5563 100%)",
+              borderRight: isHorizontal ? "2px solid #1f2937" : "none",
+              borderBottom: !isHorizontal ? "2px solid #1f2937" : "none",
+              boxShadow: "inset 0 1px 2px rgba(0, 0, 0, 0.2)"
+            }}
           >
             {/* Unit Control Only */}
             <button
               onClick={toggleUnit}
-              className="bg-white/20 rounded-md px-2 py-1 hover:bg-white/30 transition-colors"
+              className="bg-white/10 rounded px-2 py-1 hover:bg-white/20 transition-colors border border-white/20"
               title={`Changer vers ${
                 unit === "cm"
                   ? "pouces"
@@ -561,14 +315,15 @@ const Ruler: React.FC<RulerProps> = ({
             </button>
           </div>
 
-          {/* Enhanced Ruler Body */}
+          {/* Ruler body */}
           <div
-            ref={bodyRef}
-            className="flex-grow relative overflow-hidden bg-gradient-to-br from-white to-slate-50 rounded-r-xl"
+            className="flex-grow relative overflow-hidden"
             style={{
               padding: `${rulerBodyPadding}px`,
               width: isHorizontal ? `${rulerLength - 64}px` : "100%",
               height: isHorizontal ? "100%" : `${rulerLength - 64}px`,
+              background: "linear-gradient(180deg, #f3f4f6 0%, #e5e7eb 50%, #f3f4f6 100%)",
+              boxShadow: "inset 0 0 2px rgba(0, 0, 0, 0.1)"
             }}
           >
             <div className="relative w-full h-full">{renderMarks()}</div>

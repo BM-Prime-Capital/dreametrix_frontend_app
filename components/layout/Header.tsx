@@ -385,7 +385,7 @@ export function Header() {
   const [showEditLogo, setShowEditLogo] = useState(false)
   const [schoolLogo, setSchoolLogo] = useState<string | null>(null)
 
-  const getUserData = (): { full_name: string, role: string } => {
+  const getUserData = (): { full_name: string; role: string; id?: number | string } => {
     if (typeof window === 'undefined') return { full_name: "Guest", role: "Guest" }
     
     try {
@@ -429,7 +429,20 @@ export function Header() {
   const handleLogout = () => {
     Cookies.remove("tenantDomain")
     Cookies.remove(localStorageKey.ACCESS_TOKEN)
-    localStorage.clear()
+    Cookies.remove(localStorageKey.REFRESH_TOKEN)
+
+    if (typeof window !== "undefined") {
+      const preservedPrefixes = ["onboarding_state_"];
+      for (let i = window.localStorage.length - 1; i >= 0; i -= 1) {
+        const key = window.localStorage.key(i);
+        if (!key) continue;
+        const shouldPreserve = preservedPrefixes.some(prefix => key.startsWith(prefix));
+        if (!shouldPreserve) {
+          window.localStorage.removeItem(key);
+        }
+      }
+    }
+
     router.push("/")
   }
 
