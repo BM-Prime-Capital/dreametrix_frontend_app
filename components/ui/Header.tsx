@@ -1,6 +1,7 @@
 // import {BookOpen, LucideIcon} from "lucide-react";
-import PageTitleH1 from "@/components/ui/page-title-h1";
+// import PageTitleH1 from "@/components/ui/page-title-h1";
 import {FC, ReactNode} from "react";
+import PageTitleH1 from "@/components/ui/page-title-h1";
 
 
 type headerTypes = {
@@ -19,6 +20,7 @@ export const Header:FC<headerTypes> =({title, description, icon})=>{
                 </div>
                 <div>
                     <PageTitleH1 title={title} className="text-white font-bold text-2xl"/>
+
                     <p className="text-blue-100 text-sm mt-1">
                         {description}
                     </p>

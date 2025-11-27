@@ -11,26 +11,26 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute = ({ children, allowedUserTypes }: ProtectedRouteProps) => {
   const [isLoading, setIsLoading] = useState(true);
-  
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1000);
-    
+    }, 5000);
+
     return () => clearTimeout(timer);
   }, []);
-  
+
   useAuth(allowedUserTypes);
-  
+
   if (isLoading) {
     return (
         <div className="flex justify-center items-center min-h-screen">
-           
+
             <Loader/>
       </div>
-       
+
       );
   }
-  
+
   return <>{children}</>;
 };
