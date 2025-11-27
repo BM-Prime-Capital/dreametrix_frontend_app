@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -9,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, AlertCircle } from "lucide-react";
+import { Pencil, AlertCircle, Search, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Select,
@@ -64,6 +65,15 @@ const schoolClassInit: ISchoolClass = {
   students: [],
 };
 
+const SUBJECT_OPTIONS = [
+  "Math", 
+  "ELA", 
+  "History", 
+  "Physical Education", 
+  "Geography", 
+  "Science"
+];
+
 export function AddClassDialog({
   setRefreshTime,
   existingClass,
@@ -88,15 +98,14 @@ export function AddClassDialog({
   // } | null>(null);
   const [areGradesLoading, setAreGradesLoading] = useState(true);
 
-  // const [schoolClass, setSchoolClass] = useState<ISchoolClass>(
-  //   existingClass ? existingClass : schoolClassInit
-  // );
-
-  // const [schoolClass, setSchoolClass] = useState<ISchoolClass>(schoolClassInit);
   const [schoolClass, setSchoolClass] = useState<ISchoolClass>(schoolClassInit);
-
-
   const [classDays, setClassDays] = useState<ClassDay[]>([]);
+  
+  // États pour le select avec recherche
+  const [subjectOptions, setSubjectOptions] = useState<string[]>(SUBJECT_OPTIONS);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [customSubject, setCustomSubject] = useState("");
+  const [isAddingCustom, setIsAddingCustom] = useState(false);
 
   const addNewClassDay = (e: any) => {
     e.preventDefault();
@@ -111,8 +120,6 @@ export function AddClassDialog({
       },
     ]);
   };
-
-
 
   const handleClassDayChange = (
     classDayId: number,
@@ -130,12 +137,13 @@ export function AddClassDialog({
     setClassDays(classDays.filter((day) => day.id !== id));
   };
 
-
   const resetForm = () => {
     setSchoolClass(schoolClassInit);
     setClassDays([]);
     setStudents([]);
-    // setMessage(null);
+    setSearchQuery("");
+    setCustomSubject("");
+    setIsAddingCustom(false);
   };
 
   const updateClassesCache = (updatedClass: Class, isNew: boolean) => {
@@ -170,6 +178,49 @@ export function AddClassDialog({
     }
   };
 
+  const handleAddCustomSubject = (subject: string) => {
+    if (subject.trim() && !subjectOptions.includes(subject.trim())) {
+      const newSubject = subject.trim();
+      setSubjectOptions([...subjectOptions, newSubject]);
+      setSchoolClass({
+        ...schoolClass,
+        subject_in_short: newSubject,
+      });
+      setSearchQuery("");
+      setIsAddingCustom(false);
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    }
+  };
+
+  const filteredSubjects = subjectOptions.filter(subject =>
+    subject.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleSubjectSelect = (value: string) => {
+    setSchoolClass({
+      ...schoolClass,
+      subject_in_short: value,
+    });
+    setSearchQuery("");
+    setIsAddingCustom(false);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    
+    const exists = subjectOptions.some(option => 
+      option.toLowerCase() === value.toLowerCase()
+    );
+    
+    if (value && !exists) {
+      setIsAddingCustom(true);
+      setCustomSubject(value);
+    } else {
+      setIsAddingCustom(false);
+      setCustomSubject("");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -199,7 +250,7 @@ export function AddClassDialog({
         ...schoolClass,
         students: studentIds, // Send as array of IDs to backend
         hours_and_dates_of_course_schedule: convertToClassSchedule(classDays),
-        name: `Class ${schoolClass.grade} - ${schoolClass.subject_in_short}`,
+        subject_in_all_letter: schoolClass.name,
       };
 
       // Show loading only after validations pass (do not await)
@@ -217,7 +268,7 @@ export function AddClassDialog({
 
       if (!rep) {
         await Swal.close();
-        setOpen(false); // Fermer le modal de mise à jour
+        setOpen(false); 
         await Swal.fire({
           title: 'Error!',
           text: existingClass
@@ -233,8 +284,8 @@ export function AddClassDialog({
         });
       } else {
         await Swal.close();
-        setOpen(false); // Close the update modal
-        setOpen(false); // Fermer le modal de mise à jour
+        setOpen(false);
+        setOpen(false); 
         
         // Mark class creation task as complete for new classes
         if (!existingClass) {
@@ -259,7 +310,6 @@ export function AddClassDialog({
           confirmButtonColor: '#3085d6',
         });
 
-
         setRefreshTime(new Date().toISOString());
         if (!existingClass) {
           resetForm();
@@ -268,8 +318,7 @@ export function AddClassDialog({
       }
     } catch (error) {
       await Swal.close();
-      setOpen(false); // Fermer le modal de mise à jour
-      // Friendlier error for no students in selected grade
+      setOpen(false); 
       const rawMessage = error instanceof Error ? error.message : 'An unknown error occurred';
       const friendlyMessage = /no students available for this grade/i.test(rawMessage)
         ? "No students available for this grade. Add students or choose another grade."
@@ -286,32 +335,9 @@ export function AddClassDialog({
         confirmButtonColor: '#3085d6',
       });
     } finally {
-      Swal.close(); // Fermer l'alerte de chargement
+      Swal.close(); 
       setIsSubmitting(false);
     }
-  };
-
-
-
-  const handleSubjectChange = async (value: string) => {
-    const fullSubject = (subjects as Subject[])?.find(
-      (sub: Subject) => sub.short_name === value
-    )?.name || value;
-
-    setSchoolClass({
-      ...schoolClass,
-      subject_in_short: value,
-      subject_in_all_letter: fullSubject,
-    });
-
-    const grades = await getGrades(
-      value,
-      tenantDomain,
-      accessToken,
-      refreshToken
-    );
-    setGrades(grades);
-    setAreGradesLoading(false);
   };
 
   const fetchStudentsByGrade = async (grade: string) => {
@@ -352,6 +378,11 @@ export function AddClassDialog({
       });
       setClassDays(convertToClassDays(existingClass.hours_and_dates_of_course_schedule));
 
+      // Ajouter le sujet existant aux options s'il n'existe pas
+      if (existingClass.subject_in_short && !subjectOptions.includes(existingClass.subject_in_short)) {
+        setSubjectOptions([...subjectOptions, existingClass.subject_in_short]);
+      }
+
       // Chargez les étudiants si nécessaire
       if (existingClass.grade) {
         fetchStudentsByGrade(existingClass.grade);
@@ -361,6 +392,9 @@ export function AddClassDialog({
       setSchoolClass(schoolClassInit);
       setClassDays([]);
       setStudents([]);
+      setSearchQuery("");
+      setCustomSubject("");
+      setIsAddingCustom(false);
     }
   }, [open, existingClass]);
 
@@ -375,7 +409,7 @@ export function AddClassDialog({
             tenantDomain,
             accessToken,
             refreshToken
-          ) || []; //  Add a fallback value
+          ) || [];
           setGrades(grades);
         } catch (error) {
           console.error("Error loading grades:", error);
@@ -394,7 +428,7 @@ export function AddClassDialog({
       if (schoolClass.grade) {
         fetchStudentsByGrade(schoolClass.grade);
       }
-    }, 500); // Délai de 500ms
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [schoolClass.grade]);
@@ -409,32 +443,31 @@ export function AddClassDialog({
         ) : (
           <Button className="gap-2 text-base bg-[#f59e0b] hover:bg-[#f59e0b]/90 text-white rounded-xl px-5 py-4 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] group">
             <div className="relative flex items-center justify-center">
-                 <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="w-7 h-7 transform group-hover:rotate-180 transition-transform duration-300"
-                >
-                  <path
-                    d="M12 5V19M5 12H19"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M12 5V19M5 12H19"
-                    stroke="white"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="opacity-30"
-                  />
-                </svg>
-              </div>
-              <span className="font-semibold tracking-wide">Add New Class</span>
-
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="w-7 h-7 transform group-hover:rotate-180 transition-transform duration-300"
+              >
+                <path
+                  d="M12 5V19M5 12H19"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M12 5V19M5 12H19"
+                  stroke="white"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="opacity-30"
+                />
+              </svg>
+            </div>
+            <span className="font-semibold tracking-wide">Add New Class</span>
           </Button>
         )}
       </DialogTrigger>
@@ -457,54 +490,81 @@ export function AddClassDialog({
           </div>
         </DialogHeader>
         <div className="flex flex-col gap-4 overflow-y-auto max-h-[60vh] p-6">
-          {/* {message && <AlertMessage content={message.content} color={message.color} />} */}
-
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 gap-4 py-4">
-              <Input
-                className="rounded-lg"
-                placeholder="Subject in short (e.g. Math)"
-                value={schoolClass.subject_in_short}
-                onChange={(e) => setSchoolClass({
-                  ...schoolClass,
-                  subject_in_short: e.target.value,
-                })}
-                required
-              />
+              {/* Select avec recherche pour Subject In Short */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Subject In Short
+                </label>
+                <Select
+                  value={schoolClass.subject_in_short}
+                  onValueChange={handleSubjectSelect}
+                  required
+                >
+                  <SelectTrigger className="rounded-lg">
+                    <SelectValue placeholder="Select or type a subject" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {/* Barre de recherche */}
+                    <div className="relative p-2 border-b">
+                      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                      <Input
+                        placeholder="Search or add subject..."
+                        value={searchQuery}
+                        onChange={(e) => handleSearchChange(e.target.value)}
+                        className="pl-10 pr-4 py-2 h-9 text-sm"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
 
-              <Input
-                className="rounded-lg"
-                placeholder="Subject in all letter (e.g. Mathematics)"
-                value={schoolClass.subject_in_all_letter}
-                onChange={(e) => setSchoolClass({
-                  ...schoolClass,
-                  subject_in_all_letter: e.target.value,
-                })}
-                required
-              />
-            </div>
+                    {/* Options filtrées */}
+                    <div className="max-h-40 overflow-y-auto">
+                      {filteredSubjects.map((subject) => (
+                        <SelectItem key={subject} value={subject}>
+                          {subject}
+                        </SelectItem>
+                      ))}
+                      
+                      {/* Option pour ajouter un nouveau sujet */}
+                      {isAddingCustom && searchQuery.trim() && (
+                        <div
+                          className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 mx-2 my-1"
+                          onClick={() => handleAddCustomSubject(searchQuery)}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add "{searchQuery}"
+                        </div>
+                      )}
 
-            {/* Warning about Digital Library subject requirements */}
-            <Alert className="bg-amber-50 border-amber-200 text-amber-800">
-              <AlertCircle className="h-4 w-4 text-amber-600" />
-              <div>
-                <AlertTitle className="text-amber-900 font-semibold">
-                  Digital Library Availability
-                </AlertTitle>
-                <AlertDescription className="text-amber-800 mt-1">
-                  <p className="text-sm leading-relaxed">
-                    <strong>Only</strong> the following subjects are available in the <strong>Digital Library</strong>:
-                  </p>
-                  <ul className="mt-2 ml-4 space-y-1 list-disc">
-                    <li className="text-sm font-mono font-semibold">Math</li>
-                    <li className="text-sm font-mono font-semibold">ELA</li>
-                  </ul>
-                  <p className="text-sm mt-2 text-amber-700">
-                    ⚠️ The subject name must be spelled <strong>exactly</strong> as shown above (case-sensitive).
-                  </p>
-                </AlertDescription>
+                      {/* Message si aucun résultat */}
+                      {filteredSubjects.length === 0 && !isAddingCustom && (
+                        <div className="px-2 py-3 text-sm text-gray-500 text-center">
+                          No subjects found. Type to add a new one.
+                        </div>
+                      )}
+                    </div>
+                  </SelectContent>
+                </Select>
               </div>
-            </Alert>
+
+              {/* Input pour Class Name */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Class Name
+                </label>
+                <Input
+                  className="rounded-lg"
+                  placeholder="Class Name"
+                  value={schoolClass.name}
+                  onChange={(e) => setSchoolClass({
+                    ...schoolClass,
+                    name: e.target.value,
+                  })}
+                  required
+                />
+              </div>
+            </div>
 
             <div className="grid grid-cols-2 gap-4 py-4">
               <select
@@ -522,50 +582,20 @@ export function AddClassDialog({
                 required
               >
                 <option disabled value="">Select Grade</option>
-                {(grades || []).length > 0 ? ( //  Add a "null" verification condition
+                {(grades || []).length > 0 ? (
                   grades.map((grade) => (
                     <option key={grade} value={grade}>
                       Grade {grade}
                     </option>
                   ))
                 ) : (
-                    ALL_GRADES.map((grade) => (
+                  ALL_GRADES.map((grade) => (
                     <option key={grade} value={grade.toString()}>
                       Grade {grade}
                     </option>
                   ))
                 )}
               </select>
-
-              {/* <Select
-                value={`${userData.role === "teacher" ? userData.owner_id : schoolClass.teacher}`}
-                onValueChange={(value) => setSchoolClass({
-                  ...schoolClass,
-                  teacher: Number.parseInt(value),
-                })}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Teacher" />
-                </SelectTrigger>
-                <SelectContent>
-                  {userData?.role === "teacher" ? (
-                    <SelectItem value={`${userData.owner_id}`}>
-                      {userData.username}
-                    </SelectItem>
-                  ) : (
-                    teachers.length > 0 ? (
-                      teachers.map((teacher: { id: number; name: string }) => (
-                        <SelectItem key={teacher.id} value={`${teacher.id}`}>
-                          {teacher.name}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="0" disabled>No teacher</SelectItem>
-                    )
-                  )}
-                </SelectContent>
-              </Select> */}
             </div>
 
             {schoolClass.grade && (
@@ -579,7 +609,6 @@ export function AddClassDialog({
                 ) : students.length > 0 ? (
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {students.map((student) => {
-                      // Check if student exists in schoolClass.students array
                       const studentId = Number(student.id);
                       const isChecked = schoolClass.students.some(existingStudent => {
                         const existingId = typeof existingStudent === 'number'
@@ -593,7 +622,6 @@ export function AddClassDialog({
                             id={`student-${student.id}`}
                             checked={isChecked}
                             onCheckedChange={(checked) => {
-                              // Convert current students to object format for consistent handling
                               const currentStudents = schoolClass.students.map(student =>
                                 typeof student === 'number'
                                   ? { id: student, full_name: `Student ${student}` }
@@ -601,14 +629,12 @@ export function AddClassDialog({
                               ) as { id: number; full_name: string }[];
 
                               if (checked) {
-                                // Add student object to the array
                                 const newStudents = [...currentStudents, {id: studentId, full_name: `${student.firstName} ${student.lastName}`}];
                                 setSchoolClass({
                                   ...schoolClass,
                                   students: newStudents,
                                 });
                               } else {
-                                // Remove student from the array
                                 const newStudents = currentStudents.filter(existingStudent =>
                                   Number(existingStudent.id) !== studentId
                                 );
@@ -639,8 +665,8 @@ export function AddClassDialog({
                 Class Schedule
               </label>
 
-              {/* {classDays.map((schedule) => (
-                <div key={schedule.id} className="grid grid-cols-4 gap-2">
+              {classDays.map((schedule) => (
+                <div key={schedule.id} className="grid grid-cols-4 gap-2 items-center">
                   <Select
                     value={schedule.day}
                     onValueChange={(value) => handleClassDayChange(schedule.id, "day", value)}
@@ -656,75 +682,32 @@ export function AddClassDialog({
                   </Select>
 
                   <Input
-                    type="text"
+                    type="time"
                     value={schedule.start_time}
                     onChange={(e) => handleClassDayChange(schedule.id, "start_time", e.target.value)}
                     placeholder="09:00 AM"
                   />
 
                   <Input
-                    type="text"
+                    type="time"
                     value={schedule.end_time}
                     onChange={(e) => handleClassDayChange(schedule.id, "end_time", e.target.value)}
                     placeholder="01:00 PM"
                   />
 
-                  {classDays.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      className="text-red-500 hover:text-red-600"
-                      onClick={() => handleDeleteClassDay(schedule.id)}
-                    >
-                      Remove
-                    </Button>
-                  )}
+                  <Button
+                    variant="ghost"
+                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDeleteClassDay(schedule.id);
+                    }}
+                    type="button"
+                  >
+                    Remove
+                  </Button>
                 </div>
-              ))} */}
-
-              {/* Dans la partie Class Schedule */}
-{classDays.map((schedule) => (
-  <div key={schedule.id} className="grid grid-cols-4 gap-2 items-center">
-    <Select
-      value={schedule.day}
-      onValueChange={(value) => handleClassDayChange(schedule.id, "day", value)}
-    >
-      <SelectTrigger>
-        <SelectValue placeholder="Day" />
-      </SelectTrigger>
-      <SelectContent>
-        {dayOfTheWeek.map((d) => (
-          <SelectItem key={d} value={d}>{d}</SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-
-    <Input
-      type="time"
-      value={schedule.start_time}
-      onChange={(e) => handleClassDayChange(schedule.id, "start_time", e.target.value)}
-      placeholder="09:00 AM"
-    />
-
-    <Input
-      type="time"
-      value={schedule.end_time}
-      onChange={(e) => handleClassDayChange(schedule.id, "end_time", e.target.value)}
-      placeholder="01:00 PM"
-    />
-
-    <Button
-      variant="ghost"
-      className="text-red-500 hover:text-red-600 hover:bg-red-50"
-      onClick={(e) => {
-        e.preventDefault(); // Adding the next line
-        handleDeleteClassDay(schedule.id);
-      }}
-      type="button" // Important to avoid form submission
-    >
-      Remove
-    </Button>
-  </div>
-))}
+              ))}
 
               <Button
                 variant="outline"
