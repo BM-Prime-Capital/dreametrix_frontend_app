@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -177,18 +178,17 @@ export function AddClassDialog({
     }
   };
 
-  const handleAddCustomSubject = () => {
-    if (customSubject.trim() && !subjectOptions.includes(customSubject.trim())) {
-      const newSubject = customSubject.trim();
+  const handleAddCustomSubject = (subject: string) => {
+    if (subject.trim() && !subjectOptions.includes(subject.trim())) {
+      const newSubject = subject.trim();
       setSubjectOptions([...subjectOptions, newSubject]);
       setSchoolClass({
         ...schoolClass,
         subject_in_short: newSubject,
       });
-      setCustomSubject("");
-      setIsAddingCustom(false);
       setSearchQuery("");
-      
+      setIsAddingCustom(false);
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     }
   };
 
@@ -208,7 +208,6 @@ export function AddClassDialog({
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     
-    // Si la valeur de recherche n'existe pas dans les options, activer le mode ajout
     const exists = subjectOptions.some(option => 
       option.toLowerCase() === value.toLowerCase()
     );
@@ -251,8 +250,7 @@ export function AddClassDialog({
         ...schoolClass,
         students: studentIds, // Send as array of IDs to backend
         hours_and_dates_of_course_schedule: convertToClassSchedule(classDays),
-        // Le nom n'est plus généré automatiquement, on utilise la valeur du champ "name"
-        subject_in_all_letter: schoolClass.name, // On utilise le même nom que le nom de la classe
+        subject_in_all_letter: schoolClass.name,
       };
 
       // Show loading only after validations pass (do not await)
@@ -270,7 +268,7 @@ export function AddClassDialog({
 
       if (!rep) {
         await Swal.close();
-        setOpen(false); // Fermer le modal de mise à jour
+        setOpen(false); 
         await Swal.fire({
           title: 'Error!',
           text: existingClass
@@ -286,8 +284,8 @@ export function AddClassDialog({
         });
       } else {
         await Swal.close();
-        setOpen(false); // Close the update modal
-        setOpen(false); // Fermer le modal de mise à jour
+        setOpen(false);
+        setOpen(false); 
         
         // Mark class creation task as complete for new classes
         if (!existingClass) {
@@ -320,8 +318,7 @@ export function AddClassDialog({
       }
     } catch (error) {
       await Swal.close();
-      setOpen(false); // Fermer le modal de mise à jour
-      // Friendlier error for no students in selected grade
+      setOpen(false); 
       const rawMessage = error instanceof Error ? error.message : 'An unknown error occurred';
       const friendlyMessage = /no students available for this grade/i.test(rawMessage)
         ? "No students available for this grade. Add students or choose another grade."
@@ -338,20 +335,9 @@ export function AddClassDialog({
         confirmButtonColor: '#3085d6',
       });
     } finally {
-      Swal.close(); // Fermer l'alerte de chargement
+      Swal.close(); 
       setIsSubmitting(false);
     }
-  };
-
-  const handleSubjectChange = async (value: string) => {
-    const grades = await getGrades(
-      value,
-      tenantDomain,
-      accessToken,
-      refreshToken
-    );
-    setGrades(grades);
-    setAreGradesLoading(false);
   };
 
   const fetchStudentsByGrade = async (grade: string) => {
@@ -544,7 +530,7 @@ export function AddClassDialog({
                       {isAddingCustom && searchQuery.trim() && (
                         <div
                           className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 mx-2 my-1"
-                          onClick={handleAddCustomSubject}
+                          onClick={() => handleAddCustomSubject(searchQuery)}
                         >
                           <Plus className="h-4 w-4 mr-2" />
                           Add "{searchQuery}"
@@ -581,42 +567,35 @@ export function AddClassDialog({
             </div>
 
             <div className="grid grid-cols-2 gap-4 py-4">
-              {/* Select simple pour Grade sans barre de recherche */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Grade
-                </label>
-                <Select
-                  value={schoolClass.grade}
-                  onValueChange={(value) => {
-                    setSchoolClass({
-                      ...schoolClass,
-                      grade: value,
-                      students: [],
-                    });
-                  }}
-                  required
-                >
-                  <SelectTrigger className="rounded-lg">
-                    <SelectValue placeholder="Select Grade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(grades && grades.length > 0) ? (
-                      grades.map((grade) => (
-                        <SelectItem key={grade} value={grade}>
-                          Grade {grade}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      ALL_GRADES.map((grade) => (
-                        <SelectItem key={grade} value={grade.toString()}>
-                          Grade {grade}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
+              <select
+                className="px-2 py-1 bg-white rounded-lg border"
+                value={schoolClass.grade}
+                onChange={(e) => {
+                  setSchoolClass({
+                    ...schoolClass,
+                    grade: e.target.value,
+                    students: [],
+                  });
+                }}
+                aria-label="Select Grade"
+                title="Select Grade"
+                required
+              >
+                <option disabled value="">Select Grade</option>
+                {(grades || []).length > 0 ? (
+                  grades.map((grade) => (
+                    <option key={grade} value={grade}>
+                      Grade {grade}
+                    </option>
+                  ))
+                ) : (
+                  ALL_GRADES.map((grade) => (
+                    <option key={grade} value={grade.toString()}>
+                      Grade {grade}
+                    </option>
+                  ))
+                )}
+              </select>
             </div>
 
             {schoolClass.grade && (
