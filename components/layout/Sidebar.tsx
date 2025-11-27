@@ -10,7 +10,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../ui/button";
 import { useSidebar } from "@/lib/SidebarContext";
-import DreaMetrixLogo from "../ui/dreametrix-logo";
+// import DreaMetrixLogo from "../ui/dreametrix-logo";
 
 export function Sidebar({ routes }: { routes: MenuRoute[] }) {
   console.log("routes", routes)

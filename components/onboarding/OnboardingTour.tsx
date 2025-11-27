@@ -18,7 +18,7 @@ export function OnboardingTour({
   onComplete, 
   onSkip 
 }: OnboardingTourProps) {
-  const { state, skipTour, stopTour } = useOnboarding();
+  const { state, skipTour, stopTour, markTourComplete } = useOnboarding();
   const [isRunning, setIsRunning] = useState(run);
   const [hasStarted, setHasStarted] = useState(false);
   const currentStepIndexRef = useRef<number>(-1);
@@ -302,6 +302,7 @@ export function OnboardingTour({
       setHasStarted(false);
       
       if (status === STATUS.FINISHED) {
+        markTourComplete();
         stopTour();
         onComplete?.();
       } else if (status === STATUS.SKIPPED) {

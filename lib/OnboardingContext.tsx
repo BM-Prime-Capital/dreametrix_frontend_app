@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { OnboardingState, OnboardingContextType, MandatoryTask, UserRole } from '@/types/onboarding';
-import { localStorageKey } from '@/constants/global';
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
 
@@ -19,37 +18,47 @@ export function OnboardingProvider({ children, userId, userRole }: OnboardingPro
   // Initialize onboarding state
   useEffect(() => {
     const initializeOnboarding = () => {
+      if (typeof window === 'undefined') {
+        setIsLoading(false);
+        return;
+      }
+
       const storageKey = `onboarding_state_${userId}`;
       const hasLoggedInBeforeKey = `has_logged_in_before_${userId}`;
       
-      // Check if this is first login
-      const hasLoggedInBefore = localStorage.getItem(hasLoggedInBeforeKey) === 'true';
-      
-      // Get existing onboarding state or create new one
-      const existingState = localStorage.getItem(storageKey);
-      let onboardingState: OnboardingState;
+      try {
+        const hasLoggedInBefore = window.localStorage.getItem(hasLoggedInBeforeKey) === 'true';
+        const existingState = window.localStorage.getItem(storageKey);
+        let onboardingState: OnboardingState;
 
-      if (existingState) {
-        onboardingState = JSON.parse(existingState);
-        onboardingState.isFirstLogin = false;
-      } else {
-        // Create new onboarding state for first-time user
-        onboardingState = {
-          userId,
-          role: userRole,
-          hasCompletedOnboarding: false,
-          hasCompletedTour: false,
-          isFirstLogin: !hasLoggedInBefore,
-          isTourRunning: !hasLoggedInBefore, // Start tour automatically on first login
-          tasks: getDefaultTasksForRole(userRole),
-          completedTasks: [],
-          tourSteps: [],
-          lastUpdated: new Date().toISOString()
-        };
+        if (existingState) {
+          onboardingState = JSON.parse(existingState);
+          onboardingState.isFirstLogin = false;
+        } else {
+          onboardingState = {
+            userId,
+            role: userRole,
+            hasCompletedOnboarding: false,
+            hasCompletedTour: false,
+            isFirstLogin: !hasLoggedInBefore,
+            isTourRunning: !hasLoggedInBefore, // Start tour automatically on first login
+            tasks: getDefaultTasksForRole(userRole),
+            completedTasks: [],
+            lastUpdated: new Date().toISOString()
+          };
+
+          if (!hasLoggedInBefore) {
+            window.localStorage.setItem(hasLoggedInBeforeKey, 'true');
+          }
+        }
+
+        setState(onboardingState);
+      } catch (error) {
+        console.error('Failed to initialize onboarding state', error);
+        setState(null);
+      } finally {
+        setIsLoading(false);
       }
-
-      setState(onboardingState);
-      setIsLoading(false);
     };
 
     initializeOnboarding();
@@ -57,9 +66,13 @@ export function OnboardingProvider({ children, userId, userRole }: OnboardingPro
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
-    if (state) {
+    if (state && typeof window !== 'undefined') {
       const storageKey = `onboarding_state_${userId}`;
-      localStorage.setItem(storageKey, JSON.stringify(state));
+      try {
+        window.localStorage.setItem(storageKey, JSON.stringify(state));
+      } catch (error) {
+        console.error('Failed to persist onboarding state', error);
+      }
     }
   }, [state, userId]);
 
@@ -119,23 +132,25 @@ export function OnboardingProvider({ children, userId, userRole }: OnboardingPro
   };
 
   const resetOnboarding = () => {
-    const storageKey = `onboarding_state_${userId}`;
-    localStorage.removeItem(storageKey);
+    if (typeof window !== 'undefined') {
+      const storageKey = `onboarding_state_${userId}`;
+      window.localStorage.removeItem(storageKey);
+    }
     
-    // setState(prevState => {
-    //   if (!prevState) return prevState;
+    setState(prevState => {
+      if (!prevState) return prevState;
 
-    //   return {
-    //     ...prevState,
-    //     hasCompletedOnboarding: false,
-    //     hasCompletedTour: false,
-    //     completedTasks: [],
-    //     tasks: getDefaultTasksForRole(userRole),
-    //     lastUpdated: new Date().toISOString()
-    //   };
-    // });
-    window.location.reload();
-
+      return {
+        ...prevState,
+        hasCompletedOnboarding: false,
+        hasCompletedTour: false,
+        isTourRunning: false,
+        isFirstLogin: false,
+        tasks: getDefaultTasksForRole(prevState.role),
+        completedTasks: [],
+        lastUpdated: new Date().toISOString()
+      };
+    });
   };
 
   const startTour = () => {
@@ -183,12 +198,12 @@ export function OnboardingProvider({ children, userId, userRole }: OnboardingPro
 
   const getRemainingTasks = (): MandatoryTask[] => {
     if (!state) return [];
-    return state.tasks.filter(task => !task.completed);
+    return state.tasks.filter(task => !state.completedTasks.includes(task.id));
   };
 
   const getCompletedTasks = (): MandatoryTask[] => {
     if (!state) return [];
-    return state.tasks.filter(task => task.completed);
+    return state.tasks.filter(task => state.completedTasks.includes(task.id));
   };
 
   const getProgressPercentage = (): number => {
@@ -306,6 +321,93 @@ function getDefaultTasksForRole(role: UserRole): MandatoryTask[] {
             label: 'Go to Classes'
           },
           priority: 'high'
+        }
+      ];
+
+    case 'student':
+      return [
+        ...commonTasks,
+        {
+          id: 'student_review_assignments',
+          title: 'Review Assignments',
+          description: 'Check your assignments list to stay on track',
+          completed: false,
+          action: {
+            type: 'navigate',
+            target: '/student/assignments',
+            label: 'Go to Assignments'
+          },
+          priority: 'medium'
+        },
+        {
+          id: 'student_view_gradebook',
+          title: 'View Your Gradebook',
+          description: 'See your latest grades and progress',
+          completed: false,
+          action: {
+            type: 'navigate',
+            target: '/student/gradebook',
+            label: 'Open Gradebook'
+          },
+          priority: 'low'
+        }
+      ];
+
+    case 'parent':
+      return [
+        ...commonTasks,
+        {
+          id: 'parent_link_student',
+          title: 'Link a Student',
+          description: 'Connect your account to your child to see their progress',
+          completed: false,
+          action: {
+            type: 'navigate',
+            target: '/parent/link-student',
+            label: 'Link Student'
+          },
+          priority: 'high'
+        },
+        {
+          id: 'parent_view_relationships',
+          title: 'Review Relationships',
+          description: 'Manage teacher and student relationships',
+          completed: false,
+          action: {
+            type: 'navigate',
+            target: '/parent/relationship',
+            label: 'Manage Relationships'
+          },
+          priority: 'medium'
+        }
+      ];
+
+    case 'super_admin':
+      return [
+        ...commonTasks,
+        {
+          id: 'super_admin_add_school',
+          title: 'Add a School',
+          description: 'Create your first school to manage tenants',
+          completed: false,
+          action: {
+            type: 'navigate',
+            target: '/super_admin/schools',
+            label: 'Go to Schools'
+          },
+          priority: 'high'
+        },
+        {
+          id: 'super_admin_review_characters',
+          title: 'Review Character Library',
+          description: 'Explore and manage the character content',
+          completed: false,
+          action: {
+            type: 'navigate',
+            target: '/super_admin/characters',
+            label: 'View Characters'
+          },
+          priority: 'medium'
         }
       ];
 

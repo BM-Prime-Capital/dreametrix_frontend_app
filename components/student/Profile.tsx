@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
+import { Copy, CheckCheck } from "lucide-react";
 import { getStudentProfileInfo, updateStudentProfile, changePassword } from "@/services/admin-service";
 import {
   GraduationCap,
@@ -34,6 +35,7 @@ import {
   Crop
 } from "lucide-react";
 import { useRequestInfo } from "@/hooks/useRequestInfo";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { Skeleton } from "@/components/ui/skeleton";
 import Cropper from "react-cropper";
 import "cropperjs/dist/cropper.css";
@@ -54,6 +56,7 @@ interface UserData {
   bio: string | null;
   picture: string | null;
   date_joined: string;
+  uuid: string;
 }
 
 interface ProfileData {
@@ -90,7 +93,6 @@ interface ChangePasswordData {
   confirm_password: string;
 }
 
-// Composant modal pour l'édition de la photo de profil
 interface EditProfilePictureModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -434,6 +436,7 @@ export default function StudentProfile() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [formData, setFormData] = useState<Partial<UserData & ProfileData>>({});
+  const [copiedUuid, setCopiedUuid] = useState(false);
   
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -454,6 +457,7 @@ export default function StudentProfile() {
 
   const router = useRouter();
   const { tenantDomain, accessToken } = useRequestInfo();
+  const { markTaskComplete } = useOnboarding();
 
   const handleUpdateProfile = async () => {
     if (!accessToken || !tenantDomain || !userData) return;
@@ -514,6 +518,8 @@ export default function StudentProfile() {
       });
     }
   };
+
+
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -609,6 +615,7 @@ export default function StudentProfile() {
       );
 
       setPasswordSuccess(true);
+      markTaskComplete("change_password");
       setPasswordData({
         current_password: "",
         new_password: "",
@@ -684,6 +691,18 @@ export default function StudentProfile() {
 
   const isFieldEditable = (field: string, section: 'user' | 'profile') => {
     return editableFields[`${section}_fields` as keyof EditableFields]?.includes(field);
+  };
+
+  const copyUuidToClipboard = async () => {
+    if (userData?.uuid) {
+      try {
+        await navigator.clipboard.writeText(userData.uuid);
+        setCopiedUuid(true);
+        setTimeout(() => setCopiedUuid(false), 2000);
+      } catch (err) {
+        console.error('Failed to copy UUID: ', err);
+      }
+    }
   };
 
   if (isLoading) {
@@ -980,11 +999,40 @@ export default function StudentProfile() {
                       )}
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{userData?.full_name}</h3>
-                      <p className="text-gray-600 mb-1 flex items-center gap-2">
-                        <Mail className="h-4 w-4" />
-                        {userData?.email}
-                      </p>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">{userData?.full_name}</h3>
+                          <p className="text-gray-600 mb-1 flex items-center gap-2">
+                            <Mail className="h-4 w-4" />
+                            {userData?.email}
+                          </p>
+                        </div>
+                        
+                        {/* Section UUID avec bouton de copie */}
+                        {userData?.uuid && (
+                          <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-gray-200 shadow-sm">
+                            <div className="text-start">
+                              <p className="text-xs text-gray-500 font-medium pb-2">UUID</p>
+                              <p className="text-xs text-gray-700 font-mono truncate max-w-[120px]">
+                                {userData.uuid}
+                              </p>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={copyUuidToClipboard}
+                              className="h-8 w-8 p-0 hover:bg-gray-100 transition-colors"
+                              title="Copy UUID to clipboard"
+                            >
+                              {copiedUuid ? (
+                                <CheckCheck className="h-3.5 w-3.5 text-green-600" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5 text-gray-500" />
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 

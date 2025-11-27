@@ -899,6 +899,11 @@ export default function DigitalLibrary() {
       }
     }
 
+    if (!allClasses || allClasses.length === 0) {
+      alert("Please select at least one class.");
+      return;
+    }
+
     setIsLoading(true);
 
     const standards =
@@ -917,7 +922,7 @@ export default function DigitalLibrary() {
       selected_class: selected_class,
       generate_answer_sheet: digitalLibrarySheet.generateAnswerSheet,
       include_answer_key: digitalLibrarySheet.includeAnswerKey,
-      teacher_name: userData.username,
+      teacher_name: userData.full_name,
       student_id: 1,
       assignment_type: digitalLibrarySheet.assignmentType || "Homework",
       number_of_questions: digitalLibrarySheet.noOfQuestions,
@@ -941,7 +946,7 @@ export default function DigitalLibrary() {
           selected_class: selected_class,
           generate_answer_sheet: digitalLibrarySheet.generateAnswerSheet,
           include_answer_key: digitalLibrarySheet.includeAnswerKey,
-          teacher_name: userData.username,
+          teacher_name: userData.full_name,
           student_id: [1, 2],
           assignment_type: "Exam",
           number_of_questions: Number.parseInt(
@@ -1872,7 +1877,7 @@ export default function DigitalLibrary() {
                 grade: digitalLibrarySheet.grade,
                 questionType: digitalLibrarySheet.questionType,
                 numberOfQuestions: digitalLibrarySheet.noOfQuestions,
-                teacherName: userData?.username,
+                teacherName: userData?.full_name,
                 assignmentName: assignmentContext?.assignmentName || undefined,
                 dueDate: assignmentContext?.dueDate || undefined,
                 isPublished: assignmentContext?.published === "true" || false,

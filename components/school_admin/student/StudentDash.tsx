@@ -12,10 +12,12 @@ import {
   FiFileText,
   FiPlus,
 } from "react-icons/fi";
+import * as XLSX from "xlsx";
 import { useStudents } from "@/hooks/SchoolAdmin/use-students";
 import { useBaseUrl } from "@/hooks/SchoolAdmin/use-base-url";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { toast } from "react-toastify";
+import { parseExcelUsers } from "@/services/UserBulkUploadService";
 import CreateStudentModal from './CreateStudentModal';
 const avatarColors = [
   "bg-blue-100 text-blue-600",
@@ -89,12 +91,21 @@ const StudentsListPage = ({ studentCreationTaskId = 'school_admin_create_student
   const handleUpload = async () => {
     if (!selectedFile || !baseUrl) return;
 
-    console.log('Starting upload...', { baseUrl, fileName: selectedFile.name });
-    setIsUploading(true);
-    const formData = new FormData();
-    formData.append('excel_file', selectedFile);
-
     try {
+      console.log("Starting upload (parsed JSON)...", {
+        baseUrl,
+        fileName: selectedFile.name,
+      });
+      setIsUploading(true);
+
+      // Parse Excel into structured student objects
+      const users = await parseExcelUsers(selectedFile, "student");
+
+      if (!users.length) {
+        toast.error("No valid student rows found in the file.");
+        return;
+      }
+
       const accessToken = localStorage.getItem('accessToken');
       const uploadUrl = `${baseUrl}/school-admin/upload-users/`;
       console.log('Upload URL:', uploadUrl);
@@ -103,8 +114,9 @@ const StudentsListPage = ({ studentCreationTaskId = 'school_admin_create_student
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
         },
-        body: formData,
+        body: JSON.stringify({ users }),
       });
 
       console.log('Response status:', response.status);
@@ -135,17 +147,26 @@ const StudentsListPage = ({ studentCreationTaskId = 'school_admin_create_student
   };
 
   const downloadTemplate = () => {
-    const headers = ['first_name', 'last_name', 'email', 'grade', 'class', 'parent_name', 'parent_email', 'parent_phone'];
-    const sampleData = ['John', 'Doe', 'john.doe@email.com', '10', 'A', 'Jane Doe', 'jane.doe@email.com', '+1234567890'];
-    const csvContent = headers.join(',') + '\n' + sampleData.join(',') + '\n';
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'students_template.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
-    toast.success('Template downloaded successfully!');
+    const headers = [
+      "first_name",
+      "last_name",
+      "email",
+      "role",
+      "grade",
+    ];
+    const sampleRow = [
+      "Jane",
+      "Doe",
+      "janedoe@email.com",
+      "student",
+      3,
+    ];
+
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, sampleRow]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
+    XLSX.writeFile(workbook, "students_template.xlsx");
+    toast.success("Template downloaded successfully!");
   };
 
   if (isLoading) {
@@ -215,6 +236,14 @@ const StudentsListPage = ({ studentCreationTaskId = 'school_admin_create_student
           </div>
           
           <div className="flex gap-3">
+            <button
+              onClick={downloadTemplate}
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
+            >
+              <FiDownload className="text-base" />
+              <span>Download sample</span>
+            </button>
+
             <button
               onClick={() => setShowCreateModal(true)}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
