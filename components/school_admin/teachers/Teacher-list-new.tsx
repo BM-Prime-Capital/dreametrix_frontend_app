@@ -119,14 +119,14 @@ const TeachersList = () => {
 
 const downloadTemplate = () => {
   // Format CORRECT pour l'importation (teachers + students) en Excel
-  const headers = ['first_name', 'last_name', 'email', 'role', 'grade_levels', 'subjects'];
-  const sampleTeacher = ['John', 'Smith', 'john.smith@email.com', 'teacher', '10,11', 'Mathematics'];
-  const sampleStudent = ['Jane', 'Doe', 'jane.doe@email.com', 'student', '9', ''];
+  const headers = ['first_name', 'last_name', 'email', 'role'];
+  const sampleTeacher = ['John', 'Smith', 'john.smith@email.com', 'teacher'];
+  // const sampleStudent = ['Jane', 'Doe', 'jane.doe@email.com', 'student', '9', ''];
 
   const worksheet = XLSX.utils.aoa_to_sheet([
     headers,
     sampleTeacher,
-    sampleStudent,
+    // sampleStudent,
   ]);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
@@ -211,7 +211,15 @@ const downloadTemplate = () => {
             </p>
           </div>
           
+          
           <div className="flex gap-3">
+            <button
+              onClick={downloadTemplate}
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
+            >
+              <FiDownload className="text-base" />
+              <span>Download sample</span>
+            </button>
             <button
               onClick={() => setShowCreateModal(true)}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
