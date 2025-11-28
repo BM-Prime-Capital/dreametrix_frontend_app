@@ -546,6 +546,314 @@ export class LessonPlanService {
     if (!res.ok) return normalizeFetchError(res, accessToken);
   }
 }
+
+
+// -----------------------------------------------------------------------------
+// AcademicDataService - Pour les subjects, grades, domains et standards
+// -----------------------------------------------------------------------------
+// export class AcademicDataService {
+//   /**
+//    * GET /digital_library/subjects/ - Liste tous les subjects
+//    */
+//   static async getSubjects(
+//     tenantPrimaryDomain: string | undefined,
+//     accessToken: string | undefined
+//   ): Promise<string[]> {
+//     assertToken(accessToken);
+//     const base = resolveBaseURL(tenantPrimaryDomain);
+//     const url = `${base}/digital_library/subjects/`;
+
+//     console.log("📚 Fetching subjects from:", url);
+
+//     const res = await fetch(url, {
+//       headers: buildAuthHeaders(accessToken),
+//     });
+
+//     if (!res.ok) return normalizeFetchError(res, accessToken);
+    
+//     const data = await res.json();
+//     console.log("Subjects response:", data);
+    
+//     return data.subjects || [];
+//   }
+
+//   /**
+//    * GET /digital_library/grades/:subject/ - Liste les grades par subject
+//    */
+//   static async getGradesBySubject(
+//     tenantPrimaryDomain: string | undefined,
+//     accessToken: string | undefined,
+//     subject: string
+//   ): Promise<number[]> {
+//     assertToken(accessToken);
+//     const base = resolveBaseURL(tenantPrimaryDomain);
+//     const url = `${base}/digital_library/grades/${subject}/`;
+
+//     console.log(`📊 Fetching grades for ${subject} from:`, url);
+
+//     const res = await fetch(url, {
+//       headers: buildAuthHeaders(accessToken),
+//     });
+
+//     if (!res.ok) return normalizeFetchError(res, accessToken);
+    
+//     const data = await res.json();
+//     console.log(`Grades for ${subject}:`, data);
+    
+//     return data.grades || [];
+//   }
+
+//   /**
+//    * GET /digital_library/domains/:subject/:grade/ - Liste les domains par subject et grade
+//    */
+//   static async getDomainsBySubjectAndGrade(
+//     tenantPrimaryDomain: string | undefined,
+//     accessToken: string | undefined,
+//     subject: string,
+//     grade: number
+//   ): Promise<string[]> {
+//     assertToken(accessToken);
+//     const base = resolveBaseURL(tenantPrimaryDomain);
+//     const url = `${base}/digital_library/domains/${subject}/${grade}/`;
+
+//     console.log(`🌍 Fetching domains for ${subject} grade ${grade} from:`, url);
+
+//     const res = await fetch(url, {
+//       headers: buildAuthHeaders(accessToken),
+//     });
+
+//     if (!res.ok) return normalizeFetchError(res, accessToken);
+    
+//     const data = await res.json();
+//     console.log(`Domains for ${subject} grade ${grade}:`, data);
+    
+//     return data.domains || [];
+//   }
+
+//   /**
+//    * GET /digital_library/standards/:subject/:grade/:domain/ - Liste les standards par domain
+//    */
+//   static async getStandardsByDomain(
+//     tenantPrimaryDomain: string | undefined,
+//     accessToken: string | undefined,
+//     subject: string,
+//     grade: number,
+//     domain: string
+//   ): Promise<string[]> {
+//     assertToken(accessToken);
+//     const base = resolveBaseURL(tenantPrimaryDomain);
+    
+//     // Encoder le domain pour l'URL (au cas où il contiendrait des caractères spéciaux)
+//     const encodedDomain = encodeURIComponent(domain);
+//     const url = `${base}/digital_library/standards/${subject}/${grade}/${encodedDomain}/`;
+
+//     console.log(`📝 Fetching standards for ${subject} grade ${grade} domain ${domain} from:`, url);
+
+//     const res = await fetch(url, {
+//       headers: buildAuthHeaders(accessToken),
+//     });
+
+//     if (!res.ok) return normalizeFetchError(res, accessToken);
+    
+//     const data = await res.json();
+//     console.log(`Standards for ${subject} grade ${grade} domain ${domain}:`, data);
+    
+//     return data.standards || [];
+//   }
+// }
+
+
+
+// -----------------------------------------------------------------------------
+// AcademicDataService - Pour les subjects, grades, domains et standards
+// -----------------------------------------------------------------------------
+export class AcademicDataService {
+  /**
+   * GET /digital_library/subjects/ - Liste tous les subjects
+   */
+  static async getSubjects(
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined
+  ): Promise<string[]> {
+    assertToken(accessToken);
+    const base = resolveBaseURL(tenantPrimaryDomain);
+    const url = `${base}/digital_library/subjects/`;
+
+    console.log("📚 Fetching subjects from:", url);
+
+    const res = await fetch(url, {
+      headers: buildAuthHeaders(accessToken),
+    });
+
+    if (!res.ok) return normalizeFetchError(res, accessToken);
+    
+    const data = await res.json();
+    console.log("Subjects response:", data);
+    
+    return data.subjects || [];
+  }
+
+  /**
+   * GET /digital_library/grades/:subject/ - Liste les grades par subject
+   */
+  static async getGradesBySubject(
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
+    subject: string
+  ): Promise<number[]> {
+    assertToken(accessToken);
+    const base = resolveBaseURL(tenantPrimaryDomain);
+    const url = `${base}/digital_library/grades/${subject}/`;
+
+    console.log(`📊 Fetching grades for ${subject} from:`, url);
+
+    const res = await fetch(url, {
+      headers: buildAuthHeaders(accessToken),
+    });
+
+    if (!res.ok) return normalizeFetchError(res, accessToken);
+    
+    const data = await res.json();
+    console.log(`Grades for ${subject}:`, data);
+    
+    return data.grades || [];
+  }
+
+  /**
+   * GET /digital_library/domains/:subject/:grade/ - Liste les domains par subject et grade
+   * POUR ELA: Cette méthode récupère d'abord les standards disponibles
+   */
+  static async getDomainsBySubjectAndGrade(
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
+    subject: string,
+    grade: number
+  ): Promise<string[]> {
+    assertToken(accessToken);
+    const base = resolveBaseURL(tenantPrimaryDomain);
+
+    // POUR ELA: Récupérer d'abord les standards disponibles
+    if (subject.toLowerCase() === 'ela') {
+      const standardsUrl = `${base}/digital_library/standards_ela/ELA/${grade}/`;
+      console.log(`📋 Fetching ELA standards for grade ${grade} from:`, standardsUrl);
+
+      const res = await fetch(standardsUrl, {
+        headers: buildAuthHeaders(accessToken),
+      });
+
+      if (!res.ok) return normalizeFetchError(res, accessToken);
+      
+      const data = await res.json();
+      console.log(`ELA standards for grade ${grade}:`, data);
+      
+      return data.standards || [];
+    }
+
+    // POUR MATH: Comportement original
+    const url = `${base}/digital_library/domains/${subject}/${grade}/`;
+    console.log(`🌍 Fetching domains for ${subject} grade ${grade} from:`, url);
+
+    const res = await fetch(url, {
+      headers: buildAuthHeaders(accessToken),
+    });
+
+    if (!res.ok) return normalizeFetchError(res, accessToken);
+    
+    const data = await res.json();
+    console.log(`Domains for ${subject} grade ${grade}:`, data);
+    
+    return data.domains || [];
+  }
+
+  /**
+   * NOUVELLE MÉTHODE: Récupère les strands pour ELA
+   */
+  static async getStrandsForELA(
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
+    grade: number,
+    standard: string
+  ): Promise<string[]> {
+    assertToken(accessToken);
+    const base = resolveBaseURL(tenantPrimaryDomain);
+    
+    const encodedStandard = encodeURIComponent(standard);
+    const url = `${base}/digital_library/strands/ELA/${grade}/${encodedStandard}/`;
+
+    console.log(`📖 Fetching ELA strands for grade ${grade}, standard ${standard} from:`, url);
+
+    const res = await fetch(url, {
+      headers: buildAuthHeaders(accessToken),
+    });
+
+    if (!res.ok) return normalizeFetchError(res, accessToken);
+    
+    const data = await res.json();
+    console.log(`ELA strands for grade ${grade}, standard ${standard}:`, data);
+    
+    return data.strands || [];
+  }
+
+  /**
+   * GET /digital_library/specific_standards/:subject/:grade/:standard/:strand/ - Liste les standards spécifiques
+   * POUR ELA: Utilise l'endpoint spécifique avec standard + strand
+   */
+  static async getStandardsByDomain(
+    tenantPrimaryDomain: string | undefined,
+    accessToken: string | undefined,
+    subject: string,
+    grade: number,
+    domain: string,
+    // NOUVEAU PARAMÈTRE OBLIGATOIRE POUR ELA
+    standard?: string
+  ): Promise<string[]> {
+    assertToken(accessToken);
+    const base = resolveBaseURL(tenantPrimaryDomain);
+    
+    // POUR ELA: Utiliser l'endpoint spécifique avec standard + strand
+    if (subject.toLowerCase() === 'ela') {
+      if (!standard) {
+        console.error("❌ Standard is required for ELA");
+        return [];
+      }
+      
+      const encodedStandard = encodeURIComponent(standard);
+      const encodedStrand = encodeURIComponent(domain);
+      const url = `${base}/digital_library/specific_standards/ELA/${grade}/${encodedStandard}/${encodedStrand}/`;
+
+      console.log(`📝 Fetching ELA specific standards for grade ${grade}, standard ${standard}, strand ${domain} from:`, url);
+
+      const res = await fetch(url, {
+        headers: buildAuthHeaders(accessToken),
+      });
+
+      if (!res.ok) return normalizeFetchError(res, accessToken);
+      
+      const data = await res.json();
+      console.log(`ELA specific standards for grade ${grade}, standard ${standard}, strand ${domain}:`, data);
+      
+      return data.specifique_standards || [];
+    }
+
+    // POUR MATH: Comportement original
+    const encodedDomain = encodeURIComponent(domain);
+    const url = `${base}/digital_library/standards/${subject}/${grade}/${encodedDomain}/`;
+
+    console.log(`📝 Fetching standards for ${subject} grade ${grade} domain ${domain} from:`, url);
+
+    const res = await fetch(url, {
+      headers: buildAuthHeaders(accessToken),
+    });
+
+    if (!res.ok) return normalizeFetchError(res, accessToken);
+    
+    const data = await res.json();
+    console.log(`Standards for ${subject} grade ${grade} domain ${domain}:`, data);
+    
+    return data.standards || [];
+  }
+}
+
 // -----------------------------------------------------------------------------
 // ClassService (for fetching subjects / grade / course IDs)
 // -----------------------------------------------------------------------------
@@ -600,4 +908,7 @@ export class ClassService {
     console.log("📋 Formatted classes:", formattedClasses);
     return formattedClasses;
   }
+
+
+  
 }

@@ -109,7 +109,7 @@ export interface ScopeAndSequence {
 }
 
 export interface ScopeSequenceEntry {
-  id: string;
+  id?: string;
   month: string;
   topic: string;
   standard_code: string;
@@ -312,10 +312,22 @@ export interface LessonPlanFormData {
 }
 
 // Types pour les props des composants
+// export interface ScopeAndSequenceFormProps {
+//   initialData?: ScopeAndSequence;
+//   onSubmitSuccess?: (data: ScopeAndSequence) => void;
+//   onCancel?: () => void;
+// }
+
+// Dans vos types
+// Dans types.ts - Mettez à jour l'interface ScopeAndSequenceFormProps
 export interface ScopeAndSequenceFormProps {
-  initialData?: ScopeAndSequence;
-  onSubmitSuccess?: (data: ScopeAndSequence) => void;
-  onCancel?: () => void;
+  initialData?: ScopeAndSequenceFormData | null; // Ajoutez | null
+  onSubmitSuccess: (result?: any) => void;
+  academicData?: {
+    subjects: string[];
+    gradesBySubject: { [subject: string]: number[] };
+    domainsBySubjectGrade: { [key: string]: string[] };
+  } | null; // Ajoutez | null
 }
 
 export interface UnitPlanFormProps {
