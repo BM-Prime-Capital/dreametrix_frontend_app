@@ -132,7 +132,7 @@ const StudentsListPage = ({ studentCreationTaskId = 'school_admin_create_student
       }
 
       const accessToken = localStorage.getItem('accessToken');
-      const uploadUrl = `${baseUrl}/school-admin/upload-users/`;
+      const uploadUrl = `${baseUrl}/school-admin/create-user/`;
       console.log('Upload URL:', uploadUrl);
 
       const response = await fetch(uploadUrl, {
