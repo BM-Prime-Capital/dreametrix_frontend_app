@@ -73,7 +73,7 @@ const TeachersList = () => {
 
       const accessToken = localStorage.getItem('accessToken');
       
-      const response = await fetch(`${baseUrl}/school-admin/upload-users/`, {
+      const response = await fetch(`${baseUrl}/school-admin/create-user/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
