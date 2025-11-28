@@ -11,7 +11,7 @@ export default function DashboardLayout({
     <div className="h-full relative">
       <main className="flex flex-col gap-4 min-h-screen bg-gray-100">
         <Header />
-        <div className="px-5 md:px-20">{children}</div>
+        <div className="px-5 md:px-12">{children}</div>
       </main>
     </div>
   );

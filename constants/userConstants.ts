@@ -59,3 +59,35 @@ export enum activityLabel {
 export enum backend_base_url {
   BASE_URL = "backend-dreametrix.com"
 }
+
+export const teacherPageNames = {
+  students:{
+    title:"Students",
+    description:"Manage your students",
+  },
+  assignments:{
+    title: "Assignments",
+    description: "Track student progress"
+  },
+  digitalLibrary:{
+    title: "Digital Library",
+    description: "Create custom worksheets and assessments"
+  },
+  gradeBook:{
+    title: "GradeBook",
+    description: "Track student performance"
+  },
+  attendance:{
+    title: "Attendance",
+    description: "Track student attendance across classes"
+  },
+  attendanceManagement:{
+    title: "Attendance Management",
+    description: "Track and manage student attendance"
+  },
+  character:{
+    title: "Character Overview",
+    description: "Track student character development"
+  },
+
+}
