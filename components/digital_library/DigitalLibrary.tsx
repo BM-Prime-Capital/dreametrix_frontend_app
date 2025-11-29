@@ -899,6 +899,11 @@ export default function DigitalLibrary() {
       }
     }
 
+    if (!allClasses || allClasses.length === 0) {
+      alert("Please select at least one class.");
+      return;
+    }
+
     setIsLoading(true);
 
     const standards =
